@@ -10,7 +10,7 @@ from .errors import PortError
 from .schema import fields, load_json
 
 REPO = Path(__file__).resolve().parents[3]
-LOCK = Path(__file__).with_name("toolchain-lock.json")
+LOCK = Path(__file__).with_name("toolchain-pins.json")
 
 
 def write_json(path: Path, value):

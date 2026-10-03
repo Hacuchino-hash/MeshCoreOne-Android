@@ -50,7 +50,7 @@ feature/quality WPs. Passing this workflow never configures those future WPs.
 
 ## Provisioning and credential boundary
 
-`controller/toolchain-lock.json` pins Temurin21.0.12.1+1 archives separately for
+`controller/toolchain-pins.json` pins Temurin21.0.12.1+1 archives separately for
 Windows/Linux, exact Python3.12.4, Gradle9.8.0 distribution/JAR, and Google's actual
 `platforms;android-37.2`, `build-tools;37.0.0`, `cmdline-tools;23.0` archives.
 SDK SHA-256 values were independently computed from exact first-party downloads
@@ -73,6 +73,10 @@ download beyond the exact four locked archives plus first-party SDK metadata.
 Provisioning provenance explicitly records archive-only installation and no
 separate CLI-helper download/execution.
 No SDK/JDK/cache/debug key or private installation path is committed.
+`runtime_inputs.py` checks the immutable committed Git tree and exact checkout
+bytes (with Git text CRLF/LF normalization, never binary normalization) for every
+required pin/requirement/reader/workflow/build input before
+provisioning or verification. A developer-only ignored file cannot satisfy it.
 
 All Actions are pinned to full reviewed commit SHAs. Checkout has
 `persist-credentials: false`; workflow/job tokens have only `contents: read`.

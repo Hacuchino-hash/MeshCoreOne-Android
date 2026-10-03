@@ -76,6 +76,15 @@ hashes, validates graph/runtime TSV and cross-checks inspection JSON/APK bytes.
 Positive fixtures now contain well-formed report data; negatives cover null/
 fabricated/skipped/error/stale/missing raw evidence. Fixtures are not live runs.
 
+The first real hosted setup run
+[`37154315851`](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37154315851)
+at `1d813ceb55c00507cc3ac0343472f92fdd12d89e` failed correctly: inherited
+`*lock.json` ignore rules excluded the static toolchain file from the commit.
+Local filesystem tests were not clean-export delivery proof. The follow-up
+renames it to tracked `toolchain-pins.json` without changing a single pin or the
+root ignore policy, and adds exact committed-tree/checkout-byte/clean-export
+runtime-input validation. The failed run is not marked setup/Linux success.
+
 Publisher bounds test exact65,535/overflow/Unicode bytes and a full 2,000-entry
 **fixture** catalog without mutation/truncation. This is not an actual WP-004
 case inventory or live publisher proof. Historical proposals remain explicitly

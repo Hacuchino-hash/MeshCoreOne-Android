@@ -24,6 +24,7 @@ from controller.errors import PortError
 from controller.gates import Binding, policy_revision
 from controller.model import git, load_manifest
 from controller.provision import provision
+from controller.runtime_inputs import verify_committed_inputs
 from controller.schema import decode_json, load_json, positive_integer
 from controller.test_runner import run_suite
 
@@ -101,6 +102,7 @@ def execute(command: list[str], environment: dict | None, log: Path, *, timeout=
 
 
 def preflight(state: dict, output: Path, *, local=False):
+    verify_committed_inputs(REPO)
     if platform.python_version() != toolchain_lock()["python"]:
         raise PortError("Build/setup Python must be the exact declared 3.12.4 input")
     verify_wrapper()
@@ -198,6 +200,7 @@ def python_checks(output: Path):
     from controller.verification_config import check_configuration
     from controller.workflows import validate_workflows
 
+    delivery = verify_committed_inputs(REPO)
     configuration = check_configuration(REPO)
     validate_workflows(REPO)
     execute([sys.executable, str(REPO / "tools" / "android-port" / "controller" / "validate.py")],
@@ -223,6 +226,7 @@ def python_checks(output: Path):
         results[name] = counts(result, minimum=minimum)
     write_json(output / "python-evidence.json", results)
     write_json(output / "verification-overlay.json", configuration)
+    write_json(output / "runtime-inputs.json", delivery)
 
 
 def inspect(state: dict, output: Path, *, local=False):
@@ -278,6 +282,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "provision":
+            verify_committed_inputs(REPO)
             if args.root is None:
                 raise PortError("An explicit ephemeral --root is required")
             provision(args.root, accept_sdk_license=args.accept_sdk_license)
