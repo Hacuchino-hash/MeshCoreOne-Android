@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pinned Android port work packages and exact reference ownership",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "reference", "agents", "work_packages", "inventory", "implementations"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "tree_sha", "source_inventory_sha256", "approved_plan_sha256", "installed_plan_sha256"],
+      "properties": {
+        "repository": {"type": "string", "const": "Avi0n/MeshCoreOne"},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_inventory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "approved_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "installed_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 17,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "sha256"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]+$"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "work_packages": {
+      "type": "array",
+      "minItems": 65,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "owner", "depends_on", "human_gate", "supervised", "planned_state", "write_paths", "android_only_reason", "acceptance", "verification"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^WP-[0-9]{3}$"},
+          "title": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "pattern": "^[a-z][a-z0-9-]+$"},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^WP-[0-9]{3}$"}},
+          "human_gate": {"type": "boolean"},
+          "supervised": {"type": "boolean"},
+          "planned_state": {"type": "string", "const": "pending"},
+          "write_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "android_only_reason": {"type": "string"},
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "description"],
+              "properties": {
+                "id": {"type": "string", "minLength": 1},
+                "description": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "verification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["configured", "commands", "blocker"],
+            "properties": {
+              "configured": {"type": "boolean"},
+              "commands": {"type": "array", "items": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}},
+              "blocker": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "blob_sha", "kind", "primary_owner", "cross_references", "exclusion"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "blob_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "kind": {"type": "string", "enum": ["production", "test", "support", "resource", "license", "reference", "generated", "apple-glue"]},
+          "primary_owner": {"type": ["string", "null"]},
+          "cross_references": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^WP-[0-9]{3}$"}},
+          "exclusion": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "implementations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "work_package", "sources"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "work_package": {"type": "string", "pattern": "^WP-[0-9]{3}$"},
+          "sources": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    }
+  }
+}

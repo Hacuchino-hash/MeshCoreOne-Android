@@ -1,0 +1,384 @@
+import json
+import math
+import sqlite3
+from contextlib import contextmanager
+from dataclasses import dataclass
+from pathlib import Path
+
+from .errors import PortError
+from .paths import conflicts
+from .schema import decode_json, digest, nonempty, positive_integer
+
+STATES = {
+    "pending", "leased", "dispatching", "running", "repair_wait", "review_wait", "gate_wait",
+    "merge_wait", "completed", "blocked", "uncertain",
+}
+HELD = STATES - {"pending", "completed"}
+TRANSITIONS = {
+    "pending": {"leased"},
+    "leased": {"dispatching", "running", "pending", "blocked", "uncertain"},
+    "dispatching": {"running", "review_wait", "uncertain", "blocked"},
+    "running": {"repair_wait", "review_wait", "blocked", "uncertain"},
+    "repair_wait": {"running", "review_wait", "blocked", "uncertain"},
+    "review_wait": {"repair_wait", "gate_wait", "merge_wait", "blocked", "uncertain"},
+    "gate_wait": {"repair_wait", "merge_wait", "blocked", "uncertain"},
+    "merge_wait": {"completed", "repair_wait", "blocked", "uncertain"},
+    "blocked": {"running", "review_wait", "pending", "uncertain"},
+    "uncertain": {"running", "review_wait", "pending", "blocked"},
+    "completed": set(),
+}
+
+
+@dataclass(frozen=True)
+class Identity:
+    issue_number: int | None = None
+    task_id: str | None = None
+    session_id: str | None = None
+    pr_number: int | None = None
+
+    def __post_init__(self):
+        for value in (self.issue_number, self.pr_number):
+            if value is not None:
+                positive_integer(value, "Issue/PR identity")
+        for value in (self.task_id, self.session_id):
+            if value is not None:
+                nonempty(value, "Task/session identity")
+
+    def as_dict(self):
+        return {
+            "issue_number": self.issue_number, "task_id": self.task_id,
+            "session_id": self.session_id, "pr_number": self.pr_number,
+        }
+
+    @classmethod
+    def parse(cls, value: dict):
+        from .schema import fields
+
+        fields(value, {"issue_number", "task_id", "session_id", "pr_number"}, label="worker identity")
+        return cls(**value)
+
+    def reconcile(self, other):
+        result = {}
+        for key, previous in self.as_dict().items():
+            current = other.as_dict()[key]
+            if previous is not None and current is not None and previous != current:
+                raise PortError(f"Conflicting existing {key}; do not launch a duplicate")
+            result[key] = previous if previous is not None else current
+        return Identity(**result)
+
+
+class Ledger:
+    """One durable SQLite ledger shared by both backends, not an Actions runner cache."""
+
+    def __init__(self, path: Path, repository: str):
+        self.path = path
+        self.repository = repository
+        if not path.parent.is_dir():
+            raise PortError("Shared ledger parent must already exist and be access-controlled")
+        with self.transaction() as connection:
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS leases (
+                    repository TEXT NOT NULL, wp TEXT NOT NULL, state TEXT NOT NULL,
+                    attempt TEXT NOT NULL, binding TEXT NOT NULL, backend TEXT NOT NULL,
+                    paths TEXT NOT NULL, expires REAL NOT NULL, reservation REAL NOT NULL,
+                    identity TEXT NOT NULL, repairs INTEGER NOT NULL, completion TEXT,
+                    PRIMARY KEY (repository, wp)
+                )
+            """)
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS operations (
+                    repository TEXT NOT NULL, key TEXT NOT NULL, state TEXT NOT NULL,
+                    payload_hash TEXT NOT NULL, identity TEXT,
+                    PRIMARY KEY (repository, key)
+                )
+            """)
+
+    @contextmanager
+    def transaction(self):
+        connection = sqlite3.connect(self.path, timeout=10, isolation_level=None)
+        connection.row_factory = sqlite3.Row
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            yield connection
+            connection.commit()
+        except BaseException:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    @staticmethod
+    def unpack(row):
+        if row is None:
+            return None
+        value = dict(row)
+        if value["state"] not in STATES:
+            raise PortError("Unknown persisted execution state")
+        for key in ("binding", "paths", "identity", "completion"):
+            if value[key] is not None:
+                value[key] = decode_json(value[key])
+        Identity.parse(value["identity"])
+        return value
+
+    def get(self, wp: str):
+        with self.transaction() as connection:
+            return self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp)
+            ).fetchone())
+
+    def records(self):
+        with self.transaction() as connection:
+            return [self.unpack(row) for row in connection.execute(
+                "SELECT * FROM leases WHERE repository=? ORDER BY wp", (self.repository,)
+            )]
+
+    def claim(self, wp: dict, binding: dict, backend: str, attempt: str, now: float,
+              lease_seconds: int, max_inflight: int, used: float, limit: float, reservation: float,
+              external_active_ids=()):
+        positive_integer(max_inflight, "Concurrency limit")
+        positive_integer(lease_seconds, "Lease duration")
+        if any(type(v) not in (int, float) or not math.isfinite(v) for v in (now, used, limit, reservation)):
+            raise PortError("Lease time/usage terms must be finite numbers")
+        if used < 0 or limit <= 0 or reservation <= 0:
+            raise PortError("Lease usage terms are invalid")
+        if not wp["write_paths"] or not attempt or backend not in ("cloud", "local"):
+            raise PortError("Missing path lease/attempt/backend")
+        with self.transaction() as connection:
+            rows = [self.unpack(row) for row in connection.execute(
+                "SELECT * FROM leases WHERE repository=?", (self.repository,)
+            )]
+            existing = next((row for row in rows if row["wp"] == wp["id"]), None)
+            if existing and existing["state"] != "pending":
+                if existing["binding"] != binding or existing["backend"] != backend:
+                    raise PortError("Existing WP lease is bound to different source/base/manifest/backend")
+                if existing["expires"] < now and existing["state"] in HELD:
+                    connection.execute(
+                        "UPDATE leases SET state='uncertain' WHERE repository=? AND wp=?",
+                        (self.repository, wp["id"]),
+                    )
+                    # Commit uncertainty before returning; expiry must never free a worker's paths.
+                    connection.commit()
+                    raise PortError("Expired lease retains locks; reconcile authoritative worker/PR state")
+                if existing["state"] in ("uncertain", "blocked"):
+                    raise PortError("Existing WP state is uncertain/blocked; inspect, never relaunch")
+                return existing, False
+            held = [row for row in rows if row["state"] in HELD]
+            for row in held:
+                overlap = conflicts(wp["write_paths"], row["paths"])
+                if overlap:
+                    raise PortError(f"All-write-path conflict with {row['wp']}: {overlap}")
+            identities = {
+                value for row in held for key, value in row["identity"].items()
+                if key in ("task_id", "session_id") and value
+            }
+            inflight = len(held) + len(set(external_active_ids) - identities)
+            if inflight >= max_inflight:
+                raise PortError("Concurrency limit reached")
+            if used + sum(row["reservation"] for row in held) + reservation > limit:
+                raise PortError("Usage budget/reservations exhausted")
+            record = {
+                "repository": self.repository, "wp": wp["id"], "state": "leased",
+                "attempt": attempt, "binding": binding, "backend": backend,
+                "paths": wp["write_paths"], "expires": now + lease_seconds,
+                "reservation": reservation, "identity": Identity().as_dict(), "repairs": 0,
+                "completion": None,
+            }
+            connection.execute("""
+                INSERT OR REPLACE INTO leases
+                (repository,wp,state,attempt,binding,backend,paths,expires,reservation,identity,repairs,completion)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                self.repository, wp["id"], "leased", attempt, json.dumps(binding), backend,
+                json.dumps(record["paths"]), record["expires"], reservation,
+                json.dumps(record["identity"]), 0, None,
+            ))
+            return record, True
+
+    def transition(self, wp: str, attempt: str, state: str, identity: Identity | None = None):
+        if state not in STATES:
+            raise PortError(f"Unknown execution state: {state}")
+        if state in ("completed", "pending", "leased"):
+            raise PortError("Claim/release/completion require their validated operations, not a generic transition")
+        with self.transaction() as connection:
+            row = self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp)
+            ).fetchone())
+            if row is None or row["attempt"] != attempt:
+                raise PortError("Missing or stale lease attempt")
+            if state != row["state"] and state not in TRANSITIONS[row["state"]]:
+                raise PortError(f"Invalid execution transition {row['state']} -> {state}")
+            merged = Identity.parse(row["identity"]).reconcile(identity) if identity else Identity.parse(row["identity"])
+            connection.execute(
+                "UPDATE leases SET state=?,identity=? WHERE repository=? AND wp=?",
+                (state, json.dumps(merged.as_dict()), self.repository, wp),
+            )
+
+    def reserve_repair(self, wp: str, attempt: str, repair_limit: int, used: float, limit: float,
+                       reservation: float, current_base: str | None = None):
+        with self.transaction() as connection:
+            row = self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp)
+            ).fetchone())
+            if row is None or row["attempt"] != attempt:
+                raise PortError("Missing or stale repair identity")
+            if row["state"] not in ("running", "review_wait", "gate_wait", "merge_wait"):
+                raise PortError("Repair requires a reconciled existing worker, never an idle guess")
+            if row["repairs"] >= repair_limit:
+                connection.execute(
+                    "UPDATE leases SET state='blocked' WHERE repository=? AND wp=?", (self.repository, wp)
+                )
+                connection.commit()
+                raise PortError("Repair limit reached; needs-human (no additional launch)")
+            total = connection.execute(
+                "SELECT COALESCE(SUM(reservation),0) FROM leases WHERE repository=? AND state NOT IN ('pending','completed')",
+                (self.repository,),
+            ).fetchone()[0]
+            if used + total + reservation > limit:
+                raise PortError("Usage budget blocks repair execution")
+            binding = row["binding"]
+            if current_base is not None:
+                from .model import SHA
+
+                if SHA.fullmatch(current_base) is None:
+                    raise PortError("Repair base must be a verified immutable SHA")
+                binding = {**binding, "base_sha": current_base}
+            connection.execute("""
+                UPDATE leases SET state='repair_wait',repairs=repairs+1,reservation=reservation+?,binding=?,completion=NULL
+                WHERE repository=? AND wp=?
+            """, (reservation, json.dumps(binding), self.repository, wp))
+            return row["repairs"] + 1
+
+    def release(self, wp: str, attempt: str, identity: Identity, worker_state: str,
+                pr_open: bool, authoritative: bool):
+        if authoritative is not True or type(pr_open) is not bool or worker_state not in ("cancelled", "failed", "completed") or pr_open:
+            raise PortError("Release requires authoritative terminal worker and no open implementation PR")
+        with self.transaction() as connection:
+            row = self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp)
+            ).fetchone())
+            if row is None or row["attempt"] != attempt or row["state"] == "completed":
+                raise PortError("Missing/stale/completed lease cannot be released")
+            previous = Identity.parse(row["identity"])
+            previous.reconcile(identity)
+            if previous.task_id and identity.task_id != previous.task_id or previous.session_id and identity.session_id != previous.session_id:
+                raise PortError("Terminal proof omits the actual task/session identity")
+            if not (identity.task_id or identity.session_id):
+                raise PortError("Missing authoritative terminal worker identity")
+            connection.execute(
+                "UPDATE leases SET state='pending',reservation=0,completion=NULL WHERE repository=? AND wp=?",
+                (self.repository, wp),
+            )
+
+    def complete(self, wp: str, attempt: str, proof: dict, authoritative: bool):
+        if authoritative is not True:
+            raise PortError("Offline/model-written evidence cannot authorize completion")
+        with self.transaction() as connection:
+            row = self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp)
+            ).fetchone())
+            if row is None or row["attempt"] != attempt:
+                raise PortError("Missing/stale completion attempt")
+            if row["state"] not in ("review_wait", "gate_wait", "merge_wait", "completed"):
+                raise PortError("Worker execution has not reached verified review/merge state")
+            if proof["binding"]["work_package"] != wp or proof["binding"]["repository"] != self.repository:
+                raise PortError("Completion proof belongs to another WP/repository")
+            for key in ("base_sha", "source_sha", "manifest_sha256", "policy_revision"):
+                if proof["binding"][key] != row["binding"][key]:
+                    raise PortError("Completion proof disagrees with source/base/manifest/policy lease")
+            identity = Identity.parse(row["identity"])
+            if identity.pr_number != proof["pr_number"]:
+                raise PortError("Completion proof belongs to another implementation PR")
+            if row["completion"] is not None and row["completion"] != proof:
+                raise PortError("Conflicting completion evidence")
+            connection.execute(
+                "UPDATE leases SET state='completed',completion=?,reservation=0 WHERE repository=? AND wp=?",
+                (json.dumps(proof), self.repository, wp),
+            )
+
+    def begin_operation(self, key: str, payload: dict):
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT * FROM operations WHERE repository=? AND key=?", (self.repository, key)
+            ).fetchone()
+            if row:
+                if row["payload_hash"] != digest(payload):
+                    raise PortError("Operation identity reused for a different payload")
+                if row["state"] != "confirmed":
+                    raise PortError("Uncertain prior API mutation; reconcile instead of retrying")
+                return decode_json(row["identity"]), False
+            connection.execute(
+                "INSERT INTO operations VALUES (?,?,?,?,NULL)",
+                (self.repository, key, "intent", digest(payload)),
+            )
+            return None, True
+
+    def confirm_operation(self, key: str, identity: dict):
+        with self.transaction() as connection:
+            result = connection.execute(
+                "UPDATE operations SET state='confirmed',identity=? WHERE repository=? AND key=? AND state='intent'",
+                (json.dumps(identity), self.repository, key),
+            )
+            if result.rowcount != 1:
+                raise PortError("Missing or conflicting mutation intent")
+
+    def begin_merge(self, payload: dict):
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT * FROM operations WHERE repository=? AND key='merge-lane'", (self.repository,)
+            ).fetchone()
+            if row and row["state"] != "confirmed":
+                raise PortError("Serialized merge lane is in-flight/uncertain; reconcile rather than retry")
+            if row and row["payload_hash"] == digest(payload):
+                return decode_json(row["identity"]), False
+            connection.execute(
+                "INSERT OR REPLACE INTO operations VALUES (?,'merge-lane','intent',?,NULL)",
+                (self.repository, digest(payload)),
+            )
+            return None, True
+
+    def import_supervised(self, wp: dict, proof: dict, identity: Identity, authoritative: bool):
+        if authoritative is not True or wp["id"] not in ("WP-000", "WP-001", "WP-002", "WP-003"):
+            raise PortError("Only actually verified supervised foundation completions may be imported")
+        if proof["pr_number"] != identity.pr_number or proof["binding"]["work_package"] != wp["id"]:
+            raise PortError("Supervised receipt identity mismatch")
+        if proof["binding"]["repository"] != self.repository:
+            raise PortError("Supervised receipt repository mismatch")
+        with self.transaction() as connection:
+            existing = self.unpack(connection.execute(
+                "SELECT * FROM leases WHERE repository=? AND wp=?", (self.repository, wp["id"])
+            ).fetchone())
+            if existing:
+                if existing["state"] == "completed" and existing["completion"] == proof:
+                    return
+                raise PortError("Existing supervised execution/receipt must be reconciled, not overwritten")
+            binding = {k: v for k, v in proof["binding"].items() if k != "head_sha"}
+            connection.execute("""
+                INSERT INTO leases VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                self.repository, wp["id"], "completed", f"supervised-pr-{proof['pr_number']}",
+                json.dumps(binding), "supervised", json.dumps(wp["write_paths"]), 0, 0,
+                json.dumps(identity.as_dict()), 0, json.dumps(proof),
+            ))
+
+    def recover_merge(self, payload: dict, receipt: dict, authoritative: bool):
+        from .model import SHA
+
+        if authoritative is not True or receipt.get("merged") is not True or not isinstance(receipt.get("sha"), str):
+            raise PortError("Merge recovery requires an actual verified merged-PR receipt")
+        if SHA.fullmatch(receipt["sha"]) is None:
+            raise PortError("Malformed actual merge commit")
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT * FROM operations WHERE repository=? AND key='merge-lane'", (self.repository,)
+            ).fetchone()
+            if row is None or row["payload_hash"] != digest(payload):
+                return False
+            if row["state"] == "confirmed":
+                return True
+            if row["state"] != "intent":
+                raise PortError("Unknown merge-lane state")
+            connection.execute(
+                "UPDATE operations SET state='confirmed',identity=? WHERE repository=? AND key='merge-lane'",
+                (json.dumps(receipt), self.repository),
+            )
+            return True
