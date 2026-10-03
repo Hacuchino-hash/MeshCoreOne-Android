@@ -14,7 +14,7 @@ jobs:
   status:
     name: Dry-run status (no repair launch)
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       ANDROID_PORT_DISPATCH_MODE: off
       ANDROID_PORT_PAUSED: "true"
@@ -26,5 +26,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.12"
+          python-version: "3.12.4"
       - run: python tools/android-port/controller/dispatch.py --dry-run status
+      - name: No repair without authenticated same-worker identity, usage and unpause
+        run: python tools/android-port/controller/gate_runtime.py capabilities

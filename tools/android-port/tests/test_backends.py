@@ -201,7 +201,10 @@ class BackendTests(unittest.TestCase):
 
     def test_repair_targets_existing_pr_and_requires_receipt(self):
         cloud, api, prefix, _ = cloud_fixture()
-        api.routes[("POST", prefix + "/issues/123/comments")] = {"id": 88}
+        api.routes[("POST", prefix + "/issues/123/comments")] = {
+            "id": 88, "body": "@copilot fix bounded case",
+            "issue_url": "https://api.github.com" + prefix + "/issues/123",
+        }
         receipt = cloud.repair(Identity(task_id="task-1", pr_number=123), "fix bounded case")
         self.assertEqual(receipt["task_id"], "task-1")
         self.assertEqual(api.calls[-1][2]["body"], "@copilot fix bounded case")
@@ -332,9 +335,12 @@ class AuthorityTests(unittest.TestCase):
                 "id": index, "name": run["check"], "head_sha": HEAD,
                 "status": "completed", "conclusion": "success", "app": {"id": 10},
                 "details_url": f"https://github.com/{cloud.policy['repository']}/actions/runs/{index}",
+                "check_suite": {"id": 100 + index},
+                "external_id": f"{value.binding.key}:{index}:1",
                 "output": {"summary": GATE_MARKER + json.dumps(payload)} if run["check"] == "gate-integrity" else {},
             })
             api.routes[("GET", prefix + f"/actions/runs/{index}")] = {
+                "id": index, "check_suite_id": 100 + index,
                 "repository": {"full_name": cloud.policy["repository"]}, "workflow_id": 20, "run_attempt": 1,
                 "head_sha": HEAD if run["check"] == "android-ci" else BASE,
                 "event": "pull_request" if run["check"] == "android-ci" else "workflow_dispatch",

@@ -199,6 +199,13 @@ class Controller:
         if observation.ambiguous or not observation.authoritative:
             raise PortError("Repair identity is uncertain")
         identity = known.reconcile(observation.identity)
+        if (
+            not observation.pr_open or identity.pr_number is None
+            or observation.worker_state in ("absent", "unknown", "assignment_accepted")
+            or self.backend.name == "local" and not identity.session_id
+            or self.backend.name == "cloud" and not identity.task_id
+        ):
+            raise PortError("Repair requires an actual existing same worker and open implementation PR")
         expected = self.binding(wp_id, record["binding"]["base_sha"])
         if record["binding"] != expected:
             raise PortError("Repair requires reviewed current source/manifest/policy binding")

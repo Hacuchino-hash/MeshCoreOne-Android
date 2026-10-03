@@ -239,7 +239,10 @@ class CliTests(unittest.TestCase):
         self.assertIn("test_runner.py", bootstrap)
         self.assertNotIn("gradlew", bootstrap)
         self.assertNotIn("secrets.", bootstrap)
-        self.assertFalse((directory / "copilot-setup-steps.yml").exists())
+        from controller.workflows import validate_workflows
+
+        self.assertTrue((directory / "copilot-setup-steps.yml").is_file())
+        self.assertEqual(validate_workflows(REPO)["result"], "valid")
 
     def test_zero_and_skipped_test_runner_results_fail(self):
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):

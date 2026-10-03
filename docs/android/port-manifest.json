@@ -239,9 +239,16 @@
         }
       ],
       "verification": {
-        "configured": false,
-        "commands": [],
-        "blocker": "Exact module commands, trusted check identities and original-case inventory must be approved by supervised CI/test WPs; Gradle/Android CI do not exist in WP-000."
+        "configured": true,
+        "commands": [
+          ["python", "tools/android-port/controller/ci.py", "preflight"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "verify"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "standalone"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "assemble"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "lint"],
+          ["python", "tools/android-port/controller/ci.py", "inspect"]
+        ],
+        "blocker": ""
       }
     },
     {
@@ -285,9 +292,20 @@
         }
       ],
       "verification": {
-        "configured": false,
-        "commands": [],
-        "blocker": "Exact module commands, trusted check identities and original-case inventory must be approved by supervised CI/test WPs; Gradle/Android CI do not exist in WP-000."
+        "configured": true,
+        "commands": [
+          ["python", "tools/android-port/controller/verification_config.py", "--check"],
+          ["python", "tools/android-port/controller/workflows.py"],
+          ["python", "tools/android-port/controller/test_runner.py"],
+          ["python", "tools/android-port/controller/ci.py", "python"],
+          ["python", "tools/android-port/controller/ci.py", "preflight"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "verify"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "standalone"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "assemble"],
+          ["python", "tools/android-port/controller/ci.py", "run", "--stage", "lint"],
+          ["python", "tools/android-port/controller/ci.py", "inspect"]
+        ],
+        "blocker": ""
       }
     },
     {

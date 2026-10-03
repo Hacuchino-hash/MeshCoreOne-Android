@@ -281,11 +281,17 @@ class CloudBackend:
     def repair(self, identity: Identity, prompt: str):
         if not identity.task_id or not identity.pr_number:
             raise PortError("Cloud repair needs the existing task and implementation PR")
+        body = "@copilot " + nonempty(prompt, "Bounded repair feedback")
         result = self.api.request(
             "POST", f"{self.prefix}/issues/{identity.pr_number}/comments",
-            {"body": "@copilot " + nonempty(prompt, "Bounded repair feedback")},
+            {"body": body},
         )
         positive_integer(result.get("id"), "Repair comment receipt")
+        if (
+            result.get("issue_url") != "https://api.github.com" + self.prefix + f"/issues/{identity.pr_number}"
+            or result.get("body") != body
+        ):
+            raise PortError("Repair comment receipt belongs to another PR or feedback")
         return {"comment_id": result["id"], "task_id": identity.task_id, "pr_number": identity.pr_number}
 
     def usage(self, budget: Budget, now: float):
@@ -431,7 +437,9 @@ class MergeBackend:
     def __init__(self, api: Api, policy: dict):
         self.api, self.policy = api, policy
 
-    def merge_exact(self, pr_number: int, expected_head: str, expected_base: str):
+    def merge_exact(self, pr_number: int, expected_head: str, expected_base: str, *, native_stack_id=None):
+        if native_stack_id is not None:
+            raise PortError("Registered native stacks require the asynchronous native stack API, never legacy MergeBackend")
         positive_integer(pr_number, "Merge PR identity")
         if SHA.fullmatch(expected_head) is None or SHA.fullmatch(expected_base) is None:
             raise PortError("Merge requires immutable expected head and current base")

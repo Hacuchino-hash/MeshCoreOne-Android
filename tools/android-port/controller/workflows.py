@@ -1,0 +1,153 @@
+"""AndroidOnly: WP-003 Parse YAML and reject candidate/privileged trust-boundary drift."""
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from controller.errors import PortError
+
+ACTION_PINS = {
+    "actions/checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions/setup-python": "a26af69be951a213d495a4c3e4e4022e16d87065",
+    "actions/upload-artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+    "actions/download-artifact": "d3f86a106a0bac45b974a628896c90dbdf5c8093",
+}
+TRUSTED_WORKFLOWS = (
+    "android-port-dispatch.yml", "android-parity-review.yml",
+    "android-pr-shepherd.yml", "android-gate-integrity.yml",
+)
+
+
+def parse_yaml(text: str):
+    import yaml
+
+    class UniqueLoader(yaml.BaseLoader):
+        def construct_mapping(self, node, deep=False):
+            result = {}
+            for key_node, value_node in node.value:
+                key = self.construct_object(key_node, deep=deep)
+                if not isinstance(key, str) or key in result:
+                    raise PortError("Duplicate/invalid workflow YAML key")
+                result[key] = self.construct_object(value_node, deep=deep)
+            return result
+
+    try:
+        value = yaml.load(text, Loader=UniqueLoader)
+    except yaml.YAMLError as error:
+        raise PortError(f"Malformed workflow YAML: {error}") from error
+    if not isinstance(value, dict):
+        raise PortError("Workflow YAML must be a mapping")
+    return value
+
+
+def validate_boundary(value: dict, text: str):
+    if value.get("permissions") != {"contents": "read"}:
+        raise PortError("Workflow token must have contents:read only")
+    if any(word in text for word in ("secrets.", "pull_request_target", "workflow_run", "self-hosted", "--allow-all", "--live")):
+        raise PortError("Workflow crosses candidate/privileged execution boundary")
+    for job in value.get("jobs", {}).values():
+        if job.get("permissions", {"contents": "read"}) != {"contents": "read"}:
+            raise PortError("Job token permissions were elevated")
+        if job.get("environment") or job.get("container") or job.get("services"):
+            raise PortError("Undeclared environment/shared-service build capability")
+        for step in job.get("steps", []):
+            if step.get("continue-on-error") == "true":
+                raise PortError("Mandatory failure cannot be converted into success")
+            if "uses" in step:
+                name, separator, pin = step["uses"].partition("@")
+                if not separator or ACTION_PINS.get(name) != pin or re.fullmatch(r"[0-9a-f]{40}", pin) is None:
+                    raise PortError("Unreviewed/unpinned workflow action")
+                if name == "actions/checkout" and step.get("with", {}).get("persist-credentials") != "false":
+                    raise PortError("Candidate checkout credentials would persist")
+                if "cache" in name or step.get("with", {}).get("cache"):
+                    raise PortError("Untrusted shared dependency cache is forbidden")
+
+
+def validate_candidate(value: dict, text: str):
+    validate_boundary(value, text)
+    events = value.get("on", {})
+    if not {"pull_request", "merge_group", "push", "workflow_dispatch"}.issubset(events):
+        raise PortError("Required PR/merge-group/push/manual event is missing")
+    if any(key in events[name] for name in ("pull_request", "merge_group") for key in ("paths", "paths-ignore", "branches", "branches-ignore")):
+        raise PortError("Required workflow-level filters can leave android-ci pending")
+    jobs = value.get("jobs", {})
+    if set(jobs) != {"build", "android-ci"}:
+        raise PortError("Missing/unknown mandatory CI job")
+    gate = jobs["android-ci"]
+    if gate.get("name") != "android-ci" or gate.get("if") != "${{ always() }}" or gate.get("needs") != ["build"]:
+        raise PortError("android-ci must always aggregate every required build outcome")
+    build = jobs["build"]
+    matrix = build.get("strategy", {}).get("matrix", {}).get("include")
+    if matrix != [{"host": "linux", "runner": "ubuntu-24.04"}, {"host": "windows", "runner": "windows-2025"}]:
+        raise PortError("Both isolated pinned-label execution hosts are mandatory")
+    if build.get("strategy", {}).get("fail-fast") != "false":
+        raise PortError("One host failure must not suppress the other host's evidence")
+    runs = "\n".join(step.get("run", "") for step in build["steps"])
+    if any("if" in step for step in build["steps"] if "run" in step):
+        raise PortError("Mandatory candidate stages cannot be conditionally skipped")
+    for stage in ("python", "preflight", "run --stage verify", "run --stage standalone", "run --stage assemble", "run --stage lint", "inspect"):
+        if "ci.py " + stage not in runs:
+            raise PortError("Missing real mandatory executor stage: " + stage)
+    if "aggregate --artifacts" not in "\n".join(s.get("run", "") for s in gate["steps"]):
+        raise PortError("Aggregator does not validate immutable evidence")
+
+
+def validate_setup(value: dict, text: str):
+    validate_boundary(value, text)
+    if set(value.get("jobs", {})) != {"copilot-setup-steps"}:
+        raise PortError("Cloud setup requires exactly one copilot-setup-steps job")
+    job = value["jobs"]["copilot-setup-steps"]
+    if set(job) - {"steps", "permissions", "runs-on", "services", "snapshot", "timeout-minutes"}:
+        raise PortError("Unsupported cloud setup job property would be ignored")
+    if job.get("runs-on") != "ubuntu-24.04" or not 1 <= int(job.get("timeout-minutes", "0")) <= 59:
+        raise PortError("Cloud setup needs supported Ubuntu x64 and a <=59 minute budget")
+    runs = "\n".join(step.get("run", "") for step in job["steps"])
+    if any(command not in runs for command in ("ci.py provision", "ci.py preflight", "ci.py run --stage prepare")):
+        raise PortError("Cloud setup must install, check readiness and prepare real strict dependencies")
+
+
+def validate_trusted(value: dict, text: str):
+    validate_boundary(value, text)
+    if set(value.get("on", {})) != {"workflow_dispatch"}:
+        raise PortError("Privileged-duty wrappers must remain manual/default-branch-only")
+    for job in value["jobs"].values():
+        if job.get("if") != "github.ref == format('refs/heads/{0}', github.event.repository.default_branch)":
+            raise PortError("Trusted duty must execute deployed default-branch code")
+        if job.get("name") in ("parity-review", "gate-integrity", "android-ci"):
+            raise PortError("Preview cannot impersonate a required gate")
+        for step in job["steps"]:
+            if step.get("uses", "").startswith("actions/checkout@") and step.get("with", {}).get("ref") != "${{ github.sha }}":
+                raise PortError("Trusted duty checks out candidate code")
+    if value.get("concurrency", {}).get("cancel-in-progress") != "false":
+        raise PortError("Trusted controller operations require a serialized noncancelling lane")
+
+
+def validate_workflows(repo: Path):
+    directory = repo / ".github" / "workflows"
+    for name, validator in (
+        ("android-ci.yml", validate_candidate), ("copilot-setup-steps.yml", validate_setup),
+        *((name, validate_trusted) for name in TRUSTED_WORKFLOWS),
+    ):
+        text = (directory / name).read_text(encoding="utf-8")
+        validator(parse_yaml(text), text)
+    return {"result": "valid", "scope": "YAML/trust-boundary assertions; no live publisher/cloud/branch-rule claim"}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[3])
+    args = parser.parse_args(argv)
+    try:
+        print(__import__("json").dumps(validate_workflows(args.repo), indent=2))
+        return 0
+    except (PortError, OSError, ValueError, ImportError) as error:
+        print(f"BLOCKED: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -3,14 +3,12 @@ import re
 from .backends import CloudBackend
 from .engine import GateBundle
 from .errors import PortError
-from .gates import Binding, policy_revision
+from .gates import Binding, policy_revision, validate_evidence
 from .ledger import Identity
 from .model import Manifest
+from .publication import GATE_MARKER, decode_bundle
 from .render import marker
 from .schema import decode_json, fields, positive_integer
-
-GATE_MARKER = "<!-- android-port-gate-bundle-v1 -->\n"
-
 
 class GitHubGateAuthority:
     """Read server facts and structured output from a separately trusted check publisher.
@@ -47,12 +45,7 @@ class GitHubGateAuthority:
         if publisher.get("app", {}).get("id") != self.policy["trusted_gate_publisher_app_id"]:
             raise PortError("Gate output is not from the isolated trusted publisher")
         summary = publisher.get("output", {}).get("summary")
-        if not isinstance(summary, str) or not summary.startswith(GATE_MARKER):
-            raise PortError("Missing structured trusted gate bundle")
-        payload = decode_json(summary[len(GATE_MARKER):])
-        fields(payload, {"schema_version", "binding", "evidence", "review", "approvals", "catalog"}, label="trusted gate bundle")
-        if type(payload["schema_version"]) is not int or payload["schema_version"] != 1:
-            raise PortError("Unsupported trusted gate bundle schema")
+        payload = decode_bundle(summary)
         fields(payload["binding"], {
             "repository", "work_package", "base_sha", "head_sha", "source_sha",
             "manifest_sha256", "policy_revision",
@@ -77,6 +70,7 @@ class GitHubGateAuthority:
         evidence = payload["evidence"]
         if not isinstance(evidence, dict) or not isinstance(evidence.get("runs"), list):
             raise PortError("Malformed trusted CI evidence")
+        validate_evidence(evidence, binding, self.manifest, self.policy, payload["catalog"])
         for run in evidence["runs"]:
             check = latest.get(run.get("check"))
             if check is None:
@@ -94,6 +88,8 @@ class GitHubGateAuthority:
             expected_runner_sha = head if run["check"] == "android-ci" else binding.base_sha
             expected_events = ("pull_request", "merge_group") if run["check"] == "android-ci" else ("workflow_dispatch",)
             if (
+                actual.get("id") != run.get("run_id")
+                or
                 actual.get("repository", {}).get("full_name") != self.policy["repository"]
                 or actual.get("workflow_id") != run.get("workflow_id")
                 or actual.get("run_attempt") != run.get("run_attempt")
@@ -102,6 +98,14 @@ class GitHubGateAuthority:
                 or actual.get("status") != "completed" or actual.get("conclusion") != "success"
             ):
                 raise PortError("CI run is stale, skipped, untrusted, or executes candidate code with publisher authority")
+            if run["check"] == "android-ci":
+                if (
+                    type(actual.get("check_suite_id")) is not int
+                    or check.get("check_suite", {}).get("id") != actual["check_suite_id"]
+                ):
+                    raise PortError("Required Android check is not part of the claimed actual Actions run")
+            elif check.get("external_id") != f"{binding.key}:{run['run_id']}:{run['run_attempt']}":
+                raise PortError("Trusted publisher check lacks the exact binding/run/attempt external identity")
         changed = []
         for item in self.backend.pages(f"{prefix}/pulls/{number}/files"):
             changed.append(item["filename"])

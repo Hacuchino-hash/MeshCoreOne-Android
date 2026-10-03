@@ -12,6 +12,7 @@ from controller.model import HUMAN_GATES, REFERENCE_SHA, plan_rows, profile, val
 from controller.paths import conflicts, expand_selectors, git_path, overlaps, permits, validate_writes
 from controller.schema import check_schema, decode_json
 from bootstrap import build_inventory, check_generated
+from controller.verification_config import apply_overlay, check_configuration
 
 
 class ManifestTests(unittest.TestCase):
@@ -32,7 +33,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_expander_is_reproducible_not_a_runtime_glob(self):
         data, exclusions = build_inventory(REPO)
-        self.assertEqual(data, base_manifest().data)
+        self.assertEqual(apply_overlay(data), base_manifest().data)
         self.assertEqual(exclusions, base_manifest().exclusions)
         self.assertTrue(all("*" not in e["path"] for e in data["inventory"]))
 
@@ -43,7 +44,9 @@ class ManifestTests(unittest.TestCase):
         with patch("bootstrap.load_json", side_effect=[changed, exclusions]):
             with self.assertRaisesRegex(PortError, "Generated inventory drift"):
                 check_generated(REPO, data, exclusions)
-        check_generated(REPO, data, exclusions)
+        with self.assertRaisesRegex(PortError, "Generated inventory drift"):
+            check_generated(REPO, data, exclusions)
+        self.assertEqual(check_configuration(REPO)["result"], "valid")
 
     def test_every_owner_and_dependency_matches_approved_plan(self):
         plan = plan_rows((REPO / "docs" / "android" / "PORTING_PLAN.md").read_text(encoding="utf-8"))

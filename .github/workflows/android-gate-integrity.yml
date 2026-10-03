@@ -19,7 +19,7 @@ jobs:
   audit:
     name: Offline trusted audit (not gate-integrity)
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CANDIDATE_SHA: ${{ inputs.candidate_sha }}
       ANDROID_PORT_DISPATCH_MODE: off
@@ -32,9 +32,12 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.12"
+          python-version: "3.12.4"
       - name: Validate pinned inventory
         run: python tools/android-port/controller/validate.py
       - name: Audit candidate data without executing it or approving a human gate
         if: inputs.candidate_sha != ''
         run: python tools/android-port/controller/validate.py --gate-base "$GITHUB_SHA" --gate-candidate "$CANDIDATE_SHA"
+      - name: Missing real current-head independent approval/publisher is BLOCKED
+        if: ${{ always() }}
+        run: python tools/android-port/controller/gate_runtime.py capabilities
