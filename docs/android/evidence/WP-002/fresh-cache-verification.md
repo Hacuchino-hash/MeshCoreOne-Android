@@ -3,8 +3,10 @@
 **Same supervised dependent draft, not another WP or a gate/readiness receipt.**
 Repair base/head before this follow-up:
 `d5ee909c6faf9b33440e8249ec0cb774644a381b`; parent remains
-`1214b5cf009705232907790d49d966823e7f410a`. Source, manifest/policy, active
-`draft-WP-002-af6f5c6e-1214b5cf` reservation and managed PR3/base are unchanged.
+`1214b5cf009705232907790d49d966823e7f410a`. During that repair, source,
+manifest/policy, the `draft-WP-002-af6f5c6e-1214b5cf` reservation and managed
+PR3/base were unchanged. That broad reservation has since been released;
+the later narrow classifier grant is recorded below.
 The new non-amended commit SHA is reported in the handoff.
 
 ## Defect and inspected publication inputs
@@ -86,3 +88,63 @@ prove fresh-cache portability. This follow-up proves only the two actual Windows
 resolver topologies, not Linux/CI, publisher-signature/legal acceptance, real
 device/HIL, complete native16KB runtime behavior or any human/feature/release gate.
 All parents remain unmerged and automation remains paused/off.
+
+## Linux AAPT2 publication follow-up
+
+Repair base is `ac227f7e372cb7e20881ba0c9a2c1887695732bb`, under the new
+four-file grant `draft-WP-002-linux-af6f5c6e-ac227f7e`; the earlier broad lease
+remains released. Same owner/worktree/branch/draft PR3 and architecture parent;
+no CI worktree, settings, source pin, human review or activation is changed.
+
+Root metadata previously pinned only the Windows JAR and POM for
+`com.android.tools.build:aapt2:9.4.1-15978811`. Linux AGP selects the different
+`linux` classifier, whose absence would fail strict verification. The official
+Google Maven Linux JAR was independently downloaded and inspected:
+
+- **2,385,035 bytes**, SHA-256
+  `f5bebd466ecf14d341fd465f2756a16d86052f29eb4532003d5ff7bcffd08de5`.
+- Downloaded publisher `.sha1` matched
+  `6ad07b566daaefa1c2721255637ec137c93580a6`; this is supplementary provenance,
+  not a SHA-256 publisher/signature or legal-approval claim.
+- JAR CRC and `aapt2` member checked without extracting or executing the binary.
+  The existing Windows SHA-256 and POM, catalog/lock versions and strict
+  verification settings remain unchanged.
+
+Actual Gradle **strict detached resolution on Windows** also passed. A private
+temporary init script registered `verifyLinuxAapt2Publication` only for this
+invocation; it is not a new product task or committed source file. Its action
+required strict mode, resolved the exact nontransitive
+`com.android.tools.build:aapt2:9.4.1-15978811:linux@jar`, and asserted the single
+JAR's filename, size and SHA-256 above. The essential resolver input was:
+
+```groovy
+def dependency = root.dependencies.create(
+    'com.android.tools.build:aapt2:9.4.1-15978811:linux@jar')
+def classifier = root.configurations.detachedConfiguration(dependency)
+classifier.transitive = false
+def archives = classifier.resolve()
+```
+
+```powershell
+& .\android\scaffold\invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 640m `
+  -BuildMetaspace 512m -BuildCodeCache 96m -GradleArguments @(
+    'verifyLinuxAapt2Publication', '--init-script', $privatePublicationProbe,
+    '--dependency-verification', 'strict', '--no-build-cache', '--quiet')
+
+python -m unittest discover -s .\android\scaffold -p test_*.py -v
+```
+
+The root/build cache was reused for this bounded probe; the Linux classifier
+was initially absent and **not copied** from the independent publisher download.
+Gradle downloaded and verified it into the private cache. No metadata or lock
+generation flags were used. This is actual publication-resolution evidence,
+**not Linux execution/build, native loading, signing or device/HIL proof**.
+
+All **15 metadata/environment assertions passed**, 0 failures/errors/skips:
+the original twelve plus three classifier regressions that preserve both host
+pins, reject missing Linux evidence despite a valid Windows pin, and reject
+substitution of Windows bytes for the Linux checksum. Only the four granted
+tracked files change. Root metadata SHA-256 is now
+`0637626aeec4b9285081027de49229683e790bfd522f0c3fe64e638a1e85ba23`;
+standalone metadata and all dependency locks are unchanged. Actual Linux CI
+execution remains the separately owned future evidence, not an inferred pass.
