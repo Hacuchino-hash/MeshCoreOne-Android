@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-002 Native themed-icon mask reusing pinned incumbent artwork. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/scaffold_icon_background" />
+    <foreground>
+        <inset android:inset="8dp" android:drawable="@drawable/scaffold_icon_foreground" />
+    </foreground>
+    <monochrome>
+        <inset android:inset="8dp" android:drawable="@drawable/scaffold_icon_foreground" />
+    </monochrome>
+</adaptive-icon>

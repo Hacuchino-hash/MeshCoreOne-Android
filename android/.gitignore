@@ -1,0 +1,25 @@
+.gradle/
+# Gradle 9.8 local-file catalog bookkeeping; coordinates are rejected by validateModuleGraph.
+/settings-gradle.lockfile
+.kotlin/
+**/build/
+.idea/
+.cxx/
+.externalNativeBuild/
+local.properties
+**/local.properties
+captures/
+**/captures/
+*.iml
+*.hprof
+hs_err_pid*.log
+replay_pid*.log
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+keystore.properties
+signing.properties
+.env
+.env.*

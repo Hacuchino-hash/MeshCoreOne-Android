@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-002 Shared scaffold copy; not the WP-005 localization port. -->
+<resources>
+    <string name="app_name" translatable="false">MeshCore One</string>
+    <string name="tab_chats">Chats</string>
+    <string name="tab_nodes">Nodes</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_tools">Tools</string>
+    <string name="tab_settings">Settings</string>
+    <string name="scaffold_onboarding_title">Radio setup</string>
+    <string name="scaffold_remote_nodes_title">Remote nodes</string>
+    <string name="scaffold_not_yet_ported">Not yet ported</string>
+    <string name="scaffold_explanation">This is an unavailable build scaffold, not a completed feature.</string>
+    <string name="scaffold_onboarding_description">Radio setup, pairing and permissions have not been ported. This scaffold does not request permissions or connect a radio.</string>
+    <string name="scaffold_chats_description">Messaging is not available in this scaffold. No messages are loaded or sent.</string>
+    <string name="scaffold_nodes_description">Node discovery and contacts have not been ported. No contacts or connected nodes are simulated.</string>
+    <string name="scaffold_remote_nodes_description">Remote node management is unavailable. No login or device-changing command is performed.</string>
+    <string name="scaffold_map_description">Maps are unavailable. No map engine, tile provider or location service is loaded.</string>
+    <string name="scaffold_tools_description">Radio tools are unavailable. No CLI command, trace or scan is performed.</string>
+    <string name="scaffold_settings_description">Preferences and backup restore have not been ported. Translation is unavailable; no engine is linked.</string>
+    <string name="scaffold_connect_radio">Connect radio</string>
+    <string name="scaffold_send_message">Send message</string>
+    <string name="scaffold_discover_nodes">Discover nodes</string>
+    <string name="scaffold_manage_remote_node">Manage remote node</string>
+    <string name="scaffold_open_map">Open map</string>
+    <string name="scaffold_run_radio_tool">Run radio tool</string>
+    <string name="scaffold_translate">Translate</string>
+    <string name="scaffold_back">Back</string>
+</resources>
