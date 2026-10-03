@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "scope": "WP-002 inspected root/included verification publication coverage; not signature or legal acceptance",
+  "reference_commit": "db14559b39d32322b06477c6ae676112f583db50",
+  "repair_base": "d5ee909c6faf9b33440e8249ec0cb774644a381b",
+  "root_metadata_sha256_before": "fac805005dbc77f23f601cac520001da6b80441d5ae985a0a9f63ada0e3d2883",
+  "root_metadata_sha256_after": "54748e59265fa76289ff3d1a8d4154ed1ecf65e9528b1206978b7bdb1ef68e0d",
+  "included_metadata_sha256_unchanged": "0d0edc5230b9cef3a37c3db0e83dee3cfd21e5bf3851a17df18e3dab6a0de5b1",
+  "resolved_versions_changed": false,
+  "dependency_locks_changed": false,
+  "metadata_verification_enabled": true,
+  "verification_mode": "strict",
+  "artifacts": [
+    {
+      "coordinate": "org.junit:junit-bom:5.10.1",
+      "artifact": "junit-bom-5.10.1.pom",
+      "url": "https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.10.1/junit-bom-5.10.1.pom",
+      "sha256": "21c4b0286f4b20069577ff4b20978a85c100ac8a46b6f1c8672fbaab337bc3f2",
+      "publisher_checksum": "sha256 matched",
+      "existing_included_pin_matched": true,
+      "added_to_root": true
+    },
+    {
+      "coordinate": "org.junit:junit-bom:5.10.1",
+      "artifact": "junit-bom-5.10.1.module",
+      "url": "https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.10.1/junit-bom-5.10.1.module",
+      "sha256": "21b0afcfffe2ecb3770f5eb00ae7a19feaee94e771fa3918173850dae78067b7",
+      "publisher_checksum": "sha256 matched",
+      "existing_included_pin_matched": true,
+      "added_to_root": false
+    },
+    {
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.0",
+      "artifact": "kotlinx-coroutines-bom-1.8.0.pom",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.0/kotlinx-coroutines-bom-1.8.0.pom",
+      "sha256": "1239e9dbe1397cd5971342956b2511bc3ace7b641842e4372a088dcfa8b9ad55",
+      "publisher_checksum": "sha256 matched",
+      "existing_included_pin_matched": true,
+      "added_to_root": true
+    },
+    {
+      "coordinate": "com.google.guava:guava-parent:33.4.0-jre",
+      "artifact": "guava-parent-33.4.0-jre.pom",
+      "url": "https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/33.4.0-jre/guava-parent-33.4.0-jre.pom",
+      "sha256": "3a499ed34a0d9ee0f1bcc39230021a1cd4e2f7dd0426ab6844f585465d41dcd7",
+      "publisher_checksum": "sha256 unavailable (HTTP404); sha1 matched as supplementary provenance",
+      "existing_included_pin_matched": true,
+      "added_to_root": true
+    },
+    {
+      "coordinate": "org.junit:junit-bom:5.10.2",
+      "artifact": "junit-bom-5.10.2.module",
+      "url": "https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.10.2/junit-bom-5.10.2.module",
+      "sha256": "de23b114b3e4119a8fe6eb17bed5a3852816698bace67071579d6d927ebb080a",
+      "publisher_checksum": "sha256 matched",
+      "existing_included_pin_matched": true,
+      "added_to_root": true
+    },
+    {
+      "coordinate": "org.junit:junit-bom:5.11.0-M2",
+      "artifact": "junit-bom-5.11.0-M2.module",
+      "url": "https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.11.0-M2/junit-bom-5.11.0-M2.module",
+      "sha256": "86477abcf490d6ca059aa9973cb108d22a506f49d1a5569bb32cc6cbf43c2cce",
+      "publisher_checksum": "sha256 matched",
+      "existing_included_pin_matched": true,
+      "added_to_root": true
+    }
+  ],
+  "fresh_cache_proof": {
+    "composite": {
+      "user_home_initially_absent": true,
+      "project_cache_initially_absent": true,
+      "binary_caches_copied": false,
+      "standalone_warm_up": false,
+      "build_cache_enabled": false,
+      "rerun_tasks": true,
+      "discovered": 47,
+      "passed": 47,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "standalone": {
+      "separate_user_home_initially_absent": true,
+      "project_cache_initially_absent": true,
+      "binary_caches_copied": false,
+      "build_cache_enabled": false,
+      "rerun_tasks": true,
+      "discovered": 31,
+      "passed": 31,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

@@ -43,7 +43,7 @@ $env:ANDROID_USER_HOME = '<private per-session Android user directory>'
 
 python .\android\scaffold\inspect_apk.py
 python .\android\scaffold\sync_notices.py
-python -m unittest discover -s .\android\scaffold -p test_environment.py -v
+python -m unittest discover -s .\android\scaffold -p test_*.py -v
 ```
 
 The launcher allowlists environment names before any candidate Gradle execution.
@@ -126,7 +126,18 @@ Strict lock mode and SHA-256 metadata are enabled. Only explicitly reviewed pin
 changes should run `--write-locks --write-verification-metadata sha256`, exercising
 assembly, required suites and **lint itself** so late SDK configurations are locked.
 Checksum bootstrap is trust-on-first-use except the independently checked wrapper
-distribution/JAR; signatures and human dependency/legal approval are not claimed.
+distribution/JAR and the [reviewed publication-gap inputs](../evidence/WP-002/verification-publications.json);
+signatures and human dependency/legal approval are not claimed.
+
+Root invocation controls verification for the included build; a standalone
+`-BuildLogic` invocation uses that build's own metadata. Both publication formats
+must be covered: a cached `.module` resolution is not evidence that a POM is pinned.
+`test_verification_metadata.py` checks the pinned JUnit BOM POM/module pair and
+that root metadata covers every standalone artifact/checksum. Missing, changed,
+duplicate or disabled verification evidence fails. The [fresh-cache proof](../evidence/WP-002/fresh-cache-verification.md)
+uses separate initially absent user/project caches for both invocation topologies,
+strict mode, `--no-build-cache` and `--rerun-tasks`, without copying binary caches
+or rewriting metadata/locks. Use the same procedure for future protected pin changes.
 
 Gradle's extra local-file catalog resolver emits empty
 `settings-gradle.lockfile` bookkeeping. It is narrowly ignored and graph-guarded:

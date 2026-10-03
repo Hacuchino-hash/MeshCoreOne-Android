@@ -124,6 +124,26 @@ build's settings/project locks. The publisher-pinned distribution/wrapper checks
 are in the build guide. Other artifact metadata was generated TOFU, then exercised
 strictly; dependency signatures/legal approval were not verified.
 
+## Fresh-cache review correction
+
+Initial strict evidence at `d5ee909c` used the preparation cache, not a fresh-cache
+or cross-build proof. Independent review found the controlling root metadata
+missing the JUnit5.10.1 BOM POM despite a complete standalone included-build entry.
+A new empty-cache run also reproduced a missing build-classpath coroutines BOM
+POM. Five exact POM/module publication gaps were independently inspected and
+added to root metadata; no resolved version, lock, policy or verification setting
+changed. The included metadata already contained those exact pins and is unchanged.
+
+[Fresh-cache verification](fresh-cache-verification.md) records both genuinely
+empty-cache topologies: 47 required composite assertions and 31 standalone
+convention assertions passed in strict mode with forced execution. Eight metadata
+regressions plus four environment assertions passed; controller111 and frozen
+generator/reference checks passed again. This supersedes any broader cache-portability
+inference from the original run, not the unchanged APK/feature evidence.
+The current root verification metadata SHA-256 is
+`54748e59265fa76289ff3d1a8d4154ed1ecf65e9528b1206978b7bdb1ef68e0d`;
+the earlier table records the initial reviewed candidate before this repair.
+
 ## Acceptance/source accountability and protected handoff
 
 `WP-002-behavior`, `WP-002-boundaries`, `WP-002-source-test-parity` are **prepared,
