@@ -12,6 +12,7 @@ import java.time.Clock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
+/** The supplied scope and database are process-owned, never a radio-connection generation. */
 class RoomPersistenceStore private constructor(
     private val context: RoomRepositoryContext,
     private val discovered: DiscoveredNodeRepository = DiscoveredNodeRepository(context),

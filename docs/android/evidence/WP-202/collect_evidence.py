@@ -18,6 +18,7 @@ REPORTS = ROOT / "android" / "core" / "data" / "build" / "test-results" / "testD
 PREFIX = "com.meshcoreone.android.core.data.repository."
 DECLARATION = re.compile(r"(?P<annotations>(?:\s*@(?:Test\b|OriginalCase\([^\n]*\))\s*)+)\s*fun\s+(?P<method>\w+)\s*\(")
 ORIGINAL = re.compile(r'@OriginalCase\("([^"\n]+)"(?:,\s*"([^"\n]+)")?\)')
+REVIEWED_MIGRATIONS = "coordinator-reviewed-native-equivalent-Apple-historical-only-exclusion-execution-pending"
 
 
 def git(*args):
@@ -45,6 +46,8 @@ def inventory():
     if len(cases) != 208 or len({case["id"] for case in cases}) != 208:
         raise ValueError("Missing/duplicate original declarations")
     for entry in owned:
+        if git("rev-parse", f"{SOURCE}:{entry['path']}").decode().strip() != entry["blob_sha"]:
+            raise ValueError("Primary source blob mismatch: " + entry["path"])
         raw = git("show", f"{SOURCE}:{entry['path']}")
         actual = ROOT.joinpath(*entry["path"].split("/")).read_bytes()
         if raw.replace(b"\r\n", b"\n") != actual.replace(b"\r\n", b"\n"):
@@ -75,11 +78,14 @@ def bindings():
     return found
 
 
-def proposed_dispositions(originals):
+def migration_dispositions(originals):
     path = OUT / "migration-dispositions.json"
     proposal = json.loads(path.read_text(encoding="utf8"))
-    if proposal["status"] != "proposed-needs-coordinator-review" or proposal["reference_sha"] != SOURCE:
-        raise ValueError("Migration proposal is not an unapproved source-bound request")
+    if proposal["status"] != REVIEWED_MIGRATIONS or proposal["reference_sha"] != SOURCE:
+        raise ValueError("Migration disposition lacks the bounded coordinator decision")
+    decision = proposal["coordinator_decision"]
+    if decision["session"] != "bcb17a74-5fa6-47d0-a4be-b6b595e20559" or decision["reviewed_checkpoint"] != "db02af0b50c4221d95d71616b0ce1c9f491a97c0":
+        raise ValueError("Migration decision session/checkpoint mismatch")
     expected = {case["id"]: case for case in originals}
     proposed = {}
     native_path = ROOT.joinpath(*proposal["native_test_file"].split("/"))
@@ -88,8 +94,8 @@ def proposed_dispositions(originals):
         identity = case["id"]
         if identity in proposed or identity not in expected:
             raise ValueError("Missing/duplicate/unknown migration proposal identity")
-        if any(case[field] != expected[identity][field] for field in ("source", "blob_sha")):
-            raise ValueError("Migration proposal source/blob mismatch")
+        if any(case[field] != expected[identity][field] for field in ("source", "blob_sha", "parameter_family")):
+            raise ValueError("Migration disposition source/blob/family mismatch")
         if not re.search(r"@Test\s+fun\s+" + re.escape(case["native_method"]) + r"\s*\(", native_text):
             raise ValueError("Proposed native assertion is absent: " + identity)
         if not all(case.get(field) for field in ("source_behavior", "native_assertions", "rationale", "proposed_disposition")):
@@ -134,6 +140,17 @@ def report():
     unknown = set(mapped) - expected
     if unknown:
         raise ValueError("Uncataloged original bindings: " + repr(sorted(unknown)))
+    migrations = migration_dispositions(originals)
+    proposal = json.loads((OUT / "migration-dispositions.json").read_text(encoding="utf8"))
+    for identity, case in migrations.items():
+        if identity in mapped:
+            raise ValueError("Reviewed native adaptation cannot be relabeled literal source behavior: " + identity)
+        mapped[identity] = {
+            "class": proposal["native_test_class"], "name": case["native_method"],
+            "path": proposal["native_test_file"],
+            "evidence_kind": "coordinator-reviewed-native-equivalent-and-Apple-historical-only-exclusion",
+            "disposition": case,
+        }
     missing = expected - set(mapped)
     if missing:
         raise ValueError("Unresolved original/native-equivalent dispositions: " + repr(sorted(missing)))
@@ -145,6 +162,24 @@ def report():
             raise ValueError("Missing actual passed assertion: " + case["id"])
         case.update(binding)
         case["native_test"] = native[identity]
+    implementation_paths = git("ls-files", "--", "android/core/data/src/main/kotlin",
+                               "android/core/data/src/test/kotlin").decode().splitlines()
+    source_map = []
+    for entry in owned:
+        outputs = []
+        for relative in implementation_paths:
+            text = ROOT.joinpath(*relative.split("/")).read_text(encoding="utf8")
+            if f"// PortedFrom: {entry['path']}@{SOURCE}" in text:
+                outputs.append(relative)
+        if entry["path"] == "MC1Services/Sources/MC1Services/Services/PersistenceStore+Migration.swift":
+            source_map.append({**entry, "implementation_files": [proposal["native_test_file"]],
+                               "evidence_kind": "eighteen-coordinator-reviewed-v1-adaptations-not-Apple-upgrades",
+                               "disposition_file": "docs/android/evidence/WP-202/migration-dispositions.json"})
+        elif not outputs:
+            raise ValueError("Missing primary input implementation/disposition: " + entry["path"])
+        else:
+            source_map.append({**entry, "implementation_files": outputs,
+                               "evidence_kind": "traceability-only-see-actual-original-and-native-assertions"})
     schema_path = ROOT / "android" / "core" / "database" / "schemas" / (
         "com.meshcoreone.android.core.database.MeshCoreDatabase") / "1.json"
     raw = schema_path.read_bytes()
@@ -155,7 +190,7 @@ def report():
         "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-202",
         "base_sha": BASE, "head_sha": git("rev-parse", "HEAD").decode().strip(), "source_sha": SOURCE,
         "scope": "actual local Room/JUnit only; not formal review, hardware, signing or compatible backup restore",
-        "primary_inputs": owned, "original_cases": originals, "junit_suites": suites,
+        "primary_inputs": source_map, "original_cases": originals, "junit_suites": suites,
         "native_cases": list(native.values()),
         "discovery": {"discovered": len(native), "passed": len(native), "failed": 0, "errors": 0, "skipped": 0},
         "schema": {"version": 1, "entities": 17, "identity_hash": schema["identityHash"],
@@ -171,14 +206,16 @@ def main():
     if args.inventory_only:
         _, cases = inventory()
         mapped = bindings()
-        proposed = proposed_dispositions(cases)
+        proposed = migration_dispositions(cases)
         missing = [case["id"] for case in cases if case["id"] not in mapped]
         if set(missing) != set(proposed):
             raise ValueError("Unbound declarations do not match the exact pending migration proposal")
         print(json.dumps({"scope": "source/annotation inventory only; no executed assertions",
                           "originals": len(cases), "bound": len(mapped),
-                          "proposed_native_dispositions": len(proposed),
-                          "coordinator_approval": False, "unresolved": missing}, indent=2))
+                          "coordinator_reviewed_native_dispositions": len(proposed),
+                          "bounded_code_adaptation_decision": True,
+                          "native_execution_established": False,
+                          "execution_pending": missing}, indent=2))
         return
     result = report()
     if args.write:

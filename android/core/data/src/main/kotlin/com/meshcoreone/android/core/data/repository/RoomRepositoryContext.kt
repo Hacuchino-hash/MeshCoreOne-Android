@@ -23,12 +23,14 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 fun interface RepositoryIssueReporter {
     fun report(operation: String, failure: PersistenceStoreException)
@@ -101,14 +103,16 @@ internal class RoomRepositoryContext(
             ensureOpen()
             if (flushBeforeRollback) flushRxLocked()
             val transaction = RepositoryTransaction(database, clock, pendingRx)
-            val result = database.withTransaction {
+            committedTransaction(
+                afterCommit = {
+                    if (transaction.saves) pendingRx.clear()
+                    transaction.complete()
+                },
+            ) {
                 val value = transaction.block()
                 if (transaction.saves) database.rxLogs().upsert(transaction.pendingRx.values.toList())
                 value
             }
-            if (transaction.saves) pendingRx.clear()
-            transaction.complete()
-            result
         }
     }
 
@@ -124,15 +128,17 @@ internal class RoomRepositoryContext(
             if (!eligible) return@withLock unchanged
             flushRxLocked()
             val transaction = RepositoryTransaction(database, clock, pendingRx)
-            val result = database.withTransaction {
-                if (!transaction.guard()) return@withTransaction unchanged
+            committedTransaction(
+                afterCommit = {
+                    if (transaction.saves) pendingRx.clear()
+                    transaction.complete()
+                },
+            ) {
+                if (!transaction.guard()) return@committedTransaction unchanged
                 val value = transaction.block()
                 if (transaction.saves) database.rxLogs().upsert(transaction.pendingRx.values.toList())
                 value
             }
-            if (transaction.saves) pendingRx.clear()
-            transaction.complete()
-            result
         }
     }
 
@@ -174,16 +180,18 @@ internal class RoomRepositoryContext(
     fun forgetRxCount(radioId: RadioId) { rxCounts.remove(radioId) }
     fun setRxCount(radioId: RadioId, count: Long) { rxCounts[radioId] = count }
 
-    fun <Row, Value> observe(
+    fun <Row, Value : Any> observe(
         operation: String,
         rows: Flow<List<Row>>,
         projection: (List<Row>) -> Value,
     ): Flow<Value> = channelFlow {
-        ensureOpen()
+        access(operation, writing = false) { mutex.withLock { ensureOpen() } }
         val collector = launch {
-            rows.collect { values ->
-                ensureOpen()
-                send(access(operation, writing = false) { projection(values) })
+            access(operation, writing = false) {
+                rows.collect { values ->
+                    val projected = mutex.withLock { if (closed) null else projection(values) }
+                    if (projected != null) send(projected)
+                }
             }
         }
         val completion = launch {
@@ -204,12 +212,13 @@ internal class RoomRepositoryContext(
     private fun scheduleFlush() {
         if (flushTask != null) return
         val job = scope.launch(start = CoroutineStart.LAZY) {
+            val current = currentCoroutineContext()[Job]
             delay(RxLogRetention.flushInterval.toMillis())
             try {
                 flushRx()
             } catch (cause: PersistenceStoreException) {
                 // access() already reported the typed failure; retain the batch for explicit retry.
-                mutex.withLock { flushTask = null }
+                mutex.withLock { if (flushTask == current) flushTask = null }
             }
         }
         flushTask = job
@@ -222,7 +231,15 @@ internal class RoomRepositoryContext(
         if (flushTask != caller) flushTask?.cancel()
         flushTask = null
         val pruned = LinkedHashMap<RadioId, Long>()
-        database.withTransaction {
+        val nextSaveCount = checkedIncrement(rxInitiatedSaveCount)
+        committedTransaction(
+            afterCommit = {
+                pendingRx.clear()
+                rxInsertsSinceFlush = 0
+                rxInitiatedSaveCount = nextSaveCount
+                rxCounts.putAll(pruned)
+            },
+        ) {
             database.rxLogs().upsert(pendingRx.values.toList())
             for (radio in rxCounts.keys) {
                 val count = database.rxLogs().count(radio.value)
@@ -236,10 +253,43 @@ internal class RoomRepositoryContext(
                 }
             }
         }
-        pendingRx.clear()
-        rxInsertsSinceFlush = 0
-        rxInitiatedSaveCount = checkedIncrement(rxInitiatedSaveCount)
-        rxCounts.putAll(pruned)
+    }
+
+    private suspend fun <T> committedTransaction(afterCommit: () -> Unit, block: suspend () -> T): T {
+        val caller = currentCoroutineContext()
+        val worker = Job()
+        val cancellation = Job(caller[Job])
+        val phase = Any()
+        var committing = false
+        val listener = cancellation.invokeOnCompletion { cause ->
+            if (cause != null) synchronized(phase) {
+                if (!committing) {
+                    worker.cancel(cause as? CancellationException
+                        ?: CancellationException("Persistence transaction owner cancelled").also { it.initCause(cause) })
+                }
+            }
+        }
+        try {
+            val value = withContext(caller + worker) {
+                val result = database.withTransaction {
+                    val staged = block()
+                    synchronized(phase) {
+                        caller.ensureActive()
+                        committing = true
+                    }
+                    staged
+                }
+                // Only the final Room commit and bounded in-memory bookkeeping survive late cancellation.
+                afterCommit()
+                result
+            }
+            caller.ensureActive()
+            return value
+        } finally {
+            listener.dispose()
+            cancellation.complete()
+            worker.complete()
+        }
     }
 
     private suspend fun <T> access(operation: String, writing: Boolean, block: suspend () -> T): T = try {

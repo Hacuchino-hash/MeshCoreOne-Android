@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "work_package": "WP-202",
+  "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "scope": "Independent expected facts only; no candidate-generated goldens, Swift/macOS execution, backup restore or reference-pin change.",
+  "foundation_date_distant_past": {
+    "api": "Foundation.Date.distantPast (Swift value type)",
+    "repository": "swiftlang/swift-foundation",
+    "tag": "swift-6.2-RELEASE",
+    "revision": "a1c611f6ecc0164b5a489f23013e5c637e9e5cd1",
+    "path": "Sources/FoundationEssentials/Date.swift",
+    "source_url": "https://raw.githubusercontent.com/swiftlang/swift-foundation/a1c611f6ecc0164b5a489f23013e5c637e9e5cd1/Sources/FoundationEssentials/Date.swift",
+    "source_utf8_sha256": "7c8c9cab07bdf8e7b465ef284b13bca10e5715ebda4eaaae53e1c31a788c63c2",
+    "epoch_offset_line": 42,
+    "epoch_offset_seconds": 978307200,
+    "distant_past_line": 164,
+    "reference_epoch_seconds": -63114076800,
+    "independent_unix_seconds": -62135769600,
+    "derivation": "-63114076800 + 978307200 = -62135769600; production Room storage remains Unix seconds/nanos.",
+    "not_used_nsdate_class_constant": {
+      "repository": "swiftlang/swift-corelibs-foundation",
+      "revision": "edfa17dd3623877a38967ae3edd356942fe4f655",
+      "path": "Sources/Foundation/NSDate.swift",
+      "source_utf8_sha256": "5169aa40dcaed373036465e439d785dceec6277248b5aef84141a821222e09a0",
+      "reference_epoch_seconds": -63113904000,
+      "reason": "The published NSDate class constant differs by two days; the frozen original assertions explicitly use Swift Date.distantPast. It is not substituted for the value-type constant."
+    },
+    "runtime_limit": "Published immutable first-party Foundation source facts, not an executed Apple SDK/macOS oracle. The existing frozen Swift/macOS backup oracle has not been modified or relabeled."
+  },
+  "content_based_deduplication": {
+    "source": "MC1Services/Sources/MC1Services/Utilities/DeduplicationKey.swift",
+    "algorithm": "SHA256 over exact UTF8 content; uppercase first four digest bytes; canonical uppercase UUID segment and UInt32 decimal timestamp.",
+    "independent_engine": "Python3.12 standard hashlib, without importing or running candidate Kotlin",
+    "vectors": [
+      {
+        "text": "Hello mesh",
+        "timestamp": 1704067200,
+        "contact_uuid": "00000000-0000-0000-0000-000000000003",
+        "expected_key": "dm-00000000-0000-0000-0000-000000000003-1704067200-41ABEB9C"
+      },
+      {
+        "text": "H\u00e9llo mesh \ud83c\udf0d",
+        "utf8_hex": "48c3a96c6c6f206d65736820f09f8c8d",
+        "timestamp": 1704067200,
+        "contact_uuid_input": "a1b2c3d4-e5f6-4789-abcd-0123456789ef",
+        "sha256": "eb435a94b409517603ca63440a5a9b34c814b8cfd507d26e6da1a76b16ddc94f",
+        "expected_key": "dm-A1B2C3D4-E5F6-4789-ABCD-0123456789EF-1704067200-EB435A94"
+      }
+    ]
+  }
+}

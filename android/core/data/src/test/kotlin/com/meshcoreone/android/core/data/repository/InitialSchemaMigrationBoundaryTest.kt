@@ -22,6 +22,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
+    // Independently pinned Foundation.Date facts and epoch arithmetic: WP-202/independent-vector-provenance.json.
+    private val foundationDistantPast = Instant.ofEpochSecond(-62_135_769_600)
+
     private fun legacyChannel(index: UByte, region: String?, mode: String? = null): ChannelDTO =
         ChannelDTO.fromLegacyFields(
             UUID.randomUUID(), RADIO_A, index, "Chan$index", Bytes(ByteArray(16)), true, null, 0,
@@ -122,6 +125,15 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
         store.warmUp()
         assertEquals(expected, assertNotNull(store.fetchMessage(entity(id = keyed.id))).deduplicationKey)
         assertNull(assertNotNull(store.fetchMessage(entity(id = unkeyed.id))).deduplicationKey)
+        val letterId = UUID.fromString("a1b2c3d4-e5f6-4789-abcd-0123456789ef")
+        val utf8 = "H\u00e9llo mesh \uD83C\uDF0D"
+        val letterExpected = "dm-A1B2C3D4-E5F6-4789-ABCD-0123456789EF-1704067200-EB435A94"
+        assertEquals(Bytes.of(0x48, 0xC3, 0xA9, 0x6C, 0x6C, 0x6F, 0x20, 0x6D, 0x65, 0x73, 0x68, 0x20, 0xF0, 0x9F, 0x8C, 0x8D),
+            Bytes.utf8(utf8))
+        assertEquals(letterExpected, RepositoryDeduplicationKey.contentBased(letterId, null, null, timestamp, utf8))
+        val letterMessage = message(contactID = letterId, text = utf8, timestamp = timestamp).copy(deduplicationKey = letterExpected)
+        store.saveMessage(letterMessage)
+        assertEquals(letterExpected, assertNotNull(store.fetchMessage(entity(id = letterMessage.id))).deduplicationKey)
     }
 
     @Test fun incomingNilAndExistingDedupKeysArePreservedAcrossWarmup() = runTest {
@@ -180,11 +192,15 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
     @Test fun repeatedWarmupDoesNotClearLaterRepeaterCounters() = runTest {
         val repeater = contact().copy(typeRawValue = ContactType.REPEATER.rawValue)
         store.saveContact(repeater)
+        val historicalSeven = contact(id = UUID.randomUUID(), publicKey = key(7))
+            .copy(typeRawValue = ContactType.REPEATER.rawValue, unreadCount = 7)
+        store.saveContact(historicalSeven)
         store.warmUp()
         store.incrementUnreadCount(entity())
         store.warmUp()
         store.warmUp()
         assertEquals(1L, assertNotNull(store.fetchContact(entity())).unreadCount)
+        assertEquals(7L, assertNotNull(store.fetchContact(entity(id = historicalSeven.id))).unreadCount)
         assertEquals(0L, store.getTotalUnreadCounts(RADIO_A).contacts)
     }
 
@@ -192,13 +208,20 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
         val dates = listOf(Instant.ofEpochSecond(-1, 500_000_000), AT.plusNanos(1), AT.plusNanos(999_999_999))
         val messages = dates.map { message(timestamp = 1u, createdAt = it) }
         for (m in messages) store.saveMessage(m)
+        val sourceRows = listOf(
+            message(text = "Hello", timestamp = 1_704_067_200u, createdAt = Instant.ofEpochSecond(1_704_067_200)),
+            message(text = "World", timestamp = 1_704_070_800u, createdAt = Instant.ofEpochSecond(1_704_070_800)),
+        )
+        for (m in sourceRows) store.saveMessage(m)
         store.warmUp()
-        for (m in messages) {
+        for (m in messages + sourceRows) {
             val stored = assertNotNull(store.fetchMessage(entity(id = m.id)))
             assertEquals(m.createdAt, stored.createdAt)
             assertEquals(m.createdAt, stored.sortDate)
         }
-        assertEquals(dates, store.fetchMessages(entity()).map { it.sortDate })
+        assertEquals(dates + listOf(Instant.ofEpochSecond(1_704_067_200), Instant.ofEpochSecond(1_704_070_800)),
+            store.fetchMessages(entity()).map { it.sortDate })
+        assertEquals(listOf("Hello", "World"), store.fetchMessages(entity()).takeLast(2).map { it.text })
     }
 
     @Test fun explicitSortDatesSurviveRepeatedWarmupAndTheSameNativeSchemaReopen() = runTest {
@@ -209,10 +232,19 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
         var repository = RoomPersistenceStore(file, owner, clock)
         try {
             val m = message().copy(sortDate = AT.minusSeconds(3600).plusNanos(7))
+            val buried = message(text = "Buried backlog", timestamp = 1_700_000_000u,
+                createdAt = Instant.ofEpochSecond(1_704_067_200)).copy(sortDate = Instant.ofEpochSecond(1_700_000_000))
+            val laterReskew = message(text = "Hello", timestamp = 1_704_067_200u,
+                createdAt = Instant.ofEpochSecond(1_704_067_200)).copy(sortDate = foundationDistantPast)
             repository.saveMessage(m)
+            repository.saveMessage(buried)
+            repository.saveMessage(laterReskew)
             repository.warmUp()
             repository.warmUp()
             assertEquals(m.sortDate, assertNotNull(repository.fetchMessage(entity(id = m.id))).sortDate)
+            assertEquals(Instant.ofEpochSecond(1_700_000_000),
+                assertNotNull(repository.fetchMessage(entity(id = buried.id))).sortDate)
+            assertEquals(foundationDistantPast, assertNotNull(repository.fetchMessage(entity(id = laterReskew.id))).sortDate)
             repository.close()
             file.close()
             file = open()
@@ -221,6 +253,14 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
             val preserved = assertNotNull(repository.fetchMessage(entity(id = m.id)))
             assertEquals(m.createdAt, preserved.createdAt)
             assertEquals(m.sortDate, preserved.sortDate)
+            val preservedBuried = assertNotNull(repository.fetchMessage(entity(id = buried.id)))
+            assertEquals("Buried backlog", preservedBuried.text)
+            assertEquals(Instant.ofEpochSecond(1_704_067_200), preservedBuried.createdAt)
+            assertEquals(Instant.ofEpochSecond(1_700_000_000), preservedBuried.sortDate)
+            val preservedReskew = assertNotNull(repository.fetchMessage(entity(id = laterReskew.id)))
+            assertEquals("Hello", preservedReskew.text)
+            assertEquals(Instant.ofEpochSecond(1_704_067_200), preservedReskew.createdAt)
+            assertEquals(foundationDistantPast, preservedReskew.sortDate)
             assertEquals(1, file.openHelper.readableDatabase.version)
         } finally {
             repository.close()

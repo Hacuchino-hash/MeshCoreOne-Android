@@ -24,6 +24,8 @@ interface RemoteNodeSessionDao : RowWriter<RemoteNodeSessionEntity> {
     suspend fun markDisconnected(radioId: UUID, id: UUID): Int
     @Query("UPDATE remote_node_sessions SET isConnected = 1 WHERE radioId = :radioId AND id = :id AND isConnected = 0")
     suspend fun markConnected(radioId: UUID, id: UUID): Int
+    @Query("UPDATE remote_node_sessions SET isConnected = 0")
+    suspend fun resetAllConnections(): Int
     @Query("SELECT COUNT(*) FROM remote_node_sessions WHERE publicKey = :key")
     suspend fun globalReferenceCount(key: Bytes): Long
     @Query("DELETE FROM remote_node_sessions WHERE radioId = :radioId AND id = :id")

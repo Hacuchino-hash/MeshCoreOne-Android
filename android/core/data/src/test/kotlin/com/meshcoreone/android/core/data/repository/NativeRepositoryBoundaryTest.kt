@@ -17,10 +17,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -69,6 +69,41 @@ class NativeRepositoryBoundaryTest : RepositoryTest() {
         assertNotNull(store.fetchMessage(entity(id = mb.id)))
     }
 
+    @Test fun cancellationAtTheRoomCommitReturnCannotResurrectDeletedDiagnosticRows() = runTest {
+        var operationToCancel: kotlinx.coroutines.Job? = null
+        val immediate = Executor { it.run() }
+        val cancellingCommitExecutor = Executor { command ->
+            command.run()
+            operationToCancel?.cancel(CancellationException("Controlled post-commit return cancellation"))
+        }
+        val database = Room.inMemoryDatabaseBuilder(context, MeshCoreDatabase::class.java)
+            .allowMainThreadQueries().setQueryExecutor(immediate).setTransactionExecutor(cancellingCommitExecutor).build()
+        val repository = RoomRepositoryContext(database, clock, owner, RepositoryIssueReporter { _, failure -> issues += failure })
+        try {
+            val entry = rx()
+            repository.saveRx(entry.toEntity())
+            assertNull(database.rxLogs().byId(RADIO_A.value, entry.id))
+            val operation = launch(start = CoroutineStart.UNDISPATCHED) {
+                operationToCancel = currentCoroutineContext()[kotlinx.coroutines.Job]
+                repository.write("controlledCommittedRxDeletion") {
+                    database.rxLogs().clearRadio(RADIO_A.value)
+                    pendingRx.clear()
+                    save()
+                }
+            }
+            operation.join()
+            operationToCancel = null
+            assertTrue(operation.isCancelled)
+            assertEquals(0L, database.rxLogs().count(RADIO_A.value))
+            repository.flushRx()
+            assertEquals(0L, database.rxLogs().count(RADIO_A.value))
+        } finally {
+            operationToCancel = null
+            repository.close()
+            database.close()
+        }
+    }
+
     @Test fun concurrentCountersAndSnapshotCapturesPreserveAllUpdates() = runTest {
         store.saveContact(contact())
         (1..20).map { async { store.incrementUnreadCount(entity()) } }.awaitAll()
@@ -107,11 +142,13 @@ class NativeRepositoryBoundaryTest : RepositoryTest() {
         val observer = launch(start = CoroutineStart.UNDISPATCHED) {
             store.observeContacts(RADIO_A).collect { seen += it.map { c -> c.name } }
         }
-        advanceUntilIdle()
+        val ownedEmission = async(start = CoroutineStart.UNDISPATCHED) {
+            store.observeContacts(RADIO_A).first { values -> values.any { it.name == "Owned" } }
+        }
+        assertTrue(store.observeContacts(RADIO_A).first().isEmpty())
         store.saveContact(contact(RADIO_B, name = "Other"))
         store.saveContact(contact(name = "Owned"))
-        advanceUntilIdle()
-        assertEquals(listOf("Owned"), store.observeContacts(RADIO_A).first().map { it.name })
+        assertEquals(listOf("Owned"), ownedEmission.await().map { it.name })
         assertFalse(seen.flatten().contains("Other"))
         store.close()
         observer.join()
@@ -138,20 +175,30 @@ class NativeRepositoryBoundaryTest : RepositoryTest() {
     }
 
     @Test fun processResetIncludesOrphanSessionsAndBlockedSenderDeleteRemovesOnlyOneDuplicate() = runTest {
+        store.saveDevice(device())
         val a = session().copy(isConnected = true, permissionLevel = RoomPermissionLevel.ADMIN)
         val orphan = session(RADIO_B).copy(isConnected = true, permissionLevel = RoomPermissionLevel.READ_WRITE)
+        assertNull(store.fetchDevice(RADIO_B))
         store.saveRemoteNodeSessionDTO(a)
         store.saveRemoteNodeSessionDTO(orphan)
         store.resetAllRemoteNodeSessionConnections()
         assertFalse(assertNotNull(store.fetchRemoteNodeSession(entity(id = a.id))).isConnected)
         assertFalse(assertNotNull(store.fetchRemoteNodeSession(entity(RADIO_B, orphan.id))).isConnected)
         assertEquals(RoomPermissionLevel.ADMIN, assertNotNull(store.fetchRemoteNodeSession(entity(id = a.id))).permissionLevel)
-        val first = BlockedChannelSenderDTO(name = "Duplicate", radioId = RADIO_A, dateBlocked = AT)
-        val second = first.copy(id = UUID.randomUUID())
+        assertEquals(RoomPermissionLevel.READ_WRITE,
+            assertNotNull(store.fetchRemoteNodeSession(entity(RADIO_B, orphan.id))).permissionLevel)
+        val first = BlockedChannelSenderDTO(
+            UUID.fromString("00000000-0000-0000-0000-00000000000A"), "Duplicate", RADIO_A, AT)
+        val second = first.copy(id = UUID.fromString("00000000-0000-0000-0000-00000000000B"), dateBlocked = AT.plusNanos(1))
+        val otherCase = first.copy(id = UUID.fromString("00000000-0000-0000-0000-00000000000C"), name = "DUPLICATE")
         db.blockedSenders().insert(first.toEntity())
         db.blockedSenders().insert(second.toEntity())
+        db.blockedSenders().insert(first.copy(radioId = RADIO_B).toEntity())
+        db.blockedSenders().insert(otherCase.toEntity())
         store.deleteBlockedChannelSender(RADIO_A, "Duplicate")
-        assertEquals(1, store.fetchBlockedChannelSenders(RADIO_A).size)
+        assertEquals(setOf(second.id, otherCase.id), store.fetchBlockedChannelSenders(RADIO_A).map { it.id }.toSet())
+        assertEquals(listOf(first.id), store.fetchBlockedChannelSenders(RADIO_B).map { it.id })
+        assertEquals(AT.plusNanos(1), store.fetchBlockedChannelSenders(RADIO_A).first().dateBlocked)
     }
 
     @Test fun directCorrelationAndRedecryptionRetainTheReviewedSourceOrdering() = runTest {
