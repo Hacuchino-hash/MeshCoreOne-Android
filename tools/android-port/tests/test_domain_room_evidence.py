@@ -273,6 +273,14 @@ class DomainRoomEvidenceTests(unittest.TestCase):
         path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
         self.assertEqual(self.report()["discovery"]["total"], 215)
 
+    def test_python_collector_crlf_is_git_text_but_changed_code_is_not(self):
+        path = self.fixture.repo / "docs/android/evidence/WP-201/collect_evidence.py"
+        path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+        self.assertEqual(self.report()["discovery"]["total"], 215)
+        path.write_bytes(path.read_bytes() + b"\r\n# uncommitted collector code\r\n")
+        with self.assertRaisesRegex(PortError, "differs.*immutable Git"):
+            self.report()
+
     def test_missing_zero_malformed_and_unsafe_xml_fail_closed(self):
         for kind in ("missing", "zero", "malformed", "doctype", "entity", "suite-root"):
             reports = self.fixture.reports()

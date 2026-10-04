@@ -46,7 +46,7 @@ CONTROL_INPUTS = {
     HISTORY, SCHEMA, "docs/android/test-cases.json", "docs/android/port-manifest.json",
     "docs/android/automation-policy.json", "docs/android/evidence/WP-201/collect_evidence.py",
 }
-TEXT_SUFFIXES = {".swift", ".kt", ".java", ".kts", ".json", ".xml", ".md", ".txt", ".properties", ".lockfile"}
+TEXT_SUFFIXES = {".swift", ".kt", ".java", ".kts", ".py", ".json", ".xml", ".md", ".txt", ".properties", ".lockfile"}
 
 
 def sha(data):
