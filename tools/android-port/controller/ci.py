@@ -37,6 +37,7 @@ TASKS = {
     "assemble": [":app:assembleDebug"],
     "lint": ["lintScaffold"],
     "prepare": ["resolveScaffoldDependencies"],
+    "protocol": [":core:protocol:test"],
 }
 
 
@@ -193,6 +194,13 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             destination = output / lint_bundle_path(target)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / "android" / target / "build" / "reports" / "lint-results-debug.xml", destination)
+    elif stage == "protocol":
+        source = REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test"
+        report["suite"] = suite_counts(source, 84)
+        destination = output / "junit" / "protocol"
+        destination.mkdir(parents=True, exist_ok=True)
+        for xml in sorted(source.glob("TEST-*.xml")):
+            shutil.copyfile(xml, destination / xml.name)
     write_json(output / f"stage-{stage}.json", report)
 
 
