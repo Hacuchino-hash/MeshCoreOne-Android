@@ -14,6 +14,16 @@
   "initial_clean_base_sha": "01d2852a45e152efcf1176607ddebd26ff1bc672",
   "verified_integration_base_sha": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
   "base_update_authorization": "Coordinator verified merged CI-only PR16 at 0394b83c9b47fa0d7198e2d631f7ddb313cd370d. Only this owning branch was fast-forwarded after fetching and comparing the exact remote SHA; all owned untracked session/evidence files were preserved. No protocol API or dependency changed.",
+  "current_verified_integration_base_sha": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
+  "current_base_reconciliation": {
+    "authorization": "Coordinator explicitly required same-owning-PR19 reconciliation onto independently verified actually merged main dc15f1ba445acf3230383ea68d4827c592f3fafa, preserving historical head/base and the original 85-case catalog. No extra session, source-scope or shared write authority was granted.",
+    "historical_head_sha": "ce93bfaa22b438aed7e8b7a903a611270a985cd3",
+    "historical_base_sha": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
+    "verified_old_live_remote_tip": "ce93bfaa22b438aed7e8b7a903a611270a985cd3",
+    "rebased_component_commit_sha": "3989604bf24a7b4a306265d4def3bdf49a67592e",
+    "protocol_production_and_tests_byte_identical": true,
+    "publication": "Same owning branch and ordinary non-draft PR19; explicit exact-old-tip force-with-lease is required for the rebased push. Prior local/hosted evidence remains historical, never reused as current-base authority."
+  },
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "source_tree_sha": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",

@@ -1,5 +1,20 @@
 # WP-107 complete JVM session component
 
+**Current reconciliation:** the owning branch has been rebased onto the
+coordinator-verified actual main `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
+Protocol production and test bytes are unchanged from historical head
+`ce93bfaa22b438aed7e8b7a903a611270a985cd3`. The prior0394-base results below
+remain historical, not current-base authority. Fresh proof is retained
+separately in [reconciled-dc15](reconciled-dc15/README.md).
+
+The full current-base protocol, model166, Room45, neutral4, locale25 and
+actual integrated APK pass locally. **The root aggregate remains blocked**:
+the newly merged WP-201 collector's global WP-201-only candidate-write guard
+rejects this correctly scoped WP-107 PR. No unowned guard/hook was removed or
+bypassed; its exact source blob/failure and coordinator amendment request
+are recorded separately. Current-head ordinary hosted proof must not be
+represented by the old successful0394-base runs.
+
 Repository `cbattlegear/MeshCoreOne-Android`; owner `protocol-porter`.
 Runtime owner `ab9b53e0-bebf-422f-980b-819caef0b1cf`, native project-session
 alias `44411fac-bbc0-4adc-bed3-39cd46866936`, dedicated branch

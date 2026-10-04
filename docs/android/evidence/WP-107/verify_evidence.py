@@ -20,7 +20,10 @@ from controller.paths import validate_writes
 from controller.schema import load_json
 from portmap import port_map
 
-BASE = "0394b83c9b47fa0d7198e2d631f7ddb313cd370d"
+BASE_OUTPUTS = {
+    "0394b83c9b47fa0d7198e2d631f7ddb313cd370d": DIRECTORY,
+    "dc15f1ba445acf3230383ea68d4827c592f3fafa": DIRECTORY / "reconciled-dc15",
+}
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 SESSION_SUITES = {
     "CrossComponentSessionCasesTest": 12,
@@ -66,7 +69,7 @@ def canonical(path):
     return path.read_bytes().replace(b"\r\n", b"\n")
 
 
-def parse_reports(directory):
+def parse_reports(directory, report_prefix="junit/protocol/"):
     files = sorted(directory.glob("TEST-*.xml"))
     if not files:
         raise ValueError("Missing mandatory protocol XML")
@@ -93,7 +96,7 @@ def parse_reports(directory):
         for key in totals:
             totals[key] += observed[key]
         suites.append({"suite": root.attrib["name"], **observed,
-                       "report": "junit/protocol/" + path.name, "sha256_lf": sha(canonical(path))})
+                       "report": report_prefix + path.name, "sha256_lf": sha(canonical(path))})
     session = {entry["suite"].rsplit(".", 1)[1]: entry["tests"] for entry in suites if ".protocol.session." in entry["suite"]}
     if session != SESSION_SUITES or totals["tests"] != 4674 or len(files) != 56:
         raise ValueError("Missing/stale complete 4445-baseline plus 229-session evidence")
@@ -188,16 +191,74 @@ def artifact(path):
     return {"path": path.relative_to(REPO).as_posix(), "size_bytes": path.stat().st_size, "sha256": sha(path.read_bytes())}
 
 
+def integration_reports(output, write):
+    from controller.module_junit import module_sources
+
+    committed = module_sources(REPO)
+    modules = {
+        "model": ("test", 166),
+        "contracts": ("test", 4),
+        "database": ("testDebugUnitTest", 45),
+        "l10n": ("testDebugUnitTest", 25),
+    }
+    result = {}
+    for module, (task, expected_count) in modules.items():
+        directory = REPO / "android" / "core" / module / "build" / "test-results" / task
+        files = sorted(directory.glob("TEST-*.xml"))
+        if not files:
+            raise ValueError("Missing current-base integration XML: " + module)
+        identities, reports = set(), []
+        for path in files:
+            root = ET.parse(path).getroot()
+            cases = root.findall("testcase")
+            if root.tag != "testsuite" or not cases or len(cases) != int(root.attrib["tests"]):
+                raise ValueError("Malformed integration XML: " + path.name)
+            if any(int(root.attrib[key]) for key in ("failures", "errors", "skipped")):
+                raise ValueError("Nonpassing integration XML: " + path.name)
+            for case in cases:
+                if any(case.find(kind) is not None for kind in ("failure", "error", "skipped")):
+                    raise ValueError("Nonpassing integration case: " + path.name)
+                identity = (case.attrib["classname"], case.attrib["name"])
+                if identity in identities:
+                    raise ValueError("Duplicate integration case: " + str(identity))
+                identities.add(identity)
+            raw = path.read_bytes()
+            stored = raw.replace(b"\r\n", b"\n")
+            target = output / "junit" / "integration" / module / path.name
+            if write:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(stored)
+            elif canonical(target) != stored:
+                raise ValueError("Stored current-base module XML differs from actual runner")
+            reports.append({
+                "path": target.relative_to(REPO).as_posix(), "size_bytes": len(stored), "sha256": sha(stored),
+                "original_runner_size_bytes": len(raw), "original_runner_sha256": sha(raw),
+            })
+        if len(identities) != expected_count:
+            raise ValueError(f"Incomplete current-base {module} unit discovery: {len(identities)}")
+        result[module] = {
+            "tests": expected_count, "failed": 0, "errors": 0, "skipped": 0,
+            "complete_raw_reports": reports,
+            "candidate_input_blobs": committed.get("core/" + module),
+            "input_binding_scope": "committed generic module inputs" if module != "contracts" else "existing neutral composite suite",
+        }
+    return result
+
+
 def capture(base, write):
-    if base != BASE:
+    if base not in BASE_OUTPUTS:
         raise ValueError("Expected coordinator-verified actual merged integration base")
+    output = BASE_OUTPUTS[base]
     manifest = load_manifest(REPO)
     changed = set(git("diff", "--name-only", base).splitlines()) | set(git("ls-files", "--others", "--exclude-standard").splitlines())
     wp = next(entry for entry in manifest.data["work_packages"] if entry["id"] == "WP-107")
     validate_writes(wp["write_paths"], sorted(changed))
     if manifest.data["reference"]["commit"] != SOURCE:
         raise ValueError("Source drift")
-    totals, suites, identities, files = parse_reports(REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test")
+    prefix = "" if output == DIRECTORY else output.relative_to(DIRECTORY).as_posix() + "/"
+    totals, suites, identities, files = parse_reports(
+        REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test", prefix + "junit/protocol/",
+    )
     cases, sources = case_map(manifest, identities), source_map(manifest)
     apk = REPO / "android" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk"
     with zipfile.ZipFile(apk) as archive:
@@ -216,7 +277,7 @@ def capture(base, write):
     reports = []
     for path in files:
         original = path.read_bytes()
-        target = DIRECTORY / "junit" / "protocol" / path.name
+        target = output / "junit" / "protocol" / path.name
         stored = original.replace(b"\r\n", b"\n")
         reports.append({
             "path": target.relative_to(REPO).as_posix(), "size_bytes": len(stored), "sha256": sha(stored),
@@ -233,7 +294,7 @@ def capture(base, write):
         raise ValueError("Missing strict actual graph/runtime evidence")
     saved_reports = {}
     for name, path in (("strict_graph", graph), ("strict_runtime", runtime)):
-        target = DIRECTORY / "reports" / path.name
+        target = output / "reports" / path.name
         data = canonical(path)
         if write:
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -261,14 +322,53 @@ def capture(base, write):
         ],
         "launcher_options": "-ConstrainedMemory -BuildHeap 640m; one worker/in-process Kotlin/512m build metaspace/256m test heap and metaspace/SerialGC/two processors",
     }
+    if output != DIRECTORY:
+        result["commands"] = [
+            {"command": "launcher :core:protocol:test --dependency-verification strict --no-build-cache --quiet",
+             "result": "passed", "tests": 4674},
+            {"command": "launcher validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies --dependency-verification strict --no-build-cache --quiet",
+             "result": "passed"},
+            {"command": "launcher :core:model:test :core:contracts:test --dependency-verification strict --no-build-cache --quiet",
+             "result": "passed", "tests": 170},
+            {"command": "launcher :core:database:verifyDomainRoomTests --dependency-verification strict --no-build-cache --quiet",
+             "result": "failed-after-45-passing-Room-cases", "failure": "Merged WP-201 collector rejects WP-107 candidate paths at report line127"},
+            {"command": "launcher :core:l10n:testDebugUnitTest --dependency-verification strict --no-build-cache --quiet",
+             "result": "passed", "tests": 25},
+            {"command": "launcher :app:assembleDebug --dependency-verification strict --no-build-cache --quiet",
+             "result": "passed"},
+            {"command": "python .\\android\\scaffold\\inspect_apk.py", "result": "passed"},
+        ]
+        result["integration_module_units"] = integration_reports(output, write)
+        result["root_aggregate"] = {
+            "result": "blocked-on-unowned-merged-collector-guard",
+            "path": "docs/android/evidence/WP-201/collect_evidence.py",
+            "base_input_blob": git("rev-parse", base + ":docs/android/evidence/WP-201/collect_evidence.py").strip(),
+            "reason": "Root verification invokes a WP-201-only candidate-write guard which rejects correctly leased session changes.",
+            "shared_guard_removed_or_bypassed": False,
+            "coordinator_amendment_requested": True,
+            "normal_current_head_root_CI_pass_claimed": False,
+        }
+        historical = load_json(DIRECTORY / "local-results.json")
+        if historical["kotlin_inputs"] != result["kotlin_inputs"]:
+            raise ValueError("Unexpected protocol source/test drift during base-only reconciliation")
+        if load_json(DIRECTORY / "source-cases.json") != cases:
+            raise ValueError("Original 85-case source catalog changed during base reconciliation")
+        result["historical_evidence"] = {
+            "base_sha": historical["base_sha"],
+            "head_sha": "ce93bfaa22b438aed7e8b7a903a611270a985cd3",
+            "record": "docs/android/evidence/WP-107/local-results.json",
+            "protocol_inputs_byte_identical": True,
+            "current_base_outputs_are_independent": True,
+        }
     for name, value in (("source-cases.json", cases), ("source-map.json", sources), ("local-results.json", result)):
         expected = json.dumps(value, indent=2, sort_keys=True) + "\n"
-        target = DIRECTORY / name
+        target = output / name
         if write:
             target.write_text(expected, encoding="utf-8", newline="\n")
         elif target.read_text(encoding="utf-8") != expected:
             raise ValueError("Stale/malformed per-WP evidence: " + name)
-    print(json.dumps({"result": "verified", "protocol_tests": totals["tests"], "session_tests": 229,
+    print(json.dumps({"result": "verified" if output == DIRECTORY else "local-component-verified-root-aggregate-blocked",
+                      "protocol_tests": totals["tests"], "session_tests": 229,
                       "owned_originals": 73, "cross_component_originals": 12, "suites": len(suites)}, indent=2))
 
 
