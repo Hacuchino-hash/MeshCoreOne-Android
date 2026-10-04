@@ -16,6 +16,7 @@ internal object CliJson {
                 character == '"' -> append("\\\"")
                 character == '\\' -> append("\\\\")
                 character.code < 32 || character.code in 127..159 ||
+                    character.code == 0x061c || character.code in 0x200e..0x200f ||
                     character.code in 0x202a..0x202e || character.code in 0x2066..0x2069 ->
                     append("\\u").append(character.code.toString(16).padStart(4, '0'))
                 else -> append(character)

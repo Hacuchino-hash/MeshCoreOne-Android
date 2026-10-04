@@ -27,6 +27,39 @@ the distinct exact16-byte `private-channel!` secret with independent literal
 hex/plaintext absence assertions. Raw ESC/bidi output is still forbidden. No
 production, source, golden, case identity or expected exit is changed; fresh
 execution of the same72 CLI cases is required before reporting success.
+The exact deployed output boundary is now covered by three additional declared
+cases: actual child stdout/stderr pipes closed before a real peer response, plus
+unavailable stderr during usage rejection with zero socket construction. Main
+checks the JVM PrintStream error flag rather than assuming suppressed stream
+IOExceptions mean success; output failure remains exit8 even if no diagnostic
+stream is writable. These declarations still require fresh actual execution.
+Twelve independently listed Unicode Bidi_Control rows now also traverse the
+real device query/socket and require literal JSON escapes for interior ALM,
+LRM/RLM, embeddings/overrides/pop and isolate controls. This closes the omitted
+ALM/LRM/RLM escape branches without changing source parser text behavior.
+The candidate declares87 CLI cases after these15 genuinely new native-only
+rows; they are not added original Swift declarations or duplicated parity labels.
+Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
+hosts, so the former failing CLI task no longer blocks it. The reader then
+failed closed for two text representations: Windows checks out the extensionless
+`MeshCore/LICENSE` as CRLF, and Linux checks out the frozen baseline as LF while
+its independently retained capture SHA256 binds CRLF. The repair admits only
+text checkout newline equivalence, retains the exact committed license blobs,
+and hashes the unchanged baseline in its original capture representation.
+The original b090ca12 capture pin and all4,708 identities remain mandatory; the
+unchanged Git baseline's LF SHA256 is
+`bc79f0e42277fe474a310b77f07dcbcd2f1a7499c9b75c37faa1f52598461d74`.
+New regressions reject changed license content, normalized binary bytes and
+changed baseline identities. No missing raw CLI artifact is inferred from the
+successful dependency task; full complete-bundle retention is still required.
+Independently downloaded current protocol ZIPs11317553531/windows
+SHA256`e4de3d7fd3a4bcd622d85bef8e68ffcaa3c1acd8b660962ff1dea59387f9ec8f`
+and11317328543/linux
+SHA256`ba25df86378beb5842c2049991a6565d6593457ef855dd13e5ea3c69205c36a5`
+each contain58 actual raw suites/4,711 discovered/run/passed/zero
+failed/errors/skips. Direct replay still binds all486 originals to485 unique
+existing cases. The expanded reader regression suite executes15/15 with zero
+failures/errors/skips locally; no local JVM is started.
 The actual repaired5bd14bbd normal protocol37234505781/attempt1 then discovered
 all4,711 cases/58 suites on both hosts: all4,708 old identities and the owning-job
 TCP-close case passed, while two new cause assertions failed because coroutine

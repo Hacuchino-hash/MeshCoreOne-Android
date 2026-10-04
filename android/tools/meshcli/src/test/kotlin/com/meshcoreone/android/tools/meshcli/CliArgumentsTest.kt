@@ -2,6 +2,8 @@
 package com.meshcoreone.android.tools.meshcli
 
 import java.net.Socket
+import java.io.IOException
+import java.io.Writer
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.DynamicTest
@@ -78,6 +80,19 @@ class CliArgumentsTest {
         assertFalse((output.err.toString() + output.out).contains("operator-password"))
         assertFalse(output.err.toString().contains('\u001b'))
         assertEquals(1, output.err.toString().count { it == '\n' })
+    }
+
+    @Test
+    fun `usage rejection with an unavailable stderr still returns output failure without a socket`() = runBlocking {
+        val output = CapturedConsole()
+        val unavailable = object : Writer() {
+            override fun write(chars: CharArray, offset: Int, length: Int) { throw IOException("private-stderr-marker") }
+            override fun flush() = Unit
+            override fun close() = Unit
+        }
+        assertEquals(8, MeshCli.execute(emptyArray(), CliConsole(output.out, unavailable),
+            CliRuntime(socketFactory = { error("Output failure during usage must not open a socket") })))
+        assertEquals("", output.out.toString())
     }
 
     @Test

@@ -33,6 +33,7 @@ MODULES = {
     "meshcli": ("android/tools/meshcli/build/test-results/test", 1),
 }
 TEXT = {".kt", ".kts", ".java", ".py", ".json", ".xml", ".md", ".txt", ".tsv", ".properties", ".lockfile", ".swift"}
+TEXT_NAMES = {"LICENSE", "NOTICE"}
 
 ALIASES = """Ed25519ToX25519Tests|Public key conversion round-trip with CryptoKit|crypto.Ed25519ToX25519Test|Public key conversion round-trip with independent RFC keys
 EventDispatcherDropTests|droppedEventCount increments when a slow consumer overflows the buffer|event.EventDispatcherTest|Slow consumer preserves latest 100 with exact counted and observed oldest drops
@@ -74,9 +75,18 @@ def blob(data):
     return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
 
 
+def checkout_bytes(path, data):
+    return data.replace(b"\r\n", b"\n") if path.suffix in TEXT or path.name in TEXT_NAMES else data
+
+
+def baseline_digest(data):
+    # The independent retained capture uses CRLF; Git/Linux may check out the same text as LF.
+    return sha(data.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+
+
 def write_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=True) + "\n", encoding="utf-8", newline="\n")
 
 
 def junit(directory, boundary, minimum):
@@ -124,14 +134,14 @@ def checked_checkout(repo, head, required):
         if linked(local) or not local.is_file() or local.stat().st_size > 16 * 1024 * 1024:
             raise PortError("Missing/unsafe/oversized immutable input: " + path)
         data = local.read_bytes()
-        canonical = data.replace(b"\r\n", b"\n") if local.suffix in TEXT else data
+        canonical = checkout_bytes(local, data)
         if blob(data) == entries[path]:
             committed = data
         elif blob(canonical) == entries[path]:
             committed = canonical
         else:
             committed = git(repo, "cat-file", "blob", entries[path])
-            expected = committed.replace(b"\r\n", b"\n") if local.suffix in TEXT else committed
+            expected = checkout_bytes(local, committed)
             if canonical != expected:
                 raise PortError("Executed checkout differs from immutable input: " + path)
         raw[path] = committed
@@ -378,7 +388,7 @@ def validate_bundle(output, repo, head):
 
 def validate_native_floor(repo, native):
     baseline_path = repo / "docs/android/evidence/WP-109/baseline-native.json"
-    if sha(baseline_path.read_bytes().replace(b"\r\n", b"\n")) != BASELINE_SHA256:
+    if baseline_digest(baseline_path.read_bytes()) != BASELINE_SHA256:
         raise PortError("Independently captured baseline bytes changed")
     baseline = load_json(baseline_path)
     fields(baseline, {"schema_version", "provenance", "cases", "suite_count"}, label="frozen baseline native identities")
@@ -409,7 +419,7 @@ def baseline(directory):
         "cases": cases, "suite_count": len(raw),
     }
     encoded = (json.dumps(result, indent=2, ensure_ascii=True) + "\n").encode("utf-8")
-    if sha(encoded) != BASELINE_SHA256:
+    if baseline_digest(encoded) != BASELINE_SHA256:
         raise PortError("Given raw reports differ from independently captured actual baseline")
     write_json(BASELINE, result)
     return {"baseline_cases": len(cases), "actual_suites": len(raw)}

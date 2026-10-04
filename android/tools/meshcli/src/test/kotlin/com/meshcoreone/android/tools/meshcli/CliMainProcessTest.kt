@@ -12,7 +12,9 @@ import kotlin.test.*
 
 @Timeout(20)
 class CliMainProcessTest {
-    private class Child(arguments: Array<String>) : AutoCloseable {
+    private class Child(
+        arguments: Array<String>, closedStdout: Boolean = false, closedStderr: Boolean = false,
+    ) : AutoCloseable {
         private val reader = Executors.newFixedThreadPool(2)
         private val javaExecutable = Path.of(System.getProperty("java.home"), "bin",
             if (System.getProperty("os.name").startsWith("Windows")) "java.exe" else "java").toString()
@@ -27,12 +29,18 @@ class CliMainProcessTest {
             environment().putAll(safe)
         }
         val process: Process = builder.start()
-        private val out = reader.submit<String> { process.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() } }
-        private val err = reader.submit<String> { process.errorStream.bufferedReader(Charsets.UTF_8).use { it.readText() } }
+        private val out = if (closedStdout) {
+            process.inputStream.close()
+            null
+        } else reader.submit<String> { process.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() } }
+        private val err = if (closedStderr) {
+            process.errorStream.close()
+            null
+        } else reader.submit<String> { process.errorStream.bufferedReader(Charsets.UTF_8).use { it.readText() } }
 
         fun result(): Triple<Int, String, String> {
             assertTrue(process.waitFor(10, TimeUnit.SECONDS), "Actual main must terminate")
-            return Triple(process.exitValue(), out.get(2, TimeUnit.SECONDS), err.get(2, TimeUnit.SECONDS))
+            return Triple(process.exitValue(), out?.get(2, TimeUnit.SECONDS) ?: "", err?.get(2, TimeUnit.SECONDS) ?: "")
         }
 
         override fun close() {
@@ -88,6 +96,34 @@ class CliMainProcessTest {
                 assertEquals("", out)
                 assertTrue(err.contains("\"code\":\"unsupported_command\""))
                 peer.expectClientClosed()
+            }
+        }
+
+        @Test
+        fun `real deployed main detects a closed stdout pipe after successful socket cleanup`() = runBlocking {
+            CliPeer().use { peer ->
+                Child(cliArgs(peer, "battery"), closedStdout = true).use { child ->
+                    peer.handshake(); peer.expect(20); peer.send(batteryFrame())
+                    val (code, out, err) = child.result()
+                    assertEquals(8, code)
+                    assertEquals("", out)
+                    assertTrue(err.contains("\"code\":\"output_failed\""))
+                    peer.expectClientClosed()
+                }
+            }
+        }
+
+        @Test
+        fun `real deployed main detects a closed stderr pipe without an exception stack or false success`() = runBlocking {
+            CliPeer().use { peer ->
+                Child(cliArgs(peer, "battery"), closedStderr = true).use { child ->
+                    peer.handshake(); peer.expect(20); peer.send(bytes(1, 1))
+                    val (code, out, err) = child.result()
+                    assertEquals(8, code)
+                    assertEquals("", out)
+                    assertEquals("", err)
+                    peer.expectClientClosed()
+                }
             }
         }
     }

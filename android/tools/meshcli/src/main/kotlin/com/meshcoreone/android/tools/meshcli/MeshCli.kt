@@ -18,6 +18,7 @@ import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportExceptio
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
+import java.io.PrintStream
 import java.io.Writer
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -32,6 +33,16 @@ class CliConsole(val stdout: Writer, val stderr: Writer) {
     internal fun error(issue: CliIssue) { stderr.write(issue.json()); stderr.write("\n"); stderr.flush() }
 }
 
+private class CheckedConsoleWriter(private val stream: PrintStream) : Writer() {
+    private val writer = BufferedWriter(OutputStreamWriter(stream, Charsets.UTF_8))
+    override fun write(chars: CharArray, offset: Int, length: Int) = writer.write(chars, offset, length)
+    override fun flush() {
+        writer.flush()
+        if (stream.checkError()) throw IOException("CLI output unavailable")
+    }
+    override fun close() = writer.close()
+}
+
 class CliRuntime(
     val clock: SessionClock = SystemSessionClock(),
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -42,13 +53,15 @@ object MeshCli {
     @JvmStatic
     fun main(arguments: Array<String>) {
         val console = CliConsole(
-            BufferedWriter(OutputStreamWriter(System.out, Charsets.UTF_8)),
-            BufferedWriter(OutputStreamWriter(System.err, Charsets.UTF_8)),
+            CheckedConsoleWriter(System.out),
+            CheckedConsoleWriter(System.err),
         )
         val code = try {
             runBlocking { execute(arguments, console) }
         } catch (_: CancellationException) {
             CliExit.CANCELLED.value
+        } catch (_: IOException) {
+            CliExit.OUTPUT.value
         }
         exitProcess(code)
     }
@@ -59,8 +72,7 @@ object MeshCli {
         val invocation = try {
             CliOptions.parse(arguments)
         } catch (failure: CliFailure) {
-            console.error(failure.issue)
-            return failure.issue.exit.value
+            return output(console) { console.error(failure.issue); failure.issue.exit.value }
         }
         if (invocation is CliInvocation.Help) {
             return output(console) { console.output(CliOptions.help); CliExit.OK.value }
@@ -208,8 +220,12 @@ object MeshCli {
     private inline fun output(console: CliConsole, action: () -> Int): Int = try {
         action()
     } catch (_: IOException) {
-        console.error(CliIssue(CliExit.OUTPUT, "output_failed"))
-        CliExit.OUTPUT.value
+        try {
+            console.error(CliIssue(CliExit.OUTPUT, "output_failed"))
+            CliExit.OUTPUT.value
+        } catch (_: IOException) {
+            CliExit.OUTPUT.value
+        }
     }
 
     private fun deviceIssue(code: Int?): CliIssue = when (code) {

@@ -64,7 +64,7 @@ content. Device PINs and channel secrets are never output.
 |5|Connection/IO/EOF or physical cleanup failure|
 |6|Real partial contact snapshot or missing channel slots|
 |7|Explicit unsupported/disabled operation or unavailable channel capacity/index|
-|8|Output IO failed; no transport is left open|
+|8|Output IO failed, including closed stdout/stderr pipes; no transport is left open|
 |130|Cooperative caller cancellation; cleanup still runs, and cancellation propagates to its caller|
 
 Only a real matching response can complete a read: an ACK/bare OK/push is not a
@@ -87,6 +87,9 @@ releases the physical claim even after caller-job cancellation. Cooperatively
 cancelled tasks propagate cancellation after sanitized reporting; abrupt OS
 process termination is not claimed to execute JVM coroutine cleanup. No
 portable Ctrl+C/signal-handler or OS scheduling guarantee is manufactured.
+The deployed main checks the JVM PrintStream error flag after flushing; a
+broken pipe cannot silently become exit0. If stderr is also unavailable, exit8
+still signals failure without trying to publish an exception stack.
 
 ## Verification and licensing
 

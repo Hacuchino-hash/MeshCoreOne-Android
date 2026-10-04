@@ -29,6 +29,16 @@ class EvidenceTests(unittest.TestCase):
     def report(self, case='<testcase classname="example.Test" name="actual()"/>', counts='tests="1" failures="0" errors="0" skipped="0"'):
         self.file.write_text(f'<testsuite {counts}>{case}<system-out>complete log</system-out></testsuite>', encoding="utf-8")
 
+    def commit_input(self, name, data):
+        subprocess.run(["git", "init", "--quiet", str(self.root)], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.root), "config", "core.autocrlf", "false"], check=True, capture_output=True)
+        source = self.root / name
+        source.write_bytes(data)
+        subprocess.run(["git", "-C", str(self.root), "add", name], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                        "commit", "--quiet", "-m", "fixture"], check=True, capture_output=True)
+        return subprocess.check_output(["git", "-C", str(self.root), "rev-parse", "HEAD"]).decode().strip()
+
     def test_complete_raw_case_and_log_bytes_survive(self):
         self.report()
         cases, raw, counts = reader.junit(self.reports, self.root, 1)
@@ -123,14 +133,8 @@ class EvidenceTests(unittest.TestCase):
         self.assertIn("no hosted run authority", record["scope"])
 
     def test_committed_text_crlf_is_not_drift_but_content_change_is(self):
-        subprocess.run(["git", "init", "--quiet", str(self.root)], check=True, capture_output=True)
-        subprocess.run(["git", "-C", str(self.root), "config", "core.autocrlf", "false"], check=True, capture_output=True)
+        head = self.commit_input("input.kt", b"first\nsecond\n")
         source = self.root / "input.kt"
-        source.write_bytes(b"first\nsecond\n")
-        subprocess.run(["git", "-C", str(self.root), "add", "input.kt"], check=True, capture_output=True)
-        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-                        "commit", "--quiet", "-m", "fixture"], check=True, capture_output=True)
-        head = subprocess.check_output(["git", "-C", str(self.root), "rev-parse", "HEAD"]).decode().strip()
         source.write_bytes(b"first\r\nsecond\r\n")
         inputs, raw = reader.checked_checkout(self.root, head, {"input.kt"})
         self.assertEqual(b"first\nsecond\n", raw["input.kt"])
@@ -140,6 +144,42 @@ class EvidenceTests(unittest.TestCase):
             reader.checked_checkout(self.root, head, {"input.kt"})
         with self.assertRaises(PortError):
             reader.checked_checkout(self.root, head, {"uncommitted.kt"})
+
+    def test_extensionless_license_newlines_preserve_the_complete_immutable_blob(self):
+        head = self.commit_input("LICENSE", b"Copyright fixture\nExact license terms\n")
+        source = self.root / "LICENSE"
+        source.write_bytes(b"Copyright fixture\r\nExact license terms\r\n")
+        inputs, raw = reader.checked_checkout(self.root, head, {"LICENSE"})
+        self.assertEqual(b"Copyright fixture\nExact license terms\n", raw["LICENSE"])
+        self.assertEqual(reader.blob(raw["LICENSE"]), inputs["LICENSE"])
+        source.write_bytes(b"Copyright fixture\r\nChanged license terms\r\n")
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"LICENSE"})
+
+    def test_extensionless_binary_newlines_are_not_normalized(self):
+        head = self.commit_input("binary-input", b"\xff\n\x01")
+        (self.root / "binary-input").write_bytes(b"\xff\r\n\x01")
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"binary-input"})
+
+    def test_frozen_baseline_accepts_checkout_newlines_not_changed_identities(self):
+        retained = (reader.EVIDENCE / "baseline-native.json").read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(reader.BASELINE_SHA256, reader.sha(retained.replace(b"\n", b"\r\n")))
+        native = {
+            "protocol": json.loads(retained)["cases"],
+            "meshcli": [{"class": "com.meshcoreone.android.tools.meshcli." + name, "name": "fixture()", "outcome": "passed"}
+                        for name in ("CliArgumentsTest", "CliTcpTest", "CliMainProcessTest")],
+        }
+        baseline = self.root / "docs/android/evidence/WP-109/baseline-native.json"
+        baseline.parent.mkdir(parents=True)
+        for data in (retained, retained.replace(b"\n", b"\r\n")):
+            baseline.write_bytes(data)
+            reader.validate_native_floor(self.root, native)
+        changed = retained.replace(b"correct layout()", b"changed layout()", 1)
+        self.assertNotEqual(retained, changed)
+        baseline.write_bytes(changed)
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, native)
 
     def test_required_inputs_include_tools_production_tests_hooks_and_source_scope(self):
         class Manifest:
