@@ -17,6 +17,14 @@ digests are retained privately. The assertions now search the bounded real
 cause chain for the **same exact type and wildcard metadata**, rather than
 incorrectly assuming a direct cause. This is not a lowered error expectation,
 ignored test, producer repair or passing CLI claim.
+Normal79fafb7e run37236598495/attempt1 then executed all4,711 cases with
+only the retained-link test's remaining state/type assumption failing on both
+hosts. Inspection of the actual merged ownership code confirms two deliberately
+different states: active foreign owner means ConcurrentTransportOwner; an ended
+but physically retained link means RetainedTransport. The same real-TCP test
+now explicitly exercises both phases in that order and keeps exact cause types,
+zero unwanted connects/closes and awaited old-owner cleanup. All4,708 unchanged
+baseline cases passed; no producer/golden/threshold was modified.
 The local JVM lane initially remains held by WP-202 and the
 explicit shared CI forwarding seam needs a separate serialized amendment.
 

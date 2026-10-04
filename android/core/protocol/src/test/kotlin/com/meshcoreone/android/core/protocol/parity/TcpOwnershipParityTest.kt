@@ -162,13 +162,18 @@ class TcpOwnershipParityTest {
                 val other = session(transport, this, OwnershipClock())
                 try {
                     handshake(first, peer)
+                    correlationCause<SessionCorrelationException.ConcurrentTransportOwner>(
+                        assertFailsWith<MeshCoreException.ConnectionLost> { other.start() },
+                    )
+                    assertTrue(transport.isConnected(), "A competing live session cannot close the actual owner")
+                    assertEquals(0, sockets.single().closes.get())
                     first.stop(disconnectTransport = false)
                     assertTrue(transport.isConnected())
                     assertEquals(0, sockets.single().closes.get())
                     correlationCause<SessionCorrelationException.RetainedTransport>(
                         assertFailsWith<MeshCoreException.ConnectionLost> { first.start() },
                     )
-                    correlationCause<SessionCorrelationException.ConcurrentTransportOwner>(
+                    correlationCause<SessionCorrelationException.RetainedTransport>(
                         assertFailsWith<MeshCoreException.ConnectionLost> { other.start() },
                     )
                     assertTrue(transport.isConnected(), "An unsuccessful competing session cannot close the retained owner")
