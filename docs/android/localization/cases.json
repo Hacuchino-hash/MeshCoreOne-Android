@@ -1,0 +1,43 @@
+{
+  "source_pin": "db14559b39d32322b06477c6ae676112f583db50",
+  "work_package": "WP-005",
+  "original_families": [
+    {
+      "source": "MC1Tests/Localization/AirtimePercentLabelTests.swift",
+      "source_case": "airtimePercent renders a literal percent sign",
+      "android_class": "com.meshcoreone.android.core.l10n.AirtimePercentLabelTest",
+      "android_method": "airtimePercentRendersLiteralPercentSign",
+      "assertion": "The actual compiled English resource equals Airtime %, not Airtime or Airtime %%."
+    },
+    {
+      "source": "MC1Tests/Localization/RegionalSubdivisionLocalizationTests.swift",
+      "source_case": "every catalog subdivision key resolves in every locale",
+      "android_class": "com.meshcoreone.android.core.l10n.RegionalSubdivisionLocalizationTest",
+      "android_method": "everyCatalogSubdivisionKeyResolvesInEveryLocale",
+      "parameters": {"locales": 12, "subdivision_keys": 59, "us": 51, "au": 8},
+      "assertion": "Every lookup resolves nonempty actual source copy, never null, raw key or sentinel; each value also equals the pinned raw source oracle."
+    }
+  ],
+  "additional_android_families": [
+    {"class": "LocalizationResourceTest", "family": "All 2061 plain and 302 formatted string keys across 12 effective locales", "oracle": "Original decoded Apple values, not candidate Kotlin output"},
+    {"class": "LocalizationResourceTest", "family": "11 plural keys across 12 locales and integer/Long boundary quantity vectors", "oracle": "Original quantity dictionaries and independent integer category vectors"},
+    {"class": "LocalizationResourceTest", "family": "Widget Long arguments, 9 named shortcut/intent phrases, seven real Italian fallbacks, CJK and long German, locale declarations and legacy aliases"},
+    {"class": "L10nFormattingTest", "family": "Argument-2 quantity, locale-decimal floats, nonfinite rejection, signed64 boundaries and selector residues, Slavic categories, French zero, Portugal/Brazil, script/fallback, one fingerprint-bound source correction, literal argument characters and explicit missing-resource failure"}
+  ],
+  "python_families": [
+    "OpenStep grammar/escaping/comments/semicolon/UTF8/UTF16/Unicode/continuations/duplicates/malformed inputs",
+    "Typed positional/named format arguments, percent literals, finite fixed-precision floats and rejected lossy directives",
+    "Safe plist schema/duplicates/entities/XML, zero/one/two/few/many/other shapes and second-argument quantity",
+    "Actual xcstrings schema, named parameter preservation/reordering, missing locale and unsupported schema failures",
+    "All pinned source/file/blob/key counts, namespace collisions, deterministic outputs, real fallback, exact billing exclusions and stale source/correction/output rejection",
+    "Missing/zero/malformed/failed/skipped/duplicate/incomplete Android JUnit evidence rejection",
+    "Complete byte-identical raw25-case JUnit retention and typed head/source/run/hash summary; reject stale sources/destinations, unsafe/link/overlap paths, changed bytes and invalid CI identity"
+  ],
+  "not_claimed": [
+    "Full widget/shortcut execution or WP-404 intent runtime behavior",
+    "Full regional geometry/preset behavior",
+    "iOS formatter execution or Swift/macOS oracle",
+    "Per-app language settings/system UI audit on actual devices",
+    "Message translation engines, models or WP-406 license/privacy/runtime approval"
+  ]
+}

@@ -60,6 +60,11 @@ jobs:
         run: python tools/android-port/controller/ci.py preflight
       - name: Fresh strict composite assertions, graph, Room and runtime inputs
         run: python tools/android-port/controller/ci.py run --stage verify
+      - name: Retain complete validated localization JUnit evidence
+        run: >-
+          python tools/android-port/l10n_convert.py --check
+          --verify-android-tests android/core/l10n/build/test-results/testDebugUnitTest
+          --copy-android-junit (Join-Path (Join-Path $env:ANDROID_CI_OUTPUT 'l10n') 'junit')
       - name: Independent fresh strict included-build assertions
         run: python tools/android-port/controller/ci.py run --stage standalone
       - name: Assemble actual debug APK

@@ -1,2 +1,2 @@
-<!-- AndroidOnly: WP-002 Resource-only scaffold localization. -->
+<!-- AndroidOnly: WP-005 Locale resources are library-owned; AGP requires the app manifest opt-in. -->
 <manifest />

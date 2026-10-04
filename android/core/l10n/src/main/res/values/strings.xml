@@ -7,23 +7,24 @@
     <string name="tab_map">Map</string>
     <string name="tab_tools">Tools</string>
     <string name="tab_settings">Settings</string>
-    <string name="scaffold_onboarding_title">Radio setup</string>
-    <string name="scaffold_remote_nodes_title">Remote nodes</string>
-    <string name="scaffold_not_yet_ported">Not yet ported</string>
-    <string name="scaffold_explanation">This is an unavailable build scaffold, not a completed feature.</string>
-    <string name="scaffold_onboarding_description">Radio setup, pairing and permissions have not been ported. This scaffold does not request permissions or connect a radio.</string>
-    <string name="scaffold_chats_description">Messaging is not available in this scaffold. No messages are loaded or sent.</string>
-    <string name="scaffold_nodes_description">Node discovery and contacts have not been ported. No contacts or connected nodes are simulated.</string>
-    <string name="scaffold_remote_nodes_description">Remote node management is unavailable. No login or device-changing command is performed.</string>
-    <string name="scaffold_map_description">Maps are unavailable. No map engine, tile provider or location service is loaded.</string>
-    <string name="scaffold_tools_description">Radio tools are unavailable. No CLI command, trace or scan is performed.</string>
-    <string name="scaffold_settings_description">Preferences and backup restore have not been ported. Translation is unavailable; no engine is linked.</string>
-    <string name="scaffold_connect_radio">Connect radio</string>
-    <string name="scaffold_send_message">Send message</string>
-    <string name="scaffold_discover_nodes">Discover nodes</string>
-    <string name="scaffold_manage_remote_node">Manage remote node</string>
-    <string name="scaffold_open_map">Open map</string>
-    <string name="scaffold_run_radio_tool">Run radio tool</string>
-    <string name="scaffold_translate">Translate</string>
-    <string name="scaffold_back">Back</string>
+    <!-- AndroidOnly: WP-005 Keep the incomplete-build explanations verbatim and English-only. -->
+    <string name="scaffold_onboarding_title" translatable="false">Radio setup</string>
+    <string name="scaffold_remote_nodes_title" translatable="false">Remote nodes</string>
+    <string name="scaffold_not_yet_ported" translatable="false">Not yet ported</string>
+    <string name="scaffold_explanation" translatable="false">This is an unavailable build scaffold, not a completed feature.</string>
+    <string name="scaffold_onboarding_description" translatable="false">Radio setup, pairing and permissions have not been ported. This scaffold does not request permissions or connect a radio.</string>
+    <string name="scaffold_chats_description" translatable="false">Messaging is not available in this scaffold. No messages are loaded or sent.</string>
+    <string name="scaffold_nodes_description" translatable="false">Node discovery and contacts have not been ported. No contacts or connected nodes are simulated.</string>
+    <string name="scaffold_remote_nodes_description" translatable="false">Remote node management is unavailable. No login or device-changing command is performed.</string>
+    <string name="scaffold_map_description" translatable="false">Maps are unavailable. No map engine, tile provider or location service is loaded.</string>
+    <string name="scaffold_tools_description" translatable="false">Radio tools are unavailable. No CLI command, trace or scan is performed.</string>
+    <string name="scaffold_settings_description" translatable="false">Preferences and backup restore have not been ported. Translation is unavailable; no engine is linked.</string>
+    <string name="scaffold_connect_radio" translatable="false">Connect radio</string>
+    <string name="scaffold_send_message" translatable="false">Send message</string>
+    <string name="scaffold_discover_nodes" translatable="false">Discover nodes</string>
+    <string name="scaffold_manage_remote_node" translatable="false">Manage remote node</string>
+    <string name="scaffold_open_map" translatable="false">Open map</string>
+    <string name="scaffold_run_radio_tool" translatable="false">Run radio tool</string>
+    <string name="scaffold_translate" translatable="false">Translate</string>
+    <string name="scaffold_back" translatable="false">Back</string>
 </resources>

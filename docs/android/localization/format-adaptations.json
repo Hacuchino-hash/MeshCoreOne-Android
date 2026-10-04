@@ -1,0 +1,21 @@
+{
+  "source_pin": "db14559b39d32322b06477c6ae676112f583db50",
+  "adaptations": [
+    {
+      "id": "WP-005-zh-Hans-comparison-integer",
+      "domain": "app",
+      "table": "Contacts",
+      "key": "contacts.results.comparison",
+      "locale": "zh-Hans",
+      "source_blob_sha": "c305c6fe0e5e15c14354bc4b41677dc5a2db2fcd",
+      "source_value_sha256": "918e43cea1aaa0f4aaee2215485276cfa40aea931677295e4f78ef4a5fc20596",
+      "argument": 1,
+      "expected_source": "对比 %@ 毫秒在 %@",
+      "expected_english": "vs. %d ms on %@",
+      "expected_android_format": "对比 %1$d 毫秒在 %2$s",
+      "source_token": "%@",
+      "android_token": "%d",
+      "reason": "Coordinator's explicit WP-005 decision authorizes only this output correction. The pinned English format and L10n.swift comparison(_ p1: Int, _ p2: Any), as called by ComparisonRowView with roundTripMs, unambiguously require an integer first argument. Retain the original Chinese copy, raw format, exact blob/value fingerprints and correction ID in provenance. This is not a Swift edit, retranslation, global coercion or permission to repair other copy."
+    }
+  ]
+}
