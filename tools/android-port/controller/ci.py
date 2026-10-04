@@ -190,14 +190,17 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             shutil.copyfile(xml, destination / xml.name)
     elif stage == "lint":
         report["reports"] = collect_lint(REPO / "android")
-    elif stage == "protocol":
-        report["suite"] = suite_counts(
-            REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test", 84,
-        )
         for target in report["reports"]:
             destination = output / lint_bundle_path(target)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / "android" / target / "build" / "reports" / "lint-results-debug.xml", destination)
+    elif stage == "protocol":
+        source = REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test"
+        report["suite"] = suite_counts(source, 84)
+        destination = output / "junit" / "protocol"
+        destination.mkdir(parents=True, exist_ok=True)
+        for xml in sorted(source.glob("TEST-*.xml")):
+            shutil.copyfile(xml, destination / xml.name)
     write_json(output / f"stage-{stage}.json", report)
 
 
