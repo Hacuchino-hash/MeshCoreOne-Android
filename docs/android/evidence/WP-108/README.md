@@ -12,6 +12,7 @@ Branch: `cbattlegear-friendly-goggles`, one dedicated owning worktree.
 | Reconciled merged integration base | `4331a4dddd13126ab05f4b4d74e654f313c5d414` |
 | Rebased transport/test code | `b6659cc476a1a9f1a1e661daf69fde0fab9b75ef` |
 | Rebased production code | `bec9d74d8fd28b320b4503234a774f0f5a20e957` |
+| Reviewed runtime license-boundary repair | `d8ebb535e6ab05e2bf247d401a952543fb1b2f61` |
 | Read-only Swift reference | `db14559b39d32322b06477c6ae676112f583db50` |
 | Canonical manifest | `78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746` |
 | Trusted semantic policy revision | `56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a` |
@@ -23,9 +24,10 @@ checkout's CRLF byte hash, binds these revisions. The recorded prompt lease
 includes every write, including these docs and raw reports. No shared
 manifest/Gradle/workflow/model amendment is part of this package.
 
-The launch-base assertions and APK remain explicitly historical evidence.
-`rebased-results.json` and `rebased-junit/` supersede their integrated totals
-and APK for the reconciled branch. Exact final PR-head hosted checks are
+The launch-base and pre-license-repair assertions/APKs are historical evidence.
+`license-boundary-results.json` and `license-junit/` supersede their current
+runtime/APK and test results; `rebased-results.json` preserves the actual base
+reconciliation. Exact final PR-head hosted checks are
 separate and must be inspected for that SHA. No model-written PASS text
 substitutes for independent acceptance.
 
@@ -36,7 +38,7 @@ substitutes for independent acceptance.
 | `MockTransport.swift` | `transport/mock/MockTransport.kt`: connection state, successful-send snapshots, both send routes, capability configuration, signed/large failure thresholds, raw/OK/error injection, history clear, terminal/reconnected queues; 12 mock cases |
 | `WiFiFrameCodec.swift` | `transport/tcp/WiFiFrameCodec.kt`: exact delimiters/UInt16 LE, incremental bounded decoder, reset/noise accounting and typed overflow/truncated EOF; 17 codec cases |
 | `WiFiTransport.swift` | `transport/tcp/WiFiTransport.kt` and `WiFiTransportError.kt`: configuration, eight errors, timeout constants, real socket connect/send/read/close, idempotence, callbacks, owned cancellation and capabilities; 23 real/baseline and 20 controlled-IO cases |
-| `WiFiTransportError+LocalizedError.swift` | All eight baseline descriptions and reason interpolation; native localization/recovery resources remain WP-304 |
+| `WiFiTransportError+LocalizedError.swift` | Exact eight descriptions/reason interpolation preserved only in unpackaged GPL-provenance `WiFiAppErrorReference.kt`; GPL app-side formatter and localized recovery explicitly deferred to WP-304, not MIT production |
 | `WiFiFrameCodecTests.swift` | All six original declarations, plus complete split points, byte/high-bit/zero/max-length, resynchronization/reset and malformed EOF families |
 | `WiFiTransportTests.swift` | All twelve original declarations, including equivalent deterministic pending-connect cancellation, actual idempotent TCP, peer FIN and handler behavior |
 | `docs/guides/WiFi_Transport.md` | Same plain TCP framing/configuration/capabilities; no added discovery/keepalive/reconnect. Resolver/socket seams support later WP-206 integration |
@@ -146,10 +148,44 @@ verbatim runner checksums. Every original checksum was independently matched
 with only CRLF restored, and the complete stored testcase/outcome/log nodes
 were reparsed. No XML case, outcome or golden packet was edited or omitted.
 
+## Reviewed GPL/MIT runtime boundary repair
+
+Parent review identified a concrete license-boundary defect: the original
+candidate placed the GPL app `LocalizedError` English prose and provenance
+inside the MIT protocol error file. The reviewed repair removes both from
+production, while retaining all eight MIT-source typed cases, associated
+reasons, value equality and the wrapped IO cause.
+
+`WiFiTransportDiagnostics.kt` is separately marked native-only and emits
+technical `wifi.*` diagnostics, not source app prose or localized recovery.
+The GPL-provenance `WiFiAppErrorReference.kt` is **test-only**, retaining all
+eight original descriptions/reason interpolation. The actual app formatter is
+explicitly deferred to WP-304's GPL app-side localization/recovery adapter;
+there is no fabricated deferred-UI implementation or fully-localized claim.
+`source-cases.json` records this disposition instead of silently dropping its
+assigned source.
+
+The documented strict launcher passed **43 targeted TCP cases**, then the full
+**594 protocol + 35 helper cases**, with the **72 transport cases and all 18
+original declarations retained**. The real debug APK was rebuilt and inspected:
+all eight GPL app prose patterns and the test reference are absent from actual
+DEX, while native diagnostic identifiers are present. Its debug identity,
+launcher, notices, fixture exclusion and static 16KiB alignment still pass.
+Complete current XML and both original-runner/Git-storage hashes are in
+`license-junit/` and `license-boundary-results.json`.
+
+Source/policy/manifest, dependencies, framing/capabilities, whole-operation
+mutexes, generations, EOF/resource close and cancellation behavior are
+unchanged by the license repair. The default native-JVM DNS interruption
+limitation and WP-206 network-scoped resolver seam remain explicitly intact;
+no injected loopback test claims default `.local` or real Android proof.
+
 ## Acceptance IDs and honest limits
 
 `WP-108-behavior`: real mock/framing/TCP implementations, source capabilities,
-eight WiFi errors/descriptions and exact packet bytes are asserted.
+eight typed WiFi error cases/reasons, separate native diagnostic identifiers
+and exact packet bytes are asserted. GPL app descriptions are only test
+references; they are not a native localized-UI implementation.
 `WP-108-boundaries`: fragmentation/coalescing, empty/unknown/high-bit/max-size
 payloads, malformed EOF, FIN/RST, cancellation/deadlines, reconnect, stale
 operations and once-only socket/owned-job cleanup are asserted.

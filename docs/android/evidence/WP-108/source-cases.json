@@ -3,7 +3,7 @@
   "repository": "cbattlegear/MeshCoreOne-Android",
   "work_package": "WP-108",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
-  "tested_code_commit": "b245da16290b0e9332bb4814c29f206572f00234",
+  "tested_code_commit": "d8ebb535e6ab05e2bf247d401a952543fb1b2f61",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
   "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
   "owned_and_cross_inputs": [
@@ -507,12 +507,12 @@
     },
     {
       "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
-      "case": "All eight error cases preserve value metadata and original descriptions()",
+      "case": "Real socket one-byte reads reassemble all headers and raw unknown payloads()",
       "actual_result": "passed"
     },
     {
       "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
-      "case": "Real socket one-byte reads reassemble all headers and raw unknown payloads()",
+      "case": "All eight error cases retain typed metadata and native diagnostics separate from app prose()",
       "actual_result": "passed"
     },
     {
@@ -636,5 +636,14 @@
     }
   ],
   "original_packets_or_fixtures_changed": false,
-  "ignored_mandatory_cases": 0
+  "ignored_mandatory_cases": 0,
+  "historical_tested_code_commit": "b245da16290b0e9332bb4814c29f206572f00234",
+  "app_formatter_disposition": {
+    "path": "MC1Services/Sources/MC1Services/Errors/WiFiTransportError+LocalizedError.swift",
+    "blob_sha": "7fdb35adf502d7fab575316fb996a1b84b49b16e",
+    "status": "Explicitly deferred GPL app-side formatter/localized recovery to WP-304; not dropped",
+    "test_reference": "WiFiAppErrorReference.kt preserves all eight original English values/reason interpolation in test only",
+    "protocol_production": "MIT typed cases/reasons/cause plus separate native wifi.* diagnostics; no GPL prose/provenance",
+    "fully_localized_ui_claimed": false
+  }
 }
