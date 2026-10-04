@@ -77,10 +77,15 @@ class WireCryptoTest {
             "6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e51" +
                 "30c81c46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710",
         )
-        val ciphertext = Bytes.fromHex(
-            "3ad77bb40d7a3660a89ecaf32466ef97f5d3d58503b9699de785895a96fdbaaf" +
-                "43b1cd7f598ece23881b00e3ed03068877b0c785e27e8ad3f8223207104725dd4",
-        )
+        val ciphertext = listOf(
+            "3ad77bb40d7a3660a89ecaf32466ef97",
+            "f5d3d58503b9699de785895a96fdbaaf",
+            "43b1cd7f598ece23881b00e3ed030688",
+            "7b0c785e27e8ad3f8223207104725dd4",
+        ).map { block ->
+            assertEquals(32, block.length, "Independent NIST AES block must have exactly 16 bytes")
+            Bytes.fromHex(block)
+        }.fold(Bytes.EMPTY, Bytes::plus)
         assertEquals(ciphertext, WireCrypto.encryptAes128EcbZeroPadded(plaintext, key))
         assertEquals(plaintext, WireCrypto.decryptAes128Ecb(ciphertext, key))
     }

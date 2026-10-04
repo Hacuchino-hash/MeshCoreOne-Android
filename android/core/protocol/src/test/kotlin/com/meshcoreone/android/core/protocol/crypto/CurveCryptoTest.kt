@@ -3,6 +3,7 @@ package com.meshcoreone.android.core.protocol.crypto
 
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.security.KeyFactory
+import java.security.MessageDigest
 import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
 import org.junit.jupiter.api.DynamicTest
@@ -116,6 +117,18 @@ class CurveCryptoTest {
         assertTrue(jdkVerify(vector.message, signature, vector.publicKey))
         assertTrue(Ed25519Crypto.verify(vector.message, signature, vector.publicKey))
         assertEquals(expanded, Ed25519Crypto.expandSeed(vector.seed))
+    }
+
+    @Test
+    fun `Generated firmware expansion is pruned while the independent SHA512 nonce half is preserved`() {
+        val vector = CryptoFixtures.keys[0]
+        val unpruned = Bytes(MessageDigest.getInstance("SHA-512").digest(vector.seed.toByteArray()))
+        val expanded = Ed25519Crypto.expandSeed(vector.seed)
+        assertEquals(64, expanded.size)
+        assertEquals(vector.expanded, expanded)
+        assertNotEquals(unpruned, expanded)
+        assertEquals(unpruned.slice(32, 64), expanded.slice(32, 64))
+        Ed25519Crypto.validateExpandedPrivateKey(expanded)
     }
 
     @Test

@@ -4,6 +4,7 @@
 # To regenerate this file, run: ./gradlew :core:services:dependencies --write-locks
 io.github.java-diff-utils:java-diff-utils:4.12=kotlinInternalAbiValidation
 org.apiguardian:apiguardian-api:1.1.2=testCompileClasspath
+org.bouncycastle:bcprov-jdk18on:1.86=runtimeClasspath,testRuntimeClasspath
 org.jetbrains.kotlin:abi-tools-api:2.3.20=kotlinInternalAbiValidation
 org.jetbrains.kotlin:abi-tools:2.3.20=kotlinInternalAbiValidation
 org.jetbrains.kotlin:kotlin-build-tools-api:2.3.20=kotlinBuildToolsApiClasspath,kotlinCompilerClasspath

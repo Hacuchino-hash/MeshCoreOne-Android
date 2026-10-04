@@ -16,6 +16,7 @@ object Ed25519Crypto {
         val expanded = ByteArray(expandedPrivateKeySize)
         try {
             Ed25519.ExpandedKey.expandPrivateKey(rawSeed, 0, expanded, 0)
+            Ed25519.ExpandedKey.prune(expanded, 0)
             return Bytes(expanded)
         } finally {
             rawSeed.fill(0)

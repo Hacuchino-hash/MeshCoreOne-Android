@@ -17,7 +17,7 @@ object Ed25519ToX25519 {
         val denominator = X25519Field.create()
         val inverse = X25519Field.create()
         val u = X25519Field.create()
-        X25519Field.decode(encoded, 0, y)
+        X25519Field.decode255(encoded, 0, y, 0)
         X25519Field.one(one)
         // Use the source's u = (1 + y) / (1 - y), with vetted field operations, not local limb arithmetic.
         X25519Field.add(one, y, numerator)
