@@ -7,8 +7,11 @@ Branch: `cbattlegear-friendly-goggles`, one dedicated owning worktree.
 | Binding | Revision |
 | --- | --- |
 | Clean initial / implementation base | `050ac6909c65af8e3fc63e5aaf44b1d240f1d8ac` |
-| Final transport/test code commit | `b245da16290b0e9332bb4814c29f206572f00234` |
-| Production code / actual APK build commit | `e82a8cca0d41d87b8da859db14710929d19dff9d` (subsequent code change is test-only) |
+| Historical launch-base tested code | `b245da16290b0e9332bb4814c29f206572f00234` |
+| Historical launch-base production/APK code | `e82a8cca0d41d87b8da859db14710929d19dff9d` |
+| Reconciled merged integration base | `4331a4dddd13126ab05f4b4d74e654f313c5d414` |
+| Rebased transport/test code | `b6659cc476a1a9f1a1e661daf69fde0fab9b75ef` |
+| Rebased production code | `bec9d74d8fd28b320b4503234a774f0f5a20e957` |
 | Read-only Swift reference | `db14559b39d32322b06477c6ae676112f583db50` |
 | Canonical manifest | `78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746` |
 | Trusted semantic policy revision | `56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a` |
@@ -20,10 +23,11 @@ checkout's CRLF byte hash, binds these revisions. The recorded prompt lease
 includes every write, including these docs and raw reports. No shared
 manifest/Gradle/workflow/model amendment is part of this package.
 
-Local assertions ran against the final committed code bytes. This evidence
-commit only adds documentation and captured outputs; exact final PR-head
-hosted checks are separate and must be inspected for that SHA. No model-written
-PASS text substitutes for independent acceptance.
+The launch-base assertions and APK remain explicitly historical evidence.
+`rebased-results.json` and `rebased-junit/` supersede their integrated totals
+and APK for the reconciled branch. Exact final PR-head hosted checks are
+separate and must be inspected for that SHA. No model-written PASS text
+substitutes for independent acceptance.
 
 ## Implemented behavior and source accounting
 
@@ -93,14 +97,47 @@ Every launcher invocation uses:
 | WP-108 WiFi codec | 17 |
 | WP-108 controlled IO/resolution | 20 |
 | WP-108 baseline/real TCP | 23 |
-| **Total** | **156** |
+| **Historical launch-base total** | **156** |
 
 The 84 pre-existing primitive cases all still pass. The 72 new transport cases
 are not described as 72 original Swift declarations: the owned source has
 18 declarations and native cases include added boundary/concurrency families.
-Complete final raw JUnit is preserved in `junit/`; `local-results.json`
-records actual artifact sizes/hashes. APK and private tool/caches stay outside
-Git; only actual inspection/hash evidence is committed.
+Complete launch-base raw JUnit is preserved in `junit/`; `local-results.json`
+records its actual artifact sizes/hashes. APK and private tool/caches stay
+outside Git; only actual inspection/hash evidence is committed.
+
+## Actual base reconciliation and integrated rerun
+
+The first exact-head WP-004 check at `123d163a28f750328f915903415eb79c4eb430b5`
+failed because default branch had merged WP-004's new workflow while that
+launch-base candidate lacked `tools/android-port/test_inventory.py`. That failed
+run is not claimed green. Approved merged main had also gained independent
+WP-104 builders and WP-105 LPP.
+
+Only this owning branch was rebased onto actual merged
+`4331a4dddd13126ab05f4b4d74e654f313c5d414`. Transport production/tests are
+byte-identical to the initial published head; no unowned workflow/tool/model
+fix was authored. Source, canonical manifest and semantic policy pins are
+unchanged. Publication uses the explicit old remote SHA
+`123d163a28f750328f915903415eb79c4eb430b5` as its force-with-lease guard, never an
+unconditional force push. The same normal PR is repaired, not replaced.
+
+| Actual integrated command | Result |
+| --- | --- |
+| Launcher: `:core:protocol:test :core:testing:testDebugUnitTest validateModuleGraph resolveScaffoldDependencies runtimeDependencyInventory --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | **594 protocol cases passed**: 84 primitives + 101 merged builders + 337 merged LPP + 72 WP-108; **35 helper cases passed**, no failures/errors/skips; graph/runtime/strict inputs passed |
+| `python .\tools\android-port\oracle\foundation_ci.py junit --junit .\android\core\testing\build\test-results\testDebugUnitTest` | Independently reparsed all **35** actual helper cases and names; no failed/error/skipped output |
+| `python .\tools\android-port\test_inventory.py --check` | Passed 468 paths / 5,133 frozen original declarations; not claimed ported |
+| `python .\tools\android-port\extract_vectors.py --check` | Passed **49** independent original vectors |
+| `python .\tools\android-port\oracle\run_tests.py --quiet` | **83** Python assertions passed, zero failed/errors/skipped |
+| Same explicit launcher `:app:assembleDebug --dependency-verification strict --no-build-cache --quiet` | Passed actual reconciled debug APK |
+| Same actual APK inspection, zipalign and ELF reader | Passed debug min31/target37/launcher/notices/fixture exclusion, all transport DEX classes and static 16KiB alignment |
+| Configuration/inventory/workflow/notice and complete lease validators | Passed; source/policy/manifest pins unchanged |
+
+`rebased-junit/protocol/` contains **all 594** cases, not just a 72-case
+selection. `rebased-junit/helpers/` contains all **35** helper cases.
+`rebased-results.json` binds their actual XML hashes and the reconciled APK.
+This integrated rerun does not transform WP-104/105 cases into WP-108 port
+credit, nor controller/helpers into physical or iOS parity.
 
 ## Acceptance IDs and honest limits
 
