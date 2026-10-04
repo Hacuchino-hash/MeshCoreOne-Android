@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "work_package": "WP-202",
+  "status": "proposed-needs-coordinator-review",
+  "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "production_source": "MC1Services/Sources/MC1Services/Services/PersistenceStore+Migration.swift",
+  "production_blob_sha": "9622a2793da5486fbd338f3917da5edd8fe7282f",
+  "native_schema": 1,
+  "source_activation_consumer": {
+    "path": "MC1Services/Sources/MC1Services/Connection/ConnectionManager+Lifecycle.swift",
+    "lines": "127-169",
+    "observed_order": "Reset stale room connections, radioID/dedup migration, channel flood migration, repeater unread migration, sort-date backfill, sort-date reset; all before transport activation/restoration can start a fresh sync.",
+    "native_owner": "WP-207",
+    "retained_effect": "The native connection owner still needs real stale-session reset before reauthentication, and must never run an Apple historical sweep over valid restored radioIDs, explicit raw modes or fresh reconnect anchors. This checkpoint does not assemble or activate that graph."
+  },
+  "native_test_file": "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/repository/InitialSchemaMigrationBoundaryTest.kt",
+  "native_test_class": "com.meshcoreone.android.core.data.repository.InitialSchemaMigrationBoundaryTest",
+  "native_execution": "not-run-local-JVM-resource-hold-and-shared-amendment-pending",
+  "acceptance": "No proposal is approved or claimed as an executed SwiftData migration, supported old Android upgrade, whole-backup codec/restore or preference migration.",
+  "cases": [
+    {
+      "id": "ChannelFloodScopeMigrationTests::Non-nil regionScope with inherit mode is promoted to .specific()",
+      "source": "MC1Services/Tests/MC1ServicesTests/ChannelFloodScopeMigrationTests.swift",
+      "blob_sha": "2fc28bdc015068a9bef765bf36244b78d8b8ee6a",
+      "proposed_disposition": "native-legacy-field-equivalent-plus-Apple-row-sweep-exclusion",
+      "source_behavior": "An old SwiftData row with explicit default inherit and non-null region is promoted to specific once, preserving the user's pre-column region choice.",
+      "native_method": "absentLegacyFloodModeRetainsRegionWhileExplicitInheritIsNotGuessed",
+      "native_assertions": "Use the actual WP-201 legacy field constructor with omitted mode and Germany, save through real Room and require raw specific plus Region(Germany). Separately persist explicit inherit/Germany and require both raw columns remain unchanged after warmUp.",
+      "rationale": "Native schema1 has no pre-column defaulted rows. An omitted legacy backup field has a measured field policy, while an explicit mode is genuine data and must not be guessed away by ordinary repository reads.",
+      "retained_consumer": "WP-203 must exercise real Swift-to-Kotlin legacy envelope decode/restore, including explicit malformed mode/region combinations; this proposal does not waive that gate."
+    },
+    {
+      "id": "ChannelFloodScopeMigrationTests::Nil regionScope with inherit mode stays at .inherit (corrective)()",
+      "source": "MC1Services/Tests/MC1ServicesTests/ChannelFloodScopeMigrationTests.swift",
+      "blob_sha": "2fc28bdc015068a9bef765bf36244b78d8b8ee6a",
+      "proposed_disposition": "native-initial-default-and-legacy-field-equivalent",
+      "source_behavior": "The corrective pass does not promote a row whose region is nil.",
+      "native_method": "nilAndMixedLegacyChannelFieldDefaultsRemainDistinct",
+      "native_assertions": "Require omitted mode/nil region to store inherit plus null and project Inherit, retaining the source's default ALL notification, zero mention count and unfavorited state.",
+      "rationale": "These are actual v1 field/default projections and reads, not a fabricated upgrade."
+    },
+    {
+      "id": "ChannelFloodScopeMigrationTests::Mixed rows migrate correctly in one pass()",
+      "source": "MC1Services/Tests/MC1ServicesTests/ChannelFloodScopeMigrationTests.swift",
+      "blob_sha": "2fc28bdc015068a9bef765bf36244b78d8b8ee6a",
+      "proposed_disposition": "native-legacy-field-family-equivalent-not-Apple-transaction",
+      "source_behavior": "Mixed nil/Germany/France historical rows become inherit/specific/specific in a single source save.",
+      "native_method": "nilAndMixedLegacyChannelFieldDefaultsRemainDistinct",
+      "native_assertions": "Store all three independently constructed legacy field families in Room and require slot-ordered Inherit, Region(Germany), Region(France).",
+      "rationale": "Preserves every original parameter value and consumer projection. This method does not claim a historical SwiftData transaction; native repository sync/rollback transactions are separately tested.",
+      "retained_consumer": "WP-203 owns atomic bulk restore of decoded legacy channel fields."
+    },
+    {
+      "id": "ChannelFloodScopeMigrationTests::Migration is idempotent \u2014 second run is a no-op()",
+      "source": "MC1Services/Tests/MC1ServicesTests/ChannelFloodScopeMigrationTests.swift",
+      "blob_sha": "2fc28bdc015068a9bef765bf36244b78d8b8ee6a",
+      "proposed_disposition": "Apple-UserDefaults-guard-exclusion-with-native-nonrewrite-proof",
+      "source_behavior": "The hasMigratedChannelFloodScope UserDefaults flag prevents a second corrective pass.",
+      "native_method": "repeatedWarmupCannotRewriteUserFloodChoicesOrUnknownRawModes",
+      "native_assertions": "Require a fully stored Region(Germany) DTO to remain equal through repeated native warmUp and preserve an unknown raw mode and its raw region.",
+      "rationale": "There is no old Android migration flag or old default-column population. Introducing Apple's flag into native v1 would falsely imply an upgrade and could overwrite deliberate later data."
+    },
+    {
+      "id": "ChannelFloodScopeMigrationTests::Post-migration writes to .allRegions are not clobbered by a re-run()",
+      "source": "MC1Services/Tests/MC1ServicesTests/ChannelFloodScopeMigrationTests.swift",
+      "blob_sha": "2fc28bdc015068a9bef765bf36244b78d8b8ee6a",
+      "proposed_disposition": "native-user-choice-preservation-equivalent",
+      "source_behavior": "A later explicit allRegions choice survives another migration invocation.",
+      "native_method": "repeatedWarmupCannotRewriteUserFloodChoicesOrUnknownRawModes",
+      "native_assertions": "Set AllRegions through the real repository, run warmUp twice and require raw allRegions with null region and AllRegions projection.",
+      "rationale": "Tests the same reachable user choice and non-clobbering consumer outcome without copying SwiftData migration numbering."
+    },
+    {
+      "id": "RadioIDMigrationTests::Migration propagates new radioID from Device to all children()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "native-v1-identity-equivalent-plus-Apple-column-rename-exclusion",
+      "source_behavior": "Children whose renamed deviceID column still holds a BLE UUID are rewritten to a newly assigned Device.radioID.",
+      "native_method": "nativeV1StoresExplicitRadioIdentityAcrossEveryRadioOwnedTable",
+      "native_assertions": "Use distinct registry ID and radioID, populate every one of the fourteen actual radio-owned tables through the store and require the exact canonical radioID in each real table; require schema version1.",
+      "rationale": "Android never opens a SwiftData database or its old BLE-named column. Native v1 begins with the correct radio partition and must preserve restored identity rather than randomly migrate it.",
+      "retained_consumer": "WP-203 still owns public-key-based child remapping during actual compatible backup restore."
+    },
+    {
+      "id": "RadioIDMigrationTests::Outgoing DM with nil dedup key gets backfilled()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "source-key-policy-equivalent-plus-historical-sweep-exclusion",
+      "source_behavior": "The radioID migration backfills only outgoing nil keys with the shared content-based algorithm.",
+      "native_method": "explicitOutgoingDedupKeyUsesPinnedContentBytesWithoutAHistoricalSweep",
+      "native_assertions": "Require the actual UTF8 SHA256 first-four-byte key for Hello mesh/timestamp1704067200 and canonical contact UUID to equal the independently computed literal ending41ABEB9C, persist it, and prove a separate outgoing nil key remains nil in ordinary v1 warmUp.",
+      "rationale": "The original hash/UUID consumer policy is preserved, but ordinary warmUp must not masquerade as an Apple historical migration. Native source send/sync consumers and legacy restore own when a key is materialized.",
+      "retained_consumer": "WP-203/214/208 must use the same actual key policy for their legacy restore/live-sync/outgoing paths; this proposal does not waive nil-key legacy restore tests."
+    },
+    {
+      "id": "RadioIDMigrationTests::Incoming message with nil dedup key stays nil()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "native-null-preservation-equivalent",
+      "source_behavior": "Incoming nil keys are excluded from the outgoing backfill.",
+      "native_method": "incomingNilAndExistingDedupKeysArePreservedAcrossWarmup",
+      "native_assertions": "Persist a genuine incoming nil key, call warmUp twice and require null.",
+      "rationale": "Preserves null rather than inventing dedup identity or suppressing re-sync."
+    },
+    {
+      "id": "RadioIDMigrationTests::Existing dedup key is not overwritten()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "native-existing-key-preservation-equivalent",
+      "source_behavior": "The preexisting dm-existing-key-12345678 value survives the migration.",
+      "native_method": "incomingNilAndExistingDedupKeysArePreservedAcrossWarmup",
+      "native_assertions": "Persist the exact original key string and require unchanged storage after two warmUp calls.",
+      "rationale": "Checks the original consumer-visible string, not merely non-nullness."
+    },
+    {
+      "id": "RadioIDMigrationTests::UserDefaults guard prevents re-run()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "Apple-UserDefaults-guard-exclusion-with-restored-identity-proof",
+      "source_behavior": "The hasPopulatedRadioIDs flag prevents assigning yet another random radioID on a second run.",
+      "native_method": "repeatedWarmupPreservesRestoredRadioAndRegistryLookupResolvesIt",
+      "native_assertions": "Call warmUp twice and require registry ID, full radioID, contact ID and partition all remain unchanged.",
+      "rationale": "Native v1 has no old BLE-column state. Blindly porting the randomization would destroy stable/restore identity; the correct native invariant is never performing it."
+    },
+    {
+      "id": "RadioIDMigrationTests::Migration backfills lastConnectedRadioID from lastConnectedDeviceID()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RadioIDMigrationTests.swift",
+      "blob_sha": "2a1f29e584db1d65649f2a3dcdcd167756ebdb6d",
+      "proposed_disposition": "repository-resolution-equivalent-with-preference-consumer-retained",
+      "source_behavior": "The old Apple lastConnectedDeviceID preference resolves the migrated Device.radioID and stores its canonical UUID string.",
+      "native_method": "repeatedWarmupPreservesRestoredRadioAndRegistryLookupResolvesIt",
+      "native_assertions": "Require fetchDevice(registryID) to resolve the exact different radioID/canonical string, fetchDevice(radioID) to resolve the same DTO, and no device lookup under the surrogate-as-radioID.",
+      "rationale": "This is the actual repository side of resolution. It does not implement or claim a UserDefaults-to-DataStore preference migration.",
+      "retained_consumer": "WP-204/207 own native last-connected preference persistence and connection resolution; an old iOS BLE preference must never become Android radio identity."
+    },
+    {
+      "id": "RepeaterUnreadMigrationTests::Repeater contact unread is zeroed; chat contact untouched()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RepeaterUnreadMigrationTests.swift",
+      "blob_sha": "e765345869108308801a099debb19a6698b2841d",
+      "proposed_disposition": "native-default-and-badge-equivalent-plus-historical-counter-sweep-exclusion",
+      "source_behavior": "The one-time corrective sweep zeros42 unread/3 mentions on an old repeater and retains4 chat unread.",
+      "native_method": "newRepeaterDefaultsAndBadgeFiltersPreserveChatUnread",
+      "native_assertions": "Require a new native repeater's counters to be0; separately persist the original42/3 values and require they do not inflate the badge while the chat remains4, without dropping those raw values.",
+      "rationale": "No old native bad badge implementation exists. Badge consumer parity is preserved; source-compatible restored/later raw values are not silently erased by ordinary warmUp."
+    },
+    {
+      "id": "RepeaterUnreadMigrationTests::Repeater-role session unread is zeroed; room session untouched()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RepeaterUnreadMigrationTests.swift",
+      "blob_sha": "e765345869108308801a099debb19a6698b2841d",
+      "proposed_disposition": "native-default-and-room-badge-equivalent-plus-historical-sweep-exclusion",
+      "source_behavior": "The one-time sweep zeros99 repeater admin-session unread and retains5 room unread.",
+      "native_method": "repeaterSessionDefaultsAndBadgeFiltersPreserveRoomUnread",
+      "native_assertions": "Require new repeater session unread0, persist99 as real later/restored data, and require the badge to include only the room's5 while the repeater's99 remains readable.",
+      "rationale": "Preserves the reachable room/badge outcome and actual stored data without inventing an old native upgrade."
+    },
+    {
+      "id": "RepeaterUnreadMigrationTests::Migration is idempotent \u2014 second run is a no-op()",
+      "source": "MC1Services/Tests/MC1ServicesTests/RepeaterUnreadMigrationTests.swift",
+      "blob_sha": "e765345869108308801a099debb19a6698b2841d",
+      "proposed_disposition": "Apple-flag-exclusion-with-later-counter-preservation-equivalent",
+      "source_behavior": "After the first corrective pass, a new repeater unread increment1 survives the flag-guarded second pass.",
+      "native_method": "repeatedWarmupDoesNotClearLaterRepeaterCounters",
+      "native_assertions": "After initial warmUp, increment a repeater through the real repository, run warmUp twice and require stored unread1 with badge0.",
+      "rationale": "Exactly preserves the later1 value and badge outcome without adding a fake migration flag."
+    },
+    {
+      "id": "SortDateBackfillMigrationTests::Pre-existing rows get sortDate backfilled to createdAt()",
+      "source": "MC1Services/Tests/MC1ServicesTests/SortDateBackfillMigrationTests.swift",
+      "blob_sha": "7f179daa26d3d12f75e341d0c7cf109915df0c01",
+      "proposed_disposition": "native-v1-date-default-equivalent-plus-old-column-sentinel-exclusion",
+      "source_behavior": "Pre-feature SwiftData rows with Date.distantPast sortDate are normalized to their complete createdAt before sync.",
+      "native_method": "newMessagesStartWithCompleteArrivalSortDatesNotSchemaSentinels",
+      "native_assertions": "Persist multiple new native messages with default sortDate and distinct full arrival dates, including negative/fractional epochs, and require stored sortDate==createdAt with chronological results.",
+      "rationale": "Native schema1 requires both full sort components and never has a defaulted pre-column Date.distantPast population. Legacy backups still need their actual field/default policy, not an ordinary read-side rewrite.",
+      "retained_consumer": "WP-203 must preserve or source-correctly default decoded legacy backup sortDate; this is not whole-envelope restore evidence."
+    },
+    {
+      "id": "SortDateBackfillMigrationTests::Migration is idempotent \u2014 second run is a no-op()",
+      "source": "MC1Services/Tests/MC1ServicesTests/SortDateBackfillMigrationTests.swift",
+      "blob_sha": "7f179daa26d3d12f75e341d0c7cf109915df0c01",
+      "proposed_disposition": "Apple-flag-exclusion-with-explicit-native-anchor-preservation",
+      "source_behavior": "After the first backfill, a later explicitly skewed sortDate survives the hasBackfilledMessageSortDate guard.",
+      "native_method": "explicitSortDatesSurviveRepeatedWarmupAndTheSameNativeSchemaReopen",
+      "native_assertions": "Write a real explicit sync-style sort date distinct from arrival time, call warmUp repeatedly, close/reopen the same native schema1 file and require both original dates unchanged.",
+      "rationale": "Date preservation is real disk evidence; copying the old sweep would corrupt valid explicit reconnect anchors."
+    },
+    {
+      "id": "SortDateResetMigrationTests::Reset re-normalizes a send-time sortDate back to createdAt()",
+      "source": "MC1Services/Tests/MC1ServicesTests/SortDateResetMigrationTests.swift",
+      "blob_sha": "1ccde93625baf91e4ad7873c3b54110ca84a6584",
+      "proposed_disposition": "native-arrival-default-equivalent-plus-interim-Apple-build-exclusion",
+      "source_behavior": "An interim iOS implementation's sender-clock sortDate is corrected once to its arrival createdAt.",
+      "native_method": "newMessagesStartWithCompleteArrivalSortDatesNotSchemaSentinels",
+      "native_assertions": "Require native new-message defaults to be the full arrival date rather than sender clock across preepoch/fractional values. The separate malformed-column test rejects null and out-of-range nanos without replacing rows.",
+      "rationale": "That interim Android implementation/version never existed. Native source sync explicitly supplies reconnect anchors; they must not be misidentified as historical corruption.",
+      "retained_consumer": "WP-214/203 still require actual drain-anchor and backup date behavior."
+    },
+    {
+      "id": "SortDateResetMigrationTests::Reset is idempotent \u2014 second run is a no-op()",
+      "source": "MC1Services/Tests/MC1ServicesTests/SortDateResetMigrationTests.swift",
+      "blob_sha": "1ccde93625baf91e4ad7873c3b54110ca84a6584",
+      "proposed_disposition": "Apple-reset-flag-exclusion-with-native-disk-nonrewrite-proof",
+      "source_behavior": "A later re-skew survives the hasResetMessageSortDate flag on a second reset call.",
+      "native_method": "explicitSortDatesSurviveRepeatedWarmupAndTheSameNativeSchemaReopen",
+      "native_assertions": "Require explicit non-arrival sort date plus nanos to survive repeated warmUp and native-v1 file reopen.",
+      "rationale": "Verifies the non-clobbering consumer effect without pretending an old native reset flag or historical version exists."
+    }
+  ],
+  "separate_native_negative_method": "missingOrMalformedSortColumnsFailWithoutNormalizingRealRows",
+  "limits": [
+    "No native test in this proposal has executed yet.",
+    "No whole-envelope legacy backup compatibility or atomic restore/preference evidence is substituted.",
+    "No old Android schema/version, Apple database import, destructive migration, fake migration flag or schema change is introduced.",
+    "Coordinator review must accept, reject or narrow each disposition before it can satisfy source-case accounting."
+  ]
+}
