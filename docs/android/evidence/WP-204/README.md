@@ -1,11 +1,11 @@
 # WP-204 implementation and verification record
 
-**Status: actual owned unit/source verification passed113/113; shared
-checksums/consumer locks are admitted and generated. Final integration is
-BLOCKED by512MiB local D8 heap exhaustion and the still-unmerged WP-201 root
-collector repair during the initial checkpoint. That repair is now actually
-merged; final normal same-head root/APK/both-host verification is pending.
-No actual APK or both-host root result is claimed yet.**
+**Status: actual owned unit/source verification passed131/131 after both
+independently reviewed source repairs. Shared checksums/consumer locks and
+module-local test SDK locks are admitted/generated. Historical headcc02 has
+genuine two-host root/APK proof; the repaired current3da-based head still
+requires fresh normal same-head root/APK/protocol verification. Neither the
+historical113 tests nor the historical APK closes the two source defects.**
 
 Repository `cbattlegear/MeshCoreOne-Android`; owner `data-persistence-engineer`.
 ACTIVE coordinator receipt `autonomous-WP-204-dc15f1ba`; app session
@@ -15,10 +15,13 @@ ACTIVE coordinator receipt `autonomous-WP-204-dc15f1ba`; app session
 `cbattlegear-upgraded-carnival`. Initial verified clean HEAD and actual main:
 `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
 Final coordinator-verified integration base:
-`fbb7eb6f88f1b3a74eaddb68cac911ff52650d02`, actual PR20 merge. Only the
+`3da3a73b8481c49d035486924a813b331bf184d0`, actual guarded Session merge
+after the actual PR20 repair at`fbb7eb6f88f1b3a74eaddb68cac911ff52650d02`. Only the
 owning branch was reconciled; original lease/base and failed attempts remain
 unchanged. Rewritten branch publication uses the explicit old remote-tip
 lease `ef903325391dfe8a0d0ec74d85b44c96df802199`.
+The second reconciliation onto actual3da uses exact owning old remote tip
+`cc02f7cb8ed7ab41ec70951c033ffecabd9b3297`; no peer/main checkout was changed.
 The **native CLI/app alias is `00cbcd6f-1b3b-4e40-8d44-2ce4216eb72e`**;
 the separate project alias above is not a replacement for that lease identity.
 
@@ -278,7 +281,7 @@ task. Fresh same-head normal CI must still prove the repaired candidate; no
 workflow, source manifest, policy, pin or threshold was changed.
 No next work package, factory, agent, fleet, merge or approval was started.
 
-## Independent source review repairs in progress
+## Independently reviewed defects reproduced and repaired
 
 The read-only reviewer identified two real defects at the original
 `ef903325391dfe8a0d0ec74d85b44c96df802199` production input. The earlier113
@@ -290,10 +293,46 @@ release for winning and losing/cancelled callers.
 New tests use actual SDK31/32/33/37 Robolectric services/key specs, not merely
 integer parameters, and a deterministic reversed-resumption dispatcher around
 real DataStore shutdown with immediate get/reopen and replacement-owner
-protection. The planned complete set is119 native methods/131 SDK-expanded
-cases, with the original34/41 source accounting unchanged. These new
-declarations are **not executed/passed yet**. Local Java remains held for
-WP-202; only the already independently pinned SDK32/33/37 JAR/POM tuples are
-used. The new module-owned `reviewedPlatformSdks` configuration needs actual
-strict Gradle-generated local lock state before execution; strict locking is
-not disabled and no state is manufactured from declarations.
+protection. They now execute: **131 discovered/131 passed/0
+failures/errors/skips**,119 native methods,16 actual API profiles, and all
+original34/41 source accounting unchanged. Complete10 raw JUnit suites and
+profile labels are retained. These are actual SDK runtimes/service/spec
+assertions, not hardware Keystore certification.
+
+The first targeted attempt found two real test-setup failures: no process
+observer remained active, so both closes could legitimately finish before
+the deliberately reversed dispatcher scheduled a continuation. Using the
+actual process-owned notification-preference observer makes both closes
+suspend through real shutdown, without sleeps or fake cleanup.
+
+Temporarily restoring **only the two reviewed original production behaviors**
+then produced the expected18-case run with**4 failures/0 errors/skips**:
+no-PIN generation failures on31/32/33 and immediate`get()` returning the
+closed owner. Verbatim XML and failing identities are retained under
+[`review-regression/original-defects/`](review-regression/original-defects/).
+The API35+ policy/shared close implementation was restored byte-for-byte to
+its committed source, and the full131-case suite passed unchanged assertions.
+Reproduction failures are not passing acceptance evidence.
+
+| Actual bounded command | Result |
+| --- | --- |
+| `:core:datastore:prepareReviewedPlatformSdks :core:datastore:resolvePreferenceDependencies --write-locks --dependency-verification strict --no-build-cache --quiet` | Passed actual module-local lock generation and independent JAR checks for31/32/33/37; selected graphs resolved, no new shared artifact/version |
+| `:core:datastore:testDebugUnitTest --tests com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest --tests com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest`, same strict flags | First16 policy cases passed and2 setup cases failed; real process observer repaired deterministic scheduling, then18/18 passed |
+| Same18-case selector with temporarily restored original2 production behaviors | Failed as required:18 run/4 failures/0 errors/skips, both reviewed defects observed; original failing raw XML retained |
+| `:core:datastore:verifyPreferenceTests --dependency-verification strict --no-build-cache --quiet` after restoring both fixes | Passed131/131,119 native methods, all34 originals/41 source parameter scenarios and16 API profiles |
+
+The three additionally reviewed SDKs use **separate nontransitive module
+configurations**`reviewedPlatformSdk32`,`reviewedPlatformSdk33` and
+`reviewedPlatformSdk37`, preventing normal Gradle conflict selection from
+dropping32/33 when all versions share one configuration. Actual strict lock
+records were generated by Gradle, never hand-authored; existing31 and all
+checksum/SDK/platform pins remain unchanged. The typed directory argument,
+scoped Java export and one-class forks follow the published native multi-SDK
+runner. No lock verification is disabled.
+
+All commands used one private512MiB build/512MiB metaspace/256MiB test,
+one-worker/in-process Kotlin/SerialGC/two-CPU configuration. The worker
+confirmed**zero own private Java processes** and releases the exclusive slot
+back for WP-202's guard verification. No local APK/D8 retry occurred.
+Fresh normal same-head Windows/Linux root/APK/protocol proof and narrow
+independent source recheck remain required before final handoff/merge.

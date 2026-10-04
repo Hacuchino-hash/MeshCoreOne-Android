@@ -9,7 +9,7 @@
   "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
   "branch": "cbattlegear-upgraded-carnival",
   "initial_lease_base_sha": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
-  "observed_head_sha": "9046679a73fc5ced164f9422dfa034c7ff3d4974",
+  "observed_head_sha": "d911227745f91b9d8ddd92cbc31c087ea4e8d846",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
   "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
@@ -155,7 +155,7 @@
         "name": "exactBareNames",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest.xml",
-        "junit_sha256": "db3edf34b4f395700dfb4cc61b492f55c5d1ed160bcd6e4c100e37900c79dc0a"
+        "junit_sha256": "18bbbba193ba3511fc60fcf8870e86e8cd7c6b70e43bbf758045d13bd8735c31"
       }
     },
     {
@@ -173,7 +173,7 @@
         "name": "themeKeysAreNotInfrastructureKeys",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest.xml",
-        "junit_sha256": "db3edf34b4f395700dfb4cc61b492f55c5d1ed160bcd6e4c100e37900c79dc0a"
+        "junit_sha256": "18bbbba193ba3511fc60fcf8870e86e8cd7c6b70e43bbf758045d13bd8735c31"
       }
     },
     {
@@ -191,7 +191,7 @@
         "name": "keyWidths",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -209,7 +209,7 @@
         "name": "reservedFirstBytesNeverGenerated",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -250,7 +250,7 @@
         "name": "twoCharacterVanityFamily",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -291,7 +291,7 @@
         "name": "oneCharacterVanityFamily",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -309,7 +309,7 @@
         "name": "threeCharacterVanity",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -327,7 +327,7 @@
         "name": "fourCharacterVanity",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -345,7 +345,7 @@
         "name": "nilAcceptsAnyValidKey",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -363,7 +363,7 @@
         "name": "zeroReserved",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -381,7 +381,7 @@
         "name": "ffReserved",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -399,7 +399,7 @@
         "name": "longerZeroReserved",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -417,7 +417,7 @@
         "name": "longerFFReserved",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -435,7 +435,7 @@
         "name": "singleZeroAllowed",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -453,7 +453,7 @@
         "name": "singleFAllowed",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -471,7 +471,7 @@
         "name": "cancellationPropagates",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -489,7 +489,7 @@
         "name": "scalarClamping",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -507,7 +507,7 @@
         "name": "independentRfcSeedAndSingleSha512Expansion",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -525,7 +525,7 @@
         "name": "randomErrorDescription",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -543,7 +543,7 @@
         "name": "generationsDiffer",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -561,7 +561,7 @@
         "name": "validExpandedKey",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -604,7 +604,7 @@
         "name": "wrongLengthFamily",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -622,7 +622,7 @@
         "name": "scalarFirstByteInvalid",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -640,7 +640,7 @@
         "name": "scalarHighBitInvalid",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -658,7 +658,7 @@
         "name": "scalarRequiredBitInvalid",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -676,7 +676,7 @@
         "name": "invalidKeyDescription",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -694,7 +694,7 @@
         "name": "nonzeroOffsetSlice",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-        "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+        "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
       }
     },
     {
@@ -712,7 +712,7 @@
         "name": "autoUpdateDefaultsFalse",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -730,7 +730,7 @@
         "name": "gpsDefaultsPhone",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -748,7 +748,7 @@
         "name": "autoUpdateIsDeviceScoped",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -766,7 +766,7 @@
         "name": "gpsIsDeviceScoped",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -784,7 +784,7 @@
         "name": "gpsPresenceInitiallyFalse",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -802,7 +802,7 @@
         "name": "explicitDefaultStillHasPresence",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     },
     {
@@ -820,56 +820,68 @@
         "name": "bothValuesRoundTrip",
         "outcome": "passed",
         "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-        "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+        "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
       }
     }
   ],
   "junit_suites": [
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465",
-      "bytes": 2572,
+      "sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa",
+      "bytes": 2571,
       "cases": 13
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466",
-      "bytes": 1309,
+      "sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580",
+      "bytes": 1310,
       "cases": 7
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086",
-      "bytes": 1509,
+      "sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d",
+      "bytes": 1507,
       "cases": 7
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f",
-      "bytes": 3613,
+      "sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563",
+      "bytes": 3616,
       "cases": 25
     },
     {
+      "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42",
+      "bytes": 3204,
+      "cases": 16
+    },
+    {
+      "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest.xml",
+      "sha256": "03adb4a94772e3dfa222a4f3b7a1d6270b5fb2175c8560e7090056ac77fdd2ee",
+      "bytes": 730,
+      "cases": 2
+    },
+    {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest.xml",
-      "sha256": "db3edf34b4f395700dfb4cc61b492f55c5d1ed160bcd6e4c100e37900c79dc0a",
-      "bytes": 627,
+      "sha256": "18bbbba193ba3511fc60fcf8870e86e8cd7c6b70e43bbf758045d13bd8735c31",
+      "bytes": 629,
       "cases": 2
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PlatformStorageTest.xml",
-      "sha256": "3a4ed125d7da9ca91776442a07b2890a4d673ce877d63c3e83852128261ee472",
+      "sha256": "3b49e10ffdc668370d55faafddc554e74bbbcd0a23b93b93cfbfd3e7b1f61793",
       "bytes": 1058,
       "cases": 4
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab",
-      "bytes": 4781,
+      "sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c",
+      "bytes": 4782,
       "cases": 27
     },
     {
       "path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3",
+      "sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6",
       "bytes": 4961,
       "cases": 28
     }
@@ -880,803 +892,1123 @@
       "name": "utf8CorruptionPasswordLimitAndPublicKeyWidthAreChecked",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "missingInvalidatedUnauthenticatedAndProviderKeysHaveDistinctOutcomes",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "nestedPlatformInvalidationIsNotFlattenedIntoUnspecifiedProviderFailure",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "encryptedAndSensitiveValuesNeverPrintPrivateMaterial",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "preunlockAndDeviceLockUseActualShadowedAndroidServices",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "unsupportedEnvelopeVersionAndOversizedBinaryHaveNoSuccessFallback",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "keyGenerationUsesSourceEquivalentUnlockedDeviceOnlyAes256GcmParameters",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "aadNonceTagAndCiphertextChangesEachFailAuthentication",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "deviceProtectedContextIsNeverUsedAsASecretFallback",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "everyTruncationAndTrailingByteFailsCheckedEnvelopeDecode",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "hostileDeclaredPlaintextLengthsNeverControlAllocation",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "envelopeRejectsWrongRadioPublicKeyAliasAndSecretType",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.CryptographyBoundaryTest",
       "name": "all128EncryptionsHaveFresh96BitNoncesAndAuthenticatedRoundTrips",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.CryptographyBoundaryTest.xml",
-      "junit_sha256": "1196160bbdc501b7a776a9422a17dd64711cf75e4a1d80e7760f57194b73c465"
+      "junit_sha256": "715d3b0b6837611c97a869277d6f101d7210d298ecb86e20c230096c8de91caa"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "gpsIsDeviceScoped",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "gpsPresenceInitiallyFalse",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "bothValuesRoundTrip",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "explicitDefaultStillHasPresence",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "autoUpdateIsDeviceScoped",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "gpsDefaultsPhone",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest",
       "name": "autoUpdateDefaultsFalse",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.DevicePreferenceSourceTest.xml",
-      "junit_sha256": "46684dcdd8d0e4485c133806d034b511b9479da62020ee09c06db9c49ec08466"
+      "junit_sha256": "a2f39c8cfe941a1ea3143179e587fa1f1976651c4e5ee5bf7aefe093f539d580"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "cancellationFromEntropyIsNotReclassifiedAsRandomFailure",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "sourceAttemptBudgetsAreExactAndBounded",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "maximumAttemptsIsARealTypedFailureAfterExactly10000Attempts",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "malformedPrefixNeverReachesEntropyOrOverflowsAttemptScaling",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "importedExpandedKeyUsesMergedCurvePrimitiveAndNotDoubleHashing",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "randomProviderFailureAndWrongSeedWidthAreNotExpandedKeys",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest",
       "name": "reservedPrefixesFailBeforeEntropy",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest.xml",
-      "junit_sha256": "c0f381c1a1220152b829939ca4bfa9236f5ce28fc8d35a19d4f649d9ed08b086"
+      "junit_sha256": "085259611706859d2e8191ac954f46b41ef9e5bd0f963684fef398e99ffaf10d"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "invalidKeyDescription",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "nonzeroOffsetSlice",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "keyWidths",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "wrongLengthFamily",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "singleFAllowed",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "independentRfcSeedAndSingleSha512Expansion",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "scalarRequiredBitInvalid",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "longerFFReserved",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "reservedFirstBytesNeverGenerated",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "longerZeroReserved",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "fourCharacterVanity",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "scalarFirstByteInvalid",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "nilAcceptsAnyValidKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "singleZeroAllowed",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "twoCharacterVanityFamily",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "generationsDiffer",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "threeCharacterVanity",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "scalarClamping",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "scalarHighBitInvalid",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "oneCharacterVanityFamily",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "ffReserved",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "randomErrorDescription",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "cancellationPropagates",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "zeroReserved",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.KeyGenerationSourceTest",
       "name": "validExpandedKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeyGenerationSourceTest.xml",
-      "junit_sha256": "875727dbe3ef849690182e0bb44b00bae38f594f32ea7c4c2bdc5de445302b6f"
+      "junit_sha256": "619419c0a7ef2ca7c34f5eecce8af59a5bd2165cd434de3934d6bf5cd53ed563"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[31]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[31]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[31]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[31]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[32]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[32]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[32]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[32]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[33]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[33]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[33]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[33]",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+      "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest",
+      "name": "losingCloseCallerCannotCompleteBeforeReleaseAndRemoveTheReplacementOwner",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest.xml",
+      "junit_sha256": "03adb4a94772e3dfa222a4f3b7a1d6270b5fb2175c8560e7090056ac77fdd2ee"
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest",
+      "name": "cancelledConcurrentCloseStillWaitsForRegistryReleaseBeforeReportingCancellation",
+      "outcome": "passed",
+      "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.OwnerCloseRegressionTest.xml",
+      "junit_sha256": "03adb4a94772e3dfa222a4f3b7a1d6270b5fb2175c8560e7090056ac77fdd2ee"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest",
       "name": "exactBareNames",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest.xml",
-      "junit_sha256": "db3edf34b4f395700dfb4cc61b492f55c5d1ed160bcd6e4c100e37900c79dc0a"
+      "junit_sha256": "18bbbba193ba3511fc60fcf8870e86e8cd7c6b70e43bbf758045d13bd8735c31"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest",
       "name": "themeKeysAreNotInfrastructureKeys",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PersistenceKeysSourceTest.xml",
-      "junit_sha256": "db3edf34b4f395700dfb4cc61b492f55c5d1ed160bcd6e4c100e37900c79dc0a"
+      "junit_sha256": "18bbbba193ba3511fc60fcf8870e86e8cd7c6b70e43bbf758045d13bd8735c31"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PlatformStorageTest",
       "name": "storageErrorLoggingContainsCodesButNotProviderCauses",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PlatformStorageTest.xml",
-      "junit_sha256": "3a4ed125d7da9ca91776442a07b2890a4d673ce877d63c3e83852128261ee472"
+      "junit_sha256": "3b49e10ffdc668370d55faafddc554e74bbbcd0a23b93b93cfbfd3e7b1f61793"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PlatformStorageTest",
       "name": "unavailableBeforeFirstUnlockIsReportedByActualFactoryNotReplacedWithEmptyPersistence",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PlatformStorageTest.xml",
-      "junit_sha256": "3a4ed125d7da9ca91776442a07b2890a4d673ce877d63c3e83852128261ee472"
+      "junit_sha256": "3b49e10ffdc668370d55faafddc554e74bbbcd0a23b93b93cfbfd3e7b1f61793"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PlatformStorageTest",
       "name": "actualApplicationContextFactoryIsSingletonAndPersistsUnderNoBackupDirectory",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PlatformStorageTest.xml",
-      "junit_sha256": "3a4ed125d7da9ca91776442a07b2890a4d673ce877d63c3e83852128261ee472"
+      "junit_sha256": "3b49e10ffdc668370d55faafddc554e74bbbcd0a23b93b93cfbfd3e7b1f61793"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PlatformStorageTest",
       "name": "manualExportPolicyIsSeparateFromAutomaticBackupAndDeviceOnlyPasswords",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PlatformStorageTest.xml",
-      "junit_sha256": "3a4ed125d7da9ca91776442a07b2890a4d673ce877d63c3e83852128261ee472"
+      "junit_sha256": "3b49e10ffdc668370d55faafddc554e74bbbcd0a23b93b93cfbfd3e7b1f61793"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "coldStartRetainsEveryPrimitiveAndOrderedArray",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "backupInputRejectsDeviceLocalAndMistypedKeysRatherThanDroppingThem",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "cancellationDuringCloseReleasesOwnerOnlyAfterDatastoreCleanup",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "duplicateOwnerIsRejectedAndReopenWaitsForClose",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "notificationAdapterStartsFromActualStorageAndUpdatesWholeSnapshotAtomically",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "backupMissingVersusExplicitDefaultsAndWriteIfMissingAreAtomic",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "missingAndUnknownGpsRemainDistinctAndSourceKeysUseCanonicalUuid",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "corruptProtobufNeverCreatesAnEmptyReplacement",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "discoveryFirstActivationPersistsChildrenButPreservesExistingChoices",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "appDeviceAndSceneResetScopesDoNotEraseEachOtherOrSecrets",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "ioFailureIsReportedAndPreservesDurableState",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "oversizedStateFailsBeforeUnboundedParsingAndIsNotReplaced",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "scenesRestorePerSceneAndNeverEnterManualAppPreferencesBackup",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "oversizedWritePreservesThePreviouslyCommittedFile",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "unknownRawSelectionsSurviveStorageAndExport",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "preunlockPermissionAndUserStorageErrorsAreNotDefaultPreferences",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "allTenThemesAreUnlockedAndUnknownCorrectionIsExplicit",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "malformedKnownPrimitiveTypeIsReportedWithoutRepairOrDefault",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "cleanFirstUseDoesNotPersistDefaults",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "nonFiniteDateWriteCannotCommitAndRawReferenceEpochSecondsArePreserved",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "recentEmojiOrderDefaultsDuplicateRemovalAndSixLimitPersist",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "transformCancellationPropagatesWithoutCommitting",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "sourceBooleanDefaultsAreCompleteAndPinned",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "concurrentReadModifyWriteDoesNotLoseUpdates",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "transactionExceptionDoesNotCommitPartialValues",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "awaitedFlowUpdatesAreOrderedAndSharedAcrossConsumers",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.PreferenceBoundaryTest",
       "name": "malformedOrderedArrayIsNotConvertedIntoAnEmptyRecentList",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.PreferenceBoundaryTest.xml",
-      "junit_sha256": "309fa50355950b19de9dec52094e7733da06f43e7abcb59cfba934a60a7a64ab"
+      "junit_sha256": "9d4ac6d1392b079613ec920833f4ede2aefd2d7b3e56d2349e93de4478afa95c"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "oversizedArchiveRemainsUntouchedAndNeverGeneratesKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "unsupportedArchiveVersionAndMalformedArchiveAreDistinctTypedFailures",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "wrongExistingKeyIsAuthenticationFailureNotMissingOrRegenerated",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "concurrentNewEntriesCreateExactlyOneMasterKeyAndLoseNoPasswords",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "missingEntryDoesNotMeanFormerKeyMissing",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "permissionProviderAndIoFailuresAreExplicitAndDoNotCreateEmptyStore",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "replacingAValidPasswordIsAtomicAndUsesNewCiphertext",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "deletingLastEntryRetainsFormerlyUsedKeyMetadata",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "passwordReopensAndNeverAppearsInPreferenceOrSecretFiles",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "passwordDeletionIsIdempotentAndRadioScoped",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "expandedIdentityImportExportChecksPublicMatchingAndExcludesSeedFormat",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "unsupportedEnvelopeVersionDoesNotFallBackOrDeleteData",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "anExistingUnauthenticatedEmptyArchiveNeverAuthorizesKeyGeneration",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "realDataStoreWriteFailureKeepsOldCiphertextAndKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "concurrentReadsAndRotationsNeverReportOrdinaryRetirementAsLostKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "postCommitOldKeyCleanupFailureReportsCommittedRotation",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "corruptCiphertextIsAuthenticatedAndCannotBeOverwrittenAsRecovery",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "sourceServiceAccountAndRadioPartitionsAreExact",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "identityReplacementRequiresExplicitRequestAndNeverGeneratesAutomatically",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "failedKeyCreationDoesNotPersistAClaimedInitializedNamespace",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "lockedBeforeUnlockAndLockedScreenAreDistinctFromMissingPassword",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "deletingAnEntryFromUntrustedArchiveCannotBecomeAMissingPasswordSuccess",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "writeCancellationBeforeCommitAndReadCancellationPropagateWithoutLoggingSuccess",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "keyRotationReencryptsAllEntriesBeforeRemovingOldKey",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "keyLossBlocksReadsWritesDeletionAndRotationWithoutReplacingCiphertext",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "reassigningCiphertextToAnotherIdentityCannotBypassArchiveAuthentication",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "newNamespaceHasNoEntryAndDoesNotGenerateAKeyOnRead",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
     },
     {
       "class": "com.meshcoreone.android.core.datastore.SecretBoundaryTest",
       "name": "permanentlyInvalidatedKeyIsReportedWithoutRecreation",
       "outcome": "passed",
       "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.SecretBoundaryTest.xml",
-      "junit_sha256": "c38d93a14aecbb197414a28e5cfe2ecf94194db7b6cd8d6fd757fc5c8a7c05f3"
+      "junit_sha256": "65ec002951d6b9b1b75d88b1877a1d010e4dbdb8b47ae0133478c65b837809e6"
+    }
+  ],
+  "native_sdk_profiles": [
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+      "sdk": 31,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[31]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+      "sdk": 32,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[32]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+      "sdk": 33,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations[33]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+      "sdk": 37,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "currentLockAndFirstUnlockChecksRemainMandatoryForBothLockConfigurations",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+      "sdk": 31,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[31]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+      "sdk": 32,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[32]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+      "sdk": 33,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey[33]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+      "sdk": 37,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "missingAndInvalidatedKeysNeverTriggerAnApiPolicyRecoveryKey",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+      "sdk": 31,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[31]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+      "sdk": 32,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[32]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+      "sdk": 33,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy[33]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+      "sdk": 37,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "noPinAndSecureLockBothUseActualSdkNewKeyPolicy",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+      "sdk": 31,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[31]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+      "sdk": 32,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[32]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+      "sdk": 33,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext[33]",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
+    },
+    {
+      "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+      "method": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+      "sdk": 37,
+      "native_test": {
+        "class": "com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest",
+        "name": "removingLegacySecureLockNeverRecreatesAnExistingKeyOrLosesCiphertext",
+        "outcome": "passed",
+        "junit_path": "android/core/datastore/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.datastore.KeystorePlatformPolicyTest.xml",
+        "junit_sha256": "79b0b67c731d468c826533c9347725fe4f4e886ddc67fa028abaa07fe7bdcc42"
+      }
     }
   ],
   "native_input_files": [
     {
       "path": "android/core/datastore/build.gradle.kts",
-      "bytes": 4986,
-      "canonical_lf_sha256": "5416b7844b98442ee10c40d2f832ba808bc8bc6d3272b3b520175e1b7b5bd259"
+      "bytes": 6528,
+      "canonical_lf_sha256": "9a14c67238eba3ea5b216bfd02cb277f9076c208d2f0325f1de627d743b8d1ab"
     },
     {
       "path": "android/core/datastore/gradle.lockfile",
-      "bytes": 22835,
-      "canonical_lf_sha256": "c38b45e0cd61981a33cea198e0bf7d70b8b6f31f03c67a1cb5e4aa883c70d061"
+      "bytes": 22937,
+      "canonical_lf_sha256": "5a2a11444a63f6fcb8d414817771a9f209a55fed219c4ce38c9f9191e6045360"
     },
     {
       "path": "android/core/datastore/src/main/AndroidManifest.xml",
@@ -1720,8 +2052,8 @@
     },
     {
       "path": "android/core/datastore/src/main/kotlin/com/meshcoreone/android/core/datastore/MeshCoreStorage.kt",
-      "bytes": 6057,
-      "canonical_lf_sha256": "61140d6abddb0717ccbc6f9dcaeeab20ae2c5423afd1a68c4a9754efce883e9b"
+      "bytes": 6193,
+      "canonical_lf_sha256": "abc4ee8fd95ac8b3733cbe2566168faafa9f992b33a618b240f84f74f56b1f96"
     },
     {
       "path": "android/core/datastore/src/main/kotlin/com/meshcoreone/android/core/datastore/OrderedStrings.kt",
@@ -1755,8 +2087,8 @@
     },
     {
       "path": "android/core/datastore/src/main/kotlin/com/meshcoreone/android/core/datastore/SecretCryptography.kt",
-      "bytes": 7802,
-      "canonical_lf_sha256": "1a9c2c506c858a73bdacafad579604c212370fbafca2133f34cf65aea76ad2dc"
+      "bytes": 8618,
+      "canonical_lf_sha256": "8ce129d7738b7a17cbb678df026ee36e7f7333580b55c6a278542f6dff45595e"
     },
     {
       "path": "android/core/datastore/src/main/kotlin/com/meshcoreone/android/core/datastore/SecretEnvelope.kt",
@@ -1785,8 +2117,8 @@
     },
     {
       "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/CryptographyBoundaryTest.kt",
-      "bytes": 12966,
-      "canonical_lf_sha256": "cca2598254e0a61c45fee1971b0a5968b350c92edabadc38b8a0d948d970067b"
+      "bytes": 13076,
+      "canonical_lf_sha256": "bcc7def5140c3ad0312e5bafaef20e7af88022a1470ce9a1422ee9d577735661"
     },
     {
       "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/DevicePreferenceSourceTest.kt",
@@ -1802,6 +2134,16 @@
       "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/KeyGenerationSourceTest.kt",
       "bytes": 9048,
       "canonical_lf_sha256": "c8302d9eb6afc47e311e78f917572a0108b855fb60552ccfedbfbc1e5baca03c"
+    },
+    {
+      "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/KeystorePlatformPolicyTest.kt",
+      "bytes": 6573,
+      "canonical_lf_sha256": "b1ac870d62fee7cab6e2cc2b37f56f0d8f88ca54cf08b5933296ab3a1ecd3307"
+    },
+    {
+      "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/OwnerCloseRegressionTest.kt",
+      "bytes": 6335,
+      "canonical_lf_sha256": "8fbff198adc17dfe596684ea6e6b5bbf641d61c4c12be5f1e5ca55e80cdeeafe"
     },
     {
       "path": "android/core/datastore/src/test/kotlin/com/meshcoreone/android/core/datastore/PersistenceKeysSourceTest.kt",
@@ -1831,13 +2173,14 @@
   ],
   "native_inputs_committed_at_observed_head": false,
   "discovery": {
-    "declared_native_cases": 113,
-    "discovered_passed": 113,
+    "declared_native_methods": 119,
+    "declared_native_cases": 131,
+    "discovered_passed": 131,
     "failed": 0,
     "errors": 0,
     "skipped": 0,
     "original_declarations": 34,
     "parameter_expanded_scenarios": 41
   },
-  "scope": "actual DataStore/JCA/SDK31 shadow assertions; not real Android Keystore hardware, API37 device, full bidirectional backup, license approval, hosted-run authority or a protected gate receipt"
+  "scope": "actual DataStore/JCA/declared SDK shadow assertions; not real Android Keystore hardware, API37 device, full bidirectional backup, license approval, hosted-run authority or a protected gate receipt"
 }

@@ -23,18 +23,20 @@ dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
 }
 
-val reviewedPlatformSdks by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    isTransitive = false
-}
-dependencies {
-    reviewedPlatformSdks("org.robolectric:android-all-instrumented:12.1-robolectric-8229987-i7")
-    reviewedPlatformSdks("org.robolectric:android-all-instrumented:13-robolectric-9030017-i7")
-    reviewedPlatformSdks("org.robolectric:android-all-instrumented:17-robolectric-15733970-i7")
+val reviewedPlatformSdks = listOf(
+    "32" to "12.1-robolectric-8229987-i7",
+    "33" to "13-robolectric-9030017-i7",
+    "37" to "17-robolectric-15733970-i7",
+).map { (api, version) ->
+    configurations.create("reviewedPlatformSdk$api") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+        isTransitive = false
+    }.also { dependencies.add(it.name, "org.robolectric:android-all-instrumented:$version") }
 }
 val prepareReviewedPlatformSdks by tasks.registering(Sync::class) {
-    from(configurations.named("testRobolectricSdk"), reviewedPlatformSdks)
+    from(configurations.named("testRobolectricSdk"))
+    reviewedPlatformSdks.forEach { from(it) }
     into(layout.buildDirectory.dir("reviewed-platform-sdks"))
 }
 

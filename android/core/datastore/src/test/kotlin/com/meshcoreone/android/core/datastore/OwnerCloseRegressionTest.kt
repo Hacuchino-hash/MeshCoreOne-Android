@@ -44,6 +44,7 @@ class OwnerCloseRegressionTest {
             StandardTestDispatcher(testScheduler), "close.order",
         )
         owner.preferences.set(AppStorageKey.replyWithQuote, true)
+        owner.notificationPreferences()
         val file = File(directory, MeshCoreStorage.PREFERENCE_FILENAME)
         val committed = file.readBytes()
         val callbacks = ReverseResumeDispatcher()
@@ -51,6 +52,7 @@ class OwnerCloseRegressionTest {
         var reopenFailure: StorageFailure? = null
         val first = launch(callbacks, start = CoroutineStart.UNDISPATCHED) { owner.close() }
         val second = launch(callbacks, start = CoroutineStart.UNDISPATCHED) { owner.close() }
+        assertTrue(first.isActive && second.isActive, "The real process observer must keep shutdown suspended")
         second.invokeOnCompletion { failure ->
             if (failure == null) {
                 try {
@@ -99,9 +101,11 @@ class OwnerCloseRegressionTest {
             StandardTestDispatcher(testScheduler), "close.cancel",
         )
         owner.preferences.set(AppStorageKey.hasCompletedOnboarding, true)
+        owner.notificationPreferences()
         val callbacks = ReverseResumeDispatcher()
         val first = launch(callbacks, start = CoroutineStart.UNDISPATCHED) { owner.close() }
         val second = launch(callbacks, start = CoroutineStart.UNDISPATCHED) { owner.close() }
+        assertTrue(first.isActive && second.isActive, "Both close callers must await the real observer shutdown")
         second.cancel()
         try {
             testScheduler.runCurrent()
