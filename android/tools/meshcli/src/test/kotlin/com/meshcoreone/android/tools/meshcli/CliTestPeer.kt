@@ -45,7 +45,7 @@ internal class ManualCliClock : SessionClock {
 
     override suspend fun sleepFor(duration: Duration) {
         currentCoroutineContext().ensureActive()
-        suspendCancellableCoroutine { continuation ->
+        suspendCancellableCoroutine<Unit> { continuation ->
             val sleeper = synchronized(lock) { Sleeper(instant + duration, continuation) }
             val immediate = synchronized(lock) {
                 when {

@@ -36,7 +36,7 @@ private class OwnershipClock : SessionClock {
     override val wallClock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
     override suspend fun sleepFor(duration: Duration) {
         currentCoroutineContext().ensureActive()
-        suspendCancellableCoroutine { continuation ->
+        suspendCancellableCoroutine<Unit> { continuation ->
             val entry = synchronized(lock) { (instant + duration) to continuation }
             synchronized(lock) { if (continuation.isActive) sleepers += entry }
             continuation.invokeOnCancellation { synchronized(lock) { sleepers.remove(entry) } }

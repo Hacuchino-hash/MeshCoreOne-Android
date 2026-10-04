@@ -1,8 +1,14 @@
 # WP-109 protocol sweep and executable TCP meshcli
 
-**Candidate implementation; execution is still pending.** This document does not
-claim that the new Kotlin compiled, that CLI tests ran, or that software/hardware
-acceptance occurred. The local JVM lane initially remains held by WP-202 and the
+**Candidate implementation; first hosted compilation failed.** The actual
+898892e6 protocol run37232304276/attempt1 failed on BOTH Windows/Linux before
+test discovery: the new ownership clock's inferred continuation type was
+`CancellableContinuation<*>`, incompatible with its typed sleeper table.
+Both real compiler logs agree on lines39/43. The scoped repair explicitly
+specializes `suspendCancellableCoroutine<Unit>` in both new injected clocks;
+no expectation, identity floor, timeout or source producer changes. Fresh
+compiled/executed Kotlin/CLI and software acceptance still require proof.
+The local JVM lane initially remains held by WP-202 and the
 explicit shared CI forwarding seam needs a separate serialized amendment.
 
 Repository `cbattlegear/MeshCoreOne-Android`; owner `test-parity-engineer`.
