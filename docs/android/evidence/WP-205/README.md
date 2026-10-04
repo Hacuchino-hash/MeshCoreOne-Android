@@ -13,6 +13,8 @@ test SDK admission. No planned/native test is counted as passed.
 | Binding | Actual value |
 | --- | --- |
 | Verified clean initial merged main | `0ae606992bf58c8d3f2bf08b7a26406c97f12f84` |
+| Coordinator-verified reconciled merged main | `0394b83c9b47fa0d7198e2d631f7ddb313cd370d` |
+| Rebased byte-identical implementation | `fa0aa6f71d589236f28004cd42c5c92541fa8698` |
 | Actual WP-108 prerequisite merge/ancestor | `eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730` |
 | Read-only source commit | `db14559b39d32322b06477c6ae676112f583db50` |
 | Read-only source tree | `8918fdc604341e6996a68c88f6bb1c02b9c2f87e` |
@@ -76,6 +78,8 @@ metaspace512m, test256m/metaspace256m, SerialGC and two processors.
 | Actual ZIP/DEX scan | **Passed**, all real BLE/GATT/NUS/bond classes packaged and Robolectric/fake/test fixtures absent |
 | Existing `controller.apk_alignment.inspect_alignment` with the actual APK/private SDK | **Passed**, zipalign `-P 16` and all four ELF PT_LOAD sets; no physical/native-runtime proof |
 | `git diff --check`, immutable source-root diff and complete leased write-path validator | **Passed** no source/manifest/policy/shared path edits |
+| `python .\tools\android-port\controller\test_runner.py --quiet` after reconciliation | **187 discovered/run/passed, 0 failed/errors/skipped**, merged controller fixtures only, not BLE credit |
+| `python .\tools\android-port\controller\verification_config.py --check` and `python .\tools\android-port\controller\workflows.py` after reconciliation | **Passed** unchanged canonical verification and workflow trust boundaries |
 
 The measured debug APK SHA-256 is
 `10bc9863fbf5510e6648df1f406d5742e1e1033cffc464e5d94e675fd1d178fc`.
@@ -99,11 +103,25 @@ on SDK31. None has been downloaded/executed or admitted yet.
 
 Within the leased module build file, root `verifyScaffoldTests` now depends on
 the actual `:core:ble:testDebugUnitTest` task. The coordinator separately owns
-generic raw XML copying/counter replay/source bindings in trusted CI; its local
-commit is **not** substituted for a merged-main prerequisite. Final publication
-must reconcile only this branch with the actual merged helper and record
-same-head Windows/Linux run/attempt/artifact proof. There is no hosted BLE,
-independent review, hardware, iOS, protected-gate or release/signing result yet.
+generic raw XML copying/counter replay/source bindings in trusted CI. That
+follow-up actually merged at the coordinator-verified main
+`0394b83c9b47fa0d7198e2d631f7ddb313cd370d`, and only this owning branch was
+rebased onto it; all authored BLE production remains byte-identical.
+
+[Reconciliation](reconciliation.json) preserves the actual old-head failure:
+Android scaffold CI run37184367506/attempt1 at
+`7f07d3b47ed341aca2c88fd4483e552014637dbb` failed on both Windows and Linux
+at the same strict BLE-lock check before discovery. Exact jobs/artifact
+IDs/archive hashes are recorded; that run is not claimed green. The normal
+implementation-candidate PR is
+[the existing review](https://github.com/cbattlegear/MeshCoreOne-Android/pull/18).
+The merged helper does not admit the missing dependencies: main0394b83 still
+contains neither the BLE test lock graph nor SDK32/33/37 pins. No shared-path
+amendment receipt has arrived. Final same-head passing BLE/native/lint proof
+still requires that concrete admission.
+
+There is no passing hosted BLE, independent review, hardware, iOS BLE,
+protected-gate or release/signing result yet.
 
 Canonical WP-205 manifest verification remains historically unconfigured.
 This candidate does not rewrite the plan/policy/reference or invent a completion
