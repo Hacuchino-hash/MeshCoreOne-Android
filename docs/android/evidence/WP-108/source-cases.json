@@ -1,0 +1,649 @@
+{
+  "scope": "Original case accounting and actual raw JUnit; not independent reviewer acceptance",
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "work_package": "WP-108",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "tested_code_commit": "d8ebb535e6ab05e2bf247d401a952543fb1b2f61",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "owned_and_cross_inputs": [
+    {
+      "path": "MC1Services/Sources/MC1Services/Errors/WiFiTransportError+LocalizedError.swift",
+      "blob_sha": "7fdb35adf502d7fab575316fb996a1b84b49b16e",
+      "kind": "production",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-304",
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/LICENSE",
+      "blob_sha": "b81a317438752b8ac23cd7f4ce6e6db1bb58e894",
+      "kind": "license",
+      "primary_owner": "WP-318",
+      "cross_references": [
+        "WP-001",
+        "WP-101",
+        "WP-102",
+        "WP-103",
+        "WP-104",
+        "WP-105",
+        "WP-106",
+        "WP-107",
+        "WP-108",
+        "WP-109",
+        "WP-301",
+        "WP-506"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Transport/MockTransport.swift",
+      "blob_sha": "c970cfc66be77cfccfc2c2d8835155aeb4a1be7f",
+      "kind": "production",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Transport/WiFiFrameCodec.swift",
+      "blob_sha": "d959cc96b8b379bcb9aec372724850176190b37b",
+      "kind": "production",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Transport/WiFiTransport.swift",
+      "blob_sha": "706a09f7ef7fb2ce872ad7ef34d4d08186954822",
+      "kind": "production",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Tests/MeshCoreTests/Fixtures/PythonReferenceBytes.swift",
+      "blob_sha": "6535c34bed8e45a5ba9f8cf5b7dbb3b72a244832",
+      "kind": "support",
+      "primary_owner": "WP-004",
+      "cross_references": [
+        "WP-101",
+        "WP-102",
+        "WP-103",
+        "WP-104",
+        "WP-105",
+        "WP-106",
+        "WP-107",
+        "WP-108",
+        "WP-109",
+        "WP-207",
+        "WP-208",
+        "WP-213",
+        "WP-303",
+        "WP-307",
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "kind": "test",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-109",
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "kind": "test",
+      "primary_owner": "WP-108",
+      "cross_references": [
+        "WP-109",
+        "WP-501"
+      ],
+      "exclusion": null
+    },
+    {
+      "path": "docs/guides/WiFi_Transport.md",
+      "blob_sha": "8ed65b12f955755f7197e5e2126203c7771cdebc",
+      "kind": "reference",
+      "primary_owner": "WP-108",
+      "cross_references": [],
+      "exclusion": null
+    }
+  ],
+  "assigned_original_declarations": 18,
+  "mapped_original_declarations": [
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Encodes frame with correct delimiter and length",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Encodes frame with correct delimiter and length()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Encodes empty frame",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Encodes empty frame()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Decodes single complete frame",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Decodes single complete frame()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Decodes multiple frames in one chunk",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Decodes multiple frames in one chunk()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Buffers incomplete frame",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Buffers incomplete frame()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiFrameCodecTests.swift",
+      "source_blob_sha": "e770a173454318c5180f249f5941738dc0e47dbe",
+      "source_declaration": "Handles frame split across chunks",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "native_case": "Handles frame split across chunks()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Initial state is disconnected",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Initial state is disconnected()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Advertises pipelined reads without a Write-Without-Response characteristic",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Advertises pipelined reads without a Write-Without-Response characteristic()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Connect without configuration throws notConfigured",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Connect without configuration throws notConfigured()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Connection to invalid host fails",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Connection to invalid host fails()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Send without connection throws notConnected",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Send without connection throws notConnected()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Disconnect when not connected is safe",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Disconnect when not connected is safe()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "connectionInfo returns configured host and port",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "connectionInfo returns configured host and port()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Disconnection handler not called on user-initiated disconnect",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Disconnection handler not called on user-initiated disconnect()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Disconnection handler not called on initial connect failure",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Disconnection handler not called on initial connect failure()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "connect() is idempotent \u2014 second call does not create new TCP connection",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "connect is idempotent second call does not create new TCP connection()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Peer close finishes the stream and fires the disconnection handler",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "native_case": "Peer close finishes the stream and fires the disconnection handler()",
+      "actual_result": "passed",
+      "adaptation": null
+    },
+    {
+      "source_path": "MeshCore/Tests/MeshCoreTests/Transport/WiFiTransportTests.swift",
+      "source_blob_sha": "68c021bf46d8fcd241cb68fec52fa5dd8b3d10af",
+      "source_declaration": "Cancelling connect() does not leave it parked",
+      "native_suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "native_case": "Cancelling pending connect does not leave it parked or leak its socket()",
+      "actual_result": "passed",
+      "adaptation": "Deterministic blocked-connect barrier replaces TEST-NET and arbitrary sleep"
+    }
+  ],
+  "additional_native_transport_cases": [
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Disconnect is idempotent finishes existing and late collectors and rejects closed injection()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Failure threshold is based on successful sends and remains armed()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "OK and error simulation use pinned codes optional fields and UInt32 little endian()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Cancelled collection does not close the connection or discard future input()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Reconnect uses a fresh stream without leaking old queued packets or losing send history()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Mock begins disconnected with an empty history and opt-in capabilities()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Collectors share a single ingestion queue rather than broadcasting or conflating ACKs()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Failure threshold preserves source signed Int behavior and large indices()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Raw input can be buffered before connect and retains repeated empty and unknown packets()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Precancelled commands do not mutate history state or input()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Capability setter controls both write commands and pipelined reads()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "case": "Both send paths require a connection and append exact immutable payloads()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Oversized outbound payload is rejected without truncating or wrapping length()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Byte by byte input preserves empty repeated high-bit and delimiter payloads()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "All splits of pinned inbound multi-frame vector retain exact ordered payloads()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Complete frames preceding a truncated suffix are returned unchanged()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Lengths use unsigned little endian at byte and high-bit boundaries()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Reset discards only the old generation partial frame and diagnostics()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "EOF distinguishes incomplete header from incomplete payload()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Source delimiter resynchronization records discarded noise without buffering it()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Maximum inbound length is valid and partial state never exceeds wire bound()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Empty decode does not consume or clear a partial frame()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "case": "Pinned Python device query payload has independently specified outbound frame()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Transport rejects invalid timer configuration and socket factory IO failure is typed()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Disconnect interrupts and joins a pending connect without invoking the loss handler()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Connection deadline includes interruptible address resolution()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Cancelling an active write closes the socket propagates cancellation and fails queued writes()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Cancelling a queued write does not close the live connection or send its bytes()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Cancelling an interruptible resolver closes the socket and never starts a late connect()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Disconnect drains blocked write and read jobs before returning()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Whole write operation remains serialized while the first write is suspended()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Connect failure exposes reason cause and any cleanup failure without fake success()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Connection timeout is exactly ten seconds and closes and joins blocked IO()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Write timeout is exactly five seconds terminates the generation and notifies once()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "New connection waits for old connect cleanup and uses only its fresh real socket()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Close failure is surfaced to disconnect and stream instead of being silently discarded()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Send failure preserves reason and cause and closes the established generation()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Read failure preserves the original IO cause in both stream and handler()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Queued connect requests from before disconnect cannot reopen the connection()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Late old-generation send failure cannot close or notify the new real generation()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Native socket timeout keeps typed timeout and original cause()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "case": "Cancelling only the consumer does not close the live socket and next raw packet remains available()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Coalesced input and concurrent writes keep every complete frame in order()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Real socket one-byte reads reassemble all headers and raw unknown payloads()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "All eight error cases retain typed metadata and native diagnostics separate from app prose()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Reconnect changes streams retains configuration and clears partial old framing()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Network-scoped resolver reaches a real peer without replacing the configured hostname()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "JVM hostname resolution reaches the real loopback listener()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Real peer reset surfaces read failure and notifies only once()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Maximum frame reaches a real peer and oversize rejection leaves connection usable()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Invalid hosts and ports fail explicitly before allocating a socket()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Cleared disconnection handler stays cleared on real peer EOF()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Truncated peer EOF surfaces typed failure after delivering every preceding frame()",
+      "actual_result": "passed"
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "case": "Precancelled connect cannot create a connection or leave a parked job()",
+      "actual_result": "passed"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "com.meshcoreone.android.core.protocol.primitives.BytesTest",
+      "discovered": 44,
+      "passed": 44,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.primitives.PathEncodingTest",
+      "discovered": 19,
+      "passed": 19,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.primitives.TransportDefaultsTest",
+      "discovered": 5,
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.primitives.ValueModelsTest",
+      "discovered": 13,
+      "passed": 13,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.primitives.WireTablesTest",
+      "discovered": 3,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "discovered": 12,
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "discovered": 17,
+      "passed": 17,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "discovered": 20,
+      "passed": 20,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "discovered": 23,
+      "passed": 23,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "original_packets_or_fixtures_changed": false,
+  "ignored_mandatory_cases": 0,
+  "historical_tested_code_commit": "b245da16290b0e9332bb4814c29f206572f00234",
+  "app_formatter_disposition": {
+    "path": "MC1Services/Sources/MC1Services/Errors/WiFiTransportError+LocalizedError.swift",
+    "blob_sha": "7fdb35adf502d7fab575316fb996a1b84b49b16e",
+    "status": "Explicitly deferred GPL app-side formatter/localized recovery to WP-304; not dropped",
+    "test_reference": "WiFiAppErrorReference.kt preserves all eight original English values/reason interpolation in test only",
+    "protocol_production": "MIT typed cases/reasons/cause plus separate native wifi.* diagnostics; no GPL prose/provenance",
+    "fully_localized_ui_claimed": false
+  }
+}
