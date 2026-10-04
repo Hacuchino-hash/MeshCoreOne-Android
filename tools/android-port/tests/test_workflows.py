@@ -19,6 +19,39 @@ class WorkflowTests(unittest.TestCase):
     def test_actual_workflows_parse_and_have_the_real_trust_boundaries(self):
         self.assertEqual(validate_workflows(REPO)["result"], "valid")
 
+    def test_legacy_bootstrap_installs_the_hash_pinned_yaml_runtime_before_tests(self):
+        workflow, text = self.read("android-bootstrap.yml")
+        steps = workflow["jobs"]["controller-tests"]["steps"]
+        installer = next(index for index, step in enumerate(steps)
+                         if "requirements-ci.txt" in step.get("run", ""))
+        runner = next(index for index, step in enumerate(steps)
+                      if "controller/test_runner.py" in step.get("run", ""))
+        self.assertLess(installer, runner)
+        self.assertIn("--require-hashes", steps[installer]["run"])
+        self.assertIn("--only-binary=:all:", steps[installer]["run"])
+        self.assertEqual(workflow["permissions"], {"contents": "read"})
+        self.assertEqual(steps[0]["with"]["persist-credentials"], "false")
+        self.assertIn("github.event.pull_request.head.sha", steps[0]["with"]["ref"])
+        self.assertNotIn("secrets.", text)
+
+    def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_both_hosts(self):
+        from controller.ci import TASKS
+
+        workflow, text = self.read("android-protocol.yml")
+        job = workflow["jobs"]["protocol"]
+        self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
+        self.assertEqual({entry["host"] for entry in job["strategy"]["matrix"]["include"]},
+                         {"linux", "windows"})
+        self.assertIn("merge_group", workflow["on"])
+        self.assertNotIn("paths", workflow["on"]["pull_request"])
+        self.assertEqual(workflow["permissions"], {"contents": "read"})
+        command = next(step for step in job["steps"]
+                       if "--stage protocol" in step.get("run", ""))
+        self.assertNotIn("if", command)
+        self.assertNotIn("continue-on-error", command)
+        self.assertEqual(job["steps"][0]["with"]["persist-credentials"], "false")
+        self.assertNotIn("secrets.", text)
+
     def test_duplicate_yaml_keys_and_invalid_yaml_are_rejected(self):
         for text in ("jobs: {}\njobs: {}\n", "jobs: ["):
             with self.subTest(text=text), self.assertRaises(PortError):
