@@ -7,6 +7,7 @@ import unittest
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
+from unittest.mock import patch
 
 from fixtures import BASE, HEAD, REPO, policy, test_manifest
 from controller.apk_alignment import elf_load_alignment
@@ -37,6 +38,9 @@ def update_artifacts(root, value):
 
 
 class EvidenceTests(unittest.TestCase):
+    def module_inputs(self):
+        return {"core/model": {"android/core/model/src/test/kotlin/ModelTest.kt": HEAD}}
+
     def binding(self):
         manifest, rules = test_manifest("WP-003"), policy()
         return Binding(rules["repository"], "WP-003", BASE, HEAD, manifest.data["reference"]["commit"],
@@ -55,6 +59,8 @@ class EvidenceTests(unittest.TestCase):
                 junit_report(root / "junit" / "composite" / name / "TEST-fixture.xml", number)
                 rows.append(f"{name}\t{number}\t{number}\t0\t0\t0")
             junit_report(root / "junit" / "standalone" / "build-logic" / "TEST-fixture.xml", 31)
+            module_report = root / "junit" / "modules" / "core--model" / "TEST-model.xml"
+            junit_report(module_report, 3)
             (root / "test-discovery.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
             (root / "module-graph.tsv").write_text("consumer\tproducer\tconfiguration\n:app\t:core:contracts\timplementation\n")
             (root / "runtime-dependencies.tsv").write_text(
@@ -86,19 +92,24 @@ class EvidenceTests(unittest.TestCase):
             }
             write_json(root / "apk-inspection.json", inspection)
             value = {
-                "schema_version": 1, "binding": asdict(binding), "run_id": 71, "run_attempt": 2, "host": host,
+                "schema_version": 2, "binding": asdict(binding), "run_id": 71, "run_attempt": 2, "host": host,
                 "scope": "fixture shape only",
                 "stages": {name: "success" for name in ("verify", "standalone", "assemble", "lint")},
                 "cache_proofs": {name: {"user_cache_initially_absent": True, "project_cache_initially_absent": True}
                                  for name in ("composite", "standalone")},
                 "python": {name: discovery(number) for name, number in PYTHON_MINIMUMS.items()},
                 "suites": suites, "standalone": discovery(31), "lint": lint, "apk": inspection,
+                "module_unit_tests": {"core/model": {
+                    "inputs": self.module_inputs()["core/model"], "counts": discovery(3),
+                    "reports": [artifact_record(root, module_report)],
+                }},
             }
             update_artifacts(root, value)
         return binding
 
     def aggregate(self, directory, binding, needs=None):
-        return aggregate(needs or {"build": {"result": "success"}}, directory, binding, 71, 2)
+        with patch("controller.module_junit.module_sources", return_value=self.module_inputs()):
+            return aggregate(needs or {"build": {"result": "success"}}, directory, binding, 71, 2)
 
     def test_both_exact_native_host_shapes_and_complete_hashes_are_required(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -107,6 +118,40 @@ class EvidenceTests(unittest.TestCase):
             result = self.aggregate(directory, binding)
             self.assertEqual(set(result["hosts"]), {"linux", "windows"})
             self.assertEqual(result["hosts"]["linux"]["kotlin_assertions"], 47)
+            self.assertEqual(result["hosts"]["linux"]["module_unit_assertions"], 3)
+
+    def test_missing_forged_stale_and_failed_active_module_evidence_is_rejected(self):
+        from controller.schema import load_json
+
+        for kind in ("missing", "extra", "inputs", "count", "hash", "raw", "report", "old-schema"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                binding = self.fixture(directory)
+                root = directory / "linux"
+                value = load_json(root / "ci-result.json")
+                record = value["module_unit_tests"]["core/model"]
+                if kind == "missing":
+                    value["module_unit_tests"] = {}
+                elif kind == "extra":
+                    value["module_unit_tests"]["core/database"] = copy.deepcopy(record)
+                elif kind == "inputs":
+                    record["inputs"][next(iter(record["inputs"]))] = "0" * 40
+                elif kind == "count":
+                    record["counts"] = discovery(4)
+                elif kind == "hash":
+                    record["reports"][0]["sha256"] = "0" * 64
+                elif kind == "raw":
+                    path = root / record["reports"][0]["path"]
+                    node = ET.fromstring(path.read_bytes())
+                    ET.SubElement(node.find("testcase"), "skipped")
+                    path.write_bytes(ET.tostring(node))
+                elif kind == "report":
+                    (root / record["reports"][0]["path"]).unlink()
+                else:
+                    value["schema_version"] = 1
+                update_artifacts(root, value)
+                with self.assertRaises(PortError):
+                    self.aggregate(directory, binding)
 
     def test_failed_cancelled_skipped_and_missing_required_job_fail(self):
         with tempfile.TemporaryDirectory() as temporary:
