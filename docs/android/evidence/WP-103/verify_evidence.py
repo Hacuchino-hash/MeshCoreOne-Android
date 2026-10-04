@@ -21,7 +21,7 @@ from controller.schema import load_json
 from portmap import port_map
 
 
-BASE = "eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730"
+BASE = "0ae606992bf58c8d3f2bf08b7a26406c97f12f84"
 PARSER_SUITES = {
     "CrossComponentParserCasesTest": 50,
     "OriginalBugFixCasesTest": 34,
@@ -100,8 +100,8 @@ def read_results():
             "report": path.relative_to(REPO).as_posix(), "report_sha256_lf": canonical_hash(path),
         })
     parsers = {s["suite"].rsplit(".", 1)[1]: s["tests"] for s in suites if ".protocol.parser." in s["suite"]}
-    if parsers != PARSER_SUITES or totals["tests"] != 4082 or len(files) != 35:
-        raise ValueError("The exact current-base 4082-case protocol runner evidence is incomplete or stale")
+    if parsers != PARSER_SUITES or totals["tests"] != 4445 or len(files) != 43:
+        raise ValueError("The exact current-base 4445-case protocol runner evidence is incomplete or stale")
     parser_names = {name for (suite, name) in cases if ".protocol.parser." in suite}
     return totals, suites, parser_names
 
@@ -236,7 +236,7 @@ def main():
     )
     dependencies = report_file(
         Path("android") / "build" / "reports" / "scaffold" / "runtime-dependencies.tsv",
-        "artifact\tdeclared_license\tlicense_url\tlicense_pom\tlicense_pom_sha256\tlegal_gate", 113,
+        "artifact\tdeclared_license\tlicense_url\tlicense_pom\tlicense_pom_sha256\tlegal_gate", 114,
     )
     apk = REPO / "android" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk"
     if not apk.is_file() or apk.stat().st_size == 0:
@@ -247,7 +247,7 @@ def main():
         "base_sha": BASE, "source_sha": manifest.data["reference"]["commit"], "manifest_sha256": manifest.sha256,
         "semantic_policy_revision": policy_revision(manifest, load_json(REPO / "docs" / "android" / "automation-policy.json")),
         "head_binding": "Normal exact-head PR checks bind the committed head; Kotlin input fingerprints avoid a self-referential evidence commit.",
-        "protocol": totals, "parser_cases": 3433, "unchanged_merged_baseline_cases": 649, "junit_suites": suites,
+        "protocol": totals, "parser_cases": 3433, "unchanged_merged_baseline_cases": 1012, "junit_suites": suites,
         "input_fingerprints_sha256_lf": fingerprints, "module_graph": graph, "runtime_dependency_inventory": dependencies,
         "debug_apk": {
             "path": apk.relative_to(REPO).as_posix(), "bytes": apk.stat().st_size,

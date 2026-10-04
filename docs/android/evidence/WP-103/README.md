@@ -10,6 +10,19 @@ The initial clean HEAD was `47822de6ff8641a6d085baf0d4993aa3c792db8c`.
 The coordinator subsequently identified actual merged WP-108 main
 `eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730`. This worktree fetched origin/main,
 compared it to that exact SHA and fast-forwarded before final integrated proof.
+The first normal PR head passed all local and Linux/Windows protocol checks
+(4,082 cases per host). The coordinator then reported the actually merged WP-102
+base `79bd7790edb174ed702010b98ee09b2674b70a3e`. An explicit remote lease on
+`f2375f9e30ab6afeaa67e1448bfaf931a90ab97a` preceded this branch's rebase and reuse
+of the real public wire HMAC helper. Final verification includes the363 actual
+merged crypto cases. The coordinator subsequently required verified locale/
+workflow-compatible main `19e1ae608a204a532eb500284ab8cad1c0b55b87`; the same remote
+lease and a scoped autostash preserved the five owned changes through that rebase.
+Final publication follows the coordinator's explicit current-main instruction at
+`0ae606992bf58c8d3f2bf08b7a26406c97f12f84`; that additional reviewed upstream-tooling
+merge leaves source pins and the1,012-case protocol baseline unchanged. The narrow
+shared-HMAC repair uses `WireCrypto.hmacSha256` directly and retains all82 independent
+HMAC expectations without a docs-only run-ID commit.
 No other checkout or unverified branch interface was used.
 
 Source `db14559b39d32322b06477c6ae676112f583db50`; semantic manifest
@@ -75,14 +88,14 @@ python .\tools\android-port\extract_vectors.py --check
 python .\tools\android-port\portmap.py
 python .\docs\android\evidence\WP-103\python_reference_vectors.py --check
 python .\docs\android\evidence\WP-103\verify_evidence.py `
-  --base-sha eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730 --check
+  --base-sha 0ae606992bf58c8d3f2bf08b7a26406c97f12f84 --check
 git diff --check
 ```
 
 Separate invocations, one worker, in-process compiler and constrained640m build
 heap preserved shared-host headroom. The original clean577-case baseline passed
-before implementation. The final actual XML contains **4,082 protocol cases**:
-**649 unchanged merged cases + 3,433 new parser cases**, in **35 nonzero suites**,
+before implementation. The final actual XML contains **4,445 protocol cases**:
+**1,012 unchanged merged cases + 3,433 new parser cases**, in **43 nonzero suites**,
 with **0 failures, 0 errors, 0 skips**. [local-results.json](local-results.json)
 records every suite, report checksum, Kotlin input fingerprint and actual APK hash.
 Its verifier checks XML testcase/outcome nodes against declared counters and
@@ -102,7 +115,7 @@ rejects missing/malformed/zero/skipped evidence.
 
 Graph verification produced **470 actual production edges**, including no
 forbidden Android/testing dependency in `core:protocol`. Runtime inventory
-contains **113 resolved artifact/POM-license rows**; resolution ran in strict
+contains **114 resolved artifact/POM-license rows**; resolution ran in strict
 checksum/lock mode. This is dependency evidence, not human legal admission.
 The real debug APK and standard inspector preserve `.debug`, min31/target37,
 GPL/MIT notices, unchanged permission surface and absence of test-helper classes.

@@ -1,16 +1,15 @@
 // PortedFrom: MeshCore/Sources/MeshCore/Protocol/TransportCodeRegionResolver.swift@db14559b39d32322b06477c6ae676112f583db50
-// Native adaptation: JCA HMAC and JVM localized numeric collation; callers retain ownership of scope-key caches.
+// Native adaptation: reuse canonical wire HMAC and JVM localized numeric collation; callers own scope-key caches.
 package com.meshcoreone.android.core.protocol.parser
 
+import com.meshcoreone.android.core.protocol.bytes.ByteReader
 import com.meshcoreone.android.core.protocol.bytes.Bytes
+import com.meshcoreone.android.core.protocol.crypto.WireCrypto
 import com.meshcoreone.android.core.protocol.event.EventList
 import com.meshcoreone.android.core.protocol.model.sha256
 import java.text.Collator
 import java.text.Normalizer
 import java.util.Locale
-import javax.crypto.Mac
-import javax.crypto.SecretKey
-import javax.crypto.spec.SecretKeySpec
 
 data class RegionScopeKey(val name: String, val key: Bytes)
 
@@ -30,14 +29,9 @@ object TransportCodeRegionResolver {
     }
 
     fun calcTransportCode(scopeKey: Bytes, payloadTypeBits: UByte, payload: Bytes): UShort {
-        val mac = Mac.getInstance("HmacSHA256")
-        // SecretKeySpec rejects empty keys, although HMAC (and CryptoKit) permits them.
-        // Pass those exact bytes to the vetted JCA implementation, without substitution.
-        val key = if (scopeKey.isEmpty) EmptyHmacKey else SecretKeySpec(scopeKey.toByteArray(), "HmacSHA256")
-        mac.init(key)
-        mac.update((payloadTypeBits.toInt() and 15).toByte())
-        val result = mac.doFinal(payload.toByteArray())
-        return rewriteReservedCode(((result[0].toInt() and 255) or ((result[1].toInt() and 255) shl 8)).toUShort())
+        val combined = Bytes.of(payloadTypeBits.toInt() and 15) + payload
+        val mac = WireCrypto.hmacSha256(combined, scopeKey)
+        return rewriteReservedCode(ByteReader(mac).readUInt16LE())
     }
 
     internal fun rewriteReservedCode(rawCode: UShort): UShort = when (rawCode.toInt()) {
@@ -62,12 +56,6 @@ object TransportCodeRegionResolver {
             1 -> RegionMatchResult.Unique(names.single())
             else -> RegionMatchResult.Ambiguous(names)
         }
-    }
-
-    private object EmptyHmacKey : SecretKey {
-        override fun getAlgorithm(): String = "HmacSHA256"
-        override fun getFormat(): String = "RAW"
-        override fun getEncoded(): ByteArray = byteArrayOf()
     }
 
     private fun naturalComparator(locale: Locale): Comparator<String> {
