@@ -1,0 +1,17 @@
+// PortedFrom: MC1Services/Sources/MC1Services/Errors/WiFiTransportError+LocalizedError.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.protocol.transport
+
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
+
+internal object WiFiAppErrorReference {
+    fun description(error: WiFiTransportError): String = when (error) {
+        is WiFiTransportError.ConnectionFailed -> "Connection failed: ${error.reason}"
+        WiFiTransportError.ConnectionTimeout -> "Connection timed out. Check the hostname or IP address and ensure the device is reachable."
+        WiFiTransportError.NotConnected -> "Not connected to device."
+        is WiFiTransportError.SendFailed -> "Failed to send data: ${error.reason}"
+        WiFiTransportError.SendTimeout -> "Send operation timed out."
+        WiFiTransportError.InvalidHost -> "Invalid hostname or IP address."
+        WiFiTransportError.InvalidPort -> "Invalid port number."
+        WiFiTransportError.NotConfigured -> "Connection not configured."
+    }
+}

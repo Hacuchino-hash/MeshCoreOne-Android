@@ -23,6 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -463,23 +464,24 @@ class WiFiTransportTest {
     }
 
     @Test
-    fun `All eight error cases preserve value metadata and original descriptions`() {
-        for ((error, expected) in listOf(
-            WiFiTransportError.ConnectionFailed("refused") to "Connection failed: refused",
-            WiFiTransportError.ConnectionTimeout to "Connection timed out. Check the hostname or IP address and ensure the device is reachable.",
-            WiFiTransportError.NotConnected to "Not connected to device.",
-            WiFiTransportError.SendFailed("broken") to "Failed to send data: broken",
-            WiFiTransportError.SendTimeout to "Send operation timed out.",
-            WiFiTransportError.InvalidHost to "Invalid hostname or IP address.",
-            WiFiTransportError.InvalidPort to "Invalid port number.",
-            WiFiTransportError.NotConfigured to "Connection not configured.",
+    fun `All eight error cases retain typed metadata and native diagnostics separate from app prose`() {
+        for ((error, diagnostic, appReference) in listOf(
+            Triple(WiFiTransportError.ConnectionFailed("refused"), "wifi.connection_failed: refused", "Connection failed: refused"),
+            Triple(WiFiTransportError.ConnectionTimeout, "wifi.connection_timeout", "Connection timed out. Check the hostname or IP address and ensure the device is reachable."),
+            Triple(WiFiTransportError.NotConnected, "wifi.not_connected", "Not connected to device."),
+            Triple(WiFiTransportError.SendFailed("broken"), "wifi.send_failed: broken", "Failed to send data: broken"),
+            Triple(WiFiTransportError.SendTimeout, "wifi.send_timeout", "Send operation timed out."),
+            Triple(WiFiTransportError.InvalidHost, "wifi.invalid_host", "Invalid hostname or IP address."),
+            Triple(WiFiTransportError.InvalidPort, "wifi.invalid_port", "Invalid port number."),
+            Triple(WiFiTransportError.NotConfigured, "wifi.not_configured", "Connection not configured."),
         )) {
-            assertEquals(expected, error.description)
             val cause = IOException("underlying cause")
             val failure = WiFiTransportException(error, cause)
             assertSame(error, failure.error)
             assertSame(cause, failure.cause)
-            assertEquals(expected, failure.message)
+            assertEquals(diagnostic, failure.message)
+            assertEquals(appReference, WiFiAppErrorReference.description(error))
+            assertNotEquals(appReference, failure.message)
         }
         assertEquals(WiFiTransportError.ConnectionFailed("refused"), WiFiTransportError.ConnectionFailed("refused"))
     }
