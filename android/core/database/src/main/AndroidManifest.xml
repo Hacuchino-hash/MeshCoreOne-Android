@@ -1,2 +1,2 @@
-<!-- AndroidOnly: WP-002 Store module shell; no production database is constructed. -->
+<!-- AndroidOnly: WP-201 Room library; the process owner opens it, never a connection or screen. -->
 <manifest />
