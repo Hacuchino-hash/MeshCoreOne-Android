@@ -53,19 +53,19 @@ func fixtureEnvelope() throws -> AppBackupEnvelope {
     throw OracleFailure(description: "Invalid controlled radio ID")
   }
   let messageDate = Date(timeIntervalSince1970: 1_700_000_501.1234567)
-  var device = DeviceDTO.testDevice(
-    id: try uuid(1), radioID: radioID, publicKey: Data(repeating: 0xAB, count: 32),
+  var device = try DeviceDTO.testDevice(
+    id: uuid(1), radioID: radioID, publicKey: Data(repeating: 0xAB, count: 32),
     lastConnected: Date(timeIntervalSince1970: 0.5)
   )
-  device.connectionMethods = [
-    .bluetooth(peripheralUUID: try uuid(14), displayName: nil),
+  device.connectionMethods = try [
+    .bluetooth(peripheralUUID: uuid(14), displayName: nil),
     .wifi(host: "radio.local", port: 5000, displayName: "Reference")
   ]
-  var message = MessageDTO.testDirectMessage(
-    id: try uuid(4), radioID: radioID, contactID: try uuid(2),
+  var message = try MessageDTO.testDirectMessage(
+    id: uuid(4), radioID: radioID, contactID: uuid(2),
     text: "Hi\u{4F60}\u{1F600}\u{05E9}\u{05DC}\u{05D5}\u{05DD}",
     timestamp: UInt32.max, createdAt: messageDate, direction: .incoming,
-    status: .delivered, textType: .signedPlain, ackCode: 0x80000000,
+    status: .delivered, textType: .signedPlain, ackCode: 0x8000_0000,
     pathNodes: Data([0x80, 0xFF]), senderKeyPrefix: Data([0xAB, 0xCD])
   )
   message.failureSeen = true
@@ -76,47 +76,47 @@ func fixtureEnvelope() throws -> AppBackupEnvelope {
   preferences.showInlineImages = false
   preferences.selectedThemeID = "default"
   preferences.regionSelection = RegionSelection(countryCode: "US", source: .manual)
-  return AppBackupEnvelope.test(
+  return try AppBackupEnvelope.test(
     exportDate: Date(timeIntervalSince1970: 1_700_000_500.9876542),
     appVersion: "reference-oracle", appBuild: "004",
     devices: [device],
     contacts: [.testContact(
-      id: try uuid(2), radioID: radioID, lastHeardTimestamp: UInt32.max,
+      id: uuid(2), radioID: radioID, lastHeardTimestamp: UInt32.max,
       avatarImageData: Data([0x00, 0x80, 0xFF])
     )],
     channels: [.testChannel(
-      id: try uuid(3), radioID: radioID, index: 2, secret: Data(repeating: 0x80, count: 16),
+      id: uuid(3), radioID: radioID, index: 2, secret: Data(repeating: 0x80, count: 16),
       notificationLevel: .mentionsOnly, floodScope: .region("US")
     )],
     messages: [message],
-    messageRepeats: [.testRepeat(id: try uuid(5), messageID: try uuid(4), receivedAt: messageDate)],
+    messageRepeats: [.testRepeat(id: uuid(5), messageID: uuid(4), receivedAt: messageDate)],
     reactions: [ReactionDTO(
-      id: try uuid(6), messageID: try uuid(4), emoji: "\u{1F600}", senderName: "Reference",
+      id: uuid(6), messageID: uuid(4), emoji: "\u{1F600}", senderName: "Reference",
       messageHash: "source-input", rawText: "controlled reaction", receivedAt: messageDate,
-      contactID: try uuid(2), radioID: radioID
+      contactID: uuid(2), radioID: radioID
     )],
     roomMessages: [.testRoomMessage(
-      id: try uuid(7), sessionID: try uuid(8), createdAt: messageDate, failureSeen: true
+      id: uuid(7), sessionID: uuid(8), createdAt: messageDate, failureSeen: true
     )],
     remoteNodeSessions: [RemoteNodeSessionDTO(
-      id: try uuid(8), radioID: radioID, publicKey: Data(repeating: 0xCD, count: 32),
+      id: uuid(8), radioID: radioID, publicKey: Data(repeating: 0xCD, count: 32),
       name: "Reference room", role: .roomServer, permissionLevel: .admin,
       lastMessageDate: messageDate
     )],
     savedTracePaths: [.testPath(
-      id: try uuid(9), radioID: radioID, createdDate: messageDate,
-      runs: [.testRun(id: try uuid(10), date: messageDate)]
+      id: uuid(9), radioID: radioID, createdDate: messageDate,
+      runs: [.testRun(id: uuid(10), date: messageDate)]
     )],
     blockedChannelSenders: [BlockedChannelSenderDTO(
-      id: try uuid(11), name: "Blocked fixture", radioID: radioID, dateBlocked: messageDate
+      id: uuid(11), name: "Blocked fixture", radioID: radioID, dateBlocked: messageDate
     )],
     nodeStatusSnapshots: [.testSnapshot(
-      id: try uuid(12), timestamp: Date(timeIntervalSince1970: 1_700_000_502.7654321),
+      id: uuid(12), timestamp: Date(timeIntervalSince1970: 1_700_000_502.7654321),
       neighborSnapshots: [NeighborSnapshotEntry(publicKeyPrefix: Data([0x80, 0xFF]), snr: -1.5, secondsAgo: 3)],
       telemetryEntries: [TelemetrySnapshotEntry(channel: 1, type: "temperature", value: 25.5)]
     )],
     discoveredNodes: [DiscoveredNodeDTO(
-      id: try uuid(13), radioID: radioID, publicKey: Data(repeating: 0xAB, count: 32),
+      id: uuid(13), radioID: radioID, publicKey: Data(repeating: 0xAB, count: 32),
       name: "Discovered fixture", typeRawValue: 2, lastHeard: messageDate,
       lastAdvertTimestamp: UInt32.max, latitude: 37.3349, longitude: -122.009,
       outPathLength: 3, outPath: Data([0x80, 0xFF, 0x00]),
@@ -159,7 +159,7 @@ func executeCryptoTests(suite: AssertionSuite) throws -> [String: Any] {
   let channelOracle = SourceChannelOracle()
   let normal = try channelOracle.packet(timestamp: 1_703_123_456, txtType: 0, message: "Alice: Hello mesh!")
   let utf8Text = "Hi\u{4F60}\u{1F600}"
-  let highBit = try channelOracle.packet(timestamp: 0x80000000, txtType: 2, message: utf8Text)
+  let highBit = try channelOracle.packet(timestamp: 0x8000_0000, txtType: 2, message: utf8Text)
   try suite.test("channel-crypto-normal") {
     guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: normal, secret: channelOracle.secret) else {
       throw OracleFailure(description: "Pinned channel crypto rejected its independent Swift-test oracle")
@@ -170,7 +170,7 @@ func executeCryptoTests(suite: AssertionSuite) throws -> [String: Any] {
     guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: highBit, secret: channelOracle.secret) else {
       throw OracleFailure(description: "Pinned crypto rejected high-bit/UTF-8 input")
     }
-    try suite.expect(timestamp == 0x80000000 && type == 2 && text == utf8Text, "Unsigned little-endian timestamp/UTF-8")
+    try suite.expect(timestamp == 0x8000_0000 && type == 2 && text == utf8Text, "Unsigned little-endian timestamp/UTF-8")
   }
   try suite.test("channel-crypto-corrupted-mac") {
     var corrupted = normal
@@ -268,7 +268,9 @@ func executeTests(output: URL) throws {
   try suite.test("legacy-message-defaults") {
     let data = try modified(encoded) {
       var rows = try array($0, "messages")
-      for key in ["sortDate", "failureSeen", "regionScopeMatches"] { rows[0].removeValue(forKey: key) }
+      for key in ["sortDate", "failureSeen", "regionScopeMatches"] {
+        rows[0].removeValue(forKey: key)
+      }
       $0["messages"] = rows
     }
     let parsed = try parseBackup(data: data)
@@ -398,9 +400,9 @@ struct CodecOracle {
     guard arguments.count >= 3 else {
       throw OracleFailure(description: "Usage: codec-oracle test OUTPUT | decode COMPRESSED_INPUT OUTPUT_JSON")
     }
-    if arguments[1] == "test" && arguments.count == 3 {
+    if arguments[1] == "test", arguments.count == 3 {
       try executeTests(output: URL(fileURLWithPath: arguments[2], isDirectory: true))
-    } else if arguments[1] == "decode" && arguments.count == 4 {
+    } else if arguments[1] == "decode", arguments.count == 4 {
       let input = URL(fileURLWithPath: arguments[2])
       let attributes = try FileManager.default.attributesOfItem(atPath: input.path)
       guard let size = attributes[.size] as? NSNumber else { throw OracleFailure(description: "Missing input size") }
