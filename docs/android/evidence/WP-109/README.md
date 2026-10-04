@@ -1,6 +1,6 @@
 # WP-109 protocol sweep and executable TCP meshcli
 
-**Candidate implementation; first hosted compilation failed.** The actual
+**Candidate implementation; protocol passes, CLI proof remains incomplete.** The actual
 898892e6 protocol run37232304276/attempt1 failed on BOTH Windows/Linux before
 test discovery: the new ownership clock's inferred continuation type was
 `CancellableContinuation<*>`, incompatible with its typed sleeper table.
@@ -18,6 +18,15 @@ forwarding/artifact seam, not permission to invent case outcomes. The owned
 test listener now emits actual failed fixture testcase/exception details at
 error level even under the real quiet runner, enabling same-PR diagnosis while
 the full raw forwarding amendment remains separately gated.
+Actual a37d1d5a protocol37240261699/attempt1 exposes both identical CLI failures
+on Windows/Linux: the UTF8 fixture incorrectly expected a trailing U+202E after
+the unchanged pinned DeviceInfo parser trims terminal controls, and the contact
+query's valid public ID `a5` repeated32 times contains the old `5a` repeated16
+secret sentinel. The fixtures now put U+202E inside retained model text and use
+the distinct exact16-byte `private-channel!` secret with independent literal
+hex/plaintext absence assertions. Raw ESC/bidi output is still forbidden. No
+production, source, golden, case identity or expected exit is changed; fresh
+execution of the same72 CLI cases is required before reporting success.
 The actual repaired5bd14bbd normal protocol37234505781/attempt1 then discovered
 all4,711 cases/58 suites on both hosts: all4,708 old identities and the owning-job
 TCP-close case passed, while two new cause assertions failed because coroutine

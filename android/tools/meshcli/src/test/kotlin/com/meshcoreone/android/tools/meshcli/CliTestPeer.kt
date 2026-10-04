@@ -188,8 +188,10 @@ internal fun deviceFrame(model: String = "T-Deck", channels: Int = 8): ByteArray
     bytes(13, 10, 50, channels) + le32(123_456) + fixed("2025-01-01", 12) +
         fixed(model, 40) + fixed("1.14.0", 20) + bytes(1, 2)
 internal fun batteryFrame(value: Int = 4018): ByteArray = bytes(12, value and 255, value ushr 8)
+internal const val CHANNEL_SECRET_MARKER = "private-channel!"
+internal const val CHANNEL_SECRET_HEX = "707269766174652d6368616e6e656c21"
 internal fun channelFrame(index: Int, name: String = "General"): ByteArray =
-    bytes(18, index) + fixed(name, 32) + ByteArray(16) { 0x5a }
+    bytes(18, index) + fixed(name, 32) + CHANNEL_SECRET_MARKER.toByteArray(Charsets.UTF_8)
 internal fun contactsStart(count: Long): ByteArray = bytes(2) + le32(count)
 internal fun contactsEnd(): ByteArray = bytes(4) + le32(1_704_067_200)
 internal fun contactFrame(key: Int, name: String = "Peer"): ByteArray =

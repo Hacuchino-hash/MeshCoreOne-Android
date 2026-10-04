@@ -54,7 +54,8 @@ class CliTcpTest {
                             assertTrue(output.out.toString().contains("a5".repeat(32)), "Source-canonical complete public ID")
                             assertTrue(output.out.toString().contains("Mesh\u4f60\u597d"))
                         }
-                        assertFalse(output.out.toString().contains("5a".repeat(16)), "No channel secret export")
+                        assertFalse(output.out.toString().contains(CHANNEL_SECRET_HEX), "No hexadecimal channel secret export")
+                        assertFalse(output.out.toString().contains(CHANNEL_SECRET_MARKER), "No plaintext channel secret export")
                     }
                 }
             }
@@ -320,12 +321,13 @@ class CliTcpTest {
             CliPeer().use { peer ->
                 val output = CapturedConsole()
                 val result = async { MeshCli.execute(cliArgs(peer, "device"), output.console) }
-                peer.handshake(); peer.expect(22, 3); peer.send(deviceFrame("\u4f60\u597d\u001b[2J\n\"\\\u202e"))
+                peer.handshake(); peer.expect(22, 3); peer.send(deviceFrame("\u4f60\u597d\u001b[2J\n\"\\\u202etail"))
                 assertEquals(0, result.await())
                 assertTrue(output.out.toString().contains("\u4f60\u597d"))
                 assertTrue(output.out.toString().contains("\\u001b"))
                 assertTrue(output.out.toString().contains("\\u202e"))
                 assertFalse(output.out.toString().contains('\u001b'))
+                assertFalse(output.out.toString().contains('\u202e'))
                 assertEquals(1, output.out.toString().count { it == '\n' })
             }
         }
