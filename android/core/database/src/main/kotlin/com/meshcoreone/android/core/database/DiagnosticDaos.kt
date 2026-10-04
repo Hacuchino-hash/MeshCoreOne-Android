@@ -39,11 +39,11 @@ interface RxLogDao : RowWriter<RxLogEntryEntity> {
     suspend fun byId(radioId: UUID, id: UUID): RxLogEntryEntity?
     @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND channelIndex = :index AND senderTimestamp = :timestamp ORDER BY receivedAt_seconds, receivedAt_nanos")
     suspend fun channelCorrelation(radioId: UUID, index: Long, timestamp: Long): List<RxLogEntryEntity>
-    @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND payloadType = 2 AND senderTimestamp = :timestamp ORDER BY receivedAt_seconds DESC, receivedAt_nanos DESC")
+    @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND payloadType = 2 AND senderTimestamp = :timestamp AND channelIndex IS NULL ORDER BY receivedAt_seconds DESC, receivedAt_nanos DESC")
     suspend fun directCorrelation(radioId: UUID, timestamp: Long): List<RxLogEntryEntity>
     @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND transportCode IS NOT NULL ORDER BY receivedAt_seconds DESC, receivedAt_nanos DESC LIMIT :limit")
     suspend fun withTransportCode(radioId: UUID, limit: Long): List<RxLogEntryEntity>
-    @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND decryptStatus = :status AND (receivedAt_seconds > :seconds OR (receivedAt_seconds = :seconds AND receivedAt_nanos >= :nanos)) ORDER BY receivedAt_seconds DESC, receivedAt_nanos DESC")
+    @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId AND decryptStatus = :status AND (receivedAt_seconds > :seconds OR (receivedAt_seconds = :seconds AND receivedAt_nanos >= :nanos)) ORDER BY receivedAt_seconds ASC, receivedAt_nanos ASC")
     suspend fun forDecryptStatus(radioId: UUID, status: Long, seconds: Long, nanos: Int): List<RxLogEntryEntity>
     @Query("SELECT * FROM rx_log_entries WHERE radioId = :radioId ORDER BY receivedAt_seconds, receivedAt_nanos LIMIT :limit")
     suspend fun oldest(radioId: UUID, limit: Long): List<RxLogEntryEntity>

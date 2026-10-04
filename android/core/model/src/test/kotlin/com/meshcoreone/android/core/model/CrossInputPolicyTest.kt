@@ -4,6 +4,7 @@
 // Cross-owner source inputs augment, not replace, the owning WP's consumer tests.
 package com.meshcoreone.android.core.model
 
+import com.meshcoreone.android.core.protocol.parser.RegionMatchResult
 import java.util.Locale
 import kotlin.test.*
 import org.junit.jupiter.api.DynamicTest
@@ -46,7 +47,7 @@ class CrossInputPolicyTest {
     }
 
     @Test fun normalizationRemovesBlankDuplicateRegionsAndUsesNaturalLocalizedDisplayOrderOnly() {
-        val fields = RegionScopeSemantics.storageFields(RegionLabel.Ambiguous(listOf(" r10 ", "r2", "r2", "", "r1")), Locale.US)
+        val fields = RegionScopeSemantics.storageFields(RegionMatchResult.Ambiguous(listOf(" r10 ", "r2", "r2", "", "r1")), Locale.US)
         assertNull(fields.regionScope); assertEquals(listOf("r1", "r2", "r10"), fields.regionScopeMatches)
         val malformed = testChannel().copy(floodScopeModeRawValue = "future", regionScope = "preserve raw")
         assertEquals(ChannelFloodScope.Inherit, malformed.floodScope)

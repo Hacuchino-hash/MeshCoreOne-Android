@@ -12,12 +12,11 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[4]
 OUT = Path(__file__).resolve().parent
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-BASE = "0ae606992bf58c8d3f2bf08b7a26406c97f12f84"
-DEFERRED = "RegionScopeSemanticsTests::matchRegions multi-match never stores first-match as regionScope()"
+BASE = "0394b83c9b47fa0d7198e2d631f7ddb313cd370d"
 MODULES = {
-    "model": ("android/core/model/build/test-results/test", 165),
+    "model": ("android/core/model/build/test-results/test", 166),
     "contracts": ("android/core/contracts/build/test-results/test", 4),
-    "database": ("android/core/database/build/test-results/testDebugUnitTest", 42),
+    "database": ("android/core/database/build/test-results/testDebugUnitTest", 45),
 }
 SCOPES = (
     "android/core/model/",
@@ -105,22 +104,18 @@ def report():
         for case in entry["cases"]:
             identity = case["id"]
             hit = by_name.get(identity) or db_bindings.get(identity)
-            if identity == DEFERRED:
-                assert hit is None
-                outcome = "deferred-real-WP-103-resolver-consumer"
-            else:
-                assert hit is not None, "Missing original assertion family: " + identity
-                outcome = "source-behavior"
-                if identity.startswith("ChannelFloodScopeTests::") and ("Codable" in identity or "Legacy envelope" in identity):
-                    outcome = "legacy-field-policy-equivalent-not-envelope-codec"
-                elif hit["module"] == "database":
-                    outcome = "actual-DAO-or-column-equivalent-not-WP-202-repository"
-                elif identity.startswith("DevicePublicKeyDeduplicationTests::createDevice"):
-                    outcome = "pure-source-factory-equivalent-not-connect-ceremony"
+            assert hit is not None, "Missing original assertion family: " + identity
+            outcome = "source-behavior"
+            if identity.startswith("ChannelFloodScopeTests::") and ("Codable" in identity or "Legacy envelope" in identity):
+                outcome = "legacy-field-policy-equivalent-not-envelope-codec"
+            elif hit["module"] == "database":
+                outcome = "actual-DAO-or-column-equivalent-not-WP-202-repository"
+            elif identity.startswith("DevicePublicKeyDeduplicationTests::createDevice"):
+                outcome = "pure-source-factory-equivalent-not-connect-ceremony"
             originals.append({"source": entry["path"], "blob_sha": entry["blob_sha"], **case,
                               "evidence_kind": outcome, "native_test": hit})
     assert len(originals) == 114
-    assert sum(case["native_test"] is None for case in originals) == 1
+    assert all(case["native_test"] is not None for case in originals)
 
     schema_path = "android/core/database/schemas/com.meshcoreone.android.core.database.MeshCoreDatabase/1.json"
     schema_raw = checkout(schema_path).read_bytes()
@@ -138,7 +133,7 @@ def report():
         "scope": "local source/field/DAO assertions; not formal review, gate approval, hardware or bidirectional backup restore",
         "input_counts": {"production": 54, "test": 14, "support": 12},
         "inputs": input_map, "source_cases": originals, "junit_suites": suites, "native_cases": cases,
-        "discovery": {"model": 165, "contracts": 4, "database": 42, "total": 211, "failed": 0, "errors": 0, "skipped": 0},
+        "discovery": {"model": 166, "contracts": 4, "database": 45, "total": 215, "failed": 0, "errors": 0, "skipped": 0},
         "schema": {"generator": "Room 2.8.5 / KSP 2.3.12", "path": schema_path,
                    "sha256": sha(schema_raw), "canonical_lf_sha256": sha(schema_raw.replace(b"\r\n", b"\n")),
                    "version": 1, "entities": 17, "identity_hash": schema["identityHash"], "explicit_cascade_relationships": 2},
@@ -152,8 +147,8 @@ def main():
     result = report()
     if args.write:
         (OUT / "local-evidence.json").write_text(json.dumps(result, indent=2, ensure_ascii=True) + "\n", encoding="utf8")
-    print(json.dumps({"result": "passed", "original_declarations": 114, "asserted_or_native_equivalent": 113,
-                      "genuine_deferred_consumers": 1, "discovery": result["discovery"], "schema": result["schema"]}, indent=2))
+    print(json.dumps({"result": "passed", "original_declarations": 114, "asserted_or_native_equivalent": 114,
+                      "deferred_owned_cases": 0, "discovery": result["discovery"], "schema": result["schema"]}, indent=2))
 
 
 if __name__ == "__main__":

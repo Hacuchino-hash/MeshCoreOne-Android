@@ -12,6 +12,9 @@ import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.model.AutoAddConfig
 import com.meshcoreone.android.core.protocol.model.DeviceCapabilities
 import com.meshcoreone.android.core.protocol.model.sha256
+import com.meshcoreone.android.core.protocol.parser.RegionMatchResult
+import com.meshcoreone.android.core.protocol.parser.RegionScopeKey
+import com.meshcoreone.android.core.protocol.parser.TransportCodeRegionResolver
 import java.util.UUID
 import kotlin.test.*
 import org.junit.jupiter.api.TestFactory
@@ -82,21 +85,32 @@ class SourcePolicyCasesTest {
 
     @TestFactory fun regionLabels() = sourceCases("RegionScopeSemanticsTests",
         "storageFields maps none unique and ambiguous" to {
-            assertNull(RegionScopeSemantics.storageFields(RegionLabel.None).regionScope)
-            assertEquals(emptyList(), RegionScopeSemantics.storageFields(RegionLabel.None).regionScopeMatches)
-            assertEquals(RegionStorageFields("Germany", SnapshotList.of("Germany")), RegionScopeSemantics.storageFields(RegionLabel.Unique("Germany")))
-            assertEquals(RegionStorageFields(null, SnapshotList.of("de-by", "de-hh")), RegionScopeSemantics.storageFields(RegionLabel.Ambiguous(listOf("de-hh", "de-by"))))
+            assertNull(RegionScopeSemantics.storageFields(RegionMatchResult.None).regionScope)
+            assertEquals(emptyList(), RegionScopeSemantics.storageFields(RegionMatchResult.None).regionScopeMatches)
+            assertEquals(RegionStorageFields("Germany", SnapshotList.of("Germany")), RegionScopeSemantics.storageFields(RegionMatchResult.Unique("Germany")))
+            assertEquals(RegionStorageFields(null, SnapshotList.of("de-by", "de-hh")), RegionScopeSemantics.storageFields(RegionMatchResult.Ambiguous(listOf("de-hh", "de-by"))))
         },
-        "coalesce prefers multi-match over sticky scope" to { assertEquals(RegionLabel.Ambiguous(listOf("de-by", "de-hh")), RegionScopeSemantics.coalesce("Germany", listOf("de-hh", "de-by"))) },
-        "coalesce unique from single match" to { assertEquals(RegionLabel.Unique("USA"), RegionScopeSemantics.coalesce(null, listOf("USA"))) },
-        "coalesce legacy unique from scope only" to { assertEquals(RegionLabel.Unique("Bavaria"), RegionScopeSemantics.coalesce("Bavaria", emptyList())) },
+        "coalesce prefers multi-match over sticky scope" to { assertEquals(RegionMatchResult.Ambiguous(listOf("de-by", "de-hh")), RegionScopeSemantics.coalesce("Germany", listOf("de-hh", "de-by"))) },
+        "coalesce unique from single match" to { assertEquals(RegionMatchResult.Unique("USA"), RegionScopeSemantics.coalesce(null, listOf("USA"))) },
+        "coalesce legacy unique from scope only" to { assertEquals(RegionMatchResult.Unique("Bavaria"), RegionScopeSemantics.coalesce("Bavaria", emptyList())) },
         "coalesce none when both empty" to {
-            assertEquals(RegionLabel.None, RegionScopeSemantics.coalesce(null, emptyList()))
-            assertEquals(RegionLabel.None, RegionScopeSemantics.coalesce("  ", listOf("", " ")))
+            assertEquals(RegionMatchResult.None, RegionScopeSemantics.coalesce(null, emptyList()))
+            assertEquals(RegionMatchResult.None, RegionScopeSemantics.coalesce("  ", listOf("", " ")))
         },
         "chipLabel joins ambiguous with slash separator" to {
-            assertNull(RegionScopeSemantics.chipLabel(RegionLabel.None)); assertEquals("Germany", RegionScopeSemantics.chipLabel(RegionLabel.Unique("Germany")))
-            assertEquals("de-by / de-hh", RegionScopeSemantics.chipLabel(RegionLabel.Ambiguous(listOf("de-by", "de-hh"))))
+            assertNull(RegionScopeSemantics.chipLabel(RegionMatchResult.None)); assertEquals("Germany", RegionScopeSemantics.chipLabel(RegionMatchResult.Unique("Germany")))
+            assertEquals("de-by / de-hh", RegionScopeSemantics.chipLabel(RegionMatchResult.Ambiguous(listOf("de-by", "de-hh"))))
+        },
+        "matchRegions multi-match never stores first-match as regionScope" to {
+            val key = assertNotNull(TransportCodeRegionResolver.deriveScopeKey("Germany"))
+            val payload = Bytes.of(1, 2, 3, 4)
+            val code = TransportCodeRegionResolver.calcTransportCode(key, 5u, payload)
+            val match = TransportCodeRegionResolver.matchRegions(
+                listOf(RegionScopeKey("First", key), RegionScopeKey("Second", key)), code, 5u, payload,
+            )
+            val fields = RegionScopeSemantics.storageFields(match)
+            assertNull(fields.regionScope); assertEquals(2, fields.regionScopeMatches.size)
+            assertEquals(setOf("First", "Second"), fields.regionScopeMatches.toSet())
         },
     )
 

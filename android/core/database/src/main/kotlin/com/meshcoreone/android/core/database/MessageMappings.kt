@@ -7,17 +7,21 @@ package com.meshcoreone.android.core.database
 
 import com.meshcoreone.android.core.model.*
 import com.meshcoreone.android.core.protocol.event.RouteType
+import java.time.Instant
 import java.util.UUID
 
 fun MessageDTO.toEntity(): MessageEntity = MessageEntity(
     radioId.value, id, contactID, channelIndex?.toLong(), text,
-    if (timestamp > 0u) timestamp.toLong() else createdAt.epochSecond.uint("message.timestamp").toLong(),
+    if (timestamp > 0u) timestamp.toLong() else createdAt.truncatedUnixSeconds().uint("message.timestamp").toLong(),
     StoredInstant.from(createdAt), StoredInstant.from(sortDate), direction.rawValue, status.rawValue, textType.rawValue.toLong(),
     ackCode?.toLong(), pathLength.toLong(), snr, pathNodes, senderKeyPrefix, senderNodeName, isRead, replyToID, roundTripTime?.toLong(),
     heardRepeats, sendCount, retryAttempt, maxRetryAttempts, deduplicationKey, linkPreviewURL, linkPreviewTitle,
     null, null, false, containsSelfMention, mentionSeen, failureSeen, timestampCorrected, senderTimestamp?.toLong(),
     reactionSummary, routeType?.rawValue?.toLong() ?: -1, regionScope, regionScopeMatches,
 )
+
+private fun Instant.truncatedUnixSeconds(): Long =
+    if (epochSecond < 0 && nano > 0) epochSecond + 1 else epochSecond
 
 fun MessageEntity.toDTO(includeLinkPreviewBlobs: Boolean = true): MessageDTO = MessageDTO(
     id, RadioId(radioId), contactID, channelIndex?.ubyte("message.channelIndex"), text, timestamp.uint("message.timestamp"),

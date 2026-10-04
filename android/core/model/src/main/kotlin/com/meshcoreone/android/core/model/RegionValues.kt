@@ -1,54 +1,46 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Models/RegionScopeSemantics.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Models/RegionSelection.swift@db14559b39d32322b06477c6ae676112f583db50
-// RegionLabel is a neutral matched-result projection; WP-103 owns the protocol region resolver.
 package com.meshcoreone.android.core.model
 
+import com.meshcoreone.android.core.protocol.parser.RegionMatchResult
 import java.math.BigInteger
 import java.text.Collator
 import java.util.Locale
-
-sealed interface RegionLabel {
-    data object None : RegionLabel
-    data class Unique(val name: String) : RegionLabel
-    data class Ambiguous(val names: SnapshotList<String>) : RegionLabel {
-        constructor(names: Iterable<String>) : this(names.snapshot())
-    }
-}
 
 data class RegionStorageFields(val regionScope: String?, val regionScopeMatches: SnapshotList<String>)
 
 object RegionScopeSemantics {
     const val CHIP_NAME_SEPARATOR = " / "
 
-    fun storageFields(match: RegionLabel, locale: Locale = Locale.getDefault()): RegionStorageFields {
+    fun storageFields(match: RegionMatchResult, locale: Locale = Locale.getDefault()): RegionStorageFields {
         val names = when (match) {
-            RegionLabel.None -> emptyList()
-            is RegionLabel.Unique -> listOf(match.name)
-            is RegionLabel.Ambiguous -> match.names
+            RegionMatchResult.None -> emptyList()
+            is RegionMatchResult.Unique -> listOf(match.name)
+            is RegionMatchResult.Ambiguous -> match.names
         }
         val filtered = filteredSortedNames(names, locale)
         return RegionStorageFields(filtered.singleOrNull(), filtered)
     }
 
-    fun coalesce(scope: String?, matches: Iterable<String>, locale: Locale = Locale.getDefault()): RegionLabel {
+    fun coalesce(scope: String?, matches: Iterable<String>, locale: Locale = Locale.getDefault()): RegionMatchResult {
         val filtered = filteredSortedNames(matches, locale)
         return when (filtered.size) {
-            0 -> scope?.trim()?.takeIf { it.isNotEmpty() }?.let(RegionLabel::Unique) ?: RegionLabel.None
-            1 -> RegionLabel.Unique(filtered[0])
-            else -> RegionLabel.Ambiguous(filtered)
+            0 -> scope?.trim()?.takeIf { it.isNotEmpty() }?.let(RegionMatchResult::Unique) ?: RegionMatchResult.None
+            1 -> RegionMatchResult.Unique(filtered[0])
+            else -> RegionMatchResult.Ambiguous(filtered)
         }
     }
 
-    fun chipLabel(match: RegionLabel): String? = when (match) {
-        RegionLabel.None -> null
-        is RegionLabel.Unique -> match.name
-        is RegionLabel.Ambiguous -> match.names.joinToString(CHIP_NAME_SEPARATOR)
+    fun chipLabel(match: RegionMatchResult): String? = when (match) {
+        RegionMatchResult.None -> null
+        is RegionMatchResult.Unique -> match.name
+        is RegionMatchResult.Ambiguous -> match.names.joinToString(CHIP_NAME_SEPARATOR)
     }
 
-    fun matchNames(match: RegionLabel): SnapshotList<String> = when (match) {
-        RegionLabel.None -> SnapshotList.empty()
-        is RegionLabel.Unique -> SnapshotList.of(match.name)
-        is RegionLabel.Ambiguous -> match.names
+    fun matchNames(match: RegionMatchResult): SnapshotList<String> = when (match) {
+        RegionMatchResult.None -> SnapshotList.empty()
+        is RegionMatchResult.Unique -> SnapshotList.of(match.name)
+        is RegionMatchResult.Ambiguous -> match.names.snapshot()
     }
 
     private fun filteredSortedNames(names: Iterable<String>, locale: Locale): SnapshotList<String> {

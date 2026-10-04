@@ -4,7 +4,7 @@
   "work_package": "WP-201",
   "session": "f7b1af4d-9429-49e8-bcb0-6e3cc11cd5de",
   "branch": "cbattlegear-potential-engine",
-  "base_sha": "0ae606992bf58c8d3f2bf08b7a26406c97f12f84",
+  "base_sha": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
   "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
@@ -448,6 +448,7 @@
       "native_files": [
         "android/core/database/src/main/kotlin/com/meshcoreone/android/core/database/MessageEntities.kt",
         "android/core/database/src/main/kotlin/com/meshcoreone/android/core/database/MessageMappings.kt",
+        "android/core/database/src/test/kotlin/com/meshcoreone/android/core/database/ReviewedSourceRegressionTest.kt",
         "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/MessageDTO.kt",
         "android/core/model/src/test/kotlin/com/meshcoreone/android/core/model/DomainBoundaryTest.kt"
       ]
@@ -2650,8 +2651,13 @@
       "blob_sha": "66ac8f4f32425bda75cf371316133572a6c82b38",
       "id": "RegionScopeSemanticsTests::matchRegions multi-match never stores first-match as regionScope()",
       "parameter_family": "single",
-      "evidence_kind": "deferred-real-WP-103-resolver-consumer",
-      "native_test": null
+      "evidence_kind": "source-behavior",
+      "native_test": {
+        "module": "model",
+        "class": "com.meshcoreone.android.core.model.SourcePolicyCasesTest",
+        "name": "RegionScopeSemanticsTests::matchRegions multi-match never stores first-match as regionScope()",
+        "outcome": "passed"
+      }
     },
     {
       "source": "MC1Services/Tests/MC1ServicesTests/NodeLocationFixTests.swift",
@@ -2827,61 +2833,67 @@
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.CrossInputPolicyTest.xml",
-      "sha256": "e4e087c124e470f3de86937932a7f9e36596ea3a1a98cf5943aaac79af6a1dbd",
+      "sha256": "2e17e66b108d91328c39b2a83178ed8cdee9236f739439509c4ba1c4eec01eba",
       "cases": 51
     },
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.DomainBoundaryTest.xml",
-      "sha256": "dcf34c32ca0baef6e4de69ac7b2677ed54b1a64aaf6fc9991cb9239b5f363da5",
+      "sha256": "a85783af0e00d0323ad3fd9dfdcae17398830acb3abf2d3578d6241cfdffca86",
       "cases": 16
     },
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.DomainContractTest.xml",
-      "sha256": "afb7db17b41ea39f0bffa9885ce2dd22ad7bf99ab7f33ef9b2e8232c6fa396e3",
+      "sha256": "14714fd91564bd1f99453c5373fbe1cb8d0cfa4e2cc4235051d85a7c02d4023f",
       "cases": 5
     },
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.ReferenceCompressionTest.xml",
-      "sha256": "ef054e710acf38275453f3a38f8bc896fafca1567c0b3e00c5d074579e74ca80",
+      "sha256": "fb6e583c88c06cd146f7a458a7237bc0a73ad86ddaf779e4e44c677b507c9d1a",
       "cases": 3
     },
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.SourceModelCasesTest.xml",
-      "sha256": "e70307c7cb0c792f5fd2ef6cd319c93edf707b54191a8989ac75f8c262f9d010",
+      "sha256": "ae253bfffff65ba9f9d40b56571f63bc2799ccab5cf1112aa33cd09ddf12d6d1",
       "cases": 41
     },
     {
       "module": "model",
       "path": "android/core/model/build/test-results/test/TEST-com.meshcoreone.android.core.model.SourcePolicyCasesTest.xml",
-      "sha256": "4c8b127ac9830010836633c5898c2159d265da8baf3f09a8b2e6d4bc293114ec",
-      "cases": 49
+      "sha256": "8e45f5b54cedb565308ee70a78de3bd7857bcb18c0e26659a6de40b178beda97",
+      "cases": 50
     },
     {
       "module": "contracts",
       "path": "android/core/contracts/build/test-results/test/TEST-com.meshcoreone.android.core.contracts.FeatureRouteTest.xml",
-      "sha256": "73645d1102410b831c39c50ac464a31f4c1fdc8b2fa15aed152d1762318a33e2",
+      "sha256": "ea3cab64c88ad877c6625c3101ab461edf4023bbd9fe0a8d3e1a1656fafe67fd",
       "cases": 4
     },
     {
       "module": "database",
+      "path": "android/core/database/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.database.ReviewedSourceRegressionTest.xml",
+      "sha256": "865b4a81d017df8b947b79d3450b6316b08914d1cc22ccf225b9283ab6415066",
+      "cases": 3
+    },
+    {
+      "module": "database",
       "path": "android/core/database/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.database.RoomBoundaryTest.xml",
-      "sha256": "63f810ce4fb73054b74fa0ba16d139023daef9235694f335ff9252a909582ec2",
+      "sha256": "5262601a63a65464bba7599a0640a0354958fbd7e29e1b3accf7e3a83d9a9c2c",
       "cases": 13
     },
     {
       "module": "database",
       "path": "android/core/database/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.database.RoomFieldCoverageTest.xml",
-      "sha256": "8b10a95bf1103993f7c47ecb65dbe3955a3995ad9f1e045f0ebe713eb2296178",
+      "sha256": "8a572da2bac35159e14379b78fbe38243b13e07aaf7d7b6359a1fe61321c18fe",
       "cases": 6
     },
     {
       "module": "database",
       "path": "android/core/database/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.database.SourceRoomCasesTest.xml",
-      "sha256": "9b6d8d83b89944e88d5d7a2103853a9ea3bf7342da5ef3c2a1ea1be86a821c70",
+      "sha256": "c186cd2fb42cced9cc8ac9bb74d1af77680dbe5d0cbc133bdf264b3eb41944c7",
       "cases": 23
     }
   ],
@@ -3657,6 +3669,12 @@
     {
       "module": "model",
       "class": "com.meshcoreone.android.core.model.SourcePolicyCasesTest",
+      "name": "RegionScopeSemanticsTests::matchRegions multi-match never stores first-match as regionScope()",
+      "outcome": "passed"
+    },
+    {
+      "module": "model",
+      "class": "com.meshcoreone.android.core.model.SourcePolicyCasesTest",
       "name": "DevicePublicKeyDeduplicationTests::createDevice preserves radioID from existing device()",
       "outcome": "passed"
     },
@@ -3898,6 +3916,24 @@
       "module": "contracts",
       "class": "com.meshcoreone.android.core.contracts.FeatureRouteTest",
       "name": "only five features own tabs()",
+      "outcome": "passed"
+    },
+    {
+      "module": "database",
+      "class": "com.meshcoreone.android.core.database.ReviewedSourceRegressionTest",
+      "name": "timestampZeroFallbackTruncatesWholeUnixFractionTowardZeroBeforeCheckingUInt32",
+      "outcome": "passed"
+    },
+    {
+      "module": "database",
+      "class": "com.meshcoreone.android.core.database.ReviewedSourceRegressionTest",
+      "name": "redecryptionReplaysOldestFirstSoSourceCanonicalPathAdoptionIsFirstWins",
+      "outcome": "passed"
+    },
+    {
+      "module": "database",
+      "class": "com.meshcoreone.android.core.database.ReviewedSourceRegressionTest",
+      "name": "directCorrelationExcludesNewerChannelAttributedRowsButKeepsNewestDirectReception",
       "outcome": "passed"
     },
     {
@@ -4154,10 +4190,10 @@
     }
   ],
   "discovery": {
-    "model": 165,
+    "model": 166,
     "contracts": 4,
-    "database": 42,
-    "total": 211,
+    "database": 45,
+    "total": 215,
     "failed": 0,
     "errors": 0,
     "skipped": 0
