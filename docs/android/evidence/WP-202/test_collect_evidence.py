@@ -87,6 +87,34 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(1, suites[0]["cases"])
         self.assertEqual(COLLECTOR.digest(content.encode("utf8")), suites[0]["sha256"])
 
+    def test_filtered_xml_cannot_omit_unmapped_native_regressions(self):
+        source = self.directory / "Tests.kt"
+        source.write_text(
+            "class CollectorFixture : RepositoryTest() {\n"
+            " @Test fun fixture() {}\n @Test fun requiredBoundary() {}\n}\n", encoding="utf8")
+        self.write(self.suite())
+        actual, _ = COLLECTOR.raw_suites()
+        with patch.object(COLLECTOR, "TESTS", self.directory):
+            with self.assertRaisesRegex(ValueError, "Incomplete or stale"):
+                COLLECTOR.require_complete_native_cases(actual)
+
+    def test_stale_xml_identity_not_declared_in_source_fails(self):
+        (self.directory / "Tests.kt").write_text(
+            "class CollectorFixture : RepositoryTest() {\n @Test fun renamed() {}\n}\n", encoding="utf8")
+        self.write(self.suite())
+        actual, _ = COLLECTOR.raw_suites()
+        with patch.object(COLLECTOR, "TESTS", self.directory):
+            with self.assertRaisesRegex(ValueError, "unexpected="):
+                COLLECTOR.require_complete_native_cases(actual)
+
+    def test_complete_raw_suite_matches_every_declared_test(self):
+        (self.directory / "Tests.kt").write_text(
+            "class CollectorFixture : RepositoryTest() {\n @Test fun fixture() {}\n}\n", encoding="utf8")
+        self.write(self.suite())
+        actual, _ = COLLECTOR.raw_suites()
+        with patch.object(COLLECTOR, "TESTS", self.directory):
+            self.assertEqual(1, COLLECTOR.require_complete_native_cases(actual))
+
 
 if __name__ == "__main__":
     unittest.main()

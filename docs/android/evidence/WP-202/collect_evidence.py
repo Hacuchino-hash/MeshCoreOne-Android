@@ -56,8 +56,7 @@ def inventory():
     return owned, cases
 
 
-def bindings():
-    found = {}
+def test_declarations():
     for path in sorted(TESTS.rglob("*.kt")):
         content = path.read_text(encoding="utf8")
         classes = re.findall(r"^\s*class\s+(\w+)\s*:", content, re.MULTILINE)
@@ -68,15 +67,32 @@ def bindings():
         for declaration in DECLARATION.finditer(content):
             if "@Test" not in declaration["annotations"]:
                 continue
-            for identity, disposition in ORIGINAL.findall(declaration["annotations"]):
-                if identity in found:
-                    raise ValueError("Duplicate original binding: " + identity)
-                found[identity] = {
-                    "class": PREFIX + classes[0], "name": declaration["method"],
-                    "evidence_kind": disposition or "source-behavior",
-                    "path": path.relative_to(ROOT).as_posix(),
-                }
+            yield path, PREFIX + classes[0], declaration
+
+
+def bindings():
+    found = {}
+    for path, classname, declaration in test_declarations():
+        for identity, disposition in ORIGINAL.findall(declaration["annotations"]):
+            if identity in found:
+                raise ValueError("Duplicate original binding: " + identity)
+            found[identity] = {
+                "class": classname, "name": declaration["method"],
+                "evidence_kind": disposition or "source-behavior",
+                "path": path.relative_to(ROOT).as_posix(),
+            }
     return found
+
+
+def require_complete_native_cases(actual):
+    declared = [(classname, declaration["method"]) for _, classname, declaration in test_declarations()]
+    if not declared or len(declared) != len(set(declared)):
+        raise ValueError("Zero/duplicate declared native test identities")
+    expected = set(declared)
+    if set(actual) != expected:
+        raise ValueError("Incomplete or stale native suite; missing=" + repr(sorted(expected - set(actual))) +
+                         "; unexpected=" + repr(sorted(set(actual) - expected)))
+    return len(expected)
 
 
 def migration_dispositions(originals):
@@ -156,6 +172,7 @@ def report():
     if missing:
         raise ValueError("Unresolved original/native-equivalent dispositions: " + repr(sorted(missing)))
     native, suites = raw_suites()
+    require_complete_native_cases(native)
     for case in originals:
         binding = mapped[case["id"]]
         identity = (binding["class"], binding["name"])

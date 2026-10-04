@@ -62,7 +62,7 @@ different `NSDate` class constant was explicitly not substituted.
 | `python -B tools\android-port\controller\test_runner.py --quiet` at `e5b3b9568dd1549120186870b2303a604ed8d7f9` | Passed187 actual controller-fixture tests,0 failed/errors/skips; not native persistence assertions |
 | `python -B tools\android-port\controller\runtime_inputs.py` at `e5b3b9568dd1549120186870b2303a604ed8d7f9` | Passed all77 exact committed/checkout runtime inputs |
 | `python -B android\scaffold\sync_notices.py` | Passed pinned GPLv3/MIT/Apache notice and artwork drift check; not legal admission |
-| `python -B -m unittest discover -s docs\android\evidence\WP-202 -p test_collect_evidence.py -v` | Passed9 actual collector-only tests,0 failures/errors/skips; synthetic XML is never native original-case proof |
+| `python -B -m unittest discover -s docs\android\evidence\WP-202 -p test_collect_evidence.py -v` | Passed12 actual collector-only tests,0 failures/errors/skips; synthetic XML is never native original-case proof |
 | Credential-stripped `python -B android\scaffold\check_environment.py` before provision | Failed: missing explicit JDK/SDK/private cache inputs; PATH exposed JDK11 |
 | `python -B tools\android-port\controller\ci.py provision --root <new-own-session-toolchain> --accept-sdk-license` | Passed exact checksummed archive-only installation; no SDK CLI/helper bootstrap or global configuration |
 | `python -B tools\android-port\controller\ci.py preflight --state <own-environment.json> --output <own-evidence> --local` | Passed actual isolated `check_environment.py`, exact JDK21.0.12.1/SDK37.2/build-tools37.0.0/private cache checks |
@@ -114,6 +114,12 @@ the exact190 source bindings/18 individual reviewed decisions; mandatory
 collection fails closed on the current actual failed native XML. Each of those
 eighteen can resolve only to its real executed testcase identity and
 retains its reviewed split/consumer limits.
+The collector additionally requires exact raw identities for every current
+declared native test, including Android-only boundary assertions without
+original-case annotations. Filtered/omitted or stale method suites cannot
+satisfy it. Normal nondraft PR Windows/Linux CI is allowed to execute the
+actual module while the local Java slot is temporarily held; its outcomes
+and same-run schema2 artifact bindings remain to be independently checked.
 
 The exact shared amendment request is
 [`amendment-request.json`](amendment-request.json).
