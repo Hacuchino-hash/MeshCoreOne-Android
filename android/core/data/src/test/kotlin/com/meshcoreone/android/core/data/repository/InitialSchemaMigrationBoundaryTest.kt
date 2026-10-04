@@ -225,7 +225,7 @@ class InitialSchemaMigrationBoundaryTest : RepositoryTest() {
     }
 
     @Test fun explicitSortDatesSurviveRepeatedWarmupAndTheSameNativeSchemaReopen() = runTest {
-        val name = "wp202-sort-v1-${UUID.randomUUID()}.db"
+        val name = "sort.db"
         fun open(): MeshCoreDatabase = Room.databaseBuilder(context, MeshCoreDatabase::class.java, name)
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE).build()
         var file = open()

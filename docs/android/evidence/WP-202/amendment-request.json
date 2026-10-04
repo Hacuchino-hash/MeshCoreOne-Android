@@ -15,6 +15,7 @@
   "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
   "branch": "cbattlegear-potential-spork",
   "initial_base_sha": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
+  "current_authorized_integration_base_sha": "fbb7eb6f88f1b3a74eaddb68cac911ff52650d02",
   "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
   "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",

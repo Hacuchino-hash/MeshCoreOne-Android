@@ -12,7 +12,8 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[4]
 OUT = Path(__file__).resolve().parent
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
+INITIAL_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
+BASE = "fbb7eb6f88f1b3a74eaddb68cac911ff52650d02"
 TESTS = ROOT / "android" / "core" / "data" / "src" / "test" / "kotlin"
 REPORTS = ROOT / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
 PREFIX = "com.meshcoreone.android.core.data.repository."
@@ -188,7 +189,8 @@ def report():
         raise ValueError("Initial native schema drift")
     return {
         "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-202",
-        "base_sha": BASE, "head_sha": git("rev-parse", "HEAD").decode().strip(), "source_sha": SOURCE,
+        "initial_base_sha": INITIAL_BASE, "base_sha": BASE,
+        "head_sha": git("rev-parse", "HEAD").decode().strip(), "source_sha": SOURCE,
         "scope": "actual local Room/JUnit only; not formal review, hardware, signing or compatible backup restore",
         "primary_inputs": source_map, "original_cases": originals, "junit_suites": suites,
         "native_cases": list(native.values()),

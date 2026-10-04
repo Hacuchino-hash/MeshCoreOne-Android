@@ -7,6 +7,12 @@ App session `e83ac80e-ce2c-45c1-9574-3e04f1de87a6`, project
 `8a3ef5a7-3f45-4c93-8ecb-e252fa000482`.
 
 Bound initial HEAD/base: `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
+Coordinator-verified merged integration base:
+`fbb7eb6f88f1b3a74eaddb68cac911ff52650d02`, after the actual PR-20
+evergreen WP-201/Windows newline repair. All three owned attributed
+commits were rebased onto it; their code remained unchanged. The initial
+receipt and original reviewed checkpoint decisions remain historical
+bindings, not an implicit change to source/schema/dependency pins.
 Reference: `db14559b39d32322b06477c6ae676112f583db50`,
 tree `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`.
 Manifest `78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746`;
@@ -52,6 +58,9 @@ different `NSDate` class constant was explicitly not substituted.
 | `python -B tools\android-port\controller\verification_config.py --check` | Passed frozen manifest overlay validation; feature acceptance remains unconfigured |
 | `python -B tools\android-port\controller\validate.py` | Passed pinned source, 65 WPs, 185 edges and ownership inventory |
 | `python -B tools\android-port\controller\runtime_inputs.py` | Passed all 77 committed/checkout runtime inputs at the initial head |
+| `python -B tools\android-port\controller\test_runner.py --quiet` at `e5b3b9568dd1549120186870b2303a604ed8d7f9` | Passed187 actual controller-fixture tests,0 failed/errors/skips; not native persistence assertions |
+| `python -B tools\android-port\controller\runtime_inputs.py` at `e5b3b9568dd1549120186870b2303a604ed8d7f9` | Passed all77 exact committed/checkout runtime inputs |
+| `python -B android\scaffold\sync_notices.py` | Passed pinned GPLv3/MIT/Apache notice and artwork drift check; not legal admission |
 | `python -B -m unittest discover -s docs\android\evidence\WP-202 -p test_collect_evidence.py -v` | Passed9 actual collector-only tests,0 failures/errors/skips; synthetic XML is never native original-case proof |
 | Credential-stripped `python -B android\scaffold\check_environment.py` before provision | Failed: missing explicit JDK/SDK/private cache inputs; PATH exposed JDK11 |
 | `python -B tools\android-port\controller\ci.py provision --root <new-own-session-toolchain> --accept-sdk-license` | Passed exact checksummed archive-only installation; no SDK CLI/helper bootstrap or global configuration |

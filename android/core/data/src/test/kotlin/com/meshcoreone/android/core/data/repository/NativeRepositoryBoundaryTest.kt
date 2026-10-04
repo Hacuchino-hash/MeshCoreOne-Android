@@ -250,7 +250,7 @@ class NativeRepositoryBoundaryTest : RepositoryTest() {
     }
 
     @Test fun futureUnsupportedSchemaDoesNotDestructivelyReplaceAnExistingFile() = runTest {
-        val name = "wp202-upgrade-${UUID.randomUUID()}.db"
+        val name = "upgrade.db"
         val immediate = Executor { it.run() }
         fun open(): MeshCoreDatabase = Room.databaseBuilder(context, MeshCoreDatabase::class.java, name)
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE).allowMainThreadQueries()
