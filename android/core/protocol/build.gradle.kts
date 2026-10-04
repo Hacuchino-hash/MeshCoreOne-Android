@@ -1,2 +1,7 @@
-// AndroidOnly: WP-002 MIT protocol compile shell; wire implementation remains WP-101 through WP-109.
+// AndroidOnly: WP-101 Pure JVM protocol and coroutine transport contracts.
 plugins { id("mesh.jvm.library") }
+
+dependencies {
+    api(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+}
