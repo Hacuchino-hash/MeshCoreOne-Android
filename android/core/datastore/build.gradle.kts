@@ -1,5 +1,10 @@
 // AndroidOnly: WP-204 Real DataStore/Keystore persistence and source-case verification.
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.CommandLineArgumentProvider
 
 plugins {
@@ -31,6 +36,15 @@ dependencies {
 val prepareReviewedPlatformSdks by tasks.registering(Sync::class) {
     from(configurations.named("testRobolectricSdk"), reviewedPlatformSdks)
     into(layout.buildDirectory.dir("reviewed-platform-sdks"))
+}
+
+class DatastorePlatformSdkArguments(
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val directory: Provider<Directory>,
+) : CommandLineArgumentProvider {
+    override fun asArguments(): Iterable<String> =
+        listOf("-Drobolectric.dependency.dir=${directory.get().asFile.absolutePath}")
 }
 
 val repository = rootProject.projectDir.parentFile
@@ -79,9 +93,9 @@ val resolvePreferenceDependencies by tasks.registering {
 
 tasks.withType<Test>().configureEach {
     dependsOn(prepareReviewedPlatformSdks)
-    jvmArgumentProviders.add(CommandLineArgumentProvider {
-        listOf("-Drobolectric.dependency.dir=${layout.buildDirectory.dir("reviewed-platform-sdks").get().asFile.absolutePath}")
-    })
+    forkEvery = 1
+    jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
+    jvmArgumentProviders.add(DatastorePlatformSdkArguments(layout.buildDirectory.dir("reviewed-platform-sdks")))
     systemProperty("repositoryDirectory", repository.absolutePath)
 }
 
