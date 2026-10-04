@@ -60,12 +60,15 @@ class NativeDiagnosticRepositoryTest : RepositoryTest() {
     }
 
     @Test fun traceEncodingFailureRollsBackTheParentInsteadOfReplacingRunsWithEmptyData() = runTest {
-        val bad = TracePathRunDTO(UUID.randomUUID(), AT, true, 1, SnapshotList.of(Double.NaN))
-        val failure = assertFailsWith<PersistenceStoreException> {
-            store.createSavedTracePath(RADIO_A, "invalid run", Bytes.of(0x80), 1, bad)
+        for (value in listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
+            val bad = TracePathRunDTO(UUID.randomUUID(), AT, true, 1, SnapshotList.of(value))
+            val failure = assertFailsWith<PersistenceStoreException> {
+                store.createSavedTracePath(RADIO_A, "invalid run", Bytes.of(0x80), 1, bad)
+            }
+            assertIs<DatabaseValueException>(failure.cause)
+            assertTrue(store.fetchSavedTracePaths(RADIO_A).isEmpty())
         }
-        assertIs<DatabaseValueException>(failure.cause)
-        assertTrue(store.fetchSavedTracePaths(RADIO_A).isEmpty())
+        val bad = TracePathRunDTO(UUID.randomUUID(), AT, true, 1, SnapshotList.of(Double.NaN))
         val missing = assertFailsWith<PersistenceStoreException> {
             store.appendTracePathRun(entity(id = UUID.randomUUID()), bad)
         }

@@ -7,10 +7,11 @@ App session `e83ac80e-ce2c-45c1-9574-3e04f1de87a6`, project
 `8a3ef5a7-3f45-4c93-8ecb-e252fa000482`.
 
 Bound initial HEAD/base: `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
-Coordinator-verified merged integration base:
+Coordinator-verified first integration base:
 `fbb7eb6f88f1b3a74eaddb68cac911ff52650d02`, after the actual PR-20
-evergreen WP-201/Windows newline repair. All three owned attributed
-commits were rebased onto it; their code remained unchanged. The initial
+evergreen WP-201/Windows newline repair. Current authorized merged base:
+`3da3a73b8481c49d035486924a813b331bf184d0`, after actual WP-107 merge.
+Only owned attributed commits were rebased; their code remained unchanged. The initial
 receipt and original reviewed checkpoint decisions remain historical
 bindings, not an implicit change to source/schema/dependency pins.
 Reference: `db14559b39d32322b06477c6ae676112f583db50`,
@@ -66,26 +67,42 @@ different `NSDate` class constant was explicitly not substituted.
 | `python -B tools\android-port\controller\ci.py provision --root <new-own-session-toolchain> --accept-sdk-license` | Passed exact checksummed archive-only installation; no SDK CLI/helper bootstrap or global configuration |
 | `python -B tools\android-port\controller\ci.py preflight --state <own-environment.json> --output <own-evidence> --local` | Passed actual isolated `check_environment.py`, exact JDK21.0.12.1/SDK37.2/build-tools37.0.0/private cache checks |
 | `android\scaffold\invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 512m -BuildMetaspace 512m -TestHeap 256m -TestMetaspace 256m -GradleArguments @(':core:data:compileDebugKotlin', '--project-cache-dir', <own-private-project-cache>, '--dependency-verification', 'strict', '--no-build-cache')` | Failed in 4m33s, 32 executed tasks: missing module compile classpath and two undeclared DAO operations |
+| `:core:data:dependencies --write-locks --dependency-verification strict --no-build-cache` through the same512m private launcher | Passed actual admitted module-local lock generation |
+| `:core:data:compileDebugKotlin --dependency-verification strict --no-build-cache` | First admitted attempt failed on observed late `androidApis` missing local state |
+| `:core:data:compileDebugKotlin --write-locks --dependency-verification strict --no-build-cache` | Passed actual compilation and generated owned late empty `androidApis` state;38 byte-proven newline-only shared lock effects restored to configured Windows checkout form |
+| `:core:data:testDebugUnitTest --tests com.meshcoreone.android.core.data.repository.PendingSendPersistenceTest --tests com.meshcoreone.android.core.data.repository.MessageWindowPersistenceTest --tests com.meshcoreone.android.core.data.repository.NativeRepositoryBoundaryTest --dependency-verification strict --no-build-cache` | First actual34-case run33passed/1failed due measured269-character native Windows sandbox file path; exact same repaired suite34passed/0fail/errors/skips with short sandbox filenames |
+| `:core:data:verifyPersistenceRepositoryTests --dependency-verification strict --no-build-cache` | Actual full module153discovered/152passed/1failed/0errors/skips; sole NaN trace-encoder NPE recorded in the exact narrow converter amendment request, not waived |
+| `validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies --dependency-verification strict --no-build-cache` | Passed actual production graph/runtime/component resolution |
+| `:app:assembleDebug --dependency-verification strict --no-build-cache` | First512m attempt failed actual D8heapOOM; fresh512m JVM retry passed actual APK assembly, with74 actual l10n generator self-tests |
+| `lintScaffold --dependency-verification strict --no-build-cache` | Passed all24 actual lint XML reports;0fatal/errors,495warnings reported without suppression or reclassification |
+| `python -B android\scaffold\inspect_apk.py` with private pinned SDK inputs | Passed actual40,201,289-byte debug APK, SHA256`14d6592b16043b570ccf8a41137fddcc46611266204869646e7df837838ba268`, min31/target37/debug package/notices/fixture exclusion; not physical/native16KiB certification |
+| Standalone `:convention:test --dependency-verification strict --no-build-cache` with initially private separate Gradle/project cache | Passed31 actual convention cases/0fail/errors/skips |
+| `:core:database:verifyDomainRoomTests :core:protocol:test :core:testing:testDebugUnitTest --dependency-verification strict --no-build-cache` on first verified foundation | Passed separately scoped WP201215, protocol4445 and helper35 cases, not WP202source assertions |
+| `:core:protocol:test :core:data:compileDebugKotlin --dependency-verification strict --no-build-cache` after actual WP107 integration | Passed actual compile and separately scoped merged protocol baseline; raw counters recorded independently |
 
 The complete initial compile log is retained in the session evidence,
 SHA256 `db54f8f544aeee558fe76d429c2b41a2c8312dc11d9445b3a06b7978ce604d7b`.
-No native suite was executed, so authored annotations are **not** discovery,
-passed tests or acceptance evidence. No candidate APK, lint, full graph,
-hosted same-head artifact, signing, device, radio or backup oracle result is
-claimed.
+The native lane is now actually executed; its full suite remains **failed**
+on the single recorded NaN converter defect. The source/negative expectation
+is not lowered. Actual local compilation, graph/APK/lint and baseline results
+above do not claim whole-WP/source acceptance, hosted same-head proof,
+signing, device, radio or backup oracle results.
 Additional authored native regressions now cover exact one-second partial
 flush scheduling, trace rows/runs/malformed conversion, global log/cache
 retention, sparse node-history baselines and first-wins enrichment, two-store
 transaction races, the reaction100/message50 defaults, failed-send keys,
 high-bit/null/empty fields, and cancellation on the Room commit-return edge.
-These are still **unexecuted** during the Java hold.
+Those methods executed in the153-case suite; the actual remaining failure
+is isolated in
+[`converter-amendment-request.json`](converter-amendment-request.json).
 
-The explicit local Gradle/JVM resource hold remains in effect. The completed
-first command left no live own JVM: its only private daemon log identified
-PID52716, which was verified no longer running without a stop launch or any
-global/name-based process kill. Lightweight collector inventory verifies
+The coordinator explicitly released WP204's slot and granted WP202 one
+exclusive bounded Java lane. Commands use one worker, in-process Kotlin,
+512m heap/metaspace and256m test heap/metaspace, SerialGC/twoCPU, private
+caches and one command at a time. The earlier held phase launched no Java;
+its sole earlier daemonPID52716 had already exited. Lightweight collector inventory verifies
 the exact190 source bindings/18 individual reviewed decisions; mandatory
-collection still fails closed without actual native raw XML. Each of those
+collection fails closed on the current actual failed native XML. Each of those
 eighteen can resolve only to its real executed testcase identity and
 retains its reviewed split/consumer limits.
 
@@ -96,7 +113,7 @@ existing Robolectric convention, adds direct Room/coroutines and coroutines-test
 selects the local lock, and hooks the actual native task/collector into
 `verifyScaffoldTests`. Only global session reset and single selected
 blocked-sender deletion are added to the actual DAO interfaces.
-The local lock is deliberately not hand-authored and awaits a build slot.
+The local lock is actual strictly generated Gradle state, never hand-authored.
 No root lock/XML, version/catalog, schema/model/contract, source/golden,
 policy/acceptance or activation changes are authorized.
 See [native adaptations](../../deviations/WP-202.md).
