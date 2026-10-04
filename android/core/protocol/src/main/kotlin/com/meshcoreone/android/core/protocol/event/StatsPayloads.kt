@@ -1,0 +1,31 @@
+// PortedFrom: MeshCore/Sources/MeshCore/Events/StatsPayloads.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.protocol.event
+
+data class CoreStats(
+    val batteryMV: UShort,
+    val uptimeSeconds: UInt,
+    val errors: UShort,
+    val queueLength: UByte,
+)
+
+data class RadioStats(
+    val noiseFloor: Short,
+    val lastRSSI: Byte,
+    val lastSNR: Double,
+    val txAirtimeSeconds: UInt,
+    val rxAirtimeSeconds: UInt,
+) {
+    private val fields get() = arrayOf(noiseFloor, lastRSSI, lastSNR, txAirtimeSeconds, rxAirtimeSeconds)
+    override fun equals(other: Any?): Boolean = other is RadioStats && eventFieldsEqual(fields, other.fields)
+    override fun hashCode(): Int = eventFieldsHash(fields)
+}
+
+data class PacketStats(
+    val received: UInt,
+    val sent: UInt,
+    val floodTx: UInt,
+    val directTx: UInt,
+    val floodRx: UInt,
+    val directRx: UInt,
+    val receiveErrors: UInt = 0u,
+)
