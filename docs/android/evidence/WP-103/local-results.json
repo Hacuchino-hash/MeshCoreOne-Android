@@ -1,0 +1,384 @@
+{
+  "acceptance": {
+    "WP-103-behavior": "Verified native parser scope against the canonical event vocabulary",
+    "WP-103-boundaries": "Verified original boundaries, explicit request context and supplementary vectors",
+    "WP-103-source-test-parity": "198 owned original cases execute; seven owned real-Session scenarios remain WP-107, not excluded or counted as passed"
+  },
+  "base_sha": "eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730",
+  "debug_apk": {
+    "bytes": 29119464,
+    "device_execution_claimed": false,
+    "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+    "sha256": "b5217cf3def849de4bdca2f8397ffbfb806f4304d1039a19830947d86ef08431"
+  },
+  "head_binding": "Normal exact-head PR checks bind the committed head; Kotlin input fingerprints avoid a self-referential evidence commit.",
+  "input_fingerprints_sha256_lf": {
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/BinaryDecodeResult.kt": "ac935e67d0841f23db88b3684e2f8b3f64174fc3f133ddcc8e9b18b19e8fa538",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/BinaryParsers.kt": "d5a843f8bb9716b2dd11b1268e5ff709b9565bf990a7975114c83ed00fdf2a89",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/PacketParser.kt": "f43520d33e1f89c8a90d114de3f1994312c443c67dfe64b78e99c7a7132cdcdb",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/ParserText.kt": "d11ce1c2b75cba330f69f24ac5b3916e88289d2214c274f9d4ef9589234a6801",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt": "e0cc30c4d517d24418d6e1ea3e2503ceef588bc4abc9dc88b66d49fc9ffa184e",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/RegionsParser.kt": "59cb50c2bc0bbf3aa465262af1db089c1a19dc2e22d66aca806e507715eea6ee",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/RxLogParser.kt": "bbad0c748ab53b9a2d8eebc0af67c56493cfa0291aa451f092023c2536e6b7ae",
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/TransportCodeRegionResolver.kt": "c4bf0397acf07ac9bf55aa900afd0b21d735281a8b455e2879d7aa8084111e03",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/CrossComponentParserCasesTest.kt": "84816d9bbce8269068b7da548f3c2958683cc52d7d77af0f01211787a755f3a4",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/OriginalBugFixCasesTest.kt": "0bbee7305f498401b85c87e4f21ed6eca182f30d5522c7432f0e9750a3862353",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/OriginalPythonReferenceCasesTest.kt": "ac4e02a171e84ddafe1af58164f5700f395997e55ffcc719e1fd23253edfc8c1",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/OriginalRegionsCasesTest.kt": "6788d46f393692818755e9176ca6e62ecd5bb3565ae71a58e87c52ff315b8e61",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/OriginalResponseCasesTest.kt": "a3bcb143701a200d3ca01104371e990f318bf44bd4c9000df52873d110dcdb78",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/OriginalRxLogCasesTest.kt": "b89c6394dbdeea4b97e8d31e5455247026dedb9a7c5ce1326c34e74a54c638c4",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/ParserBoundaryTest.kt": "3cb94a5c2eaca6c0314b174c8a67ee156c324636d407a98e739847d1dd55de42",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/ParserTestSupport.kt": "f186df1a3c8377180952a9963da534227cc488dbc9ffd44df31e5a35de01a706",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/PythonReferenceVectorsTest.kt": "198944db00b990e9b037efc78f1075fbaac167d07c0cd1eaeb1c783558e82b25",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/TransportParserIntegrationTest.kt": "3562c5763b583e44a3fcc42548a56fb05f849043038355c78131484bda28cd6a"
+  },
+  "junit_suites": [
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.command.ContactAndRadioCommandsTest.xml",
+      "report_sha256_lf": "32e21111ff31241efddee6f52dfc9272ffaf04378ab1a7d6cb8ad32234678aac",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.command.ContactAndRadioCommandsTest",
+      "tests": 12
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.command.NewCommandsTest.xml",
+      "report_sha256_lf": "900c2ab71bec1a66d1380ea0bf1464ed320ad48a19f45ac88e8cd1e99a69f724",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.command.NewCommandsTest",
+      "tests": 19
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.command.PacketBoundaryTest.xml",
+      "report_sha256_lf": "61b5c122115ac969587c6e5dd275d67e1f1dc1547d94cb4b32bff46fcb81906c",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.command.PacketBoundaryTest",
+      "tests": 25
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.command.PacketReferenceTest.xml",
+      "report_sha256_lf": "ce3917074b6d6aa5ab8be55c8536b49e8139984679843a562fbc2b74026344ed",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.command.PacketReferenceTest",
+      "tests": 31
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.command.V115CommandsTest.xml",
+      "report_sha256_lf": "1c4898d02d53c76250d7e0d978e5ea53c02fc22e9ff204013183a538b99ed264",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.command.V115CommandsTest",
+      "tests": 14
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.event.EventDispatcherTest.xml",
+      "report_sha256_lf": "65b84ef0828f43f1e522bb3892a8c7f5c3404bdb42ae62de633c1dc27b05ac1b",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.event.EventDispatcherTest",
+      "tests": 12
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.event.EventFilterTest.xml",
+      "report_sha256_lf": "0b00b0b1e1d4476143b9455abda84dcf6e5f02701b2a541b62e3c58ae4efbd6e",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.event.EventFilterTest",
+      "tests": 16
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.event.EventPayloadTest.xml",
+      "report_sha256_lf": "62bfac77e7f24c990343591d2fcfe5a87813550fde599860be50fe01eae499c8",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.event.EventPayloadTest",
+      "tests": 17
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.event.NeighboursPaginationTest.xml",
+      "report_sha256_lf": "2170636de2cc12f84b466dc06f8dfbabf77be9b78c24830471639f0ed613c19a",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.event.NeighboursPaginationTest",
+      "tests": 7
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.event.PinnedEventVocabularyTest.xml",
+      "report_sha256_lf": "d5b16e5886f315b86082c6d4c6360fbda64b35c679ff71103edcb2a57f04ef85",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.event.PinnedEventVocabularyTest",
+      "tests": 3
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPEdgeCaseTest.xml",
+      "report_sha256_lf": "b123af552e22573f0663f3a1704c01209dda1ddc08761c4a6d753e2b851b5230",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPEdgeCaseTest",
+      "tests": 161
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPGoldenVectorTest.xml",
+      "report_sha256_lf": "0c946cf553579197353e7aea464e9f0066e7a0606a77707dc39992000dd1ea16",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPGoldenVectorTest",
+      "tests": 83
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPMalformedTest.xml",
+      "report_sha256_lf": "26b2d2a630623a17aac01901696d9192ad5c1d3927db05e083a39872e1395891",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPMalformedTest",
+      "tests": 31
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPPythonReferenceTest.xml",
+      "report_sha256_lf": "42fe6a82dd28b950cc8dc89aaa2f11393460fd42ae967d92b63bf5f66ebfa0de",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPPythonReferenceTest",
+      "tests": 24
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPSensorTypeTest.xml",
+      "report_sha256_lf": "cad7761d9e6770ababda756b4552c0cd2ddafb3b94d332c1d4c87529ce38107c",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPSensorTypeTest",
+      "tests": 29
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.LPPValueTest.xml",
+      "report_sha256_lf": "31f55b89306a0a5a68616054f08469d15aea40e8dc003929c991bbbdf240a94c",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.LPPValueTest",
+      "tests": 5
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.lpp.PinnedLPPInputsTest.xml",
+      "report_sha256_lf": "15a4c69234c70dcc0cfce1bee63155599b8022c7de3098904c49a7b493f80755",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.lpp.PinnedLPPInputsTest",
+      "tests": 4
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.CrossComponentParserCasesTest.xml",
+      "report_sha256_lf": "75a4b4b41761a93ebc310d61ba9c600a6802f226b6110e8e304df2c60d7ec020",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.CrossComponentParserCasesTest",
+      "tests": 50
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.OriginalBugFixCasesTest.xml",
+      "report_sha256_lf": "30a25087aa5db913a691279da266ca7928781d70ce039f0cdbf4c45791559c3a",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.OriginalBugFixCasesTest",
+      "tests": 34
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.OriginalPythonReferenceCasesTest.xml",
+      "report_sha256_lf": "8440746271051e74394195c1aaf45b5a0e2ada277977f26436bae46a61c1a6b1",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.OriginalPythonReferenceCasesTest",
+      "tests": 28
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.OriginalRegionsCasesTest.xml",
+      "report_sha256_lf": "52bb63721c19f83b1229bc0d91db27ae9dc927d59da08a74ff9938080959f3d1",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.OriginalRegionsCasesTest",
+      "tests": 21
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.OriginalResponseCasesTest.xml",
+      "report_sha256_lf": "8db88efd92ecd96f8ba2076f6a1de354ee8e6fbb202b3bf62ed828d76138fea6",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.OriginalResponseCasesTest",
+      "tests": 74
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.OriginalRxLogCasesTest.xml",
+      "report_sha256_lf": "98a02150b0260710cbaa639ce0e73e9bfb808454688da93771aa9bddb889b832",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.OriginalRxLogCasesTest",
+      "tests": 41
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.ParserBoundaryTest.xml",
+      "report_sha256_lf": "0c1e4289f0b419665efdf3c2ceb768e2e74f054f17ed3f0eca1a0305c4a0043a",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.ParserBoundaryTest",
+      "tests": 1704
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.PythonReferenceVectorsTest.xml",
+      "report_sha256_lf": "7dcd5ac45914506dacd1baed700e806f3bd31068d760f5deec930663b4ad7b67",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.PythonReferenceVectorsTest",
+      "tests": 1479
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.parser.TransportParserIntegrationTest.xml",
+      "report_sha256_lf": "9379e13d68d0b4d5ef81282f9c1cf154ac37297cdf9b31c26d40fb135106f2e4",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.parser.TransportParserIntegrationTest",
+      "tests": 2
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.primitives.BytesTest.xml",
+      "report_sha256_lf": "bb59f93aae7fe74802eaa47144f220a32796d9101f60963035c049eebe7f466d",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.primitives.BytesTest",
+      "tests": 44
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.primitives.PathEncodingTest.xml",
+      "report_sha256_lf": "b78032d0c968436ba7606cff6070760c88b0209054362d02d7bf06fc61ec276e",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.primitives.PathEncodingTest",
+      "tests": 19
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.primitives.TransportDefaultsTest.xml",
+      "report_sha256_lf": "7cd01ea0cfdbad5f7d1360c1c5832b53ff1de4c46772d61d7b3e485cd6fe4b8f",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.primitives.TransportDefaultsTest",
+      "tests": 5
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.primitives.ValueModelsTest.xml",
+      "report_sha256_lf": "79efc21d210500063fbcc85ba10d94e1ad6554e73fe6b52c67da8e66537a51d6",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.primitives.ValueModelsTest",
+      "tests": 13
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.primitives.WireTablesTest.xml",
+      "report_sha256_lf": "f87df004a2d47ee31048f9f763f088f6a4bcf5e57d571da1ec311166f437b6ea",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.primitives.WireTablesTest",
+      "tests": 3
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.transport.MockTransportTest.xml",
+      "report_sha256_lf": "fd9360aecfb8533f3421d2153b9fd617532f7eb48ea557b392e0b82a1b574a17",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.transport.MockTransportTest",
+      "tests": 12
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest.xml",
+      "report_sha256_lf": "4796730b3546b0bce33fc703611d81e8098ef0c3d8456ddcce9b82df96f34cd3",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiFrameCodecTest",
+      "tests": 17
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest.xml",
+      "report_sha256_lf": "786e0c920878f2185b38f37a7c482c50ad5bbd60a51eac5efc72da334b598003",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportIoTest",
+      "tests": 20
+    },
+    {
+      "errors": 0,
+      "failures": 0,
+      "report": "android/core/protocol/build/test-results/test/TEST-com.meshcoreone.android.core.protocol.transport.WiFiTransportTest.xml",
+      "report_sha256_lf": "559b371967d2dc8ef83ff1552d5584ab125f1d425204d0eea7524343c10e16a3",
+      "skipped": 0,
+      "suite": "com.meshcoreone.android.core.protocol.transport.WiFiTransportTest",
+      "tests": 23
+    }
+  ],
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "module_graph": {
+    "path": "android/build/reports/scaffold/module-graph.tsv",
+    "rows": 470,
+    "sha256_lf": "5417fb8215d98d46022280e683f274e4bdc91f20a0306008166fd2d0d2173231"
+  },
+  "parser_cases": 3433,
+  "protocol": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 4082
+  },
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "runtime_dependency_inventory": {
+    "path": "android/build/reports/scaffold/runtime-dependencies.tsv",
+    "rows": 113,
+    "sha256_lf": "a7db88379874c3bf0c5bc9926288edb1d5e086180c38a579344a387654452ac4"
+  },
+  "schema_version": 1,
+  "scope": "Local Windows native parser proof, not parity-review, activation, legal, hardware or signing approval",
+  "semantic_policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "unchanged_merged_baseline_cases": 649,
+  "unproven": [
+    "Seven original Session scenarios and two cross-component ContactManager scenarios",
+    "The two WP-106 Session.events(filter:) wrappers remain WP-107",
+    "Actual iOS/macOS execution, physical API31/API37 and radio behavior",
+    "Exact Foundation locale collation outside the documented native presentation adaptation",
+    "Human legal/signing/release gates and unconfigured privileged publishers"
+  ],
+  "work_package": "WP-103"
+}

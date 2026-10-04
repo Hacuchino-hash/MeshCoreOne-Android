@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "work_package": "WP-103",
+  "owner": "protocol-porter",
+  "project_session_id": "1e39cd9d-2615-405f-b34c-273d75bfb314",
+  "runtime_session_id": "3609f45b-1049-444d-b0d5-d7cd536235f6",
+  "coordinator_session_id": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+  "branch": "cbattlegear-expert-fishstick",
+  "lease_origin": "User-directed coordinator kickoff granted the complete shared all-write-path lease at session creation; no synthetic receipt or lease identifier is asserted.",
+  "initial_clean_base_sha": "47822de6ff8641a6d085baf0d4993aa3c792db8c",
+  "verified_publication_base_sha": "eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730",
+  "base_update_authorization": "Coordinator's later user message identified the actually merged WP-108 base. origin/main was fetched and compared to that exact SHA before a fast-forward in this dedicated worktree.",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "semantic_policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "write_paths": [
+    "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/",
+    "android/core/protocol/src/test/kotlin/com/meshcoreone/android/core/protocol/parser/",
+    "docs/android/deviations/WP-103.md",
+    "docs/android/evidence/WP-103/"
+  ],
+  "shared_write_amendments": [],
+  "nested_workers_started": 0,
+  "model_selection": "Inherited user default",
+  "publication_scope": "One normal PR on main; coordinator reviews and merges. No formal self-approval, privileged check publication, activation, repository settings, hardware or release signing authority."
+}

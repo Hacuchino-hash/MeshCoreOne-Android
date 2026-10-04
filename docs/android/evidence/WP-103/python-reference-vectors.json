@@ -1,0 +1,29 @@
+{
+  "candidate_kotlin_executed": false,
+  "canonical_wp004_vectors_changed": false,
+  "families": {
+    "hmac": 82,
+    "mma": 27,
+    "neighbours": 6,
+    "raw": 256,
+    "rx": 768,
+    "scope": 11,
+    "status": 46,
+    "utf8": 283
+  },
+  "generator": "docs/android/evidence/WP-103/python_reference_vectors.py",
+  "oracle": "Python standard-library struct, integer arithmetic, UTF-8 replacement, hashlib and hmac",
+  "schema_version": 1,
+  "source_blobs": {
+    "MeshCore/Sources/MeshCore/Protocol/MMAParser.swift": "e2d7e8f8b4b1ebafff05f0ee9e3ba7e9dcfedc84",
+    "MeshCore/Sources/MeshCore/Protocol/NeighboursParser.swift": "5e4ee153b019cc51c96bdd6ff46d7bff02a96ee4",
+    "MeshCore/Sources/MeshCore/Protocol/Parsers+Messaging.swift": "12edb8d6a2f4cc2ffb9fe706036d95c34c458fed",
+    "MeshCore/Sources/MeshCore/Protocol/Parsers+Status.swift": "9f7a9914acf39caf91155446048da5e2706b0b00",
+    "MeshCore/Sources/MeshCore/Protocol/RxLogParser.swift": "6cd47438f4647626b4fa4b474b15a1066c59526e",
+    "MeshCore/Sources/MeshCore/Protocol/RxLogTypes.swift": "754125ca58e371fabee8390696144dc9a32d8f80",
+    "MeshCore/Sources/MeshCore/Protocol/TransportCodeRegionResolver.swift": "7cc45aa4293b6560c0cf03a58d60d8bb5cebadf2"
+  },
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "tsv_sha256": "76e6d74b1aadf7c3a8cf2f8bedf81a0d42e1aeaf9c76c324309a9d2d78118923",
+  "vector_count": 1479
+}
