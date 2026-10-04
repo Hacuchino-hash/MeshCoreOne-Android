@@ -1,6 +1,9 @@
-# WP-201 implementation evidence
+# WP-201 historical implementation and current validation
 
-Repository `cbattlegear/MeshCoreOne-Android`; owner `data-persistence-engineer`.
+The implementation record below, including `local-evidence.json`, is historical:
+it retains the original **80 inputs, 114 families and 215 native identities**.
+It is not a newly executed result or the identity of a later worker.
+Repository `cbattlegear/MeshCoreOne-Android`; original owner `data-persistence-engineer`.
 Session `f7b1af4d-9429-49e8-bcb0-6e3cc11cd5de`; owning branch
 `cbattlegear-potential-engine`. Clean initial base:
 `47822de6ff8641a6d085baf0d4993aa3c792db8c`.
@@ -140,6 +143,55 @@ derive committed active-module test sources, retain complete raw XML/input
 blobs and independently reparse their exact cases/counts/hashes. This same PR
 must pass on the final repair head; a legacy-only green build is not retained
 WP-201 original-case proof.
+
+## Evergreen root validation and explicit writer audit
+
+`verifyDomainRoomTests` still depends on the actual model, contracts and Room
+unit runners and remains attached to `verifyScaffoldTests`. Its normal collector
+command validates the **current immutable HEAD**, not every later repository
+change against the original WP-201 publication base. A valid protocol,
+repository, DataStore or other native-module successor is not a WP-201 writer
+scope violation.
+
+```powershell
+python docs\android\evidence\WP-201\collect_evidence.py
+python docs\android\evidence\WP-201\collect_evidence.py --output C:\absolute\private\current-domain-evidence.json
+python docs\android\evidence\WP-201\collect_evidence.py --audit-writer-scope --base-sha <exact-requested-40-character-base>
+python tools\android-port\controller\test_runner.py --quiet
+```
+
+Only the explicit audit applies the original writer scopes to the requested
+ancestor base. There is no implicit historical base, and `--base-sha` alone
+is rejected. The code owner/coordinator chooses the actual base for that
+one-off audit; the root task does not request it.
+
+Current output separates actual candidate HEAD/branch and, when an event
+context is available, its real base/head/run/attempt from historical metadata.
+Detached checkouts have no invented branch; local output claims no hosted
+authority or unavailable session identity. The credential-stripped Gradle
+child does not invent missing event metadata: the outer schema2 bundle binds
+that same candidate's actual hosted run. `--write` is no longer supported:
+current reports may be written only to an explicit absolute private path
+outside the repository, never over the immutable historical record.
+
+The frozen original 215 **identities**, not just counts, are a minimum; all
+114 catalog family/source/blob/parameter identities and original DAO
+annotation bindings remain mandatory. Extra executed tests are counted and
+listed separately without fabricated source parity. Complete, nonzero,
+unskipped raw XML is independently parsed using the existing CI helpers.
+Missing, unsafe, malformed, duplicate, failed/error/skipped or inconsistent
+suites fail. Current committed native source/build/schema and collector/catalog
+inputs must match the checkout, including ignored uncommitted source files.
+The pinned Swift reference remains read-only. Frozen Room v1 semantic content,
+including every field and both exact cascade relationships, cannot change;
+text CRLF/LF normalization is the only allowed checkout normalization.
+
+`runtime_inputs.py` requires both this collector and its real temporary-Git/XML
+regression suite in the committed candidate tree. Normal schema2 CI still
+retains/reparses complete raw active-module suites and candidate input blobs;
+this hook does not replace that evidence or upgrade historical schema1 proof.
+No manifest, source, policy, production model/DAO/schema, dependency or
+privileged workflow is changed by this integration repair.
 
 See [deviations](../../deviations/WP-201.md) for explicit native adaptations.
 Robolectric simulates API31; production AUTOMATIC/WAL on actual devices,
