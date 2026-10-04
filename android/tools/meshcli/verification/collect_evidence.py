@@ -474,7 +474,8 @@ def validate_native_floor(repo, native):
     cli_expected = required_cli_cases()
     cli_actual = {(c["class"], c["name"]) for c in native["meshcli"]}
     if not cli_expected <= cli_actual:
-        raise PortError("Missing actual CLI assertion/family rows: " + repr(sorted(cli_expected - cli_actual)[:4]))
+        raise PortError("Missing actual CLI assertion/family rows: " + repr(sorted(cli_expected - cli_actual)[:4])
+                        + "; actual raw XML identities=" + repr(sorted(cli_actual)))
 
 
 def baseline(directory):

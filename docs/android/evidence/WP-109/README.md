@@ -51,6 +51,13 @@ The reader also rejects boolean schema/count substitutes and invented local
 authority, and retains the declared immutable CI/build-logic/catalog/wrapper/
 locks/notice inputs. Its complete input set is capped at2,048 files/64MiB with
 the existing per-file checks; binary artifacts retain exact bytes.
+Actual609ac6e4 protocol37244082018/attempt1 now gets through the mandatory87
+discovery floor and17 reader regressions on both hosts, but fails closed on the
+expected dynamic-case XML name representation. Gradle's failed-test listener
+reported method/index descriptors, whereas the full XML reader uses testcase
+names. The diagnostic now preserves the complete actual identity list in the
+retained Gradle failure log so the precise binding can be repaired, not guessed
+or relaxed. Complete raw CLI XML/input-bundle forwarding remains ungranted.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless
