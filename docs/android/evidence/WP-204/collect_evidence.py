@@ -168,6 +168,17 @@ def collect(report_directory=None):
         hit = cases.get((binding["native_class"], binding["native_method"]))
         require(hit is not None, "Missing original family execution: " + identity)
         source_cases.append({**specification, **binding, "native_test": hit})
+    input_files = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile"] + sorted(
+        file for file in (MODULE / "src").rglob("*") if file.is_file()
+    )
+    native_inputs = [{
+        "path": file.relative_to(ROOT).as_posix(), "bytes": file.stat().st_size,
+        "canonical_lf_sha256": digest(file.read_bytes().replace(b"\r\n", b"\n")),
+    } for file in input_files]
+    paths = [row["path"] for row in native_inputs]
+    committed = not git("diff", "--name-only", "HEAD", "--", *paths).strip() and not git(
+        "ls-files", "--others", "--exclude-standard", "--", *paths,
+    ).strip()
     return {
         "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-204",
         "owner": "data-persistence-engineer", "lease": LEASE,
@@ -179,6 +190,8 @@ def collect(report_directory=None):
         "source_sha": SOURCE, "manifest_sha256": PINNED_MANIFEST, "policy_revision": PINNED_POLICY,
         "inputs": inputs, "source_cases": source_cases, "junit_suites": reports,
         "native_cases": list(cases.values()),
+        "native_input_files": native_inputs,
+        "native_inputs_committed_at_observed_head": committed,
         "discovery": {
             "declared_native_cases": len(methods), "discovered_passed": len(cases), "failed": 0, "errors": 0, "skipped": 0,
             "original_declarations": 34, "parameter_expanded_scenarios": 41,
@@ -196,6 +209,17 @@ def main():
         result = collect()
         if args.write:
             (OUT / "local-evidence.json").write_text(json.dumps(result, indent=2, ensure_ascii=True) + "\n", encoding="utf8")
+            raw_directory = OUT / "local-junit"
+            raw_directory.mkdir(exist_ok=True)
+            expected_raw = set()
+            for suite in result["junit_suites"]:
+                source = ROOT.joinpath(*suite["path"].split("/"))
+                expected_raw.add(source.name)
+                (raw_directory / source.name).write_bytes(source.read_bytes())
+                require(digest((raw_directory / source.name).read_bytes()) == suite["sha256"],
+                        "Retained raw local JUnit changed")
+            require({file.name for file in raw_directory.glob("TEST-*.xml")} == expected_raw,
+                    "Unexpected/stale retained local suite")
         print(json.dumps({"result": "passed", "discovery": result["discovery"]}, indent=2))
         return 0
     except (PortError, EvidenceFailure, OSError, ValueError, KeyError, ET.ParseError, subprocess.SubprocessError) as failure:

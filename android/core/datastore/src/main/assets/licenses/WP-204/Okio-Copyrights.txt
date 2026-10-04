@@ -1,0 +1,12 @@
+Copyright (C) 2014 Square, Inc.
+Copyright (C) 2015 Square, Inc.
+Copyright (C) 2016 Square, Inc.
+Copyright (C) 2017 Square, Inc.
+Copyright (C) 2018 Square, Inc.
+Copyright (C) 2019 Square, Inc.
+Copyright (C) 2020 Square, Inc.
+Copyright (C) 2020 Square, Inc. and others.
+Copyright (C) 2021 Square, Inc.
+Copyright (C) 2023 Square, Inc.
+Copyright (C) 2024 Square, Inc.
+Copyright 2014 Square Inc.

@@ -4,7 +4,7 @@
   "lease": "autonomous-WP-204-dc15f1ba",
   "initial_base_sha": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
   "candidate": "androidx.datastore:datastore-preferences:1.2.1",
-  "admission_status": "pending-coordinator-independent-review-and-serialized-shared-checksums",
+  "admission_status": "coordinator-serialized-exact-shared-checksum-and-consumer-lock-amendment-active",
   "publisher": "https://dl.google.com/dl/android/maven2/",
   "publication_checks": {
     "preferences_pom_sha256": "5bb707f87bb102d6185c7f365fb6b632ce8d93a1e0744274dfa8a99643502e85",
@@ -25,6 +25,39 @@
   "owned_changes": [
     "android/core/datastore/build.gradle.kts",
     "android/core/datastore/gradle.lockfile"
+  ],
+  "coordinator_scope_amendments": [
+    {
+      "lease": "autonomous-WP-204-dc15f1ba",
+      "cli_app_session": "00cbcd6f-1b3b-4e40-8d44-2ce4216eb72e",
+      "status": "recorded-active-exclusive",
+      "additional_write_paths": [
+        "android/gradle/verification-metadata.xml",
+        "android/gradle/dependency-locks/app.lockfile",
+        "android/gradle/dependency-locks/core-data.lockfile"
+      ],
+      "sdk_handoff_sha": "c840c7c60335f8bcf1c7f990b9ac071a19c97d56",
+      "sdk_handoff_blob": "fad6f9bc00f9be911bcde5d2d19b4e8828dc13f3",
+      "sdk_handoff_sha256": "ad8b7cf63f661aa2ded1d23234280acffd901ef45f3e0cf554f8a887323fe85c",
+      "sdk_handoff_bytes": 268252,
+      "vetted_components": "12DataStore1.2.1+2Okio3.9.1+4serialization1.7.3 and actual necessary already pinned graph",
+      "limits": "Preserve all incumbent/configuration/6 transferred SDK entries; no other shared lock/catalog/workflow/root build-file mutation or auto-trust for unknown coordinates."
+    },
+    {
+      "lease": "autonomous-WP-204-dc15f1ba",
+      "cli_app_session": "00cbcd6f-1b3b-4e40-8d44-2ce4216eb72e",
+      "status": "recorded-active-exact-notice-path-only",
+      "additional_write_path": "android/app/src/main/assets/licenses/DataStore-Protobuf-BSD-3-Clause.txt",
+      "source_artifact": "androidx.datastore:datastore-preferences-external-protobuf:1.2.1",
+      "source_artifact_bytes": 1050687,
+      "source_artifact_sha256": "4f09ba7fca2a073a5c5527a9b637582b93e262c2b6a89977c584d28cea838ebc",
+      "source_entry": "META-INF/androidx/datastore/datastore-preferences-external-protobuf/LICENSE.txt",
+      "source_entry_bytes": 1434,
+      "source_entry_sha256": "a01b712fbb30f80b86851468b6fa58e80eab68f69f325e88bbc7ddf47cf1b063",
+      "packaged_path": "assets/licenses/DataStore-Protobuf-BSD-3-Clause.txt",
+      "copyright_completion": "Embedded BSD notice lacks the copyright header; the exact static runtime4.28.2 fields bind an additional owned module1732-byte upstream v28.2 Google copyright/license asset. Neither is replaced by the generic Apache asset.",
+      "shared_metadata_or_backup_mutation_authorized": false
+    }
   ],
   "shared_surfaces_requiring_exact_admission": [
     "android/gradle/verification-metadata.xml",
@@ -73,7 +106,11 @@
     "androidx.datastore:datastore-preferences-proto:1.2.1": "5eb12c525c9239b3c9e85d96b1779add0cb866b0fb002f8c06f5b287a0ef91b4",
     "androidx.datastore:datastore-preferences-external-protobuf:1.2.1": "009455dce6f6e33c8b3ef9a44859f7bbea39d4904a523aa26c5b6660e03266b2",
     "com.squareup.okio:okio:3.9.1": "9b90b4274a5ad602dd574d6d4b48903663b2de9a60b9fc3402248293d843e121",
-    "com.squareup.okio:okio-jvm:3.9.1": "b0afa9192c42d7c463de38d6325936c6901d9e3b7149735ffd18a11df31034ab"
+    "com.squareup.okio:okio-jvm:3.9.1": "b0afa9192c42d7c463de38d6325936c6901d9e3b7149735ffd18a11df31034ab",
+    "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3": "1cf0228a3588731d6baf3bcbbdb08a322501f70420d50e292ab501e55d8ccf4f",
+    "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3": "0ff70e2131f2a6575822f7611c05e283c4ae08173303f410494cb41289bd3ef6",
+    "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3": "39d09a6e02df2b32558440a64c628f9c605fae8c4f6090321798334c82177e64",
+    "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.3": "73bb4c02793f87c29ef64bea4ba0258076f4d4c963fcda633d1248ef24b4b4ef"
   },
   "independent_publisher_binary_sha256": {
     "datastore-android-1.2.1.aar": "c4cc022986cce743a70ef6d0b6f8904c8fcab48ed3a5ff784202788400e0f679",
@@ -83,9 +120,22 @@
     "datastore-preferences-core-android-1.2.1.aar": "48c2235e576fb015f861726e79ee9474948e37da31d2c887c16ebeb46817059f",
     "datastore-preferences-proto-1.2.1.jar": "d9bbd94f78e9a6c93308eed26b8a7ed46b1f128a19c282fe36f96804e9d7c184",
     "datastore-preferences-external-protobuf-1.2.1.jar": "4f09ba7fca2a073a5c5527a9b637582b93e262c2b6a89977c584d28cea838ebc",
-    "okio-jvm-3.9.1.jar": "fe6fe91378f9bfa7b08c3864828ce418005cf28acca12e8847eb65c565c37500"
+    "okio-jvm-3.9.1.jar": "fe6fe91378f9bfa7b08c3864828ce418005cf28acca12e8847eb65c565c37500",
+    "kotlinx-serialization-json-jvm-1.7.3.jar": "b1e9138499ed8d20375edda3f2b1c95f3103a258eff6af9edc5ea07100f2b29c",
+    "kotlinx-serialization-core-jvm-1.7.3.jar": "f0adde45864144475385cf4aa7e0b7feb27f61fcf9472665ed98cc971b06b1eb"
   },
-  "remaining_runtime_resolution": "Runtime also requests preferences-proto/external-protobuf1.2.1 and kotlinx-serialization-json1.7.3 via core-okio-jvm. Complete runtime/POM/notice resolution and strict Win/Linux build compatibility remain required; compile-only checksum discovery is not admission.",
+  "existing_serialization_bom_pom_sha256": "4226a491c5b59ce909f73b65aa98944191c8dcac3825637c6be1069e6b589a46",
+  "remaining_runtime_resolution": "The original read-only reports'16/19 FAILED nodes are preserved as historical failures. Serialized admission now adds41 independently verified checksum entries while preserving6 transferred SDK entries/all incumbents/config; real resolvePreferenceDependencies generated only7 app/8 core-data runtime/lint configuration changes with16/19 added component records, retaining Kotlin2.3.20/coroutines1.10.2.113 real owned tests/sourcecollector pass. Full final-base runtime/POM inventory and normal same-head Win/Linux root/APK evidence remain; local512MiB D8 merge failed heap exhaustion and produced no APK.",
+  "actual_publisher_inputs": "docs/android/evidence/WP-204/publisher-inputs.json",
+  "actual_shared_lock_configuration_records": "docs/android/evidence/WP-204/lock-admission.json",
+  "backup_configuration_request": {
+    "current_proposal": "No app source change is presently needed: actual existing app manifest disables allowBackup and references all-domain cloud/device-transfer exclusions; production datastore uses credential-protected noBackupFilesDir. Required actual APK/config inspection is implemented in the owned evidence subtree and remains unexecuted until assembly.",
+    "shared_app_paths_if_final_packaging_proves_a_gap": [
+      "android/app/src/main/AndroidManifest.xml",
+      "android/app/src/main/res/xml/scaffold_data_extraction_rules.xml"
+    ],
+    "status": "both shared app paths remain read-only; no module-manifest-only or source-only backup proof claimed"
+  },
   "unchanged_shared_surfaces": [
     "android/gradle/libs.versions.toml",
     "android/app/src/main/AndroidManifest.xml",

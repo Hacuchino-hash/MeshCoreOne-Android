@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-04T15:58:31.042Z" hostname="BATTLEGEAR" time="0.577">
+  <properties/>
+  <testcase name="cancellationFromEntropyIsNotReclassifiedAsRandomFailure" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.042"/>
+  <testcase name="sourceAttemptBudgetsAreExactAndBounded" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.002"/>
+  <testcase name="maximumAttemptsIsARealTypedFailureAfterExactly10000Attempts" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.525"/>
+  <testcase name="malformedPrefixNeverReachesEntropyOrOverflowsAttemptScaling" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.002"/>
+  <testcase name="importedExpandedKeyUsesMergedCurvePrimitiveAndNotDoubleHashing" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.001"/>
+  <testcase name="randomProviderFailureAndWrongSeedWidthAreNotExpandedKeys" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.003"/>
+  <testcase name="reservedPrefixesFailBeforeEntropy" classname="com.meshcoreone.android.core.datastore.KeyGenerationBoundaryTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

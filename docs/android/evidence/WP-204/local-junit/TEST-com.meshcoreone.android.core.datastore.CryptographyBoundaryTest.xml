@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-04T15:58:28.575Z" hostname="BATTLEGEAR" time="2.038">
+  <properties/>
+  <testcase name="utf8CorruptionPasswordLimitAndPublicKeyWidthAreChecked" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="1.415"/>
+  <testcase name="missingInvalidatedUnauthenticatedAndProviderKeysHaveDistinctOutcomes" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.027"/>
+  <testcase name="nestedPlatformInvalidationIsNotFlattenedIntoUnspecifiedProviderFailure" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.015"/>
+  <testcase name="encryptedAndSensitiveValuesNeverPrintPrivateMaterial" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.014"/>
+  <testcase name="preunlockAndDeviceLockUseActualShadowedAndroidServices" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.061"/>
+  <testcase name="unsupportedEnvelopeVersionAndOversizedBinaryHaveNoSuccessFallback" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.015"/>
+  <testcase name="keyGenerationUsesSourceEquivalentUnlockedDeviceOnlyAes256GcmParameters" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.014"/>
+  <testcase name="aadNonceTagAndCiphertextChangesEachFailAuthentication" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.015"/>
+  <testcase name="deviceProtectedContextIsNeverUsedAsASecretFallback" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.012"/>
+  <testcase name="everyTruncationAndTrailingByteFailsCheckedEnvelopeDecode" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.014"/>
+  <testcase name="hostileDeclaredPlaintextLengthsNeverControlAllocation" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.012"/>
+  <testcase name="envelopeRejectsWrongRadioPublicKeyAliasAndSecretType" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.013"/>
+  <testcase name="all128EncryptionsHaveFresh96BitNoncesAndAuthenticatedRoundTrips" classname="com.meshcoreone.android.core.datastore.CryptographyBoundaryTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

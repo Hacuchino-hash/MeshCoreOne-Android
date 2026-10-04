@@ -21,6 +21,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -508,5 +509,20 @@ class PreferenceBoundaryTest {
             BackupPreferenceSnapshot(mapOf("replyWithQuote" to PreferenceValue.StringValue("false")))
         }
         assertEquals(StorageProblem.PreferenceTypeMismatch("replyWithQuote"), wrongType.problem)
+    }
+
+    @Test
+    fun cancellationDuringCloseReleasesOwnerOnlyAfterDatastoreCleanup() = runBlocking<Unit> {
+        withStorage(temporary.newFolder()) { h ->
+            h.owner.preferences.set(AppStorageKey.replyWithQuote, true)
+            val closing = launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+                checkNotNull(kotlinx.coroutines.currentCoroutineContext()[kotlinx.coroutines.Job]).cancel()
+                h.owner.close()
+            }
+            closing.join()
+            assertTrue(closing.isCancelled)
+            h.reopen()
+            assertTrue(h.owner.preferences.get(AppStorageKey.replyWithQuote))
+        }
     }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.datastore.PlatformStorageTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-04T15:58:34.764Z" hostname="BATTLEGEAR" time="0.094">
+  <properties/>
+  <testcase name="storageErrorLoggingContainsCodesButNotProviderCauses" classname="com.meshcoreone.android.core.datastore.PlatformStorageTest" time="0.012"/>
+  <testcase name="unavailableBeforeFirstUnlockIsReportedByActualFactoryNotReplacedWithEmptyPersistence" classname="com.meshcoreone.android.core.datastore.PlatformStorageTest" time="0.014"/>
+  <testcase name="actualApplicationContextFactoryIsSingletonAndPersistsUnderNoBackupDirectory" classname="com.meshcoreone.android.core.datastore.PlatformStorageTest" time="0.053"/>
+  <testcase name="manualExportPolicyIsSeparateFromAutomaticBackupAndDeviceOnlyPasswords" classname="com.meshcoreone.android.core.datastore.PlatformStorageTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

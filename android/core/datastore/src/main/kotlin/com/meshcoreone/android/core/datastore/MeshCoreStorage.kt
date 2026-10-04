@@ -11,8 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -63,13 +67,16 @@ class MeshCoreStorage private constructor(
 
     suspend fun close() {
         if (closed.compareAndSet(false, true)) {
-            lifetime.cancelAndJoin()
-            synchronized(owners) {
-                if (owners[directory.path] === this) owners.remove(directory.path)
+            withContext(NonCancellable) {
+                lifetime.cancelAndJoin()
+                synchronized(owners) {
+                    if (owners[directory.path] === this@MeshCoreStorage) owners.remove(directory.path)
+                }
             }
         } else {
-            lifetime.join()
+            withContext(NonCancellable) { lifetime.join() }
         }
+        currentCoroutineContext().ensureActive()
     }
 
     private fun guarded(access: StorageAccess) = StorageAccess { operation ->
@@ -83,7 +90,7 @@ class MeshCoreStorage private constructor(
         private val owners = mutableMapOf<String, MeshCoreStorage>()
 
         fun get(context: Context, reporter: StorageIssueReporter = AndroidStorageIssueReporter): MeshCoreStorage {
-            val app = context.applicationContext.createCredentialProtectedStorageContext()
+            val app = context.applicationContext
             val preferences = AndroidStorageAccess(app, secrets = false)
             val secrets = AndroidStorageAccess(app, secrets = true)
             try {

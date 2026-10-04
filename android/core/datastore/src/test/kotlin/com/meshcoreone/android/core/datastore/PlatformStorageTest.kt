@@ -26,7 +26,7 @@ class PlatformStorageTest {
             val view = app.createConfigurationContext(Configuration(app.resources.configuration))
             assertSame(owner, MeshCoreStorage.get(view, reporter))
             owner.preferences.set(AppStorageKey.hasCompletedOnboarding, true)
-            val credential = app.createCredentialProtectedStorageContext()
+            val credential = app
             val file = File(File(credential.noBackupFilesDir, "meshcoreone-datastore"), MeshCoreStorage.PREFERENCE_FILENAME)
             assertTrue(file.isFile)
             assertTrue(file.canonicalPath.startsWith(credential.noBackupFilesDir.canonicalPath + File.separator))

@@ -11,6 +11,7 @@ import java.io.IOException
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -31,7 +32,7 @@ class PreferenceStore internal constructor(
         throw reportStorageFailure(failure, StorageOperation.OBSERVE, reporter)
     }.distinctUntilChanged()
 
-    val states: Flow<StoreState<PreferenceSnapshot>> = flow {
+    val states: Flow<StoreState<PreferenceSnapshot>> = flow<StoreState<PreferenceSnapshot>> {
         emit(StoreState.Loading)
         snapshots.collect { emit(StoreState.Ready(it)) }
     }.catch { failure ->

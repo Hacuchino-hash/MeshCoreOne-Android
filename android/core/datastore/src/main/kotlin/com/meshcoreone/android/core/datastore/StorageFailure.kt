@@ -25,7 +25,6 @@ sealed interface StorageProblem {
     data object InvalidSecretValue : StorageProblem
     data object SecretAlreadyExists : StorageProblem
     data object SecretNotFound : StorageProblem
-    data object RotationKeyAlreadyExists : StorageProblem
     data class UnsupportedVersion(val version: Int) : StorageProblem
     data class StateTooLarge(val maximumBytes: Int) : StorageProblem
     data class PreferenceTypeMismatch(val key: String) : StorageProblem

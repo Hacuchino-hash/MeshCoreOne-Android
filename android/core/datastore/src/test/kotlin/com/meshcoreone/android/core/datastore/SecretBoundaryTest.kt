@@ -518,25 +518,6 @@ class SecretBoundaryTest {
             }
         }
 
-        @Test
-        fun concurrentReadsAndRotationsNeverReportOrdinaryRetirementAsLostKey() = runBlocking<Unit> {
-            withStorage(temporary.newFolder()) { h ->
-                h.owner.secrets.storePassword("kept", radioId(), nodePublicKey())
-                coroutineScope {
-                    val reading = async(Dispatchers.Default) {
-                        repeat(32) { assertEquals("kept", h.owner.secrets.retrievePassword(radioId(), nodePublicKey())) }
-                    }
-                    val rotating = async(Dispatchers.Default) {
-                        repeat(4) { assertTrue(h.owner.secrets.rotateEncryptionKey().oldKeyRemoved) }
-                    }
-                    reading.await()
-                    rotating.await()
-                }
-                assertEquals(5, h.platform.specifications.size)
-                assertEquals(1, h.platform.keys.size)
-                assertTrue(h.reporter.failures.isEmpty())
-            }
-        }
         val before = file.readBytes()
         withStorage(directory) { h ->
             expectStorageFailure(StorageProblem.CorruptSecretState) {
@@ -544,6 +525,26 @@ class SecretBoundaryTest {
             }
             assertTrue(h.platform.specifications.isEmpty())
             assertContentEquals(before, file.readBytes())
+        }
+    }
+
+    @Test
+    fun concurrentReadsAndRotationsNeverReportOrdinaryRetirementAsLostKey() = runBlocking<Unit> {
+        withStorage(temporary.newFolder()) { h ->
+            h.owner.secrets.storePassword("kept", radioId(), nodePublicKey())
+            coroutineScope {
+                val reading = async(Dispatchers.Default) {
+                    repeat(32) { assertEquals("kept", h.owner.secrets.retrievePassword(radioId(), nodePublicKey())) }
+                }
+                val rotating = async(Dispatchers.Default) {
+                    repeat(4) { assertTrue(h.owner.secrets.rotateEncryptionKey().oldKeyRemoved) }
+                }
+                reading.await()
+                rotating.await()
+            }
+            assertEquals(5, h.platform.specifications.size)
+            assertEquals(1, h.platform.keys.size)
+            assertTrue(h.reporter.failures.isEmpty())
         }
     }
 

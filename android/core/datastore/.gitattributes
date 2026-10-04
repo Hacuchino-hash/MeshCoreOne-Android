@@ -1,0 +1,5 @@
+# AndroidOnly: WP-204 Preserve independently verified third-party notice bytes, including EOF.
+src/main/assets/licenses/WP-204/AndroidX-DataStore-LICENSE.txt -text whitespace=-blank-at-eof
+src/main/assets/licenses/WP-204/Okio-Apache-2.0.txt -text whitespace=-blank-at-eof
+src/main/assets/licenses/WP-204/Okio-Copyrights.txt -text whitespace=-blank-at-eof
+src/main/assets/licenses/WP-204/Protobuf-v28.2-Copyright-LICENSE.txt -text whitespace=-blank-at-eof
