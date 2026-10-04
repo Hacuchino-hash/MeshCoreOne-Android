@@ -32,6 +32,17 @@ val collector = layout.projectDirectory.file("verification/collect_evidence.py")
 tasks.named<Test>("test") {
     systemProperty("meshcli.runtimeClasspath", sourceSets.main.get().runtimeClasspath.asPath)
     systemProperty("meshcli.repository", repository.absolutePath)
+    addTestListener(object : org.gradle.api.tasks.testing.TestListener {
+        override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+        override fun afterSuite(suite: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) = Unit
+        override fun beforeTest(test: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+        override fun afterTest(test: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) {
+            if (result.resultType == org.gradle.api.tasks.testing.TestResult.ResultType.FAILURE) {
+                logger.error("Actual meshcli test failed: ${test.className} :: ${test.name}")
+                result.exceptions.forEach { logger.error(it.stackTraceToString()) }
+            }
+        }
+    })
 }
 
 distributions {

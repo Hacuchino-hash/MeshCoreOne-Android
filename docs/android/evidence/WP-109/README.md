@@ -8,6 +8,16 @@ Both real compiler logs agree on lines39/43. The scoped repair explicitly
 specializes `suspendCancellableCoroutine<Unit>` in both new injected clocks;
 no expectation, identity floor, timeout or source producer changes. Fresh
 compiled/executed Kotlin/CLI and software acceptance still require proof.
+The actual fbef8c7f protocol37238479360/attempt1 subsequently reached all
+4,711 protocol cases successfully and then executed the72 real meshcli cases
+on both hosts, with2 actual CLI failures. All four deployed-main process cases
+were part of that real suite. The initial shared workflow retains protocol raw
+XML only and strips CI output variables before Gradle, so failed CLI XML is not
+yet retained in those bundles; this is the already requested concrete serialized
+forwarding/artifact seam, not permission to invent case outcomes. The owned
+test listener now emits actual failed fixture testcase/exception details at
+error level even under the real quiet runner, enabling same-PR diagnosis while
+the full raw forwarding amendment remains separately gated.
 The actual repaired5bd14bbd normal protocol37234505781/attempt1 then discovered
 all4,711 cases/58 suites on both hosts: all4,708 old identities and the owning-job
 TCP-close case passed, while two new cause assertions failed because coroutine
