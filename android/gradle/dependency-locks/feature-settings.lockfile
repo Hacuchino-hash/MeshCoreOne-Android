@@ -160,6 +160,7 @@ org.apache.httpcomponents:httpcore:4.4.16=androidLintTool
 org.apache.httpcomponents:httpmime:4.5.6=androidLintTool
 org.bouncycastle:bcpkix-jdk18on:1.80.2=androidLintTool
 org.bouncycastle:bcprov-jdk18on:1.80.2=androidLintTool
+org.bouncycastle:bcprov-jdk18on:1.86=debugAndroidTestLintChecksClasspath,debugAndroidTestRuntimeClasspath,debugLintChecksClasspath,debugRuntimeClasspath,debugUnitTestLintChecksClasspath,debugUnitTestRuntimeClasspath,releaseLintChecksClasspath,releaseRuntimeClasspath
 org.bouncycastle:bcutil-jdk18on:1.80.2=androidLintTool
 org.checkerframework:checker-qual:3.43.0=androidLintTool
 org.glassfish.jaxb:jaxb-runtime:2.3.2=androidLintTool

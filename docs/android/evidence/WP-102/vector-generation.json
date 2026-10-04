@@ -1,0 +1,44 @@
+{
+  "candidate_expected_bytes": false,
+  "counts": {
+    "key_vectors": 19,
+    "message_vectors": 74,
+    "signature_vectors": 13
+  },
+  "fixture_hash_encoding": "ASCII text with CRLF normalized to LF; hexadecimal wire bytes are unchanged",
+  "generator": "docs/android/evidence/WP-102/generate_vectors.py",
+  "independent_implementation": {
+    "license": "Apache-2.0 OR BSD-3-Clause; test/evidence tool only",
+    "name": "Python cryptography",
+    "version": "48.0.0"
+  },
+  "schema_version": 1,
+  "sha256": {
+    "key-vectors.tsv": "749ab09b43e471dc4f03b93b6f7eeb279c72f4dda49a82ca28a328314dcd1838",
+    "message-vectors.tsv": "51153f9e0174cb726aab20d26f71902a6ccd22a049e43398506632847bd1e540",
+    "signature-vectors.tsv": "569c6c46abb73bc6fda52dd14deffeef97fc271df770879face826a37cc883c4"
+  },
+  "source_blobs": {
+    "MeshCore/Sources/MeshCore/Protocol/ChannelCrypto.swift": "0e53e6958a516369d073a43c0ce8b245282009ce",
+    "MeshCore/Sources/MeshCore/Protocol/DirectMessageCrypto.swift": "049386cb73147a7715fe0ea96358445e253eb0dd",
+    "MeshCore/Sources/MeshCore/Protocol/Ed25519ToX25519.swift": "3730ebd17b7b691fad742d5ff6f57ba27a155644",
+    "MeshCore/Tests/MeshCoreTests/ChannelCryptoTests.swift": "9e04884f23aca6685acd5f07a9f4d8ee0da8d11e",
+    "MeshCore/Tests/MeshCoreTests/DirectMessageCryptoTests.swift": "324033b90084788747edde64071cf7fe70260da2",
+    "MeshCore/Tests/MeshCoreTests/Ed25519ToX25519Tests.swift": "95e82357a2fbbe6cade2845b1384b4980af45adf"
+  },
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "standards": [
+    "RFC7748 section 6.1",
+    "RFC8032 section 7.1",
+    "RFC2104"
+  ],
+  "swift_oracle": {
+    "compared_cases": [
+      "normal",
+      "high-bit-utf8"
+    ],
+    "executed_here": false,
+    "path": "android/core/testing/fixtures/reference-codec/channel-crypto-oracle.json",
+    "sha256": "f6a323cf0e351d2dc7eb5bda26cb808ede7fb03dcb2bbe132e7735726deaa1f7"
+  }
+}
