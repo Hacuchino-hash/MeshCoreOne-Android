@@ -98,7 +98,7 @@ val verifyPreferencePackaging by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine(
         "python", repository.resolve("docs").resolve("android").resolve("evidence")
-            .resolve("WP-204").resolve("inspect_packaging.py").absolutePath,
+            .resolve("WP-204").resolve("inspect_packaging.py").absolutePath, "--self-test",
     )
 }
 

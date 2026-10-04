@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import unittest
 import zipfile
 
 OUT = Path(__file__).resolve().parent
@@ -39,28 +40,27 @@ def require(condition, description):
 def xml_tree(aapt, name):
     result = subprocess.run(
         [str(aapt), "dump", "xmltree", str(APK), "--file", name],
-        capture_output=True, text=True, check=True, timeout=30,
+        capture_output=True, text=True, encoding="utf8", check=True, timeout=30,
     )
     return result.stdout
 
 
-def inspect():
-    sdk = os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT")
-    require(sdk, "Declared SDK is required; this does not provision or install anything")
-    aapt = Path(sdk) / "build-tools" / "37.0.0" / ("aapt2.exe" if os.name == "nt" else "aapt2")
-    require(APK.is_file(), "Missing actual assembled debug APK")
-    manifest = xml_tree(aapt, "AndroidManifest.xml")
-    allow_backup = re.search(r"android:allowBackup[^=\n]*=\(type 0x12\)(0x[0-9a-fA-F]+)", manifest)
-    require(allow_backup is not None and int(allow_backup.group(1), 16) == 0, "Actual APK does not disable automatic backup")
-    extraction = re.search(r"android:dataExtractionRules[^=\n]*=@(0x[0-9a-fA-F]+)", manifest)
-    require(extraction is not None, "Actual APK data extraction rule reference is missing")
-    resources = subprocess.run(
-        [str(aapt), "dump", "resources", str(APK)], capture_output=True, text=True, check=True, timeout=30,
-    ).stdout
-    resource = re.search(r"resource (0x[0-9a-fA-F]+) [^\s:]+:xml/scaffold_data_extraction_rules\b", resources)
-    require(resource is not None and int(resource.group(1), 16) == int(extraction.group(1), 16),
+def backup_configuration(manifest, resources, rules):
+    android = re.escape("http://schemas.android.com/apk/res/android:")
+
+    def attribute(name):
+        values = re.findall(r"^\s*A: " + android + re.escape(name) + r"\(0x[0-9a-fA-F]+\)=(\S+)\s*$",
+                            manifest, re.MULTILINE)
+        require(len(values) == 1, "Missing/ambiguous actual Android manifest attribute: " + name)
+        return values[0]
+
+    require(attribute("allowBackup") == "false", "Actual APK does not disable automatic backup")
+    extraction = attribute("dataExtractionRules")
+    require(re.fullmatch(r"@0x[0-9a-fA-F]{8}", extraction) is not None, "Malformed actual data extraction resource")
+    resource = re.findall(r"^\s*resource (0x[0-9a-fA-F]{8}) xml/scaffold_data_extraction_rules\s*$",
+                          resources, re.MULTILINE)
+    require(len(resource) == 1 and int(resource[0], 16) == int(extraction[1:], 16),
             "Manifest backup rule reference does not bind to the actual inspected compiled XML")
-    rules = xml_tree(aapt, "res/xml/scaffold_data_extraction_rules.xml")
     found = {}
     section = None
     exclude = None
@@ -86,6 +86,21 @@ def inspect():
         require(len(rows) == len(REQUIRED_DOMAINS), "Unexpected compiled exclusion set: " + section)
         require({row.get("domain") for row in rows} == REQUIRED_DOMAINS and all(row.get("path") == "." for row in rows),
                 "Actual compiled extraction rules do not exclude all storage domains")
+    return extraction, found
+
+
+def inspect():
+    sdk = os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT")
+    require(sdk, "Declared SDK is required; this does not provision or install anything")
+    aapt = Path(sdk) / "build-tools" / "37.0.0" / ("aapt2.exe" if os.name == "nt" else "aapt2")
+    require(APK.is_file(), "Missing actual assembled debug APK")
+    manifest = xml_tree(aapt, "AndroidManifest.xml")
+    resources = subprocess.run(
+        [str(aapt), "dump", "resources", str(APK)],
+        capture_output=True, text=True, encoding="utf8", check=True, timeout=30,
+    ).stdout
+    rules = xml_tree(aapt, "res/xml/scaffold_data_extraction_rules.xml")
+    extraction, found = backup_configuration(manifest, resources, rules)
     assets = ANDROID / "core" / "datastore" / "src" / "main" / "assets"
     notices = []
     publication = json.loads((OUT / "publisher-inputs.json").read_text(encoding="utf8"))
@@ -148,7 +163,7 @@ def inspect():
     return {
         "schema_version": 1, "work_package": "WP-204",
         "apk": APK.relative_to(ROOT).as_posix(), "apk_sha256": digest, "apk_bytes": APK.stat().st_size,
-        "allow_backup": False, "extraction_rule_resource": extraction.group(1),
+        "allow_backup": False, "extraction_rule_resource": extraction[1:],
         "compiled_backup_exclusions": found, "credential_protected_no_backup_path_policy": "noBackupFilesDir/meshcoreone-datastore",
         "notice_assets": notices, "framework_keystore_adapter_packaged": True,
         "datastore_native_libraries": native, "apk_static_alignment": alignment,
@@ -165,8 +180,14 @@ def inspect():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     try:
+        if args.self_test:
+            suite = unittest.defaultTestLoader.discover(str(OUT), pattern="test_packaging_parser.py")
+            test_result = unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+            require(test_result.testsRun == 8 and test_result.wasSuccessful() and not test_result.skipped,
+                    "Missing/failed/skipped packaging-parser assertions")
         result = inspect()
         if args.write:
             (OUT / "apk-storage-evidence.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf8")

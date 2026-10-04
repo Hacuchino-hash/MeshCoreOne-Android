@@ -106,6 +106,8 @@ environment.json and logs remain in this session's artifact directory.
 | On actual mergedfbb base, `:core:datastore:verifyPreferenceTests :core:datastore:resolvePreferenceDependencies --dependency-verification strict --no-build-cache --quiet`, one private512MiB JVM | Passed113 real cases/34 originals/41 parameter scenarios and all admitted strict selected graphs; no APK task or ignored suite substituted |
 | `python docs\android\evidence\WP-204\verify_notices.py` immediately after Windows rebase | Correctly failed exit2: app notice checkout had CRLF1458bytes instead of actual publisher1434 |
 | Same verifier with `--normalize`, then check-only again | Passed: only the specifically admitted app notice was normalized after canonical-LF bytes matched the independent publisher receipt. Four module notices retain exact bytes with scoped `-text`; no license terms, global Git config or unrelated app asset changed |
+| Normal scaffold run37218314995 attempt1 on head`afa132b54fd3b1fa1f391b0628b813502b9977ff` | Both hosts reached real APK assembly but owned packaging verification failed on an assumed legacy AAPT dump shape. Complete failed Linux/Windows commands are retained, not accepted as root/APK evidence |
+| `python -m unittest discover -s docs\android\evidence\WP-204 -p test_packaging_parser.py -v`, plus parser against actual approved PR20 APK dump | Passed8 positive/negative format assertions; actual SDK37.0.0 uses full Android namespace URI, literal`false`, unqualified`xml/...` resource name and UTF8. Parser fixed to observed shapes without relaxing backup/domain/reference checks; baseline diagnostic is not candidate APK acceptance |
 
 Gradle uses its actual checksum-pinned9.8.0 wrapper and AGP9.4.1 built-in Android
 Kotlin, existing2.3.20 compiler/coroutines1.10.2/BC1.86, one worker/in-process
@@ -264,4 +266,14 @@ actual113-case and strict selected-graph proof passed on mergedfbb, with the
 notice preBuild hook executing. Final actual APK/root/runtime/both-host proof
 is now requested from normal isolated PR CI on that actual merged base. The
 previous512MiB D8 failures remain retained, not relabeled as APK success.
+The first normal2GiB hosted attempt produced an actual APK but correctly
+failed the new verifier before any packaging pass was published. Diagnostics
+from the independently verified PR20 APK exposed exact SDK output differences:
+`http://schemas.android.com/apk/res/android:allowBackup(...)=false`,
+`resource0x... xml/scaffold_data_extraction_rules`, and UTF8 resource text.
+The owned parser now consumes those actual forms and requires one exact
+false attribute, matching compiled resource ID and all9 domains in both
+cloud/device transfer. Eight regression assertions run in the real packaging
+task. Fresh same-head normal CI must still prove the repaired candidate; no
+workflow, source manifest, policy, pin or threshold was changed.
 No next work package, factory, agent, fleet, merge or approval was started.
