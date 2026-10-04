@@ -37,6 +37,7 @@ class WiFiTransport(
     private val socketFactory: () -> Socket = { Socket() },
     private val connectionTimeoutMillis: Long = CONNECTION_TIMEOUT_MILLIS,
     private val writeTimeoutMillis: Long = WRITE_TIMEOUT_MILLIS,
+    private val addressResolver: (String, Int) -> InetSocketAddress = { host, port -> InetSocketAddress(host, port) },
 ) : MeshTransport {
     data class ConnectionInfo(val host: String, val port: Int)
 
@@ -128,7 +129,7 @@ class WiFiTransport(
             try {
                 socketIo(generation, connectionTimeoutMillis, WiFiTransportError.ConnectionTimeout) {
                     generation.socket.tcpNoDelay = true
-                    val endpoint = InetSocketAddress(target.host, target.port)
+                    val endpoint = addressResolver(target.host, target.port)
                     if (Thread.currentThread().isInterrupted) throw InterruptedException("TCP connect cancelled")
                     generation.socket.connect(endpoint, connectionTimeoutMillis.toInt())
                 }

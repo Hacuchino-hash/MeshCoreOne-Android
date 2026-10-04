@@ -8,7 +8,9 @@ import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransport
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.net.SocketTimeoutException
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -96,6 +98,73 @@ class WiFiTransportIoTest {
             assertEquals(0, socket.activeBlockingCalls.get())
         } finally {
             transport.disconnect()
+        }
+    }
+
+    @Test
+    fun `Cancelling an interruptible resolver closes the socket and never starts a late connect`() = socketTest {
+        val socket = ControlledSocket()
+        val resolving = CompletableDeferred<Unit>()
+        val exited = CompletableDeferred<Unit>()
+        val transport = WiFiTransport(
+            socketFactory = { socket },
+            addressResolver = { _, port ->
+                resolving.complete(Unit)
+                try {
+                    CountDownLatch(1).await()
+                    InetSocketAddress("127.0.0.1", port)
+                } finally {
+                    exited.complete(Unit)
+                }
+            },
+        )
+        val scheduled = ScheduledOperations()
+        try {
+            transport.setConnectionInfo("radio.local", 5000)
+            val connect = scheduled.scope.async { transport.connect() }
+            scheduled.runCurrent()
+            resolving.await()
+            connect.cancel()
+            scheduled.runCurrent()
+            assertFailsWith<CancellationException> { scheduled.await(connect) }
+            assertTrue(exited.isCompleted)
+            assertFalse(socket.connectStarted.isCompleted)
+            assertFalse(transport.isConnected())
+            assertEquals(1, socket.closeCalls.get())
+        } finally {
+            withContext(NonCancellable) { transport.disconnect() }
+            scheduled.close()
+        }
+    }
+
+    @Test
+    fun `Connection deadline includes interruptible address resolution`() = socketTest {
+        val socket = ControlledSocket()
+        val resolving = CompletableDeferred<Unit>()
+        val transport = WiFiTransport(
+            socketFactory = { socket },
+            addressResolver = { _, port ->
+                resolving.complete(Unit)
+                CountDownLatch(1).await()
+                InetSocketAddress("127.0.0.1", port)
+            },
+        )
+        val scheduled = ScheduledOperations()
+        try {
+            transport.setConnectionInfo("radio.local", 5000)
+            val connect = scheduled.scope.async { transport.connect() }
+            scheduled.runCurrent()
+            resolving.await()
+            scheduled.advanceBy(9_999)
+            assertFalse(connect.isCompleted)
+            scheduled.advanceBy(1)
+            val failure = assertFailsWith<WiFiTransportException> { scheduled.await(connect) }
+            assertEquals(WiFiTransportError.ConnectionTimeout, failure.error)
+            assertFalse(socket.connectStarted.isCompleted)
+            assertEquals(1, socket.closeCalls.get())
+        } finally {
+            withContext(NonCancellable) { transport.disconnect() }
+            scheduled.close()
         }
     }
 

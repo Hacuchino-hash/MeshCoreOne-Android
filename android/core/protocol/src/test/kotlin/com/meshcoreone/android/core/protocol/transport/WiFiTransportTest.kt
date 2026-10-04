@@ -9,6 +9,7 @@ import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransport
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -244,6 +245,29 @@ class WiFiTransportTest {
                 transport.sendWithoutResponse(Bytes.EMPTY)
                 assertEquals(Bytes.fromHex("3c0000"), Bytes(server.readExactly(3)))
                 assertTrue(transport.isConnected())
+            } finally {
+                withContext(NonCancellable) { transport.disconnect() }
+            }
+        }
+    }
+
+    @Test
+    fun `Network-scoped resolver reaches a real peer without replacing the configured hostname`() = socketTest {
+        val resolved = CompletableDeferred<WiFiTransport.ConnectionInfo>()
+        val transport = WiFiTransport(addressResolver = { host, port ->
+            resolved.complete(WiFiTransport.ConnectionInfo(host, port))
+            InetSocketAddress("127.0.0.1", port)
+        })
+        LoopbackPeer().use { peer ->
+            try {
+                transport.setConnectionInfo("radio.local", peer.port)
+                transport.connect()
+                val server = peer.accept()
+                val target = WiFiTransport.ConnectionInfo("radio.local", peer.port)
+                assertEquals(target, resolved.await())
+                assertEquals(target, transport.connectionInfo)
+                transport.send(Bytes.fromHex("1603"))
+                assertEquals(Bytes.fromHex("3c02001603"), Bytes(server.readExactly(5)))
             } finally {
                 withContext(NonCancellable) { transport.disconnect() }
             }
