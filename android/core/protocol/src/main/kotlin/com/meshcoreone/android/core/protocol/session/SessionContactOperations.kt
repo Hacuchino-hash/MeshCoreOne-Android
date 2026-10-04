@@ -49,6 +49,7 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
     var modified: Instant? = null
     var possiblyWritten = false
     var terminalResponse = false
+    var fetchCompleted = false
     val invalidation = generation.contacts.invalidationGeneration
     val incrementalBaseline = since != null && generation.contacts.hasBaseline(since)
     fun snapshot(completed: Boolean) = synchronized(core.lock) {
@@ -106,6 +107,7 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
                         MeshCoreException.InvalidResponse("complete contactsStart total", "count=${contacts.size}, total=$total"),
                     ))
                 }
+                fetchCompleted = true
                 result
             } finally {
                 consumer.cancel()
@@ -115,7 +117,7 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
             }
         }
     } finally {
-        if (modified == null) {
+        if (!fetchCompleted) {
             snapshot(false)
             generation.contacts.invalidateBaseline()
         }

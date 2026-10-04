@@ -623,22 +623,22 @@ internal class ExchangeOwner(
         query(data, "ok", errorMatcher = ::deviceError, cleanup = cleanup) {
             if (it is MeshEvent.Ok && it.value == null) Unit else null
         }
+    }
 
-        suspend fun rollbackSimple(data: Bytes) {
-            val ambiguousErrors = synchronized(core.lock) { "error" in generation.unresolvedReplies }
-            match(data, "ok", cleanup = true) {
-                when {
-                    it is MeshEvent.Ok && it.value == null -> ResponseDisposition.Success(Unit)
-                    it is MeshEvent.Error && !ambiguousErrors ->
-                        ResponseDisposition.Failure(MeshCoreException.DeviceError(it.code ?: 0u))
-                    it is MeshEvent.Error -> {
-                        core.diagnostic(SessionDiagnostic.BackgroundFailure(
-                            generation.number, "rollback-uncorrelated-error", MeshCoreException.DeviceError(it.code ?: 0u),
-                        ))
-                        ResponseDisposition.Ignore
-                    }
-                    else -> ResponseDisposition.Ignore
+    suspend fun rollbackSimple(data: Bytes) {
+        val ambiguousErrors = synchronized(core.lock) { "error" in generation.unresolvedReplies }
+        match(data, "ok", cleanup = true) {
+            when {
+                it is MeshEvent.Ok && it.value == null -> ResponseDisposition.Success(Unit)
+                it is MeshEvent.Error && !ambiguousErrors ->
+                    ResponseDisposition.Failure(MeshCoreException.DeviceError(it.code ?: 0u))
+                it is MeshEvent.Error -> {
+                    core.diagnostic(SessionDiagnostic.BackgroundFailure(
+                        generation.number, "rollback-uncorrelated-error", MeshCoreException.DeviceError(it.code ?: 0u),
+                    ))
+                    ResponseDisposition.Ignore
                 }
+                else -> ResponseDisposition.Ignore
             }
         }
     }
