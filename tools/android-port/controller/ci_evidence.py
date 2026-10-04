@@ -253,9 +253,10 @@ def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_
     fields(value, {
         "schema_version", "binding", "run_id", "run_attempt", "host", "scope",
         "stages", "cache_proofs", "python", "suites", "standalone", "lint", "apk", "artifacts",
+        "module_unit_tests",
     }, label="scaffold CI result")
     if (
-        type(value["schema_version"]) is not int or value["schema_version"] != 1
+        type(value["schema_version"]) is not int or value["schema_version"] != 2
         or Binding.parse(value["binding"]) != binding or value["host"] != host
         or value["run_id"] != run_id or value["run_attempt"] != run_attempt
     ):
@@ -312,6 +313,10 @@ def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_
     raw_paths |= {lint_bundle_path(target) for target in LINT_TARGETS}
     if not raw_paths.issubset(seen):
         raise PortError("Raw mandatory JUnit/lint report is absent from the digest-bound artifact set")
+    from .ci_environment import REPO
+    from .module_junit import validate_module_tests
+
+    validate_module_tests(value["module_unit_tests"], root, REPO, binding.head_sha)
     for target in LINT_TARGETS:
         claimed = value["lint"][target]
         fields(claimed, {"sha256", "warnings"}, label="typed lint evidence")
@@ -351,6 +356,7 @@ def aggregate(needs: dict, directory: Path, binding: Binding, run_id: int, run_a
         "hosts": {host: {
             "kotlin_assertions": sum(c["passed"] for c in value["suites"].values()),
             "standalone_assertions": value["standalone"]["passed"],
+            "module_unit_assertions": sum(item["counts"]["passed"] for item in value["module_unit_tests"].values()),
             "python_assertions": sum(c["passed"] for c in value["python"].values()),
             "apk_sha256": value["apk"]["sha256"],
         } for host, value in results.items()},

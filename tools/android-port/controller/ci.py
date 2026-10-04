@@ -23,6 +23,7 @@ from controller.ci_evidence import PYTHON_MINIMUMS, SUITES, aggregate, artifact_
 from controller.errors import PortError
 from controller.gates import Binding, policy_revision
 from controller.model import git, load_manifest
+from controller.module_junit import collect_module_tests
 from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
 from controller.schema import decode_json, load_json, positive_integer
@@ -182,6 +183,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             destination.mkdir(parents=True, exist_ok=True)
             for xml in sorted((REPO / "android" / path).glob("TEST-*.xml")):
                 shutil.copyfile(xml, destination / xml.name)
+        report["module_unit_tests"] = collect_module_tests(REPO, output)
     elif standalone:
         report["suite"] = suite_counts(REPO / "android" / SUITES["build-logic"][0], 31)
         destination = output / "junit" / "standalone" / "build-logic"
@@ -253,16 +255,18 @@ def inspect(state: dict, output: Path, *, local=False):
         write_json(output / "local-result.json", {
             "scope": "local scaffold assertions/artifacts; no hosted run or authoritative acceptance",
             "host": state["host"], "suites": collect_suites(REPO / "android"), "apk": value,
+            "module_unit_tests": load_json(output / "stage-verify.json")["module_unit_tests"],
         })
         return
     stages = {stage: load_json(output / f"stage-{stage}.json") for stage in ("verify", "standalone", "assemble", "lint")}
     result = {
-        "schema_version": 1, **identity, "host": state["host"],
+        "schema_version": 2, **identity, "host": state["host"],
         "scope": "scaffold assertions only; all feature, human, license, device and release gates remain pending",
         "stages": {name: item["result"] for name, item in stages.items()},
         "cache_proofs": {"composite": stages["verify"]["cache_proof"], "standalone": stages["standalone"]["cache_proof"]},
         "python": load_json(output / "python-evidence.json"),
         "suites": stages["verify"]["suites"], "standalone": stages["standalone"]["suite"],
+        "module_unit_tests": stages["verify"]["module_unit_tests"],
         "lint": stages["lint"]["reports"], "apk": value,
         "artifacts": [
             artifact_record(output, path) for path in sorted(output.rglob("*"))

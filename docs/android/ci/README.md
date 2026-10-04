@@ -43,6 +43,25 @@ check, runtime POM/license inputs, per-stage logs, exact debug APK and `SHA256SU
 Each host's debug key/artifact is ephemeral; APK hashes need not match between
 hosts. Static 16KB alignment is not real-device/MapLibre/HIL evidence.
 
+The version2 result additionally requires every committed active unit-test source
+set under `core`, `feature` and `platform` to have complete nonzero raw JUnit
+evidence. Original scaffold suites and the separately required protocol/testing
+workflows are not double-counted. Expected modules and all their main/unit/build
+input blob identities come from the exact candidate Git tree, not an artifact's
+own list. An active module missing a runner/report, having ambiguous JVM/Android
+report directories, or claiming failed/skipped/fabricated/stale cases fails.
+Files are copied verbatim to `junit/modules/<group>--<module>`; the same-run
+aggregator independently derives the module set and reparses every case, counter,
+source blob and report digest. Version1 historical bundles are not silently
+upgraded into current evidence.
+
+Module owners must connect their actual `test` or `testDebugUnitTest` task to
+`verifyScaffoldTests` in their module build script, following the existing
+localization hook. Missing wiring is an explicit CI failure, not an empty-success
+fallback. The localization-specific source/resource/family verifier still runs
+and retains its own evidence. This additive unit-run proof is not original-case
+parity, instrumentation, radio behavior or a protected WP acceptance receipt.
+
 No detekt, ktlint, Kover, localization synchronization, full source-case catalog,
 instrumentation, Swift/macOS oracle or hardware task is invented here. Their
 actual tooling, output contracts and acceptance remain WP-004/005 and the owning
