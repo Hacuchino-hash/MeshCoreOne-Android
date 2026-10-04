@@ -43,8 +43,29 @@ LOCAL_SCOPE = "local immutable candidate execution; no hosted run authority"
 LOCAL_EXECUTOR_SCOPE = "explicit local CI executor forwarding; no hosted run authority"
 CLI_PREFIX = "com.meshcoreone.android.tools.meshcli."
 CLI_FACTORIES = {
-    "CliArgumentsTest": {"invalidArguments": 21, "forbiddenOperations": 14},
-    "CliTcpTest": {"completeReadQueries": 6, "terminalFailures": 9, "contactCompleteness": 4, "bidiControlCharacters": 12},
+    "CliArgumentsTest": {
+        "invalidArguments": tuple(f"invalid arguments {index} reject before any transport" for index in range(21)),
+        "forbiddenOperations": tuple(f"{command} has no operation path" for command in (
+            "send", "send-message", "get-message", "login", "logout", "set-radio", "set-name",
+            "set-channel", "factory-reset", "reboot", "sign", "export-key", "raw", "admin",
+        )),
+    },
+    "CliTcpTest": {
+        "completeReadQueries": tuple(f"{command} traverses actual TCP session and closes once" for command in (
+            "device", "capabilities", "battery", "time", "contacts", "channels",
+        )),
+        "terminalFailures": tuple(f"{scenario} is typed nonzero and never a battery result" for scenario in (
+            "unknown-error", "missing-error", "unsupported", "disabled", "empty", "unknown-packet",
+            "short-battery", "eof", "truncated-eof",
+        )),
+        "contactCompleteness": tuple(f"{scenario} preserves real contact completeness" for scenario in (
+            "missing-header", "count-mismatch", "duplicate-id", "valid-empty",
+        )),
+        "bidiControlCharacters": tuple(f"{escape} inside a real device model is escaped without losing text" for escape in (
+            "\\u061c", "\\u200e", "\\u200f", "\\u202a", "\\u202b", "\\u202c",
+            "\\u202d", "\\u202e", "\\u2066", "\\u2067", "\\u2068", "\\u2069",
+        )),
+    },
 }
 CLI_SINGLES = """CliArgumentsTest|help performs no transport construction
 CliArgumentsTest|unknown user text and escape sequences never enter generic errors
@@ -164,8 +185,7 @@ def required_cli_cases():
     rows = [line.split("|") for line in CLI_SINGLES.splitlines()]
     result = {(CLI_PREFIX + scope, method + "()") for scope, method in rows}
     for scope, factories in CLI_FACTORIES.items():
-        result.update((CLI_PREFIX + scope, f"{method}()[{index}]")
-                      for method, total in factories.items() for index in range(1, total + 1))
+        result.update((CLI_PREFIX + scope, name) for names in factories.values() for name in names)
     if len(result) != 87:
         raise PortError("Malformed declared CLI assertion/family inventory")
     return result

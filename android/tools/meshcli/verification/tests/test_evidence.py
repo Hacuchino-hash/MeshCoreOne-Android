@@ -196,7 +196,7 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(87, len(native["meshcli"]))
         incomplete = {**native, "meshcli": [
             case for case in native["meshcli"]
-            if not case["name"].startswith("bidiControlCharacters()")
+            if case["name"] not in reader.CLI_FACTORIES["CliTcpTest"]["bidiControlCharacters"]
             and "detects a closed" not in case["name"]
         ]}
         self.assertEqual(73, len(incomplete["meshcli"]), "Reproduces actual d472 discovery, not native execution")

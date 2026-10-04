@@ -58,6 +58,27 @@ reported method/index descriptors, whereas the full XML reader uses testcase
 names. The diagnostic now preserves the complete actual identity list in the
 retained Gradle failure log so the precise binding can be repaired, not guessed
 or relaxed. Complete raw CLI XML/input-bundle forwarding remains ungranted.
+Actual89aafd24 run37245043485/attempt1 exposes **87 identical full XML
+identities on both hosts**:40 arguments,41 TCP and6 deployed-main cases.
+Every row reached the strict zero-failed/skipped JUnit reader; the binding
+failure was the distinction between Gradle listener method/index descriptors
+and XML DynamicTest display names. The expected inventory now uses the exact
+declared parameter display labels, including every original planned row and
+both real closed-pipe main cases. It still requires87 distinct exact identities,
+not interchangeable names or relaxed class/count matching. Full raw XML and
+input blobs, not the diagnostic identity list alone, remain required for handoff.
+The prior d472 root37242211513/attempt1 was also independently replayed in full:
+schema2,215 controller+15 scaffold,47 composite+31 fresh standalone,
+166 model/45 Room/25 localization,24 lint targets/zero Error/Fatal/495 inherited
+warnings, real debug package/min31/target37/notices/static16KiB checks.
+Its actual module graph has zero incoming CLI edges and the actual APK DEX
+contains no CLI/testing/Room-verification packages. Both full root ZIPs are
+retained privately:windows11317764180
+SHA256`b8f3bb866a2723cc115b2c62baf6d83573f279346d11d53655ac268f71c5dd94`;
+linux11318355919
+SHA256`751d538775a733cbe638f140fb7092c937d54f0a5990a999a8b3084873a46f10`.
+This is prior software proof, not the current87-row/full-input/raw acceptance
+or any physical/API/firmware certification.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless
