@@ -87,17 +87,20 @@ def inventory():
 
 
 def declared_tests():
-    methods = set()
+    methods = {}
     original = {}
     for file in sorted((MODULE / "src" / "test" / "kotlin").rglob("*.kt")):
         text = file.read_text(encoding="utf8")
         require("@Ignore" not in text, "An ignored suite is not evidence")
         classes = re.findall(r"^class\s+(\w+Test)\b", text, re.MULTILINE)
+        sdk_match = re.search(r"@Config\(sdk\s*=\s*\[([0-9,\s]+)\]\)", text)
+        sdks = tuple(int(value.strip()) for value in sdk_match[1].split(",")) if sdk_match else ()
+        require(len(sdks) == len(set(sdks)), "Duplicate declared SDK test profile")
         for name in classes:
             for method in re.findall(r"@Test\s+fun\s+(\w+)\s*\(", text):
                 identity = PACKAGE + name, method
                 require(identity not in methods, "Duplicate native test identity")
-                methods.add(identity)
+                methods[identity] = sdks
             pattern = r'@OriginalCase\("([^"\n]+)"(?:,\s*(\d+))?\)\s+@Test\s+fun\s+(\w+)\s*\('
             matches = list(re.finditer(pattern, text))
             for index, match in enumerate(matches):
@@ -146,6 +149,43 @@ def junit(directory):
     return cases, reports
 
 
+def account_native_profiles(methods, cases):
+    consumed = set()
+    profiles = []
+    for (class_name, method), sdks in sorted(methods.items()):
+        if len(sdks) <= 1:
+            identity = class_name, method
+            require(identity in cases, "Missing native method execution: " + class_name + "." + method)
+            consumed.add(identity)
+            continue
+        selected = {
+            identity for identity in cases if identity[0] == class_name and
+            re.fullmatch(re.escape(method) + r"(?:\[[0-9]+\])?", identity[1])
+        }
+        require(len(selected) == len(sdks), "Missing/extra actual SDK case: " + method)
+        labeled = {}
+        default = None
+        for identity in selected:
+            suffix = re.search(r"\[([0-9]+)\]$", identity[1])
+            if suffix:
+                sdk = int(suffix[1])
+                require(sdk in sdks and sdk not in labeled, "Wrong/duplicate actual SDK profile")
+                labeled[sdk] = identity
+            else:
+                require(default is None, "Duplicate default SDK method")
+                default = identity
+        missing = set(sdks) - set(labeled)
+        if default is not None:
+            require(len(missing) == 1, "Ambiguous unlabelled SDK profile")
+            labeled[missing.pop()] = default
+        require(set(labeled) == set(sdks), "Not every declared actual SDK executed")
+        for sdk, identity in sorted(labeled.items()):
+            profiles.append({"class": class_name, "method": method, "sdk": sdk, "native_test": cases[identity]})
+        consumed.update(selected)
+    require(consumed == set(cases), "Complete native source/profile test set differs from actual raw JUnit")
+    return profiles
+
+
 def collect(report_directory=None):
     inputs, expected = inventory()
     methods, original = declared_tests()
@@ -161,7 +201,7 @@ def collect(report_directory=None):
             rows = [json.loads(row) for row in family["axes"][0]["declared_rows"]]
             require(rows in binding["literal_parameter_rows"], "Actual Kotlin family does not retain source parameter rows: " + identity)
     cases, reports = junit(report_directory or MODULE / "build" / "test-results" / "testDebugUnitTest")
-    require(methods == set(cases), "Complete native source test set differs from actual raw JUnit")
+    sdk_profiles = account_native_profiles(methods, cases)
     source_cases = []
     for identity, specification in expected.items():
         binding = original[identity]
@@ -190,13 +230,16 @@ def collect(report_directory=None):
         "source_sha": SOURCE, "manifest_sha256": PINNED_MANIFEST, "policy_revision": PINNED_POLICY,
         "inputs": inputs, "source_cases": source_cases, "junit_suites": reports,
         "native_cases": list(cases.values()),
+        "native_sdk_profiles": sdk_profiles,
         "native_input_files": native_inputs,
         "native_inputs_committed_at_observed_head": committed,
         "discovery": {
-            "declared_native_cases": len(methods), "discovered_passed": len(cases), "failed": 0, "errors": 0, "skipped": 0,
+            "declared_native_methods": len(methods),
+            "declared_native_cases": sum(max(1, len(sdks)) for sdks in methods.values()),
+            "discovered_passed": len(cases), "failed": 0, "errors": 0, "skipped": 0,
             "original_declarations": 34, "parameter_expanded_scenarios": 41,
         },
-        "scope": "actual DataStore/JCA/SDK31 shadow assertions; not real Android Keystore hardware, API37 device, "
+        "scope": "actual DataStore/JCA/declared SDK shadow assertions; not real Android Keystore hardware, API37 device, "
                  "full bidirectional backup, license approval, hosted-run authority or a protected gate receipt",
     }
 

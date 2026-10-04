@@ -1,5 +1,6 @@
 // AndroidOnly: WP-204 Real DataStore/Keystore persistence and source-case verification.
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.process.CommandLineArgumentProvider
 
 plugins {
     id("mesh.android.library")
@@ -15,6 +16,21 @@ dependencies {
 
 dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
+}
+
+val reviewedPlatformSdks by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+dependencies {
+    reviewedPlatformSdks("org.robolectric:android-all-instrumented:12.1-robolectric-8229987-i7")
+    reviewedPlatformSdks("org.robolectric:android-all-instrumented:13-robolectric-9030017-i7")
+    reviewedPlatformSdks("org.robolectric:android-all-instrumented:17-robolectric-15733970-i7")
+}
+val prepareReviewedPlatformSdks by tasks.registering(Sync::class) {
+    from(configurations.named("testRobolectricSdk"), reviewedPlatformSdks)
+    into(layout.buildDirectory.dir("reviewed-platform-sdks"))
 }
 
 val repository = rootProject.projectDir.parentFile
@@ -62,6 +78,10 @@ val resolvePreferenceDependencies by tasks.registering {
 }
 
 tasks.withType<Test>().configureEach {
+    dependsOn(prepareReviewedPlatformSdks)
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        listOf("-Drobolectric.dependency.dir=${layout.buildDirectory.dir("reviewed-platform-sdks").get().asFile.absolutePath}")
+    })
     systemProperty("repositoryDirectory", repository.absolutePath)
 }
 

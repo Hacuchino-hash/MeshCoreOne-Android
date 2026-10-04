@@ -30,6 +30,8 @@ class MeshCoreStorage private constructor(
     aliasPrefix: String,
 ) {
     private val closed = AtomicBoolean(false)
+    private val closeMutex = Mutex()
+    private var closeCompleted = false
     private val lifetime = SupervisorJob()
     private val scope = CoroutineScope(lifetime + dispatcher)
     private val preferenceGuard = guarded(preferenceAccess)
@@ -66,15 +68,17 @@ class MeshCoreStorage private constructor(
     }
 
     suspend fun close() {
-        if (closed.compareAndSet(false, true)) {
-            withContext(NonCancellable) {
-                lifetime.cancelAndJoin()
-                synchronized(owners) {
-                    if (owners[directory.path] === this@MeshCoreStorage) owners.remove(directory.path)
+        withContext(NonCancellable) {
+            closeMutex.withLock {
+                if (!closeCompleted) {
+                    closed.set(true)
+                    lifetime.cancelAndJoin()
+                    synchronized(owners) {
+                        if (owners[directory.path] === this@MeshCoreStorage) owners.remove(directory.path)
+                    }
+                    closeCompleted = true
                 }
             }
-        } else {
-            withContext(NonCancellable) { lifetime.join() }
         }
         currentCoroutineContext().ensureActive()
     }

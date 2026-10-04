@@ -277,3 +277,23 @@ cloud/device transfer. Eight regression assertions run in the real packaging
 task. Fresh same-head normal CI must still prove the repaired candidate; no
 workflow, source manifest, policy, pin or threshold was changed.
 No next work package, factory, agent, fleet, merge or approval was started.
+
+## Independent source review repairs in progress
+
+The read-only reviewer identified two real defects at the original
+`ef903325391dfe8a0d0ec74d85b44c96df802199` production input. The earlier113
+passes do not close them. The same branch/PR now implements explicit API35+
+new-key unlocked enforcement (all explicit first/current-lock checks remain,
+no existing key is changed) and a shared close boundary including registry
+release for winning and losing/cancelled callers.
+
+New tests use actual SDK31/32/33/37 Robolectric services/key specs, not merely
+integer parameters, and a deterministic reversed-resumption dispatcher around
+real DataStore shutdown with immediate get/reopen and replacement-owner
+protection. The planned complete set is119 native methods/131 SDK-expanded
+cases, with the original34/41 source accounting unchanged. These new
+declarations are **not executed/passed yet**. Local Java remains held for
+WP-202; only the already independently pinned SDK32/33/37 JAR/POM tuples are
+used. The new module-owned `reviewedPlatformSdks` configuration needs actual
+strict Gradle-generated local lock state before execution; strict locking is
+not disabled and no state is manufactured from declarations.

@@ -2,6 +2,7 @@
 // Native Keystore AES-GCM is independent of firmware wire AES-ECB.
 package com.meshcoreone.android.core.datastore
 
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
@@ -28,6 +29,18 @@ interface SecretCryptography {
     fun encrypt(alias: String, plaintext: ByteArray, authenticatedData: ByteArray): AuthenticatedCiphertext
     fun decrypt(alias: String, value: AuthenticatedCiphertext, authenticatedData: ByteArray): ByteArray
     fun deleteKey(alias: String)
+}
+
+enum class KeystoreUnlockedAccessPolicy(val requireUnlockedKeystoreKey: Boolean) {
+    LEGACY_EXPLICIT_LOCK_CHECKS(false),
+    PLATFORM_ENFORCED_WITH_EXPLICIT_LOCK_CHECKS(true);
+
+    companion object {
+        fun forPlatform(sdk: Int): KeystoreUnlockedAccessPolicy {
+            require(sdk >= 31) { "Credential-protected storage requires Android API31 or later" }
+            return if (sdk >= 35) PLATFORM_ENFORCED_WITH_EXPLICIT_LOCK_CHECKS else LEGACY_EXPLICIT_LOCK_CHECKS
+        }
+    }
 }
 
 internal interface KeystoreKeyAccess {
@@ -60,6 +73,7 @@ internal class FrameworkKeystoreKeyAccess : KeystoreKeyAccess {
 class AndroidKeystoreCryptography internal constructor(
     private val keys: KeystoreKeyAccess,
     private val access: StorageAccess,
+    val unlockedAccessPolicy: KeystoreUnlockedAccessPolicy = KeystoreUnlockedAccessPolicy.forPlatform(Build.VERSION.SDK_INT),
 ) : SecretCryptography {
     internal constructor(context: android.content.Context) : this(
         FrameworkKeystoreKeyAccess(), AndroidStorageAccess(context, secrets = true),
@@ -81,7 +95,8 @@ class AndroidKeystoreCryptography internal constructor(
                             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                             .setRandomizedEncryptionRequired(true)
                             .setUserAuthenticationRequired(false)
-                            .setUnlockedDeviceRequired(true)
+                            // API31-34 adds an unintended PIN requirement and can delete keys on lock removal.
+                            .setUnlockedDeviceRequired(unlockedAccessPolicy.requireUnlockedKeystoreKey)
                             .build(),
                     )
                 }

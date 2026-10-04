@@ -41,7 +41,8 @@ class CryptographyBoundaryTest {
         assertEquals(listOf(KeyProperties.BLOCK_MODE_GCM), specification.blockModes.toList())
         assertEquals(listOf(KeyProperties.ENCRYPTION_PADDING_NONE), specification.encryptionPaddings.toList())
         assertTrue(specification.isRandomizedEncryptionRequired)
-        assertTrue(specification.isUnlockedDeviceRequired)
+        assertFalse(specification.isUnlockedDeviceRequired)
+        assertEquals(KeystoreUnlockedAccessPolicy.LEGACY_EXPLICIT_LOCK_CHECKS, crypto.unlockedAccessPolicy)
         assertFalse(specification.isUserAuthenticationRequired)
     }
 
