@@ -1,0 +1,326 @@
+"""AndroidOnly: WP-003 Credential-stripped exact-task executor and scaffold evidence."""
+
+import argparse
+import contextlib
+import io
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import unittest
+from xml.etree.ElementTree import ParseError as ETError
+from dataclasses import asdict
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from controller.apk_alignment import inspect_alignment
+from controller.ci_environment import REPO, candidate_environment, file_sha256, host_name, toolchain_lock, verify_wrapper, write_json
+from controller.ci_evidence import PYTHON_MINIMUMS, SUITES, aggregate, artifact_record, collect_lint, collect_suites, counts, lint_bundle_path, read_xml, suite_counts
+from controller.errors import PortError
+from controller.gates import Binding, policy_revision
+from controller.model import git, load_manifest
+from controller.provision import provision
+from controller.runtime_inputs import verify_committed_inputs
+from controller.schema import decode_json, load_json, positive_integer
+from controller.test_runner import run_suite
+
+TASKS = {
+    "verify": [
+        "verifyScaffoldTests", "verifyRoomSchema", "validateModuleGraph",
+        "runtimeDependencyInventory", "resolveScaffoldDependencies",
+    ],
+    "standalone": [":convention:test"],
+    "assemble": [":app:assembleDebug"],
+    "lint": ["lintScaffold"],
+    "prepare": ["resolveScaffoldDependencies"],
+}
+
+
+def output_directory(value=None):
+    path = value or os.environ.get("ANDROID_CI_OUTPUT")
+    if not path or not Path(path).is_absolute():
+        raise PortError("Explicit absolute --output/ANDROID_CI_OUTPUT evidence directory is required")
+    return Path(path)
+
+
+def inputs(value=None):
+    path = value or os.environ.get("ANDROID_CI_STATE")
+    if not path:
+        raise PortError("Explicit --state/ANDROID_CI_STATE is required; failed cloud setup is not readiness")
+    return load_json(Path(path))
+
+
+def execution_identity():
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+    if not event_path:
+        return None
+    event = load_json(Path(event_path))
+    name = os.environ.get("GITHUB_EVENT_NAME")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    if repository != "cbattlegear/MeshCoreOne-Android":
+        raise PortError("Unexpected CI repository")
+    if name == "pull_request":
+        pr = event["pull_request"]
+        if pr["base"]["repo"]["full_name"] != repository:
+            raise PortError("PR targets another repository")
+        base, head = pr["base"]["sha"], pr["head"]["sha"]
+    elif name == "merge_group":
+        base, head = event["merge_group"]["base_sha"], event["merge_group"]["head_sha"]
+    elif name in ("push", "workflow_dispatch"):
+        head = os.environ.get("GITHUB_SHA")
+        base = event.get("before") if name == "push" else head
+        if not base or base == "0" * 40:
+            base = head
+    else:
+        raise PortError("Unsupported CI event")
+    actual = git(REPO, "rev-parse", "HEAD").decode().strip()
+    if actual != head:
+        raise PortError("Checkout is not the exact candidate/event SHA")
+    manifest = load_manifest(REPO)
+    policy = load_json(REPO / "docs" / "android" / "automation-policy.json")
+    return {
+        "binding": asdict(Binding(repository, "WP-003", base, head, manifest.data["reference"]["commit"],
+                                  manifest.sha256, policy_revision(manifest, policy))),
+        "run_id": positive_integer(int(os.environ["GITHUB_RUN_ID"]), "Workflow run ID"),
+        "run_attempt": positive_integer(int(os.environ["GITHUB_RUN_ATTEMPT"]), "Workflow run attempt"),
+    }
+
+
+def execute(command: list[str], environment: dict | None, log: Path, *, timeout=1800):
+    log.parent.mkdir(parents=True, exist_ok=True)
+    print("Executing " + " ".join(str(item) for item in command[:5]), flush=True)
+    with log.open("w", encoding="utf-8") as stream:
+        result = subprocess.run(command, cwd=REPO, env=environment, stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
+    if result.returncode:
+        tail = log.read_text(encoding="utf-8", errors="replace")[-12000:]
+        print(tail, file=sys.stderr)
+        raise PortError(f"Declared command failed with exit {result.returncode}; log: {log.name}")
+
+
+def preflight(state: dict, output: Path, *, local=False):
+    verify_committed_inputs(REPO)
+    if platform.python_version() != toolchain_lock()["python"]:
+        raise PortError("Build/setup Python must be the exact declared 3.12.4 input")
+    verify_wrapper()
+    environment = candidate_environment(state, local=local)
+    script = REPO / "android" / "scaffold" / "check_environment.py"
+    execute([sys.executable, str(script)], environment, output / "preflight.log", timeout=60)
+    packages = [
+        ("platforms/android-37.2", "platforms;android-37.2", (1, 0, 0)),
+        ("build-tools/37.0.0", "build-tools;37.0.0", (37, 0, 0)),
+    ]
+    if not local:
+        packages.append(("cmdline-tools/23.0", "cmdline-tools;23.0", (23, 0, 0)))
+    inventory = []
+    for path, package_id, expected in packages:
+        package = read_xml(Path(state["android_home"]) / path / "package.xml").find("localPackage")
+        if package is None or package.get("path") != package_id:
+            raise PortError("Installed SDK inventory/package identity mismatch")
+        revision = tuple(int(package.findtext(f"revision/{part}", "0")) for part in ("major", "minor", "micro"))
+        if revision != expected:
+            raise PortError("Installed SDK inventory revision mismatch")
+        inventory.append({"package": package_id, "revision": ".".join(map(str, revision))})
+    write_json(output / "sdk-inventory.json", {
+        "packages": inventory,
+        "cli_bootstrap_executed": False,
+        "scope": "actual installed package metadata; automatic CLI helper download is not a pinned build prerequisite",
+    })
+    write_json(output / "worker-readiness.json", {
+        "schema_version": 1, "environment_ready": True, "host": state["host"],
+        "scope": "explicit current build inputs; not cloud assignability, native host, publisher or human approval",
+        "provenance": state["provenance"],
+    })
+
+
+def run_stage(stage: str, state: dict, output: Path, *, local=False):
+    if platform.python_version() != toolchain_lock()["python"]:
+        raise PortError("Declared CI executor requires Python 3.12.4")
+    standalone = stage == "standalone"
+    environment = candidate_environment(state, standalone=standalone, local=local)
+    verify_wrapper()
+    execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
+            environment, output / f"{stage}-preflight.log", timeout=60)
+    project = REPO / "android" / ("build-logic" if standalone else "")
+    cache = Path(state["private_root"]) / ("project-standalone" if standalone else "project-root")
+    cache_proof = {
+        "user_cache_initially_absent": not Path(environment["GRADLE_USER_HOME"]).exists(),
+        "project_cache_initially_absent": not cache.exists(),
+    }
+    options = [
+        "--no-daemon", "--console=plain", "--dependency-verification", "strict",
+        "--no-build-cache", "--rerun-tasks", "--max-workers=1",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-PscaffoldTestHeap=" + ("256m" if local else "512m"),
+        "--project-cache-dir", str(cache), "--quiet",
+    ]
+    if local:
+        options.append("-PscaffoldTestJvmArgs=-Xms32m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=256m")
+    wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
+    command = [str(wrapper), "-p", str(project), *TASKS[stage], *options]
+    if state["host"] == "windows":
+        shell = shutil.which("pwsh", path=environment.get("PATH"))
+        if shell is None:
+            raise PortError("Windows batch execution requires the hosted/local PowerShell 7 input")
+        invocation = output / f"gradle-{stage}-invocation.json"
+        write_json(invocation, {"wrapper": str(wrapper), "project": str(project), "arguments": [*TASKS[stage], *options]})
+        command = [
+            shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-File",
+            str(Path(__file__).with_name("gradle_windows.ps1")), "-InvocationFile", str(invocation),
+        ]
+    execute(command, environment, output / f"gradle-{stage}.log")
+    report = {"stage": stage, "result": "success", "tasks": TASKS[stage], "strict_verification": True,
+              "cache_proof": cache_proof}
+    if stage == "verify":
+        report["suites"] = collect_suites(REPO / "android")
+        for name, (path, _) in SUITES.items():
+            destination = output / "junit" / "composite" / name
+            destination.mkdir(parents=True, exist_ok=True)
+            for xml in sorted((REPO / "android" / path).glob("TEST-*.xml")):
+                shutil.copyfile(xml, destination / xml.name)
+    elif standalone:
+        report["suite"] = suite_counts(REPO / "android" / SUITES["build-logic"][0], 31)
+        destination = output / "junit" / "standalone" / "build-logic"
+        destination.mkdir(parents=True, exist_ok=True)
+        for xml in sorted((REPO / "android" / SUITES["build-logic"][0]).glob("TEST-*.xml")):
+            shutil.copyfile(xml, destination / xml.name)
+    elif stage == "lint":
+        report["reports"] = collect_lint(REPO / "android")
+        for target in report["reports"]:
+            destination = output / lint_bundle_path(target)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / "android" / target / "build" / "reports" / "lint-results-debug.xml", destination)
+    write_json(output / f"stage-{stage}.json", report)
+
+
+def python_checks(output: Path):
+    from controller.verification_config import check_configuration
+    from controller.workflows import validate_workflows
+
+    delivery = verify_committed_inputs(REPO)
+    configuration = check_configuration(REPO)
+    validate_workflows(REPO)
+    execute([sys.executable, str(REPO / "tools" / "android-port" / "controller" / "validate.py")],
+            None, output / "manifest-validation.log")
+    execute([sys.executable, str(REPO / "tools" / "android-port" / "portmap.py")],
+            None, output / "traceability.log")
+    execute([sys.executable, str(REPO / "android" / "scaffold" / "sync_notices.py")],
+            None, output / "pinned-notices.log")
+    results = {}
+    for name, path, minimum in (
+        ("controller", REPO / "tools" / "android-port" / "tests", PYTHON_MINIMUMS["controller"]),
+        ("scaffold", REPO / "android" / "scaffold", PYTHON_MINIMUMS["scaffold"]),
+    ):
+        suite = unittest.TestLoader().discover(str(path), pattern="test_*.py")
+        text = io.StringIO()
+        with contextlib.redirect_stdout(text):
+            status = run_suite(suite, verbosity=0)
+        (output / f"python-{name}.log").write_text(text.getvalue(), encoding="utf-8")
+        if status:
+            raise PortError(f"Required {name} Python suite failed")
+        result = decode_json(text.getvalue().strip().splitlines()[-1])
+        result.pop("scope")
+        results[name] = counts(result, minimum=minimum)
+    write_json(output / "python-evidence.json", results)
+    write_json(output / "verification-overlay.json", configuration)
+    write_json(output / "runtime-inputs.json", delivery)
+
+
+def inspect(state: dict, output: Path, *, local=False):
+    environment = candidate_environment(state, local=local)
+    script = REPO / "android" / "scaffold" / "inspect_apk.py"
+    result = subprocess.run([sys.executable, str(script)], cwd=REPO, env=environment, capture_output=True, text=True, check=True, timeout=90)
+    value = decode_json(result.stdout)
+    apk = REPO / Path(value["artifact"])
+    value.update(inspect_alignment(apk, Path(state["android_home"]), environment, windows=state["host"] == "windows"))
+    write_json(output / "apk-inspection.json", value)
+    shutil.copyfile(apk, output / "debug.apk")
+    for name in ("test-discovery.tsv", "module-graph.tsv", "runtime-dependencies.tsv"):
+        shutil.copyfile(REPO / "android" / "build" / "reports" / "scaffold" / name, output / name)
+    identity = execution_identity()
+    if identity is None:
+        write_json(output / "local-result.json", {
+            "scope": "local scaffold assertions/artifacts; no hosted run or authoritative acceptance",
+            "host": state["host"], "suites": collect_suites(REPO / "android"), "apk": value,
+        })
+        return
+    stages = {stage: load_json(output / f"stage-{stage}.json") for stage in ("verify", "standalone", "assemble", "lint")}
+    result = {
+        "schema_version": 1, **identity, "host": state["host"],
+        "scope": "scaffold assertions only; all feature, human, license, device and release gates remain pending",
+        "stages": {name: item["result"] for name, item in stages.items()},
+        "cache_proofs": {"composite": stages["verify"]["cache_proof"], "standalone": stages["standalone"]["cache_proof"]},
+        "python": load_json(output / "python-evidence.json"),
+        "suites": stages["verify"]["suites"], "standalone": stages["standalone"]["suite"],
+        "lint": stages["lint"]["reports"], "apk": value,
+        "artifacts": [
+            artifact_record(output, path) for path in sorted(output.rglob("*"))
+            if path.is_file() and path.name not in ("ci-result.json", "SHA256SUMS")
+        ],
+    }
+    write_json(output / "ci-result.json", result)
+    checksums = [f"{file_sha256(path)}  {path.relative_to(output).as_posix()}" for path in sorted(output.rglob("*"))
+                 if path.is_file() and path.name != "SHA256SUMS"]
+    (output / "SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("provision", "local-inputs", "preflight", "run", "python", "inspect", "aggregate"))
+    parser.add_argument("--state", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--root", type=Path)
+    parser.add_argument("--jdk", type=Path)
+    parser.add_argument("--sdk", type=Path)
+    parser.add_argument("--accept-sdk-license", action="store_true")
+    parser.add_argument("--local", action="store_true", help="Measured shared-host build flags only")
+    parser.add_argument("--stage", choices=tuple(TASKS))
+    parser.add_argument("--artifacts", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "provision":
+            verify_committed_inputs(REPO)
+            if args.root is None:
+                raise PortError("An explicit ephemeral --root is required")
+            provision(args.root, accept_sdk_license=args.accept_sdk_license)
+        elif args.command == "local-inputs":
+            if any(path is None or not path.is_absolute() for path in (args.root, args.jdk, args.sdk)):
+                raise PortError("Local validation requires explicit JDK/SDK/private-root paths")
+            if args.root.exists():
+                raise PortError("Local proof requires a new private cache, not a shared or warmed cache")
+            write_json(args.root / "environment.json", {
+                "schema_version": 1, "host": host_name(), "java_home": str(args.jdk),
+                "android_home": str(args.sdk), "private_root": str(args.root / "private"),
+                "provenance": {"scope": "existing explicitly supplied local installations; no hosted provisioning claim"},
+            })
+        elif args.command == "python":
+            python_checks(output_directory(args.output))
+        elif args.command == "aggregate":
+            identity = execution_identity()
+            if identity is None or args.artifacts is None:
+                raise PortError("Aggregation requires an actual hosted run and downloaded immutable artifacts")
+            result = aggregate(decode_json(os.environ["CI_NEEDS"]), args.artifacts, Binding.parse(identity["binding"]),
+                               identity["run_id"], identity["run_attempt"])
+            print(json.dumps(result, indent=2))
+        else:
+            state, output = inputs(args.state), output_directory(args.output)
+            output.mkdir(parents=True, exist_ok=True)
+            if args.command == "preflight":
+                preflight(state, output, local=args.local)
+            elif args.command == "run":
+                if args.stage is None:
+                    raise PortError("Exactly one declared --stage is required")
+                run_stage(args.stage, state, output, local=args.local)
+            else:
+                inspect(state, output, local=args.local)
+        return 0
+    except (PortError, OSError, ValueError, KeyError, ETError, subprocess.SubprocessError) as error:
+        print(f"BLOCKED: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,454 @@
+import copy
+import json
+import sqlite3
+import tempfile
+import unittest
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
+from pathlib import Path
+from contextlib import closing
+
+from fixtures import (
+    BASE, HEAD, NOW, FakeAuthority, FakeBackend, base_manifest, bundle,
+    policy, settings, test_manifest,
+)
+from controller.backends import Observation
+from controller.engine import Controller
+from controller.errors import PortError, ReceiptError
+from controller.ledger import Identity, Ledger
+from controller.settings import Budget, Settings, Usage
+
+
+class SettingsTests(unittest.TestCase):
+    def test_defaults_off_paused_and_missing_limits_auth_block_live(self):
+        rules = policy()
+        rules.update(dispatch_mode="off", paused=True, activation_approved=False)
+        value = Settings.from_env({}, rules)
+        self.assertEqual(value.mode, "off")
+        self.assertTrue(value.paused)
+        self.assertIsNone(value.budget)
+        self.assertIsNone(value.max_inflight)
+        with self.assertRaisesRegex(PortError, "concurrency.*usage.*authentication"):
+            value.require_live(rules, "cloud")
+
+    def test_environment_cannot_override_trusted_pause_or_activation(self):
+        rules = policy()
+        rules["paused"] = True
+        value = Settings.from_env({"ANDROID_PORT_DISPATCH_MODE": "cloud", "ANDROID_PORT_PAUSED": "false"}, rules)
+        self.assertTrue(value.paused)
+        with self.assertRaises(PortError):
+            value.require_live(rules, "cloud")
+
+    def test_invalid_settings_fail_instead_of_silent_defaults(self):
+        for environment in (
+            {"ANDROID_PORT_PAUSED": "maybe"}, {"ANDROID_PORT_DISPATCH_MODE": "all"},
+            {"ANDROID_PORT_MAX_INFLIGHT": "0"}, {"ANDROID_PORT_MAX_INFLIGHT": "-1"},
+            {"ANDROID_PORT_MAX_INFLIGHT": "many"}, {"ANDROID_PORT_LEASE_SECONDS": "0"},
+            {"ANDROID_PORT_LEDGER": "relative.sqlite"},
+        ):
+            with self.subTest(environment=environment), self.assertRaises(PortError):
+                Settings.from_env(environment, policy())
+
+    def test_missing_budget_file_and_invalid_budget_policy_fail(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "missing.json"
+            with self.assertRaises(PortError):
+                Settings.from_env({"ANDROID_PORT_USAGE_POLICY_FILE": str(path)}, policy())
+        for value in (
+            {}, {"unit": "launches", "limit": 1, "reserve_per_launch": 1, "window_start": "1970-01-01T00:00:00Z"},
+            {"unit": "ai_credits", "limit": 0, "reserve_per_launch": 1, "window_start": "1970-01-01T00:00:00Z"},
+            {"unit": "ai_credits", "limit": True, "reserve_per_launch": 1, "window_start": "1970-01-01T00:00:00Z"},
+            {"unit": "ai_credits", "limit": 1, "reserve_per_launch": 0, "window_start": "1970-01-01T00:00:00Z"},
+            {"unit": "ai_credits", "limit": 1, "reserve_per_launch": 1, "window_start": "1970-01-01"},
+        ):
+            with self.subTest(value=value), self.assertRaises(PortError):
+                Budget.parse(value)
+
+    def test_stale_incomplete_nonfinite_wrong_unit_usage_blocks(self):
+        budget = Budget("ai_credits", 100, 5, 0)
+        for value in (
+            Usage("premium_requests", 0, NOW, True, (), ("local",)),
+            Usage("ai_credits", 0, NOW, False, (), ("local",)),
+            Usage("ai_credits", float("nan"), NOW, True, (), ("local",)),
+            Usage("ai_credits", -1, NOW, True, (), ("local",)),
+            Usage("ai_credits", 0, NOW - 301, True, (), ("local",)),
+            Usage("ai_credits", 0, NOW + 1, True, (), ("local",)),
+            Usage("ai_credits", 0, NOW, True, ("same", "same"), ("local",)),
+            Usage("ai_credits", 0, NOW, True, ()),
+        ):
+            with self.subTest(value=value), self.assertRaises(PortError):
+                value.validate(budget, NOW)
+        Usage("ai_credits", 5, NOW, True, ("task-1",), ("cloud",)).validate(budget, NOW)
+
+
+class StateTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="meshcore-port-tests-")
+        self.addCleanup(self.temporary.cleanup)
+        self.path = Path(self.temporary.name) / "ledger.sqlite"
+        self.manifest = test_manifest("WP-101")
+        self.policy = policy()
+        self.settings = settings(self.path)
+        self.ledger = Ledger(self.path, self.policy["repository"])
+        self.backend = FakeBackend()
+        self.controller = Controller(
+            self.manifest, self.policy, self.settings, self.ledger, self.backend,
+            attempt_factory=lambda: "attempt-1",
+        )
+
+    def claim(self, wp_id="WP-101", **values):
+        return self.ledger.claim(
+            self.manifest.wp(wp_id), self.controller.binding(wp_id, BASE), "local",
+            values.get("attempt", "attempt-1"), values.get("now", NOW), values.get("lease_seconds", 1800),
+            values.get("max_inflight", 5), values.get("used", 0), values.get("limit", 100),
+            values.get("reservation", 5), values.get("external_active_ids", ()),
+        )
+
+    def running(self):
+        self.claim()
+        identity = Identity(session_id="session-1", pr_number=123)
+        self.ledger.transition("WP-101", "attempt-1", "dispatching")
+        self.ledger.transition("WP-101", "attempt-1", "running", identity)
+        self.backend.observation = Observation(identity, "in_progress", True, True)
+        return identity
+
+    def reviewed(self):
+        identity = self.running()
+        self.backend.observation = Observation(identity, "completed", True, True)
+        self.controller.observe("WP-101", "attempt-1", self.backend.observation)
+        return identity
+
+    def test_atomic_claim_idempotency_and_binding_mismatch(self):
+        first, acquired = self.claim()
+        self.assertTrue(acquired)
+        second, acquired = self.claim(attempt="different-proposed-attempt")
+        self.assertFalse(acquired)
+        self.assertEqual(first["attempt"], second["attempt"])
+        binding = self.controller.binding("WP-101", HEAD)
+        with self.assertRaisesRegex(PortError, "different"):
+            self.ledger.claim(self.manifest.wp("WP-101"), binding, "local", "new", NOW, 1800, 5, 0, 100, 5)
+
+    def test_concurrent_all_write_path_claims_have_exactly_one_winner(self):
+        shared = ["docs/android/port-manifest.json", "android/gradle/"]
+
+        def acquire(wp_id):
+            wp = {**self.manifest.wp(wp_id), "write_paths": shared}
+            try:
+                self.ledger.claim(wp, self.controller.binding(wp_id, BASE), "local", wp_id, NOW, 1800, 5, 0, 100, 5)
+                return "acquired"
+            except PortError:
+                return "conflict"
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(acquire, ("WP-101", "WP-102")))
+        self.assertCountEqual(results, ["acquired", "conflict"])
+
+    def test_expiry_retains_locks_and_marks_uncertainty(self):
+        self.claim(lease_seconds=10)
+        with self.assertRaisesRegex(PortError, "Expired"):
+            self.claim(now=NOW + 11)
+        self.assertEqual(self.ledger.get("WP-101")["state"], "uncertain")
+        with self.assertRaises(PortError):
+            self.claim(now=NOW + 12)
+        self.assertEqual(len(self.ledger.records()), 1)
+
+    def test_concurrency_and_usage_reservations_block(self):
+        self.claim(max_inflight=1)
+        for options in ({"max_inflight": 1}, {"used": 96, "limit": 100}):
+            with self.subTest(options=options), self.assertRaises(PortError):
+                self.claim("WP-102", **options)
+        self.assertEqual(len(self.ledger.records()), 1)
+
+    def test_unknown_state_and_generic_completion_or_release_cannot_bypass(self):
+        self.claim()
+        for state in ("invented", "completed", "pending", "leased"):
+            with self.subTest(state=state), self.assertRaises(PortError):
+                self.ledger.transition("WP-101", "attempt-1", state)
+        with closing(sqlite3.connect(self.path)) as connection:
+            with connection:
+                connection.execute("UPDATE leases SET state='invented'")
+        with self.assertRaisesRegex(PortError, "Unknown persisted"):
+            self.ledger.records()
+
+    def test_identity_conflicts_are_not_replacements(self):
+        identity = Identity(issue_number=1, task_id="task-1", session_id="session-1", pr_number=123)
+        for other in (
+            Identity(issue_number=2), Identity(task_id="task-2"),
+            Identity(session_id="session-2"), Identity(pr_number=124),
+        ):
+            with self.subTest(other=other), self.assertRaises(PortError):
+                identity.reconcile(other)
+        self.assertEqual(Identity(issue_number=1).reconcile(Identity(pr_number=123)).pr_number, 123)
+
+    def test_launch_records_identity_and_restart_reuses_worker(self):
+        first = self.controller.launch("WP-101", NOW)
+        second = self.controller.launch("WP-101", NOW)
+        self.assertEqual(first["action"], "worker-receipt-confirmed")
+        self.assertEqual(second["action"], "reconciled-existing-worker")
+        self.assertEqual(len(self.backend.launches), 1)
+        reopened = Ledger(self.path, self.policy["repository"])
+        restarted = Controller(self.manifest, self.policy, self.settings, reopened, self.backend)
+        restarted.launch("WP-101", NOW)
+        self.assertEqual(len(self.backend.launches), 1)
+
+    def test_unknown_external_worker_scope_blocks_new_claim(self):
+        self.backend.usage_value = Usage("ai_credits", 0, NOW, True, ("unleased-worker",), ("local",))
+        with self.assertRaisesRegex(PortError, "Unleased/unknown"):
+            self.controller.launch("WP-101", NOW)
+        self.assertFalse(self.backend.launches)
+        self.assertFalse(self.ledger.records())
+
+    def test_adopt_existing_worker_at_concurrency_limit_does_not_launch(self):
+        identity = Identity(session_id="session-existing", pr_number=123)
+        self.backend.observation = Observation(identity, "in_progress", True, True)
+        self.backend.usage_value = Usage("ai_credits", 0, NOW, True, ("session-existing",), ("local",))
+        self.controller.settings = replace(self.settings, max_inflight=1)
+        result = self.controller.launch("WP-101", NOW)
+        self.assertEqual(result["action"], "reused-existing-worker")
+        self.assertFalse(self.backend.launches)
+        self.assertEqual(self.ledger.get("WP-101")["identity"]["session_id"], "session-existing")
+
+    def test_failed_launch_retains_intent_and_never_retries_ambiguous_outcome(self):
+        self.backend.failure = PortError("fake transport timeout")
+        with self.assertRaises(PortError):
+            self.controller.launch("WP-101", NOW)
+        self.assertEqual(self.ledger.get("WP-101")["state"], "uncertain")
+        self.backend.failure = None
+        with self.assertRaises(PortError):
+            self.controller.launch("WP-101", NOW)
+        self.assertEqual(len(self.backend.launches), 1)
+
+    def test_failed_post_launch_verification_keeps_actual_returned_identity(self):
+        self.backend.failure = ReceiptError("session started from unexpected base", Identity(session_id="actual-created-session"))
+        with self.assertRaises(ReceiptError):
+            self.controller.launch("WP-101", NOW)
+        record = self.ledger.get("WP-101")
+        self.assertEqual(record["state"], "uncertain")
+        self.assertEqual(record["identity"]["session_id"], "actual-created-session")
+
+    def test_cross_backend_history_requires_an_explicit_complete_aggregate_meter(self):
+        self.claim("WP-102")
+        with self.ledger.transaction() as connection:
+            connection.execute("UPDATE leases SET backend='cloud'")
+        self.backend.usage_value = Usage("ai_credits", 0, NOW, True, (), ("local",))
+        with self.assertRaisesRegex(PortError, "Cross-backend"):
+            self.controller.claim("WP-101", NOW)
+        self.assertFalse(self.backend.launches)
+
+    def test_merged_dependency_with_reconciled_evidence_unlocks_not_a_closed_issue(self):
+        self.manifest.wp("WP-101")["depends_on"] = ["WP-004"]
+        self.manifest.wp("WP-004")["verification"] = {
+            "configured": True, "commands": [["python", "fixture-only"]], "blocker": "",
+        }
+        value = bundle(self.manifest, self.policy, "WP-004")
+        self.controller.authority = FakeAuthority({"WP-004": value})
+        self.claim("WP-004", attempt="dependency-attempt")
+        identity = Identity(session_id="dependency-session", pr_number=123)
+        self.ledger.transition("WP-004", "dependency-attempt", "dispatching")
+        self.ledger.transition("WP-004", "dependency-attempt", "review_wait", identity)
+        from controller.gates import verify_completion
+
+        proof = verify_completion(value.pr, value.evidence, value.review, value.approvals,
+                                  value.binding, self.manifest, self.policy, value.catalog)
+        self.ledger.complete("WP-004", "dependency-attempt", proof, True)
+        self.controller.launch("WP-101", NOW)
+        self.assertEqual(len(self.backend.launches), 1)
+        self.controller.authority = FakeAuthority({"WP-004": replace(value, pr={**value.pr, "merged": False})})
+        with self.assertRaises(PortError):
+            self.controller.launch("WP-101", NOW)
+        self.assertEqual(len(self.backend.launches), 1)
+
+    def test_authoritative_receipt_recovers_unknown_prior_launch_without_duplicate(self):
+        self.backend.failure = PortError("response lost")
+        with self.assertRaises(PortError):
+            self.controller.launch("WP-101", NOW)
+        self.backend.observation = Observation(Identity(session_id="actual-session", pr_number=123), "in_progress", True, True)
+        result = self.controller.launch("WP-101", NOW)
+        self.assertEqual(result["action"], "reconciled-existing-worker")
+        self.assertEqual(self.ledger.get("WP-101")["state"], "running")
+        self.assertEqual(len(self.backend.launches), 1)
+
+    def test_assignment_confirmation_is_not_a_fabricated_launch(self):
+        class AssignmentBackend(FakeBackend):
+            name = "cloud"
+
+            def launch(inner, wp_id, attempt):
+                inner.launches.append((wp_id, attempt))
+                return Observation(Identity(issue_number=7), "assignment_accepted", False, True)
+
+        rules = policy("cloud")
+        backend = AssignmentBackend()
+        controller = Controller(self.manifest, rules, settings(self.path, "cloud"), self.ledger, backend)
+        result = controller.launch("WP-101", NOW)
+        self.assertEqual(result["action"], "assignment-accepted-task-unconfirmed")
+        self.assertEqual(self.ledger.get("WP-101")["state"], "dispatching")
+        self.assertIsNone(result["identity"]["task_id"])
+
+    def test_idle_draft_or_completed_task_without_pr_is_not_completion(self):
+        identity = self.running()
+        self.controller.observe("WP-101", "attempt-1", Observation(identity, "idle", True, True))
+        self.assertEqual(self.ledger.get("WP-101")["state"], "running")
+        with self.assertRaises(PortError):
+            self.controller.completed("WP-101")
+        with self.assertRaisesRegex(PortError, "no implementation PR"):
+            self.controller.observe("WP-101", "attempt-1", Observation(Identity(session_id="session-1"), "completed", False, True))
+        self.assertNotEqual(self.ledger.get("WP-101")["state"], "completed")
+
+    def test_supervised_and_unconfigured_targets_cannot_auto_dispatch(self):
+        for wp_id in ("WP-000", "WP-001", "WP-002", "WP-003", "WP-102"):
+            with self.subTest(wp_id=wp_id), self.assertRaises(PortError):
+                self.controller.launch(wp_id, NOW)
+        self.assertFalse(self.backend.launches)
+
+    def test_missing_dependency_is_not_replaced_by_closed_issue(self):
+        self.manifest.wp("WP-101")["depends_on"] = ["WP-004"]
+        with self.assertRaisesRegex(PortError, "no verified merged-PR"):
+            self.controller.launch("WP-101", NOW)
+        self.assertFalse(self.backend.launches)
+
+    def test_pause_missing_budget_or_auth_prevents_any_backend_action(self):
+        for kind in ("pause", "budget", "auth"):
+            rules = copy.deepcopy(self.policy)
+            value = replace(self.settings, mode="cloud")
+            backend = FakeBackend()
+            backend.name = "cloud"
+            if kind == "pause":
+                rules["paused"] = True
+            elif kind == "budget":
+                value = replace(value, budget=None)
+            else:
+                value = replace(value, auth_kind="installation", token=None)
+            controller = Controller(self.manifest, rules, value, self.ledger, backend)
+            with self.subTest(kind=kind), self.assertRaises(PortError):
+                controller.launch("WP-101", NOW)
+            self.assertFalse(backend.launches)
+            self.assertFalse(backend.preflights)
+
+    def test_release_requires_actual_terminal_identity_and_no_open_pr_even_when_paused(self):
+        identity = self.running()
+        for observation in (
+            Observation(identity, "idle", False, True),
+            Observation(identity, "completed", True, True),
+            Observation(identity, "failed", False, False),
+            Observation(Identity(session_id="wrong"), "failed", False, True),
+        ):
+            self.backend.observation = observation
+            with self.subTest(observation=observation), self.assertRaises(PortError):
+                self.controller.release("WP-101")
+        self.policy["paused"] = True
+        self.backend.observation = Observation(identity, "failed", False, True)
+        self.controller.release("WP-101")
+        self.assertEqual(self.ledger.get("WP-101")["state"], "pending")
+
+    def test_bounded_repairs_reuse_identity_and_pending_repair_blocks_another(self):
+        identity = self.reviewed()
+        for round_number in range(1, 4):
+            result = self.controller.repair("WP-101", f"bounded fix {round_number}", NOW)
+            self.assertEqual(result["round"], round_number)
+            self.assertEqual(self.backend.repairs[-1][0], identity)
+            with self.assertRaises(PortError):
+                self.controller.repair("WP-101", "not another while pending", NOW)
+            self.controller.observe("WP-101", "attempt-1", self.backend.observation)
+        with self.assertRaisesRegex(PortError, "needs-human"):
+            self.controller.repair("WP-101", "fourth", NOW)
+        self.assertEqual(len(self.backend.repairs), 3)
+        self.assertEqual(self.ledger.get("WP-101")["state"], "blocked")
+
+    def test_pause_and_budget_block_repairs_without_delivery(self):
+        self.reviewed()
+        self.policy["paused"] = True
+        with self.assertRaises(PortError):
+            self.controller.repair("WP-101", "fix", NOW)
+        self.policy["paused"] = False
+        self.backend.usage_value = Usage("ai_credits", 96, NOW, True, (), ("local",))
+        with self.assertRaises(PortError):
+            self.controller.repair("WP-101", "fix", NOW)
+        self.assertFalse(self.backend.repairs)
+
+    def test_current_base_repair_rebinding_preserves_worker_and_invalidates_old_binding(self):
+        identity = self.reviewed()
+        previous = self.ledger.get("WP-101")["binding"]
+        self.backend.base = HEAD
+        self.controller.repair("WP-101", "rebase same worker", NOW)
+        current = self.ledger.get("WP-101")
+        self.assertEqual(current["binding"]["base_sha"], HEAD)
+        self.assertNotEqual(current["binding"], previous)
+        self.assertEqual(current["identity"], identity.as_dict())
+        self.assertIsNone(current["completion"])
+
+    def test_completion_requires_authoritative_bundle_actual_finished_worker_and_merged_evidence(self):
+        identity = self.reviewed()
+        value = bundle(self.manifest, self.policy, "WP-101")
+        self.controller.authority = FakeAuthority({"WP-101": replace(value, authoritative=False)})
+        with self.assertRaises(PortError):
+            self.controller.record_completion("WP-101")
+        self.controller.authority = FakeAuthority({"WP-101": replace(value, pr={**value.pr, "merged": False})})
+        with self.assertRaises(PortError):
+            self.controller.record_completion("WP-101")
+        self.controller.authority = FakeAuthority({"WP-101": value})
+        self.backend.observation = Observation(identity, "idle", True, True)
+        with self.assertRaises(PortError):
+            self.controller.record_completion("WP-101")
+        self.backend.observation = Observation(identity, "completed", False, True)
+        proof = self.controller.record_completion("WP-101")
+        self.assertEqual(self.ledger.get("WP-101")["state"], "completed")
+        self.assertEqual(self.controller.completed("WP-101"), proof)
+        self.controller.authority = FakeAuthority({"WP-101": replace(value, pr={**value.pr, "merged": False})})
+        with self.assertRaises(PortError):
+            self.controller.completed("WP-101")
+
+    def test_supervised_receipt_import_is_explicit_idempotent_and_not_a_launch(self):
+        manifest = test_manifest("WP-000")
+        value = bundle(manifest, self.policy, "WP-000")
+        controller = Controller(manifest, self.policy, self.settings, self.ledger, self.backend,
+                                FakeAuthority({"WP-000": value}))
+        identity = Identity(pr_number=123)
+        first = controller.import_supervised_completion("WP-000", identity)
+        self.assertEqual(controller.import_supervised_completion("WP-000", identity), first)
+        self.assertEqual(self.ledger.get("WP-000")["backend"], "supervised")
+        self.assertFalse(self.backend.launches)
+        controller.authority = FakeAuthority({"WP-000": replace(value, pr={**value.pr, "merged": False})})
+        with self.assertRaises(PortError):
+            controller.import_supervised_completion("WP-000", identity)
+        with self.assertRaises(PortError):
+            controller.import_supervised_completion("WP-101", identity)
+
+    def test_mutation_intent_is_persistent_and_cannot_blindly_repeat(self):
+        payload = {"body": "fixture issue"}
+        _, acquired = self.ledger.begin_operation("issue:WP-101", payload)
+        self.assertTrue(acquired)
+        with self.assertRaisesRegex(PortError, "Uncertain"):
+            self.ledger.begin_operation("issue:WP-101", payload)
+        self.ledger.confirm_operation("issue:WP-101", {"issue_number": 7})
+        receipt, acquired = self.ledger.begin_operation("issue:WP-101", payload)
+        self.assertFalse(acquired)
+        self.assertEqual(receipt["issue_number"], 7)
+        with self.assertRaises(PortError):
+            self.ledger.begin_operation("issue:WP-101", {"body": "different"})
+
+    def test_serialized_merge_lane_retains_uncertainty_and_reconciles_only_real_receipt(self):
+        payload = {"pr_number": 123, "head_sha": HEAD}
+        _, acquired = self.ledger.begin_merge(payload)
+        self.assertTrue(acquired)
+        with self.assertRaisesRegex(PortError, "Serialized"):
+            self.ledger.begin_merge({"pr_number": 124, "head_sha": HEAD})
+        self.ledger.confirm_operation("merge-lane", {"merged": True, "sha": BASE})
+        receipt, acquired = self.ledger.begin_merge(payload)
+        self.assertFalse(acquired)
+        self.assertTrue(receipt["merged"])
+        _, acquired = self.ledger.begin_merge({"pr_number": 124, "head_sha": HEAD})
+        self.assertTrue(acquired)
+
+    def test_merge_lane_recovery_requires_verified_matching_real_merge(self):
+        payload = {"pr_number": 123, "head_sha": HEAD}
+        self.ledger.begin_merge(payload)
+        for receipt, authoritative in (({"merged": False, "sha": BASE}, True),
+                                       ({"merged": True, "sha": BASE}, False),
+                                       ({"merged": True, "sha": "invented"}, True)):
+            with self.subTest(receipt=receipt), self.assertRaises(PortError):
+                self.ledger.recover_merge(payload, receipt, authoritative)
+        self.assertFalse(self.ledger.recover_merge({"pr_number": 124}, {"merged": True, "sha": BASE}, True))
+        with self.assertRaises(PortError):
+            self.ledger.begin_merge({"pr_number": 124})
+        self.assertTrue(self.ledger.recover_merge(payload, {"merged": True, "sha": BASE}, True))
+        self.assertTrue(self.ledger.begin_merge({"pr_number": 124})[1])

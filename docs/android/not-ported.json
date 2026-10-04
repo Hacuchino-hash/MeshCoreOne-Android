@@ -1,0 +1,438 @@
+{
+  "schema_version": 1,
+  "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "entries": [
+    {
+      "path": ".github/FUNDING.yml",
+      "blob_sha": "0353cf1ee177e6ab77a4b0ab920b6ff887e02fdc",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".github/workflows/build-ipa.yml",
+      "blob_sha": "213e865eab5563e7427912b95d86a808f5a7fc94",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".github/workflows/lint.yml",
+      "blob_sha": "300f6437ce31a1806c5bfb09cb0c64421db50498",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".github/workflows/pr-checklist.yml",
+      "blob_sha": "4818cabd79d6bdd193005af74c1366d4a287c717",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "blob_sha": "fc4d65b8cb20c898bc39c697700f4ea6d352a520",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".github/workflows/testflight.yml",
+      "blob_sha": "51af43c7e4ae0142d8499b2a880285167b19ee69",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".swiftformat",
+      "blob_sha": "193857fb2b4b38cc7295640eb752a43bfe08153e",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": ".swiftlint.yml",
+      "blob_sha": "41427aa103806c04a2b288abcad4ed224b3ca569",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-003",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Extensions/Errors/StoreServiceError+UserFacingMessage.swift",
+      "blob_sha": "b9b805b608d262d069c9c685beb9562149b00f01",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Info-Debug.plist",
+      "blob_sha": "d860fb080f9e13820910827033356db9a690b1bf",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-407",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Info.plist",
+      "blob_sha": "4f7df94ad50206545e39531fa4c2f6416c280925",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-407",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Resources/Generated/.gitkeep",
+      "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "reason_code": "generated-swift",
+      "adaptation_wp": "WP-005",
+      "review_basis": "Approved plan section 4.2 distinguishes generated Swift output from authoritative localization inputs.",
+      "android_adaptation": "Regenerate Android strings/plurals from all app/widget inputs; never hand-port generated L10n.swift."
+    },
+    {
+      "path": "MC1/Resources/Generated/L10n.swift",
+      "blob_sha": "ad801edfb33a5df11ec971ead4fb54bf5715e5c9",
+      "reason_code": "generated-swift",
+      "adaptation_wp": "WP-005",
+      "review_basis": "Approved plan section 4.2 distinguishes generated Swift output from authoritative localization inputs.",
+      "android_adaptation": "Regenerate Android strings/plurals from all app/widget inputs; never hand-port generated L10n.swift."
+    },
+    {
+      "path": "MC1/Resources/Localization/en.lproj/.gitkeep",
+      "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Resources/Localization/nl.lproj/.gitkeep",
+      "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Resources/PrivacyInfo.xcprivacy",
+      "blob_sha": "c3cce4b617d9fd00ccd12795a01d34651e2792cc",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-407",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/State/PendingPurchase.swift",
+      "blob_sha": "e446084d49d5263e6d380198e4054b46f4d48709",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/State/StoreState.swift",
+      "blob_sha": "33d89ed391d8e5c352fb9b695e6a47bba56090cd",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Sidebar/SidebarBackgroundExtension.swift",
+      "blob_sha": "12ca8ff9703dc7dda3f31b94f893d9dd55cb0b9b",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-302",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1/Views/Support/Components/ContributionRow.swift",
+      "blob_sha": "27ea2e2c6e7a3bded61307a2446bd548ef36e746",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/Components/ThemeBundleCard.swift",
+      "blob_sha": "b429b6b6fe2e0fdb2f2b7fc053aa5e96f6769839",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/PurchaseThankYouSheet.swift",
+      "blob_sha": "551590bbc39166acb19ff2334fc442ee06380c8c",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/Sections/ContributionsSection.swift",
+      "blob_sha": "a8b837d90a6bae1156f08ff5ac0bb8c25b972b76",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/Sections/PendingPurchaseBanner.swift",
+      "blob_sha": "28e9a66802dc056ff94bd065a3e3bd6479271093",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/Sections/RefundLinkSection.swift",
+      "blob_sha": "acb1a8760f65eb925e28b0a298587d85a672f5e3",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1/Views/Support/Sections/ThemesPurchaseSection.swift",
+      "blob_sha": "c8d1db3d1b638bf52d41cc6690aa50fbbeab9eae",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Package.swift",
+      "blob_sha": "c2978fe847273199236e8dfb3782dda4fc2af9b0",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Errors/StoreServiceError.swift",
+      "blob_sha": "433707ed1708b34171e3ef68c3577b3ed650696b",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/StoreCatalog.swift",
+      "blob_sha": "db08a506d241bf491286414ca78d314ed5f07e42",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/StoreLoadState.swift",
+      "blob_sha": "c362bd0f483d13fade048c08273d8a35e3f32805",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/StorePurchaseOutcome.swift",
+      "blob_sha": "e658bf20fa1707068eebc13df431470c5cf9e806",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/StoreService.swift",
+      "blob_sha": "890fdc21aa46981cb0c79157e7843e239e9a8af4",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/StoreCatalogTests.swift",
+      "blob_sha": "fba6e701511a54c9f4bc6b20e2baca331bf8bb6c",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/StoreServiceErrorTests.swift",
+      "blob_sha": "b130b8bca3f62de3c7d82ef8be79404d82f76356",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/AppState/MacOSPairingRecoveryTests.swift",
+      "blob_sha": "d217b43074c13650c1d6047dfb618ee153cb12f4",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-206",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1Tests/Helpers/StoreKitTestPurchase.swift",
+      "blob_sha": "34f5a5635e59ea3f42661a8ad2b24bcb04facb43",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/Info.plist",
+      "blob_sha": "a8e75f416b41d8292462175358d7f95b4bf09fbf",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-004",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MC1Tests/MC1.storekit",
+      "blob_sha": "695ce3e2687733f37a175b2532e8111d4a0bfa03",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/RefundLinkSectionTests.swift",
+      "blob_sha": "59cd86681de94d698f40734ca47e896376974102",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/StoreEntitlementFoldTests.swift",
+      "blob_sha": "8061b906f0fc3474730ee70f151684b210d02626",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/StoreKitTestAvailability.swift",
+      "blob_sha": "104ec4afde922fca3ac7312ae58a788961fc6dc7",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/StoreServiceTests.swift",
+      "blob_sha": "021c6d74e503145d2895a8c67fbdd7c01ba075a9",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Tests/StoreStateTests.swift",
+      "blob_sha": "81ec0dfdaa9ba091d38e4441030312d77c17ac79",
+      "reason_code": "removed-billing",
+      "adaptation_wp": "WP-318",
+      "review_basis": "Approved plan sections 2, 3.3 and 9 remove StoreKit, purchases, refunds and entitlements.",
+      "android_adaptation": "No billing implementation; all ten themes unlocked. Retain non-purchase support links and license notices."
+    },
+    {
+      "path": "MC1Widgets/Info.plist",
+      "blob_sha": "6cae18783a910f26f68ebb10f81d89c51f9d902d",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-403",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "Makefile",
+      "blob_sha": "2a86a5b1dc3f35589354c3b1afd5c7ff9a1a1e7c",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MeshCore/.gitignore",
+      "blob_sha": "50d1d7dc78b8280a6c29489fc6588f768521f2bc",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "MeshCore/Package.swift",
+      "blob_sha": "3e02fdaf65f4c10598dab7e8ee5d262effd1bc06",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "ci/sideload.xcconfig",
+      "blob_sha": "e99f2c7983526df1e28b917c1493030222541464",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-506",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "docs/api/.gitkeep",
+      "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "docs/guides/.gitkeep",
+      "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "fastlane/Appfile",
+      "blob_sha": "48256382bd370fd151e7cd1bf06cd5040ef912b9",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-506",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "fastlane/Fastfile",
+      "blob_sha": "e562dbd0e5ee972f8234e5265960a6f3eec2f3e2",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-506",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "fastlane/Matchfile",
+      "blob_sha": "d5ec91d6d312f91782800269cf553d6db935c257",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-506",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    },
+    {
+      "path": "project.yml",
+      "blob_sha": "d0ccd838bfa31c8a1cd18b6bb11ba16661298991",
+      "reason_code": "apple-only-glue",
+      "adaptation_wp": "WP-002",
+      "review_basis": "Approved plan sections 3.3, 4.2 and 9 permit reviewed native adaptation of Apple build/platform glue, not loss of features.",
+      "android_adaptation": "Do not copy Apple-specific glue. Extract its applicable behavior/permissions/notices and verify the native Android counterpart at the adaptation WP."
+    }
+  ]
+}
