@@ -1,0 +1,2767 @@
+{
+  "inputs": [
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 6,
+          "name": "ACLParser",
+          "source_declaration": "enum ACLParser {"
+        },
+        {
+          "kind": "func",
+          "line": 14,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> [ACLEntry] {"
+        },
+        {
+          "kind": "var",
+          "line": 15,
+          "name": "entries",
+          "source_declaration": "var entries: [ACLEntry] = []"
+        },
+        {
+          "kind": "var",
+          "line": 16,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 19,
+          "name": "keyPrefix",
+          "source_declaration": "let keyPrefix = Data(data[offset..<offset + 6])"
+        },
+        {
+          "kind": "let",
+          "line": 20,
+          "name": "permissions",
+          "source_declaration": "let permissions = data[offset + 6]"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/BinaryParsers.kt"
+      ],
+      "source_blob_sha": "7e9aef28e7c532e331035a25d33b002c23294874",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/ACLParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 6,
+          "name": "MMAParser",
+          "source_declaration": "enum MMAParser {"
+        },
+        {
+          "kind": "func",
+          "line": 16,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> [MMAEntry] {"
+        },
+        {
+          "kind": "var",
+          "line": 17,
+          "name": "entries",
+          "source_declaration": "var entries: [MMAEntry] = []"
+        },
+        {
+          "kind": "var",
+          "line": 18,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 23,
+          "name": "channel",
+          "source_declaration": "let channel = data[offset]"
+        },
+        {
+          "kind": "let",
+          "line": 24,
+          "name": "typeCode",
+          "source_declaration": "let typeCode = data[offset + 1]"
+        },
+        {
+          "kind": "let",
+          "line": 29,
+          "name": "valueSize",
+          "source_declaration": "let valueSize = sensorType.dataSize"
+        },
+        {
+          "kind": "let",
+          "line": 32,
+          "name": "minData",
+          "source_declaration": "let minData = data.subdata(in: offset..<(offset + valueSize))"
+        },
+        {
+          "kind": "let",
+          "line": 34,
+          "name": "maxData",
+          "source_declaration": "let maxData = data.subdata(in: offset..<(offset + valueSize))"
+        },
+        {
+          "kind": "let",
+          "line": 36,
+          "name": "avgData",
+          "source_declaration": "let avgData = data.subdata(in: offset..<(offset + valueSize))"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "minValue",
+          "source_declaration": "let minValue = decodeToDouble(type: sensorType, data: minData)"
+        },
+        {
+          "kind": "let",
+          "line": 40,
+          "name": "maxValue",
+          "source_declaration": "let maxValue = decodeToDouble(type: sensorType, data: maxData)"
+        },
+        {
+          "kind": "let",
+          "line": 41,
+          "name": "avgValue",
+          "source_declaration": "let avgValue = decodeToDouble(type: sensorType, data: avgData)"
+        },
+        {
+          "kind": "func",
+          "line": 61,
+          "name": "decodeToDouble",
+          "source_declaration": "private static func decodeToDouble(type: LPPSensorType, data: Data) -> Double {"
+        },
+        {
+          "kind": "func",
+          "line": 100,
+          "name": "readInt16BE",
+          "source_declaration": "private static func readInt16BE(_ data: Data, offset: Int = 0) -> Int16 {"
+        },
+        {
+          "kind": "func",
+          "line": 106,
+          "name": "readInt24BE",
+          "source_declaration": "private static func readInt24BE(_ data: Data, offset: Int = 0) -> Int32 {"
+        },
+        {
+          "kind": "var",
+          "line": 108,
+          "name": "value",
+          "source_declaration": "var value = Int32(data[offset]) << 16"
+        },
+        {
+          "kind": "func",
+          "line": 119,
+          "name": "readUInt16BE",
+          "source_declaration": "private static func readUInt16BE(_ data: Data, offset: Int = 0) -> UInt16 {"
+        },
+        {
+          "kind": "func",
+          "line": 125,
+          "name": "readUInt32BE",
+          "source_declaration": "private static func readUInt32BE(_ data: Data, offset: Int = 0) -> UInt32 {"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/BinaryParsers.kt"
+      ],
+      "source_blob_sha": "e2d7e8f8b4b1ebafff05f0ee9e3ba7e9dcfedc84",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/MMAParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 6,
+          "name": "NeighboursParser",
+          "source_declaration": "public enum NeighboursParser {"
+        },
+        {
+          "kind": "func",
+          "line": 20,
+          "name": "parse",
+          "source_declaration": "public static func parse("
+        },
+        {
+          "kind": "let",
+          "line": 35,
+          "name": "totalCount",
+          "source_declaration": "let totalCount = Int(data.readInt16LE(at: 0))"
+        },
+        {
+          "kind": "let",
+          "line": 36,
+          "name": "resultsCount",
+          "source_declaration": "let resultsCount = Int(data.readInt16LE(at: 2))"
+        },
+        {
+          "kind": "var",
+          "line": 38,
+          "name": "neighbours",
+          "source_declaration": "var neighbours: [Neighbour] = []"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "entrySize",
+          "source_declaration": "let entrySize = prefixLength + 4 + 1 // pubkey + secs_ago + snr"
+        },
+        {
+          "kind": "var",
+          "line": 40,
+          "name": "offset",
+          "source_declaration": "var offset = 4"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "keyPrefix",
+          "source_declaration": "let keyPrefix = Data(data[offset..<(offset + prefixLength)])"
+        },
+        {
+          "kind": "let",
+          "line": 48,
+          "name": "secondsAgo",
+          "source_declaration": "let secondsAgo = Int(data.readInt32LE(at: offset))"
+        },
+        {
+          "kind": "let",
+          "line": 51,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[offset])) / 4.0"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/BinaryParsers.kt"
+      ],
+      "source_blob_sha": "5e4ee153b019cc51c96bdd6ff46d7bff02a96ee4",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/NeighboursParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 13,
+          "name": "PacketParser",
+          "source_declaration": "public enum PacketParser {"
+        },
+        {
+          "kind": "func",
+          "line": 23,
+          "name": "parse",
+          "source_declaration": "public static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 32,
+          "name": "payload",
+          "source_declaration": "let payload = Data(data.dropFirst())"
+        },
+        {
+          "kind": "func",
+          "line": 65,
+          "name": "parseSimpleResponse",
+          "source_declaration": "private static func parseSimpleResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 75,
+          "name": "errorCode",
+          "source_declaration": "let errorCode = payload.first"
+        },
+        {
+          "kind": "func",
+          "line": 93,
+          "name": "parseDeviceResponse",
+          "source_declaration": "private static func parseDeviceResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 109,
+          "name": "level",
+          "source_declaration": "let level = Int(payload.readUInt16LE(at: 0))"
+        },
+        {
+          "kind": "var",
+          "line": 110,
+          "name": "usedKB",
+          "source_declaration": "var usedKB: Int?"
+        },
+        {
+          "kind": "var",
+          "line": 111,
+          "name": "totalKB",
+          "source_declaration": "var totalKB: Int?"
+        },
+        {
+          "kind": "let",
+          "line": 126,
+          "name": "timestamp",
+          "source_declaration": "let timestamp = payload.readUInt32LE(at: 0)"
+        },
+        {
+          "kind": "let",
+          "line": 157,
+          "name": "maxHops",
+          "source_declaration": "let maxHops: UInt8 = payload.count >= 2 ? payload[1] : 0"
+        },
+        {
+          "kind": "func",
+          "line": 181,
+          "name": "parseContactResponse",
+          "source_declaration": "private static func parseContactResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 199,
+          "name": "lastMod",
+          "source_declaration": "let lastMod = Date(timeIntervalSince1970: TimeInterval(payload.readUInt32LE(at: 0)))"
+        },
+        {
+          "kind": "let",
+          "line": 206,
+          "name": "hex",
+          "source_declaration": "let hex = payload.hexString"
+        },
+        {
+          "kind": "func",
+          "line": 224,
+          "name": "parseMessageResponse",
+          "source_declaration": "private static func parseMessageResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "func",
+          "line": 273,
+          "name": "parsePushNotification",
+          "source_declaration": "private static func parsePushNotification(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 282,
+          "name": "code",
+          "source_declaration": "let code = Data(payload.prefix(PacketSize.ackMinimum))"
+        },
+        {
+          "kind": "let",
+          "line": 283,
+          "name": "tripTime",
+          "source_declaration": "let tripTime: UInt32? = payload.count >= PacketSize.ackWithTripTime"
+        },
+        {
+          "kind": "func",
+          "line": 336,
+          "name": "parseLoginResponse",
+          "source_declaration": "private static func parseLoginResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 343,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix: Data? = payload.count >= 7 ? Data(payload[1..<7]) : nil"
+        },
+        {
+          "kind": "func",
+          "line": 361,
+          "name": "parseSigningResponse",
+          "source_declaration": "private static func parseSigningResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "func",
+          "line": 391,
+          "name": "parseMiscResponse",
+          "source_declaration": "private static func parseMiscResponse(_ code: ResponseCode, _ payload: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 397,
+          "name": "statsType",
+          "source_declaration": "let statsType = payload[0]"
+        },
+        {
+          "kind": "let",
+          "line": 398,
+          "name": "statsPayload",
+          "source_declaration": "let statsPayload = Data(payload.dropFirst())"
+        },
+        {
+          "kind": "case",
+          "line": 401,
+          "name": "StatsType",
+          "source_declaration": "case StatsType.core.rawValue:"
+        },
+        {
+          "kind": "case",
+          "line": 403,
+          "name": "StatsType",
+          "source_declaration": "case StatsType.radio.rawValue:"
+        },
+        {
+          "kind": "case",
+          "line": 405,
+          "name": "StatsType",
+          "source_declaration": "case StatsType.packets.rawValue:"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/PacketParser.kt"
+      ],
+      "source_blob_sha": "67415b52f2657edfe192e3f08ed301d3165bfac1",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/PacketParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 34,
+          "name": "LoginSuccess",
+          "source_declaration": "enum LoginSuccess {"
+        },
+        {
+          "kind": "func",
+          "line": 36,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 41,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix = Data(data[1..<7])"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "isAdmin",
+          "source_declaration": "let isAdmin = data[0] == 1"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "firmwarePermissions",
+          "source_declaration": "let firmwarePermissions = data[11]"
+        },
+        {
+          "kind": "let",
+          "line": 48,
+          "name": "normalizedPermissions",
+          "source_declaration": "let normalizedPermissions: UInt8 = if isAdmin {"
+        },
+        {
+          "kind": "let",
+          "line": 56,
+          "name": "serverEpoch",
+          "source_declaration": "let serverEpoch = data.readUInt32LE(at: 7)"
+        },
+        {
+          "kind": "let",
+          "line": 57,
+          "name": "serverTime",
+          "source_declaration": "let serverTime = serverEpoch == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(serverEpoch))"
+        },
+        {
+          "kind": "let",
+          "line": 70,
+          "name": "legacyIndicator",
+          "source_declaration": "let legacyIndicator = data[0]"
+        },
+        {
+          "kind": "let",
+          "line": 71,
+          "name": "permissions",
+          "source_declaration": "let permissions: UInt8"
+        },
+        {
+          "kind": "let",
+          "line": 72,
+          "name": "isAdmin",
+          "source_declaration": "let isAdmin: Bool"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "e9ad0d2d60b3bbb638bd71ae63b0d2cfb1e33e84",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Auth.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 7,
+          "name": "BinaryResponse",
+          "source_declaration": "enum BinaryResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 16,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 24,
+          "name": "tag",
+          "source_declaration": "let tag = Data(data[1..<5])"
+        },
+        {
+          "kind": "let",
+          "line": 25,
+          "name": "responseData",
+          "source_declaration": "let responseData = Data(data.dropFirst(5))"
+        },
+        {
+          "kind": "enum",
+          "line": 33,
+          "name": "PathDiscoveryResponse",
+          "source_declaration": "enum PathDiscoveryResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 44,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 54,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix = Data(data[1..<7])"
+        },
+        {
+          "kind": "var",
+          "line": 55,
+          "name": "offset",
+          "source_declaration": "var offset = 7"
+        },
+        {
+          "kind": "var",
+          "line": 57,
+          "name": "outPathLength",
+          "source_declaration": "var outPathLength: UInt8 = 0"
+        },
+        {
+          "kind": "var",
+          "line": 58,
+          "name": "outPath",
+          "source_declaration": "var outPath = Data()"
+        },
+        {
+          "kind": "var",
+          "line": 59,
+          "name": "inPathLength",
+          "source_declaration": "var inPathLength: UInt8 = 0"
+        },
+        {
+          "kind": "var",
+          "line": 60,
+          "name": "inPath",
+          "source_declaration": "var inPath = Data()"
+        },
+        {
+          "kind": "enum",
+          "line": 110,
+          "name": "ControlData",
+          "source_declaration": "enum ControlData {"
+        },
+        {
+          "kind": "func",
+          "line": 127,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 134,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[0])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 135,
+          "name": "rssi",
+          "source_declaration": "let rssi = Int(Int8(bitPattern: data[1]))"
+        },
+        {
+          "kind": "let",
+          "line": 136,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[2]"
+        },
+        {
+          "kind": "let",
+          "line": 137,
+          "name": "payloadType",
+          "source_declaration": "let payloadType = data[3]"
+        },
+        {
+          "kind": "let",
+          "line": 138,
+          "name": "payload",
+          "source_declaration": "let payload = Data(data.dropFirst(4))"
+        },
+        {
+          "kind": "let",
+          "line": 143,
+          "name": "nodeType",
+          "source_declaration": "let nodeType = payloadType & 0x0F"
+        },
+        {
+          "kind": "let",
+          "line": 144,
+          "name": "snrIn",
+          "source_declaration": "let snrIn = Double(Int8(bitPattern: payload[0])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 145,
+          "name": "tag",
+          "source_declaration": "let tag = Data(payload[1..<5])"
+        },
+        {
+          "kind": "let",
+          "line": 148,
+          "name": "pubkey",
+          "source_declaration": "let pubkey = if payload.count >= 37 {"
+        },
+        {
+          "kind": "enum",
+          "line": 180,
+          "name": "Signature",
+          "source_declaration": "enum Signature {"
+        },
+        {
+          "kind": "func",
+          "line": 182,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "eec6a3200d0225a96619d3567152ede05b76603f",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Binary.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 8,
+          "name": "DefaultFloodScope",
+          "source_declaration": "enum DefaultFloodScope {"
+        },
+        {
+          "kind": "func",
+          "line": 17,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 30,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 31,
+          "name": "nameField",
+          "source_declaration": "let nameField = Data(data[offset..<(offset + PacketSize.defaultFloodScopeNameField)])"
+        },
+        {
+          "kind": "let",
+          "line": 33,
+          "name": "nullIdx",
+          "source_declaration": "let nullIdx = nameField.firstIndex(of: 0) ?? nameField.endIndex"
+        },
+        {
+          "kind": "let",
+          "line": 34,
+          "name": "nameBytes",
+          "source_declaration": "let nameBytes = Data(nameField[..<nullIdx])"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "name",
+          "source_declaration": "let name: String"
+        },
+        {
+          "kind": "let",
+          "line": 47,
+          "name": "key",
+          "source_declaration": "let key = Data(data[offset..<(offset + PacketSize.defaultFloodScopeKeyBytes)])"
+        },
+        {
+          "kind": "enum",
+          "line": 56,
+          "name": "ChannelInfo",
+          "source_declaration": "enum ChannelInfo {"
+        },
+        {
+          "kind": "func",
+          "line": 62,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 69,
+          "name": "index",
+          "source_declaration": "let index = data[0]"
+        },
+        {
+          "kind": "let",
+          "line": 70,
+          "name": "nameData",
+          "source_declaration": "let nameData = data[1..<33]"
+        },
+        {
+          "kind": "let",
+          "line": 73,
+          "name": "nullIndex",
+          "source_declaration": "let nullIndex = nameData.firstIndex(of: 0) ?? nameData.endIndex"
+        },
+        {
+          "kind": "let",
+          "line": 74,
+          "name": "validNameData",
+          "source_declaration": "let validNameData = nameData[nameData.startIndex..<nullIndex]"
+        },
+        {
+          "kind": "let",
+          "line": 75,
+          "name": "name",
+          "source_declaration": "let name = String(decoding: validNameData, as: UTF8.self)"
+        },
+        {
+          "kind": "let",
+          "line": 77,
+          "name": "secret",
+          "source_declaration": "let secret = Data(data[33..<49])"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "9a2b51e52b5393ccd7fec3bb97c3c7a658e36643",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Channels.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "func",
+          "line": 20,
+          "name": "parseContactData",
+          "source_declaration": "static func parseContactData(_ data: Data) -> MeshContact? {"
+        },
+        {
+          "kind": "var",
+          "line": 23,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 24,
+          "name": "publicKey",
+          "source_declaration": "let publicKey = Data(data[offset..<offset + 32]); offset += 32"
+        },
+        {
+          "kind": "let",
+          "line": 25,
+          "name": "typeByte",
+          "source_declaration": "let typeByte = data[offset]"
+        },
+        {
+          "kind": "let",
+          "line": 26,
+          "name": "type",
+          "source_declaration": "let type = ContactType(rawValue: typeByte) ?? .chat; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 27,
+          "name": "flags",
+          "source_declaration": "let flags = ContactFlags(rawValue: data[offset]); offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 28,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 30,
+          "name": "actualPathLen",
+          "source_declaration": "let actualPathLen = (pathLen == 0xFF) ? 0 : (decodePathLen(pathLen)?.byteLength ?? 0)"
+        },
+        {
+          "kind": "let",
+          "line": 32,
+          "name": "pathBytes",
+          "source_declaration": "let pathBytes = Data(data[offset..<offset + 64])"
+        },
+        {
+          "kind": "let",
+          "line": 33,
+          "name": "path",
+          "source_declaration": "let path = actualPathLen > 0 ? Data(pathBytes.prefix(actualPathLen)) : Data()"
+        },
+        {
+          "kind": "let",
+          "line": 35,
+          "name": "nameField",
+          "source_declaration": "let nameField = data[offset..<offset + 32]"
+        },
+        {
+          "kind": "let",
+          "line": 38,
+          "name": "nullIndex",
+          "source_declaration": "let nullIndex = nameField.firstIndex(of: 0) ?? nameField.endIndex"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "name",
+          "source_declaration": "let name = Data(nameField[nameField.startIndex..<nullIndex])"
+        },
+        {
+          "kind": "let",
+          "line": 43,
+          "name": "lastAdvert",
+          "source_declaration": "let lastAdvert = Date(timeIntervalSince1970: TimeInterval(data.readUInt32LE(at: offset))); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 44,
+          "name": "lat",
+          "source_declaration": "let lat = Double(data.readInt32LE(at: offset)) / 1_000_000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "lon",
+          "source_declaration": "let lon = Double(data.readInt32LE(at: offset)) / 1_000_000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "lastMod",
+          "source_declaration": "let lastMod = Date(timeIntervalSince1970: TimeInterval(data.readUInt32LE(at: offset)))"
+        },
+        {
+          "kind": "enum",
+          "line": 67,
+          "name": "Contact",
+          "source_declaration": "enum Contact {"
+        },
+        {
+          "kind": "func",
+          "line": 72,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 74,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[34]"
+        },
+        {
+          "kind": "enum",
+          "line": 95,
+          "name": "Advertisement",
+          "source_declaration": "enum Advertisement {"
+        },
+        {
+          "kind": "func",
+          "line": 97,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 101,
+          "name": "publicKey",
+          "source_declaration": "let publicKey = Data(data.prefix(PacketBuilder.publicKeySize))"
+        },
+        {
+          "kind": "enum",
+          "line": 109,
+          "name": "NewAdvertisement",
+          "source_declaration": "enum NewAdvertisement {"
+        },
+        {
+          "kind": "func",
+          "line": 115,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "enum",
+          "line": 132,
+          "name": "PathUpdate",
+          "source_declaration": "enum PathUpdate {"
+        },
+        {
+          "kind": "func",
+          "line": 134,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 138,
+          "name": "publicKey",
+          "source_declaration": "let publicKey = Data(data.prefix(PacketBuilder.publicKeySize))"
+        },
+        {
+          "kind": "enum",
+          "line": 146,
+          "name": "ContactDeleted",
+          "source_declaration": "enum ContactDeleted {"
+        },
+        {
+          "kind": "func",
+          "line": 148,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 155,
+          "name": "publicKey",
+          "source_declaration": "let publicKey = Data(data.prefix(PacketSize.contactDeletedPublicKey))"
+        },
+        {
+          "kind": "enum",
+          "line": 163,
+          "name": "ContactsFull",
+          "source_declaration": "enum ContactsFull {"
+        },
+        {
+          "kind": "func",
+          "line": 165,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "de083148e75bf31af02f8c3356d7622c4626c60e",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Contacts.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 7,
+          "name": "SelfInfo",
+          "source_declaration": "enum SelfInfo {"
+        },
+        {
+          "kind": "func",
+          "line": 22,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 30,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 31,
+          "name": "advType",
+          "source_declaration": "let advType = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 32,
+          "name": "txPower",
+          "source_declaration": "let txPower = Int8(bitPattern: data[offset]); offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 33,
+          "name": "maxTxPower",
+          "source_declaration": "let maxTxPower = Int8(bitPattern: data[offset]); offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 34,
+          "name": "publicKey",
+          "source_declaration": "let publicKey = Data(data[offset..<offset + 32]); offset += 32"
+        },
+        {
+          "kind": "let",
+          "line": 35,
+          "name": "lat",
+          "source_declaration": "let lat = Double(data.readInt32LE(at: offset)) / 1_000_000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 36,
+          "name": "lon",
+          "source_declaration": "let lon = Double(data.readInt32LE(at: offset)) / 1_000_000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 37,
+          "name": "multiAcks",
+          "source_declaration": "let multiAcks = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 38,
+          "name": "advLocPolicy",
+          "source_declaration": "let advLocPolicy = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "telemetryMode",
+          "source_declaration": "let telemetryMode = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 40,
+          "name": "manualAdd",
+          "source_declaration": "let manualAdd = data[offset] > 0; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 41,
+          "name": "radioFreq",
+          "source_declaration": "let radioFreq = Double(data.readUInt32LE(at: offset)) / 1000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 42,
+          "name": "radioBW",
+          "source_declaration": "let radioBW = Double(data.readUInt32LE(at: offset)) / 1000; offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 43,
+          "name": "radioSF",
+          "source_declaration": "let radioSF = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 44,
+          "name": "radioCR",
+          "source_declaration": "let radioCR = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "name",
+          "source_declaration": "let name = String(data: data[offset...], encoding: .utf8)?"
+        },
+        {
+          "kind": "let",
+          "line": 48,
+          "name": "info",
+          "source_declaration": "let info = MeshCore.SelfInfo("
+        },
+        {
+          "kind": "enum",
+          "line": 74,
+          "name": "DeviceInfo",
+          "source_declaration": "enum DeviceInfo {"
+        },
+        {
+          "kind": "func",
+          "line": 88,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 93,
+          "name": "fwVer",
+          "source_declaration": "let fwVer = data[0]"
+        },
+        {
+          "kind": "var",
+          "line": 94,
+          "name": "offset",
+          "source_declaration": "var offset = 1"
+        },
+        {
+          "kind": "var",
+          "line": 95,
+          "name": "maxContacts",
+          "source_declaration": "var maxContacts: Int?"
+        },
+        {
+          "kind": "var",
+          "line": 96,
+          "name": "maxChannels",
+          "source_declaration": "var maxChannels: Int?"
+        },
+        {
+          "kind": "var",
+          "line": 97,
+          "name": "blePin",
+          "source_declaration": "var blePin: UInt32?"
+        },
+        {
+          "kind": "var",
+          "line": 98,
+          "name": "fwBuild",
+          "source_declaration": "var fwBuild: String?"
+        },
+        {
+          "kind": "var",
+          "line": 99,
+          "name": "model",
+          "source_declaration": "var model: String?"
+        },
+        {
+          "kind": "var",
+          "line": 100,
+          "name": "version",
+          "source_declaration": "var version: String?"
+        },
+        {
+          "kind": "let",
+          "line": 117,
+          "name": "fwBuildData",
+          "source_declaration": "let fwBuildData = data[offset..<offset + 12]"
+        },
+        {
+          "kind": "let",
+          "line": 121,
+          "name": "modelData",
+          "source_declaration": "let modelData = data[offset..<offset + 40]"
+        },
+        {
+          "kind": "let",
+          "line": 125,
+          "name": "versionData",
+          "source_declaration": "let versionData = data[offset..<offset + 20]"
+        },
+        {
+          "kind": "var",
+          "line": 132,
+          "name": "clientRepeat",
+          "source_declaration": "var clientRepeat = false"
+        },
+        {
+          "kind": "var",
+          "line": 139,
+          "name": "pathHashMode",
+          "source_declaration": "var pathHashMode: UInt8 = 0"
+        },
+        {
+          "kind": "enum",
+          "line": 161,
+          "name": "PrivateKey",
+          "source_declaration": "enum PrivateKey {"
+        },
+        {
+          "kind": "func",
+          "line": 163,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "enum",
+          "line": 177,
+          "name": "CustomVars",
+          "source_declaration": "enum CustomVars {"
+        },
+        {
+          "kind": "func",
+          "line": 181,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 182,
+          "name": "vars",
+          "source_declaration": "var vars: [String: String] = [:]"
+        },
+        {
+          "kind": "let",
+          "line": 189,
+          "name": "pairs",
+          "source_declaration": "let pairs = rawString.split(separator: \",\")"
+        },
+        {
+          "kind": "let",
+          "line": 191,
+          "name": "parts",
+          "source_declaration": "let parts = pair.split(separator: \":\", maxSplits: 1)"
+        },
+        {
+          "kind": "let",
+          "line": 193,
+          "name": "key",
+          "source_declaration": "let key = String(parts[0])"
+        },
+        {
+          "kind": "let",
+          "line": 194,
+          "name": "value",
+          "source_declaration": "let value = String(parts[1])"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "d9023f3a0ad285449416c509fa70542490dbf912",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Device.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 7,
+          "name": "TraceData",
+          "source_declaration": "public enum TraceData {"
+        },
+        {
+          "kind": "func",
+          "line": 26,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 35,
+          "name": "pathLength",
+          "source_declaration": "let pathLength = Int(data[1])"
+        },
+        {
+          "kind": "let",
+          "line": 36,
+          "name": "flags",
+          "source_declaration": "let flags = data[2]"
+        },
+        {
+          "kind": "let",
+          "line": 37,
+          "name": "pathSz",
+          "source_declaration": "let pathSz = Int(flags & 0x03)"
+        },
+        {
+          "kind": "let",
+          "line": 38,
+          "name": "hashSize",
+          "source_declaration": "let hashSize = 1 << pathSz // 1, 2, 4, or 8 bytes per hop"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "hopCount",
+          "source_declaration": "let hopCount = pathLength > 0 ? pathLength / hashSize : 0"
+        },
+        {
+          "kind": "let",
+          "line": 41,
+          "name": "tag",
+          "source_declaration": "let tag = data.readUInt32LE(at: 3)"
+        },
+        {
+          "kind": "let",
+          "line": 42,
+          "name": "authCode",
+          "source_declaration": "let authCode = data.readUInt32LE(at: 7)"
+        },
+        {
+          "kind": "let",
+          "line": 44,
+          "name": "hashesStart",
+          "source_declaration": "let hashesStart = 11"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "snrsStart",
+          "source_declaration": "let snrsStart = hashesStart + pathLength"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "finalSnrOffset",
+          "source_declaration": "let finalSnrOffset = snrsStart + hopCount"
+        },
+        {
+          "kind": "var",
+          "line": 56,
+          "name": "path",
+          "source_declaration": "var path: [TraceNode] = []"
+        },
+        {
+          "kind": "let",
+          "line": 60,
+          "name": "hashOffset",
+          "source_declaration": "let hashOffset = hashesStart + (i * hashSize)"
+        },
+        {
+          "kind": "let",
+          "line": 61,
+          "name": "hashBytes",
+          "source_declaration": "let hashBytes = Data(data[hashOffset..<(hashOffset + hashSize)])"
+        },
+        {
+          "kind": "let",
+          "line": 62,
+          "name": "snrOffset",
+          "source_declaration": "let snrOffset = snrsStart + i"
+        },
+        {
+          "kind": "let",
+          "line": 63,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[snrOffset])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 66,
+          "name": "isDestination",
+          "source_declaration": "let isDestination = hashBytes.allSatisfy { $0 == 0xFF }"
+        },
+        {
+          "kind": "let",
+          "line": 71,
+          "name": "finalSnr",
+          "source_declaration": "let finalSnr = Double(Int8(bitPattern: data[finalSnrOffset])) / 4.0"
+        },
+        {
+          "kind": "enum",
+          "line": 87,
+          "name": "RawData",
+          "source_declaration": "enum RawData {"
+        },
+        {
+          "kind": "func",
+          "line": 96,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 102,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[0])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 103,
+          "name": "rssi",
+          "source_declaration": "let rssi = Int(Int8(bitPattern: data[1]))"
+        },
+        {
+          "kind": "let",
+          "line": 105,
+          "name": "payload",
+          "source_declaration": "let payload = Data(data.dropFirst(3))"
+        },
+        {
+          "kind": "enum",
+          "line": 114,
+          "name": "LogData",
+          "source_declaration": "enum LogData {"
+        },
+        {
+          "kind": "func",
+          "line": 118,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 120,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[0])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 121,
+          "name": "rssi",
+          "source_declaration": "let rssi = Int(Int8(bitPattern: data[1]))"
+        },
+        {
+          "kind": "let",
+          "line": 122,
+          "name": "payload",
+          "source_declaration": "let payload = Data(data.dropFirst(2))"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "88b9defaaad18293945abeb591106a5fb3be69c3",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Diagnostics.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 8,
+          "name": "ContactMessage",
+          "source_declaration": "enum ContactMessage {"
+        },
+        {
+          "kind": "enum",
+          "line": 10,
+          "name": "Version",
+          "source_declaration": "enum Version { case v1, v3 }"
+        },
+        {
+          "kind": "func",
+          "line": 27,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data, version: Version) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 28,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "var",
+          "line": 29,
+          "name": "snr",
+          "source_declaration": "var snr: Double?"
+        },
+        {
+          "kind": "let",
+          "line": 31,
+          "name": "minSize",
+          "source_declaration": "let minSize = version == .v3 ? PacketSize.contactMessageV3Minimum : PacketSize.contactMessageV1Minimum"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix = Data(data[offset..<offset + 6]); offset += 6"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 47,
+          "name": "txtType",
+          "source_declaration": "let txtType = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 48,
+          "name": "timestamp",
+          "source_declaration": "let timestamp = Date(timeIntervalSince1970: TimeInterval(data.readUInt32LE(at: offset))); offset += 4"
+        },
+        {
+          "kind": "var",
+          "line": 50,
+          "name": "signature",
+          "source_declaration": "var signature: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 62,
+          "name": "textData",
+          "source_declaration": "let textData = Data(data[offset...])"
+        },
+        {
+          "kind": "let",
+          "line": 63,
+          "name": "text",
+          "source_declaration": "let text: String"
+        },
+        {
+          "kind": "enum",
+          "line": 86,
+          "name": "ChannelMessage",
+          "source_declaration": "enum ChannelMessage {"
+        },
+        {
+          "kind": "enum",
+          "line": 88,
+          "name": "Version",
+          "source_declaration": "enum Version { case v1, v3 }"
+        },
+        {
+          "kind": "func",
+          "line": 105,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data, version: Version) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 106,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "var",
+          "line": 107,
+          "name": "snr",
+          "source_declaration": "var snr: Double?"
+        },
+        {
+          "kind": "let",
+          "line": 109,
+          "name": "minSize",
+          "source_declaration": "let minSize = version == .v3 ? PacketSize.channelMessageV3Minimum : PacketSize.channelMessageV1Minimum"
+        },
+        {
+          "kind": "let",
+          "line": 123,
+          "name": "channelIndex",
+          "source_declaration": "let channelIndex = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 124,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 125,
+          "name": "txtType",
+          "source_declaration": "let txtType = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 126,
+          "name": "timestamp",
+          "source_declaration": "let timestamp = Date(timeIntervalSince1970: TimeInterval(data.readUInt32LE(at: offset))); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 129,
+          "name": "textData",
+          "source_declaration": "let textData = Data(data[offset...])"
+        },
+        {
+          "kind": "let",
+          "line": 130,
+          "name": "text",
+          "source_declaration": "let text: String"
+        },
+        {
+          "kind": "enum",
+          "line": 152,
+          "name": "ChannelDatagram",
+          "source_declaration": "enum ChannelDatagram {"
+        },
+        {
+          "kind": "func",
+          "line": 163,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 174,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 175,
+          "name": "snr",
+          "source_declaration": "let snr = Double(Int8(bitPattern: data[offset])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 178,
+          "name": "channelIndex",
+          "source_declaration": "let channelIndex = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 179,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[offset]; offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 180,
+          "name": "dataType",
+          "source_declaration": "let dataType = data.readUInt16LE(at: offset); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 181,
+          "name": "declared",
+          "source_declaration": "let declared = Int(data[offset]); offset += 1"
+        },
+        {
+          "kind": "let",
+          "line": 183,
+          "name": "remaining",
+          "source_declaration": "let remaining = data.count - offset"
+        },
+        {
+          "kind": "let",
+          "line": 184,
+          "name": "length",
+          "source_declaration": "let length = min(declared, remaining)"
+        },
+        {
+          "kind": "let",
+          "line": 185,
+          "name": "payload",
+          "source_declaration": "let payload = Data(data[offset..<offset + length])"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt",
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/ParserText.kt"
+      ],
+      "source_blob_sha": "12edb8d6a2f4cc2ffb9fe706036d95c34c458fed",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Messaging.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 12,
+          "name": "AdvertPathResponse",
+          "source_declaration": "enum AdvertPathResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 17,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 25,
+          "name": "timestamp",
+          "source_declaration": "let timestamp = data.readUInt32LE(at: 0)"
+        },
+        {
+          "kind": "let",
+          "line": 26,
+          "name": "pathLen",
+          "source_declaration": "let pathLen = data[4]"
+        },
+        {
+          "kind": "let",
+          "line": 33,
+          "name": "byteLen",
+          "source_declaration": "let byteLen = decoded.byteLength"
+        },
+        {
+          "kind": "let",
+          "line": 40,
+          "name": "path",
+          "source_declaration": "let path = Data(data.dropFirst(5).prefix(byteLen))"
+        },
+        {
+          "kind": "enum",
+          "line": 57,
+          "name": "TuningParamsResponse",
+          "source_declaration": "enum TuningParamsResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 62,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 70,
+          "name": "rxDelayRaw",
+          "source_declaration": "let rxDelayRaw = data.readUInt32LE(at: 0)"
+        },
+        {
+          "kind": "let",
+          "line": 71,
+          "name": "airtimeRaw",
+          "source_declaration": "let airtimeRaw = data.readUInt32LE(at: 4)"
+        },
+        {
+          "kind": "enum",
+          "line": 88,
+          "name": "AllowedRepeatFreq",
+          "source_declaration": "enum AllowedRepeatFreq {"
+        },
+        {
+          "kind": "func",
+          "line": 90,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 91,
+          "name": "ranges",
+          "source_declaration": "var ranges: [FrequencyRange] = []"
+        },
+        {
+          "kind": "var",
+          "line": 92,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 94,
+          "name": "lower",
+          "source_declaration": "let lower = data.readUInt32LE(at: offset)"
+        },
+        {
+          "kind": "let",
+          "line": 95,
+          "name": "upper",
+          "source_declaration": "let upper = data.readUInt32LE(at: offset + 4)"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "c18b0c374f35fd47874706fc10703d6c6204bc17",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Network.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 7,
+          "name": "CoreStats",
+          "source_declaration": "enum CoreStats {"
+        },
+        {
+          "kind": "func",
+          "line": 9,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 16,
+          "name": "batteryMV",
+          "source_declaration": "let batteryMV = data.readUInt16LE(at: 0)"
+        },
+        {
+          "kind": "let",
+          "line": 17,
+          "name": "uptime",
+          "source_declaration": "let uptime = data.readUInt32LE(at: 2)"
+        },
+        {
+          "kind": "let",
+          "line": 18,
+          "name": "errors",
+          "source_declaration": "let errors = data.readUInt16LE(at: 6)"
+        },
+        {
+          "kind": "let",
+          "line": 19,
+          "name": "queueLen",
+          "source_declaration": "let queueLen = data[8]"
+        },
+        {
+          "kind": "enum",
+          "line": 33,
+          "name": "RadioStats",
+          "source_declaration": "enum RadioStats {"
+        },
+        {
+          "kind": "func",
+          "line": 35,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 42,
+          "name": "noiseFloor",
+          "source_declaration": "let noiseFloor = data.readInt16LE(at: 0)"
+        },
+        {
+          "kind": "let",
+          "line": 43,
+          "name": "lastRSSI",
+          "source_declaration": "let lastRSSI = Int8(bitPattern: data[2])"
+        },
+        {
+          "kind": "let",
+          "line": 44,
+          "name": "lastSNR",
+          "source_declaration": "let lastSNR = Double(Int8(bitPattern: data[3])) / 4.0"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "txAir",
+          "source_declaration": "let txAir = data.readUInt32LE(at: 4)"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "rxAir",
+          "source_declaration": "let rxAir = data.readUInt32LE(at: 8)"
+        },
+        {
+          "kind": "enum",
+          "line": 61,
+          "name": "PacketStats",
+          "source_declaration": "enum PacketStats {"
+        },
+        {
+          "kind": "func",
+          "line": 63,
+          "name": "parse",
+          "source_declaration": "static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 70,
+          "name": "receiveErrors",
+          "source_declaration": "let receiveErrors: UInt32 = data.count >= PacketSize.packetStatsWithReceiveErrors"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "a73a3af00ef40dece871ed5698d375f338872fd6",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Stats.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 7,
+          "name": "StatusResponse",
+          "source_declaration": "enum StatusResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 25,
+          "name": "parse",
+          "source_declaration": "public static func parse(_ data: Data, layout: MeshCore.StatusResponse.Layout = .repeater) -> MeshEvent {"
+        },
+        {
+          "kind": "var",
+          "line": 33,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 35,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix = Data(data[offset..<offset + 6]); offset += 6"
+        },
+        {
+          "kind": "let",
+          "line": 36,
+          "name": "battery",
+          "source_declaration": "let battery = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 37,
+          "name": "txQueueLen",
+          "source_declaration": "let txQueueLen = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 38,
+          "name": "noiseFloor",
+          "source_declaration": "let noiseFloor = Int(data.readInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 39,
+          "name": "lastRSSI",
+          "source_declaration": "let lastRSSI = Int(data.readInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 40,
+          "name": "packetsRecv",
+          "source_declaration": "let packetsRecv = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 41,
+          "name": "packetsSent",
+          "source_declaration": "let packetsSent = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 42,
+          "name": "airtime",
+          "source_declaration": "let airtime = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 43,
+          "name": "uptime",
+          "source_declaration": "let uptime = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 44,
+          "name": "sentFlood",
+          "source_declaration": "let sentFlood = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 45,
+          "name": "sentDirect",
+          "source_declaration": "let sentDirect = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 46,
+          "name": "recvFlood",
+          "source_declaration": "let recvFlood = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 47,
+          "name": "recvDirect",
+          "source_declaration": "let recvDirect = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 48,
+          "name": "fullEvents",
+          "source_declaration": "let fullEvents = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 49,
+          "name": "lastSNR",
+          "source_declaration": "let lastSNR = Double(data.readInt16LE(at: offset)) / 4.0; offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 50,
+          "name": "directDups",
+          "source_declaration": "let directDups = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 51,
+          "name": "floodDups",
+          "source_declaration": "let floodDups = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 54,
+          "name": "rxAirtime",
+          "source_declaration": "let rxAirtime = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 55,
+          "name": "receiveErrors",
+          "source_declaration": "let receiveErrors: UInt32 = data.count >= offset + 4 ? data.readUInt32LE(at: offset) : 0"
+        },
+        {
+          "kind": "let",
+          "line": 81,
+          "name": "postedCount",
+          "source_declaration": "let postedCount: UInt16? = data.count >= offset + 4"
+        },
+        {
+          "kind": "let",
+          "line": 83,
+          "name": "postPushCount",
+          "source_declaration": "let postPushCount: UInt16? = data.count >= offset + 4"
+        },
+        {
+          "kind": "func",
+          "line": 140,
+          "name": "parseFromBinaryResponse",
+          "source_declaration": "public static func parseFromBinaryResponse("
+        },
+        {
+          "kind": "var",
+          "line": 149,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 150,
+          "name": "battery",
+          "source_declaration": "let battery = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 151,
+          "name": "txQueueLen",
+          "source_declaration": "let txQueueLen = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 152,
+          "name": "noiseFloor",
+          "source_declaration": "let noiseFloor = Int(data.readInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 153,
+          "name": "lastRSSI",
+          "source_declaration": "let lastRSSI = Int(data.readInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 154,
+          "name": "packetsRecv",
+          "source_declaration": "let packetsRecv = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 155,
+          "name": "packetsSent",
+          "source_declaration": "let packetsSent = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 156,
+          "name": "airtime",
+          "source_declaration": "let airtime = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 157,
+          "name": "uptime",
+          "source_declaration": "let uptime = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 158,
+          "name": "sentFlood",
+          "source_declaration": "let sentFlood = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 159,
+          "name": "sentDirect",
+          "source_declaration": "let sentDirect = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 160,
+          "name": "recvFlood",
+          "source_declaration": "let recvFlood = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 161,
+          "name": "recvDirect",
+          "source_declaration": "let recvDirect = data.readUInt32LE(at: offset); offset += 4"
+        },
+        {
+          "kind": "let",
+          "line": 162,
+          "name": "fullEvents",
+          "source_declaration": "let fullEvents = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 163,
+          "name": "lastSNR",
+          "source_declaration": "let lastSNR = Double(data.readInt16LE(at: offset)) / 4.0; offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 164,
+          "name": "directDups",
+          "source_declaration": "let directDups = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 165,
+          "name": "floodDups",
+          "source_declaration": "let floodDups = Int(data.readUInt16LE(at: offset)); offset += 2"
+        },
+        {
+          "kind": "let",
+          "line": 168,
+          "name": "rxAirtime",
+          "source_declaration": "let rxAirtime: UInt32 = data.count >= PacketSize.binaryResponseStatusWithRxAirtime"
+        },
+        {
+          "kind": "let",
+          "line": 171,
+          "name": "receiveErrors",
+          "source_declaration": "let receiveErrors: UInt32 = data.count >= PacketSize.binaryResponseStatusWithReceiveErrors"
+        },
+        {
+          "kind": "let",
+          "line": 198,
+          "name": "postedCount",
+          "source_declaration": "let postedCount: UInt16? = data.count >= PacketSize.binaryResponseStatusWithRxAirtime"
+        },
+        {
+          "kind": "let",
+          "line": 200,
+          "name": "postPushCount",
+          "source_declaration": "let postPushCount: UInt16? = data.count >= PacketSize.binaryResponseStatusWithRxAirtime"
+        },
+        {
+          "kind": "enum",
+          "line": 234,
+          "name": "TelemetryResponse",
+          "source_declaration": "enum TelemetryResponse {"
+        },
+        {
+          "kind": "func",
+          "line": 242,
+          "name": "parse",
+          "source_declaration": "public static func parse(_ data: Data) -> MeshEvent {"
+        },
+        {
+          "kind": "let",
+          "line": 249,
+          "name": "pubkeyPrefix",
+          "source_declaration": "let pubkeyPrefix = Data(data[1..<7])"
+        },
+        {
+          "kind": "let",
+          "line": 251,
+          "name": "rawData",
+          "source_declaration": "let rawData = Data(data.dropFirst(7))"
+        },
+        {
+          "kind": "func",
+          "line": 269,
+          "name": "parseFromBinaryResponse",
+          "source_declaration": "public static func parseFromBinaryResponse(_ data: Data, publicKeyPrefix: Data) -> MeshCore.TelemetryResponse {"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt"
+      ],
+      "source_blob_sha": "9f7a9914acf39caf91155446048da5e2706b0b00",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers+Status.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "let",
+          "line": 6,
+          "name": "parserLogger",
+          "source_declaration": "let parserLogger = Logger(subsystem: \"MeshCore\", category: \"Parsers\")"
+        },
+        {
+          "kind": "enum",
+          "line": 14,
+          "name": "Parsers",
+          "source_declaration": "public enum Parsers {}"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/Parsers.kt",
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/ParserText.kt"
+      ],
+      "source_blob_sha": "d40aa729196b3efc1684df10f7f361aacb87e7a5",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/Parsers.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 5,
+          "name": "RegionsParser",
+          "source_declaration": "enum RegionsParser {"
+        },
+        {
+          "kind": "func",
+          "line": 17,
+          "name": "parse",
+          "source_declaration": "static func parse(_ responseData: Data) throws -> [String] {"
+        },
+        {
+          "kind": "let",
+          "line": 21,
+          "name": "regionData",
+          "source_declaration": "let regionData = responseData.dropFirst(4)"
+        },
+        {
+          "kind": "let",
+          "line": 25,
+          "name": "trimmed",
+          "source_declaration": "let trimmed = regionString.trimmingCharacters(in: .controlCharacters)"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/RegionsParser.kt"
+      ],
+      "source_blob_sha": "8b9f34ae22db4426c55c56ff2131b7ac42076221",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/RegionsParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 4,
+          "name": "RxLogParser",
+          "source_declaration": "public enum RxLogParser {"
+        },
+        {
+          "kind": "func",
+          "line": 6,
+          "name": "parse",
+          "source_declaration": "public static func parse(snr: Double?, rssi: Int?, payload: Data) -> ParsedRxLogData? {"
+        },
+        {
+          "kind": "var",
+          "line": 9,
+          "name": "offset",
+          "source_declaration": "var offset = 0"
+        },
+        {
+          "kind": "let",
+          "line": 12,
+          "name": "header",
+          "source_declaration": "let header = payload[offset]"
+        },
+        {
+          "kind": "let",
+          "line": 15,
+          "name": "routeTypeBits",
+          "source_declaration": "let routeTypeBits = header & 0x03"
+        },
+        {
+          "kind": "let",
+          "line": 16,
+          "name": "payloadTypeBits",
+          "source_declaration": "let payloadTypeBits = (header >> 2) & 0x0F"
+        },
+        {
+          "kind": "let",
+          "line": 17,
+          "name": "payloadVersion",
+          "source_declaration": "let payloadVersion = (header >> 6) & 0x03"
+        },
+        {
+          "kind": "let",
+          "line": 22,
+          "name": "payloadType",
+          "source_declaration": "let payloadType = PayloadType(fromBits: payloadTypeBits)"
+        },
+        {
+          "kind": "var",
+          "line": 25,
+          "name": "transportCode",
+          "source_declaration": "var transportCode: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 34,
+          "name": "pathLength",
+          "source_declaration": "let pathLength = payload[offset]"
+        },
+        {
+          "kind": "var",
+          "line": 46,
+          "name": "pathNodes",
+          "source_declaration": "var pathNodes: [UInt8] = []"
+        },
+        {
+          "kind": "let",
+          "line": 54,
+          "name": "packetPayload",
+          "source_declaration": "let packetPayload = payload.count > offset ? Data(payload[offset...]) : Data()"
+        },
+        {
+          "kind": "var",
+          "line": 61,
+          "name": "senderPubkeyPrefix",
+          "source_declaration": "var senderPubkeyPrefix: Data?"
+        },
+        {
+          "kind": "var",
+          "line": 62,
+          "name": "recipientPubkeyPrefix",
+          "source_declaration": "var recipientPubkeyPrefix: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 63,
+          "name": "payloadHashSize",
+          "source_declaration": "let payloadHashSize = 1"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/RxLogParser.kt"
+      ],
+      "source_blob_sha": "6cd47438f4647626b4fa4b474b15a1066c59526e",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/RxLogParser.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 6,
+          "name": "RouteType",
+          "source_declaration": "public enum RouteType: UInt8, Sendable, Codable, CaseIterable {"
+        },
+        {
+          "kind": "case",
+          "line": 7,
+          "name": "tcFlood",
+          "source_declaration": "case tcFlood = 0"
+        },
+        {
+          "kind": "case",
+          "line": 8,
+          "name": "flood",
+          "source_declaration": "case flood = 1"
+        },
+        {
+          "kind": "case",
+          "line": 9,
+          "name": "direct",
+          "source_declaration": "case direct = 2"
+        },
+        {
+          "kind": "case",
+          "line": 10,
+          "name": "tcDirect",
+          "source_declaration": "case tcDirect = 3"
+        },
+        {
+          "kind": "var",
+          "line": 13,
+          "name": "hasTransportCode",
+          "source_declaration": "public var hasTransportCode: Bool {"
+        },
+        {
+          "kind": "var",
+          "line": 20,
+          "name": "isFlood",
+          "source_declaration": "public var isFlood: Bool {"
+        },
+        {
+          "kind": "var",
+          "line": 25,
+          "name": "displayName",
+          "source_declaration": "public var displayName: String {"
+        },
+        {
+          "kind": "enum",
+          "line": 37,
+          "name": "PayloadType",
+          "source_declaration": "public enum PayloadType: UInt8, Sendable, CaseIterable {"
+        },
+        {
+          "kind": "case",
+          "line": 38,
+          "name": "request",
+          "source_declaration": "case request = 0"
+        },
+        {
+          "kind": "case",
+          "line": 39,
+          "name": "response",
+          "source_declaration": "case response = 1"
+        },
+        {
+          "kind": "case",
+          "line": 40,
+          "name": "textMessage",
+          "source_declaration": "case textMessage = 2"
+        },
+        {
+          "kind": "case",
+          "line": 41,
+          "name": "ack",
+          "source_declaration": "case ack = 3"
+        },
+        {
+          "kind": "case",
+          "line": 42,
+          "name": "advert",
+          "source_declaration": "case advert = 4"
+        },
+        {
+          "kind": "case",
+          "line": 43,
+          "name": "groupText",
+          "source_declaration": "case groupText = 5"
+        },
+        {
+          "kind": "case",
+          "line": 44,
+          "name": "groupData",
+          "source_declaration": "case groupData = 6"
+        },
+        {
+          "kind": "case",
+          "line": 45,
+          "name": "anonRequest",
+          "source_declaration": "case anonRequest = 7"
+        },
+        {
+          "kind": "case",
+          "line": 46,
+          "name": "path",
+          "source_declaration": "case path = 8"
+        },
+        {
+          "kind": "case",
+          "line": 47,
+          "name": "trace",
+          "source_declaration": "case trace = 9"
+        },
+        {
+          "kind": "case",
+          "line": 48,
+          "name": "multipart",
+          "source_declaration": "case multipart = 10"
+        },
+        {
+          "kind": "case",
+          "line": 49,
+          "name": "control",
+          "source_declaration": "case control = 11"
+        },
+        {
+          "kind": "case",
+          "line": 50,
+          "name": "rawCustom",
+          "source_declaration": "case rawCustom = 15"
+        },
+        {
+          "kind": "case",
+          "line": 51,
+          "name": "unknown",
+          "source_declaration": "case unknown = 255"
+        },
+        {
+          "kind": "init",
+          "line": 54,
+          "name": "init",
+          "source_declaration": "public init(fromBits bits: UInt8) {"
+        },
+        {
+          "kind": "var",
+          "line": 59,
+          "name": "displayName",
+          "source_declaration": "public var displayName: String {"
+        },
+        {
+          "kind": "struct",
+          "line": 80,
+          "name": "ParsedRxLogData",
+          "source_declaration": "public struct ParsedRxLogData: Sendable, Equatable {"
+        },
+        {
+          "kind": "let",
+          "line": 82,
+          "name": "snr",
+          "source_declaration": "public let snr: Double?"
+        },
+        {
+          "kind": "let",
+          "line": 83,
+          "name": "rssi",
+          "source_declaration": "public let rssi: Int?"
+        },
+        {
+          "kind": "let",
+          "line": 84,
+          "name": "rawPayload",
+          "source_declaration": "public let rawPayload: Data"
+        },
+        {
+          "kind": "let",
+          "line": 87,
+          "name": "routeType",
+          "source_declaration": "public let routeType: RouteType"
+        },
+        {
+          "kind": "let",
+          "line": 88,
+          "name": "payloadType",
+          "source_declaration": "public let payloadType: PayloadType"
+        },
+        {
+          "kind": "let",
+          "line": 89,
+          "name": "payloadVersion",
+          "source_declaration": "public let payloadVersion: UInt8"
+        },
+        {
+          "kind": "let",
+          "line": 95,
+          "name": "payloadTypeBits",
+          "source_declaration": "public let payloadTypeBits: UInt8"
+        },
+        {
+          "kind": "let",
+          "line": 98,
+          "name": "transportCode",
+          "source_declaration": "public let transportCode: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 101,
+          "name": "pathLength",
+          "source_declaration": "public let pathLength: UInt8"
+        },
+        {
+          "kind": "let",
+          "line": 102,
+          "name": "pathNodes",
+          "source_declaration": "public let pathNodes: [UInt8]"
+        },
+        {
+          "kind": "let",
+          "line": 105,
+          "name": "packetPayload",
+          "source_declaration": "public let packetPayload: Data"
+        },
+        {
+          "kind": "let",
+          "line": 108,
+          "name": "senderPubkeyPrefix",
+          "source_declaration": "public let senderPubkeyPrefix: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 111,
+          "name": "recipientPubkeyPrefix",
+          "source_declaration": "public let recipientPubkeyPrefix: Data?"
+        },
+        {
+          "kind": "let",
+          "line": 114,
+          "name": "packetHash",
+          "source_declaration": "public let packetHash: String"
+        },
+        {
+          "kind": "init",
+          "line": 116,
+          "name": "init",
+          "source_declaration": "public init("
+        },
+        {
+          "kind": "func",
+          "line": 148,
+          "name": "computePacketHash",
+          "source_declaration": "public static func computePacketHash(from packetPayload: Data) -> String {"
+        },
+        {
+          "kind": "let",
+          "line": 149,
+          "name": "hash",
+          "source_declaration": "let hash = SHA256.hash(data: packetPayload)"
+        }
+      ],
+      "disposition": "reuse-merged-WP-106-canonical-values",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/event/RxLogTypes.kt"
+      ],
+      "source_blob_sha": "754125ca58e371fabee8390696144dc9a32d8f80",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/RxLogTypes.swift"
+    },
+    {
+      "declarations_and_bindings": [
+        {
+          "kind": "enum",
+          "line": 12,
+          "name": "TransportCodeRegionResolver",
+          "source_declaration": "public enum TransportCodeRegionResolver {"
+        },
+        {
+          "kind": "let",
+          "line": 13,
+          "name": "scopeKeyByteCount",
+          "source_declaration": "private static let scopeKeyByteCount = 16"
+        },
+        {
+          "kind": "let",
+          "line": 14,
+          "name": "payloadTypeMask",
+          "source_declaration": "private static let payloadTypeMask: UInt8 = 0x0F"
+        },
+        {
+          "kind": "let",
+          "line": 15,
+          "name": "transportCodeMinValue",
+          "source_declaration": "private static let transportCodeMinValue: UInt16 = 1"
+        },
+        {
+          "kind": "let",
+          "line": 16,
+          "name": "transportCodeMaxValue",
+          "source_declaration": "private static let transportCodeMaxValue: UInt16 = 0xFFFE"
+        },
+        {
+          "kind": "let",
+          "line": 17,
+          "name": "autoRegionPrefix",
+          "source_declaration": "private static let autoRegionPrefix: Character = \"#\""
+        },
+        {
+          "kind": "let",
+          "line": 18,
+          "name": "privateRegionPrefix",
+          "source_declaration": "private static let privateRegionPrefix: Character = \"$\""
+        },
+        {
+          "kind": "func",
+          "line": 28,
+          "name": "deriveScopeKey",
+          "source_declaration": "public static func deriveScopeKey(regionName: String) -> Data? {"
+        },
+        {
+          "kind": "let",
+          "line": 29,
+          "name": "trimmed",
+          "source_declaration": "let trimmed = regionName.trimmingCharacters(in: .whitespacesAndNewlines)"
+        },
+        {
+          "kind": "let",
+          "line": 33,
+          "name": "normalized",
+          "source_declaration": "let normalized = (first == autoRegionPrefix) ? trimmed : \"#\" + trimmed"
+        },
+        {
+          "kind": "let",
+          "line": 34,
+          "name": "digest",
+          "source_declaration": "let digest = SHA256.hash(data: Data(normalized.utf8))"
+        },
+        {
+          "kind": "func",
+          "line": 45,
+          "name": "calcTransportCode",
+          "source_declaration": "public static func calcTransportCode("
+        },
+        {
+          "kind": "var",
+          "line": 50,
+          "name": "combined",
+          "source_declaration": "var combined = Data(capacity: 1 + payload.count)"
+        },
+        {
+          "kind": "let",
+          "line": 54,
+          "name": "mac",
+          "source_declaration": "let mac = HMAC<SHA256>.authenticationCode("
+        },
+        {
+          "kind": "var",
+          "line": 59,
+          "name": "rawCode",
+          "source_declaration": "var rawCode: UInt16 = 0"
+        },
+        {
+          "kind": "func",
+          "line": 70,
+          "name": "rewriteReservedCode",
+          "source_declaration": "static func rewriteReservedCode(_ rawCode: UInt16) -> UInt16 {"
+        },
+        {
+          "kind": "func",
+          "line": 86,
+          "name": "matchRegions",
+          "source_declaration": "public static func matchRegions("
+        },
+        {
+          "kind": "var",
+          "line": 94,
+          "name": "matchedNames",
+          "source_declaration": "var matchedNames: [String] = []"
+        },
+        {
+          "kind": "let",
+          "line": 96,
+          "name": "trimmed",
+          "source_declaration": "let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)"
+        },
+        {
+          "kind": "let",
+          "line": 98,
+          "name": "code",
+          "source_declaration": "let code = calcTransportCode("
+        },
+        {
+          "kind": "let",
+          "line": 108,
+          "name": "uniqueSorted",
+          "source_declaration": "let uniqueSorted = Array(Set(matchedNames)).sorted {"
+        },
+        {
+          "kind": "enum",
+          "line": 125,
+          "name": "RegionMatchResult",
+          "source_declaration": "public enum RegionMatchResult: Equatable, Sendable {"
+        },
+        {
+          "kind": "case",
+          "line": 126,
+          "name": "none",
+          "source_declaration": "case none"
+        },
+        {
+          "kind": "case",
+          "line": 127,
+          "name": "unique",
+          "source_declaration": "case unique(String)"
+        },
+        {
+          "kind": "case",
+          "line": 128,
+          "name": "ambiguous",
+          "source_declaration": "case ambiguous([String])"
+        }
+      ],
+      "disposition": "ported-native-parser",
+      "implementations": [
+        "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/parser/TransportCodeRegionResolver.kt"
+      ],
+      "source_blob_sha": "7cc45aa4293b6560c0cf03a58d60d8bb5cebadf2",
+      "source_path": "MeshCore/Sources/MeshCore/Protocol/TransportCodeRegionResolver.swift"
+    }
+  ],
+  "owned_production_files": 19,
+  "read_only_consumer_context": [
+    "MeshCore/Sources/MeshCore/Session/MeshCoreSession.swift",
+    "MeshCore/Sources/MeshCore/Session/MeshCoreSession+BinaryProtocol.swift",
+    "MeshCore/Sources/MeshCore/Session/MeshCoreSession+Regions.swift",
+    "MC1Services/Sources/MC1Services/Services/RxLogService+RegionResolution.swift"
+  ],
+  "scope": "All original named declarations/bindings; mapping is traceability, not acceptance",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50"
+}
