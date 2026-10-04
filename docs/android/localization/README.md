@@ -40,6 +40,10 @@ Chinese explicitly uses the Simplified script, not generic `zh`.
 Every app/widget key has a translation in every source locale. Exactly **seven
 Italian shortcut phrases are absent** from the pinned xcstrings catalog; they
 are omitted from Italian output and resolve through English, not invented copy.
+Exactly those seven English declarations carry a per-resource
+`tools:ignore="MissingTranslation"` for the deliberately absent source locale;
+a regression requires the marked set to equal the actual missing-key set.
+There is no global lint disable/baseline or invented Italian translation.
 An existing translation equal to English is not counted as missing.
 The key map records all effective sources, quantities, signatures and fallbacks.
 Locale records index its complete input array; the explicit record schema describes
@@ -125,6 +129,9 @@ Android's quantity API accepts only `Int`; source/widget counts can be `Long`.
 For large counts the helper selects with a representative retaining the twelve
 locales' modulo-10/100/1,000,000 category behavior above one million. It never
 narrows or clamps the displayed number, including `Long.MIN_VALUE/MAX_VALUE`.
+Selection uses magnitude for signed counts; `Int.MIN_VALUE` is represented
+safely instead of feeding Android's overflowing native absolute-value path.
+The displayed value remains signed and unchanged.
 
 ## Consumers and native declarations
 
@@ -147,9 +154,18 @@ val partial = AppSettingsStrings.dangerZoneAlertRemoveUnfavoritedPartial(
 
 `RegionalSubdivisionNames` preserves the 59-code localized lookup and genuine
 unknown-code `null` contract, not the wider geographic/radio preset behavior.
-The library manifest merges `android:localeConfig="@xml/l10n_locales"` into its
-consumer; `resources.properties` declares English fallback. No application
-manifest/ID write is required. The five old scaffold tab IDs have generated
+`resources.properties` declares English fallback and the owned
+`@xml/l10n_locales` declares all twelve per-app language choices. Actual AGP9.4
+app-merger/APK inspection proved that `android:localeConfig` is rejected from
+library manifests. The app must opt in with this single attribute on its existing
+`<application>`; the scoped handoff to the coordinator is explicit:
+
+```xml
+android:localeConfig="@xml/l10n_locales"
+```
+
+No application ID/SDK/permission/UI change is needed, and absent app wiring
+is not claimed as verified. The five old scaffold tab IDs have generated
 localized aliases to canonical keys. All original English scaffold keys/copy
 remain; incomplete-build explanations are explicitly English-only, not fabricated
 translations or completed-feature copy.

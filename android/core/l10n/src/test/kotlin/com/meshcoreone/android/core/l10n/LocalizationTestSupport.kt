@@ -37,8 +37,9 @@ internal data class SourceRecord(
     val namedArguments: List<String>,
 ) {
     fun id(resources: Resources): Int {
-        val id = resources.getIdentifier(name, kind, "com.meshcoreone.android.core.l10n")
-        assertNotEquals(0, id, "Missing compiled $kind $name")
+        val resourcePackage = resources.getResourcePackageName(R.string.app_name)
+        val id = resources.getIdentifier(name, kind, resourcePackage)
+        assertNotEquals(0, id, "Missing compiled $kind $resourcePackage:$name")
         assertEquals(name, resources.getResourceEntryName(id))
         return id
     }

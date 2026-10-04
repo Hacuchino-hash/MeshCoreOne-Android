@@ -43,7 +43,7 @@ class L10nFormattingTest {
     fun nonfiniteFloatingPointCannotBecomeDifferentPlatformCopy() {
         listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY).forEach { value ->
             assertFailsWith<IllegalArgumentException> {
-                L10nFormatting.format(resourcesForLocale("en"), "%1$f", arrayOf(value))
+                L10nFormatting.format(resourcesForLocale("en"), "%1\$f", arrayOf(value))
             }
         }
     }
@@ -72,9 +72,12 @@ class L10nFormattingTest {
     }
 
     @Test
-    fun selectorsDoNotChangeNativeIntQuantities() {
-        listOf(Int.MIN_VALUE, -1, 0, 1, 2, 11, 21, Int.MAX_VALUE).forEach { quantity ->
+    fun nonnegativeSelectorsRemainNativeAndNegativeSelectorsRetainMagnitude() {
+        listOf(0, 1, 2, 11, 21, Int.MAX_VALUE).forEach { quantity ->
             assertEquals(quantity, L10nFormatting.quantitySelector(quantity.toLong()))
+        }
+        listOf(-1L, -2L, -Int.MAX_VALUE.toLong()).forEach { quantity ->
+            assertEquals((-quantity).toInt(), L10nFormatting.quantitySelector(quantity))
         }
     }
 

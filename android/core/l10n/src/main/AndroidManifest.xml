@@ -1,4 +1,2 @@
-<!-- AndroidOnly: WP-005 Library-owned per-app locale declaration merged into the application. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:localeConfig="@xml/l10n_locales" />
-</manifest>
+<!-- AndroidOnly: WP-005 Locale resources are library-owned; AGP requires the app manifest opt-in. -->
+<manifest />

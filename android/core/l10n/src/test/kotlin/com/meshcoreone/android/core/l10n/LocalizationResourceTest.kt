@@ -95,10 +95,14 @@ class LocalizationResourceTest {
 
     @Test
     fun longGermanAndCjkCopyAreNotTruncatedOrNormalized() {
-        val german = sourceRecords("de").filter { it.text != null && it.arguments.isEmpty() }.maxBy { requireNotNull(it.text).length }
+        val german = sourceRecords("de").filter { it.text != null }.maxBy { requireNotNull(it.text).length }
         assertTrue(requireNotNull(german.text).length > 300)
-        val expected = referenceText(requireNotNull(german.text), emptyArray())
-        val actual = resourcesForLocale("de").getString(german.id(resourcesForLocale("de")))
+        val germanArguments = german.sampleArguments()
+        val expected = referenceText(requireNotNull(german.text), germanArguments, german.namedArguments)
+        val germanResources = resourcesForLocale("de")
+        val actual = if (germanArguments.isEmpty()) germanResources.getString(german.id(germanResources)) else {
+            L10nFormatting.string(germanResources, german.id(germanResources), *germanArguments)
+        }
         assertEquals(expected, actual)
         assertEquals(expected.length, actual.length)
         val chinese = sourceRecords("zh-Hans").filter { it.text?.any { char -> char.code in 0x4e00..0x9fff } == true && it.arguments.isEmpty() }

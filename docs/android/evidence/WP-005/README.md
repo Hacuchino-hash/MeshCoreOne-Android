@@ -1,122 +1,142 @@
 # WP-005 execution evidence
 
-**Implementation is present; strict Android tests/lint currently await one
-coordinator-owned artifact checksum.** This is not a passing Android parity
-receipt. Resource assembly and actual nonzero Python assertions passed; no
-unexecuted Kotlin suite, device, iOS runtime, signing or legal acceptance is claimed.
+**Actual strict local resource assembly, 25 Android tests and lint pass.**
+New-head hosted CI and independent review are separate evidence, not presumed
+from these results. System/device language UX, iOS runtime, hardware, signing,
+provider/license approval and full-feature completion are not claimed.
 
 Repository `cbattlegear/MeshCoreOne-Android`; owner `localization-engineer`;
-branch `cbattlegear-redesigned-fishstick`. The initial head was the actually
-merged foundation `979dd73b2fc3cb5cbeea07b1c809f5c9283289ee`; only this feature
-worktree was subsequently fast-forwarded to merged main
-`050ac6909c65af8e3fc63e5aaf44b1d240f1d8ac`. Own changes were preserved.
-The immutable Swift reference remains
-`db14559b39d32322b06477c6ae676112f583db50`.
+branch `cbattlegear-redesigned-fishstick`. The initial head was merged foundation
+`979dd73b2fc3cb5cbeea07b1c809f5c9283289ee`; only this feature worktree was
+fast-forwarded to verified merged main
+`050ac6909c65af8e3fc63e5aaf44b1d240f1d8ac`, preserving own work.
+Swift reference remains `db14559b39d32322b06477c6ae676112f583db50`.
 
-The explicit kickoff reservation is `autonomous-WP-005-979dd73b`, bound to CLI
-session `d474b8d5-32c2-4222-b958-2a8d50afe48c` and native/project alias
-`09e1cb9b-b5f4-4e71-9aef-8340ac40e55f`. No fabricated live-ledger or independent
-gate receipt is asserted. All delivered writes stay in the six leased WP paths.
+Kickoff reservation `autonomous-WP-005-979dd73b` binds CLI session
+`d474b8d5-32c2-4222-b958-2a8d50afe48c` and native/project alias
+`09e1cb9b-b5f4-4e71-9aef-8340ac40e55f`. The coordinator explicitly amended it
+only for `android/gradle/verification-metadata.xml`'s preexisting annotation JAR
+checksum; no other shared-file permission, live-ledger or gate receipt is asserted.
 
-## Implemented shape and real source accountability
+## Measured implementation and original families
 
-| Measured item | Count |
+| Item | Actual count |
 | --- | --- |
-| Parsed localization inputs | 169: 120 strings, 48 dictionaries, one catalog |
-| Distinct source keys | 2,406 |
-| Exact billing exclusions | 32 |
-| Canonical generated resources | 2,374: 2,363 strings, 11 plurals |
-| Source string kinds per effective locale | 2,061 plain, 302 formatted |
-| Effective locales | 12 |
-| Generated source/XML/oracle/key-map files | 63 |
-| Regional original family | 59 subdivisions by 12 locales (51 US, 8 AU) |
-| Named summaries/phrases | Two Tools summaries, seven shortcut phrases |
+| Parsed inputs | 169: 120 strings, 48 dictionaries, one catalog |
+| Distinct source keys / exact billing exclusions | 2,406 / 32 |
+| Canonical resources | 2,374: 2,363 strings, 11 plurals |
+| String kinds per effective locale | 2,061 plain, 302 formatted |
+| Locales / generated files | 12 / 63 |
+| Regional family | 59 codes by 12 locales: 51 US and 8 AU |
+| Named framework phrases | Two Tools summaries and seven shortcut phrases |
 | Real missing translations | Seven Italian shortcut phrases only |
-| Explicit native source corrections | One blob/value/argument-bound Chinese numeric typo |
+| Native source corrections | One exact blob/value/argument-bound Chinese numeric token |
 
-The full [key map](../../generated/l10n-key-map.json) records immutable
-input blobs, SHA256/size/record counts, original keys, forward/reverse domains,
-typed argument positions, quantities, actual locale sources/fallbacks, correction
-fingerprints and every generated output digest. Filename/header counts are not
-asserted as behavioral parity.
+The [full key map](../../generated/l10n-key-map.json) contains source input
+blobs/SHA256/size/record counts, original and forward/reverse domain keys, typed
+positions, quantities, effective locale input indexes/fallbacks, correction
+fingerprints and output hashes. File/header counts are not parity.
 
-The 65 Python cases exercise grammar/escaping/comments/encoding/continuations,
-typed/positional/named/percent/finite-float formats, safe plist and all-six-quantity
-shapes, actual xcstrings, complete pinned-source counts, collisions, real fallback,
-determinism, output/pin/correction drift and strict JUnit evidence failures.
-The original Kotlin airtime and regional families plus additional all-resource
-round-trip/quantity/long/CJK/format boundaries are implemented, but have not yet
-executed because strict verification stops before test compilation.
-
-## Actual commands and outcomes
-
-The documented isolated launcher uses installed JDK21.0.12.1, compileSDK37.2,
-build-tools37.0.0, one worker, in-process Kotlin, 640/768MiB build heap,
-512MiB metaspace and 256MiB test heap. Its independent preflight passed and
-stripped non-allowlisted variables. Private caches/SDK/JDK paths and keys are
-not committed. No host PATH, memory, license or main-checkout setting was changed.
-
-| Exact command/task selection | Actual result |
+| Real JUnit suite | Discovered / passed |
 | --- | --- |
-| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**; 65 discovered/passed, zero failures/errors/skips; all 63 outputs regenerated. |
-| `python .\tools\android-port\l10n_convert.py --check` | **Passed**; no source/output/key-map drift. |
-| `python .\tools\android-port\portmap.py` | **Passed** after correcting generated headers to the validator's canonical `GeneratedFrom` disposition. All 12 generated Kotlin files declare actual pinned inputs; no conflicting handwritten/generated disposition. |
-| `python .\tools\android-port\controller\verification_config.py --check` | **Passed** on the initial foundation; trusted overlay intact, no feature acceptance inferred. |
-| `python .\tools\android-port\controller\validate.py` | **Passed**; 1,866 pinned files, 65 WPs and 185 edges unchanged. |
-| `python .\tools\android-port\controller\test_runner.py --quiet` | **Passed**; 161 discovered/run/passed, zero failed/errors/skipped (controller fixtures, not Android/iOS parity). |
-| `python .\tools\android-port\controller\ci.py python` | **Passed** on merged main after the candidate header repair: manifest/traceability/notices, 165 controller and 15 scaffold Python cases, no failure/error/skip. Private output directory, no toolchain provisioning or gate publication. |
-| `:core:l10n:dependencies --write-locks --dependency-verification strict` | **Passed**; module-local lock created from existing pinned aliases. |
-| `:core:l10n:assembleDebug --write-locks --dependency-verification strict` | **Passed**, including real AAPT resource processing and production Kotlin compilation; initial empty `androidApis` state initialized. |
-| `:core:l10n:assembleDebug --dependency-verification strict` | **Passed** on merged main `050ac690`, including the final canonical-header repair and all 65 converter tests rerun; no lock/checksum update flags. Final constrained heap was 640m. |
-| `:core:l10n:testDebugUnitTest :core:l10n:verifyL10nTests --dependency-verification strict --no-build-cache --rerun-tasks` | **Failed** before discovery: existing `annotation-jvm:1.7.0` module is pinned but its JAR is absent from shared verification metadata. |
-| `:core:l10n:lintDebug --dependency-verification strict` | **Failed** on the same JAR while generating the unit-test lint model; no lint pass claimed. |
+| `AirtimePercentLabelTest` | 2 / 2 |
+| `RegionalSubdivisionLocalizationTest` | 3 / 3 |
+| `LocalizationResourceTest` | 7 / 7 |
+| `L10nFormattingTest` | 13 / 13 |
+| **Total** | **25 / 25; zero failed/errors/skipped** |
 
-Local Gradle invocations use
-`.\android\scaffold\invoke-gradle.ps1 -ConstrainedMemory -BuildHeap <640m or 768m> -GradleArguments @(...)`;
-initial assembly/lint use 768m and tests/final assembly use 640m. All include strict verification.
-Initialization's first assembly without a lock update correctly failed on
-missing empty `androidApis` lock state. That local lock issue was fixed by actual
-assembly, not by deleting/disabling strict locks. Content-identical shared
-bookkeeping rewrites were cleaned up; no shared lock diff is delivered.
-One final-assembly attempt hit shared-host Windows commit pressure (`WinError1455`)
-while spawning the read-only source checker. No host/pagefile/process setting
-was changed. Normalizing the provenance map's repeated locale paths into explicit
-input indexes reduced it from 8.43MB to 3.08MB; all origin/blob/fallback assertions
-remain. The lower-heap strict retry passed.
+The two original source families execute against compiled resources: literal
+English airtime percent and all 59 subdivision names in every locale. Additional
+cases compare all 28,356 effective plain/formatted string values to original
+decoded Apple text, all 11 plural resources across locales/boundary vectors,
+second-argument selection, Long extrema, CJK/long German, named phrases/fallback,
+locale XML/legacy IDs, finite locale-decimal floats and explicit failures.
+Assertions are not replaced by filename/header accounting or the old 47 scaffold
+cases. [Case map](../../localization/cases.json);
+[sanitized source-bound result evidence](local-verification.json).
 
-## Precise shared checksum handoff
+## Exact commands and actual outcomes
 
-The existing `mesh.android.robolectric`/AndroidX test aliases resolve
-`androidx.annotation:annotation-jvm:1.7.0`. Shared metadata contains its `.module`
-but not `annotation-jvm-1.7.0.jar`. The actual Google-resolved JAR's SHA256 is
+Gradle selections use the documented isolated
+`.\android\scaffold\invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 640m -GradleArguments @(...)`,
+except actual app assembly at 768m. Installed JDK21.0.12.1, Gradle9.8.0,
+AGP9.4.1, compile37.2/build-tools37.0.0, bytecode17 and simulated SDK31;
+one worker/in-process Kotlin, 512MiB build metaspace and 256MiB test heap.
+Preflight passed and removed non-allowlisted variables. No private paths/cache
+binaries/debug keys or host PATH/pagefile/memory changes are committed.
+
+| Exact command/selection | Result |
+| --- | --- |
+| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**, 65 discovered/passed, zero failed/errors/skipped, 63 regenerated outputs. |
+| `python .\tools\android-port\l10n_convert.py --check --self-test` | **Passed**, same 65 cases, no source/output/key-map/correction drift. |
+| `python .\tools\android-port\portmap.py` | **Passed**, canonical generated-input dispositions, no conflicting headers. |
+| `python .\tools\android-port\controller\verification_config.py --check` | **Passed**, unchanged trusted overlay; no feature acceptance inferred. |
+| `python .\tools\android-port\controller\validate.py` | **Passed**, 1,866 pinned files, 65 WPs and 185 edges unchanged. |
+| `python .\tools\android-port\controller\ci.py python` | **Passed**, exact hosted Python stage on merged main: 165 controller plus 15 scaffold cases, no failed/error/skipped cases; no provisioning/gate publication. |
+| `:core:l10n:assembleDebug :core:l10n:testDebugUnitTest :core:l10n:verifyL10nTests --dependency-verification strict --no-build-cache --rerun-tasks` | **Passed**, fresh actual production/resource compilation, all 25 JUnit cases and strict discovery. |
+| `:core:l10n:lintDebug --dependency-verification strict --no-build-cache --rerun-tasks` | **Passed**, zero errors; 486 source-copy/native warnings, no global disable/baseline. |
+| `:app:assembleDebug validateModuleGraph --dependency-verification strict` | **Passed**, actual app assembly and 30-module boundary graph. |
+| `python .\android\scaffold\inspect_apk.py` | **Passed**, real debug APK package/min/target/notices/fixture-absence contract; not native/device/release proof. |
+
+Final lint warnings: MissingQuantity44, PluralsCandidate56, TypographyDashes44,
+TypographyEllipsis329 and Typos13. Pinned copy is not rewritten or retranslated
+to silence warnings; required plural `other` fallback and every existing category
+are preserved and tested. Exactly the seven genuinely absent Italian phrases
+carry per-resource MissingTranslation acknowledgment; a regression verifies the
+marked set equals the actual missing-key set. No tests/goldens/policy are lowered.
+
+## Publisher-bound shared artifact amendment
+
+The first strict local and both-host hosted verify stages correctly failed on
+the existing test alias dependency `androidx.annotation:annotation-jvm:1.7.0`
+JAR, whose `.module` was pinned but binary was not. The coordinator explicitly
+authorized the exact three-line artifact addition in the preexisting component.
+
+Google publisher URL:
+`https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.7.0/annotation-jvm-1.7.0.module`.
+Its independently fetched SHA256 exactly matches committed
+`07ce60c377ab94e47c8c902589b9776030064fd1a7e4d5a01a38d700e35e5db4`.
+Both variant entries declare the 55,232-byte JAR SHA256
 `e36b8e4b8393a4adc74e3d4ab22ad5a36396f0cea2e40b5734eae14937dfd224`.
+Fresh first-party and isolated Gradle-resolved bytes match hash and size.
+No dependency version, repository, broad artifact trust, verification setting or
+unrelated checksum is changed. This is provenance, not legal approval.
 
-The exact command, failure and component/artifact XML were reported on the
-coordinator's [existing PR6 comment](https://github.com/cbattlegear/MeshCoreOne-Android/pull/6#issuecomment-5975309039).
-The merged main was checked: the JAR checksum is still absent. WP-005 does not
-edit unleased shared verification metadata, change dependency versions, add
-unrelated dependencies, trust whole artifact groups or disable verification.
-Once the shared owner supplies the exact checksum, rerun the same module suites
-and lint, record discovered XML counts, and repair this same candidate.
+## Repairs and exact app opt-in handoff
 
-The first hosted Android run stopped earlier in the Python stage because the
-initial generator notice was not the validator's canonical `GeneratedFrom`
-header. This was an in-scope candidate bug, not a reason to weaken the validator.
-The generator and native helper disposition were corrected, outputs regenerated,
-and the actual trusted traceability validator passed. A new regression case runs
-that validator against every generated Kotlin file. This same normal PR is
-repaired rather than replaced.
+The initial Chinese signature failure is retained as
+[historical evidence](blocked-source.json), not current status. Its one native
+correction was subsequently explicitly authorized and retains raw copy/source.
 
-## Boundaries and historical diagnostic
+The first hosted Python stage exposed noncanonical generated notices. The
+generator now emits actual `GeneratedFrom` inputs and a regression executes the
+trusted validator. The same PR is repaired, not replaced.
 
-The initial Chinese `%@`/integer conflict was not silently skipped. The coordinator
-explicitly authorized its one native numeric correction; original Chinese copy,
-Swift and source SHA remain unchanged. The original diagnostic is retained as
-[historical evidence](blocked-source.json), not current blocked-source status.
-See [deviations](../../deviations/WP-005.md) and
-[case-family accountability](../../localization/cases.json).
+Actual Kotlin execution exposed test-fixture errors (a printf `$` escape,
+hard-coded merged resource package, and selecting only plain strings for the
+long-source threshold). These were corrected without changing source expectations:
+the true longest formatted German source still exceeds 300 characters.
+The unchanged signed plural vectors exposed Android's `Int.MIN_VALUE` native
+absolute-value overflow. Magnitude/category selection is now safe while the
+original signed argument is displayed; the entire family passes.
 
-No iOS formatter/oracle, actual Android device/system language UX, radio/HIL,
-release signing, external provider/model/privacy/legal admission or full-feature
-completion is claimed. No billing, Google services, analytics, account, updater
-or APK-installation implementation was introduced.
+Initial empty `androidApis` locking required an actual assembly `--write-locks`
+initialization, not strict-lock deletion. Content-identical shared bookkeeping
+was cleaned up. One shared-host WinError1455 attempt was retried at a lower private
+heap; normalized input-index provenance reduced map size from 8.43MB to 3.08MB
+without removing origins or weakening assertions. No host/process settings changed.
+
+**Actual APK inspection confirmed an AGP9.4 application opt-in requirement.**
+The app merger explicitly rejects library `android:localeConfig`; all twelve
+locale XML/resources/properties exist, but system registration was absent.
+The kickoff's app-write handoff was followed: the coordinator received the exact
+one-attribute literal on the existing application:
+`android:localeConfig="@xml/l10n_locales"`.
+No unleased app edit or verified system-registration claim is made. The ignored
+library application attribute was removed rather than represented as effective.
+Application ID/min31/target37 and permission scope remain unchanged.
+
+See [deviations](../../deviations/WP-005.md) for native adaptation boundaries.
+No new account/billing/analytics/GMS/model/updater/APK-installer code exists.
+Actual system language UX remains WP-407; full widget/shortcut execution and
+message translation remain their respective WPs.

@@ -131052,7 +131052,7 @@
     "android/core/l10n/src/main/res/values-uk/l10n_scaffold_tabs.xml": "449881977494085c2735676c7b45810b1ed5cc746b978bedfe66f414a629adf6",
     "android/core/l10n/src/main/res/values-uk/l10n_strings.xml": "99d6d6407f4905483b98d829884837e2cfaa63fdcac4e11fd2b123efd5162ff1",
     "android/core/l10n/src/main/res/values/l10n_plurals.xml": "f5d46d288ddbb970de0465339db37c4bb20df3beb7ec9ef9fefd48213ebcdcff",
-    "android/core/l10n/src/main/res/values/l10n_strings.xml": "62f1254a8dd467b35041ef7fc92a8d92c880ba0a24594aadb0119dee4e115519",
+    "android/core/l10n/src/main/res/values/l10n_strings.xml": "82e5c0d4abeadeb247b9ad6983a64c07ff8454e43fdc7226b62d86cd9ec42c01",
     "android/core/l10n/src/main/res/xml/l10n_locales.xml": "09e75958c112bbcb04f73f08af35c691c5da833d7dd39a06b07263b07753794b",
     "android/core/l10n/src/test/resources/l10n-source-de.json": "dbee2e378f746c57237932f06a1d2743cebcc74c6861b197310159100355348b",
     "android/core/l10n/src/test/resources/l10n-source-en.json": "25d3c1b1e6119d8a5d73a27690f7770faf0c8caeba4288b37daa496f53aa3aaf",
@@ -131069,7 +131069,7 @@
     "android/core/l10n/src/test/resources/l10n-source-zh-Hans.json": "d427d3f1fd685fe78f302ee249891fea2120f03619fd1298eb44346166419817"
   },
   "generator": "tools/android-port/l10n_convert.py",
-  "generator_sha256": "460f9d79233f84b2a35b9be3e4f143741bb6d0d1d3d84e512e9f3442d3b42702",
+  "generator_sha256": "5b6cabbda9d97689df7adc060d84ea29f31615b223ae0314a87cee510aa4ac1a",
   "inputs": [
     {
       "blob_sha": "3e71e1458a06af55d0fdd0330e93601f668f2038",

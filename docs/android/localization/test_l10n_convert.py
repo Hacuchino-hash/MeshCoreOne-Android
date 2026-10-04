@@ -416,6 +416,11 @@ class SourcePipelineTest(unittest.TestCase):
         self.assertEqual({m.name for m in shortcuts}, set(missing))
         italian = ET.fromstring(self.outputs[c.MODULE + "/src/main/res/values-it/l10n_strings.xml"])
         self.assertTrue(all(node.get("name") not in missing for node in italian))
+        english = ET.fromstring(self.outputs[c.MODULE + "/src/main/res/values/l10n_strings.xml"])
+        disposition = "{http://schemas.android.com/tools}ignore"
+        marked = {node.get("name") for node in english if node.get(disposition) == "MissingTranslation"}
+        self.assertEqual(set(missing), marked)
+        self.assertEqual(7, len(marked))
 
     def test_locale_script_variant_and_english_fallback_declarations(self):
         self.assertEqual("values-b+zh+Hans", c.LOCALES["zh-Hans"]["directory"])

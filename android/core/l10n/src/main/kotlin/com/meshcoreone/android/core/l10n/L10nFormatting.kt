@@ -23,10 +23,12 @@ internal object L10nFormatting {
         format(resources, resources.getQuantityString(resourceId, quantitySelector(quantity)), args)
 
     internal fun quantitySelector(quantity: Long): Int {
-        if (quantity in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) return quantity.toInt()
+        if (quantity in 0..Int.MAX_VALUE.toLong()) return quantity.toInt()
+        if (quantity in -Int.MAX_VALUE.toLong()..-1) return (-quantity).toInt()
         // The twelve locales' integer CLDR rules above one million depend only on
         // residues modulo 10/100/1,000,000. Keep those residues without narrowing
-        // the displayed Long, mapping a large "...1" to a large value, never to 1.
+        // the displayed signed number, including the native Int.MIN_VALUE
+        // absolute-value overflow, and never map a large "...1" to 1.
         return 1_000_000 + abs(quantity % 1_000_000).toInt()
     }
 }

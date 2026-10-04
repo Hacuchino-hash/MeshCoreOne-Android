@@ -722,7 +722,11 @@ def exclusions(root: Path, messages: list[Message]) -> dict[tuple[str, str, str]
 
 
 def resource_xml(messages: list[Message], locale: str, plural: bool) -> bytes:
-    lines = [XML_HEADER.rstrip(), f"<!-- {NOTICE} -->", "<resources>"]
+    deliberate_fallback = locale == "en" and not plural and any(
+        isinstance(message.base, Text) and set(message.strings) != set(LOCALES) for message in messages
+    )
+    root = '<resources xmlns:tools="http://schemas.android.com/tools">' if deliberate_fallback else "<resources>"
+    lines = [XML_HEADER.rstrip(), f"<!-- {NOTICE} -->", root]
     for message in messages:
         base = message.base
         if isinstance(base, Plural) != plural:
@@ -741,7 +745,8 @@ def resource_xml(messages: list[Message], locale: str, plural: bool) -> bytes:
         else:
             body = android_xml_text(value.format.android, f"{value.path}/{message.key}")
             formatted = "true" if value.format.arguments else "false"
-            lines.append(f'    <string name="{message.name}" formatted="{formatted}">{body}</string>')
+            fallback = ' tools:ignore="MissingTranslation"' if locale == "en" and set(message.strings) != set(LOCALES) else ""
+            lines.append(f'    <string name="{message.name}" formatted="{formatted}"{fallback}>{body}</string>')
     lines.append("</resources>")
     xml = ("\n".join(lines) + "\n").encode()
     validate_resource_xml(xml, f"{locale}/{'plurals' if plural else 'strings'}")
@@ -762,7 +767,11 @@ def validate_resource_xml(data: bytes, location: str) -> None:
             fail(location, f"illegal/duplicate Android resource name {name!r}")
         names.add(name)
         if node.tag == "string":
-            if len(node) or set(node.attrib) != {"name", "formatted"} or node.get("formatted") not in ("true", "false"):
+            attributes = dict(node.attrib)
+            fallback = attributes.pop("{http://schemas.android.com/tools}ignore", None)
+            if fallback not in (None, "MissingTranslation"):
+                fail(location, f"unsupported lint disposition for {name}")
+            if len(node) or set(attributes) != {"name", "formatted"} or node.get("formatted") not in ("true", "false"):
                 fail(location, f"invalid string resource {name}")
         elif node.tag == "plurals":
             quantities = [item.get("quantity") for item in node]
