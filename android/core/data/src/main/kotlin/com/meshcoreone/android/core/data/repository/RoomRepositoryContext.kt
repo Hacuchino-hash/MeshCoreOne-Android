@@ -256,6 +256,9 @@ internal class RoomRepositoryContext(
     }
 
     private suspend fun <T> committedTransaction(afterCommit: () -> Unit, block: suspend () -> T): T {
+        if (database.inTransaction()) {
+            invalidData("PersistenceStore owns its commit boundary; an external Room transaction must use its DAOs")
+        }
         val caller = currentCoroutineContext()
         val worker = Job()
         val cancellation = Job(caller[Job])

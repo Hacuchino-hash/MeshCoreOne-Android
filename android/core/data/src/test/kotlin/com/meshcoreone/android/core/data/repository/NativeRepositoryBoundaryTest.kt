@@ -104,6 +104,19 @@ class NativeRepositoryBoundaryTest : RepositoryTest() {
         }
     }
 
+    @Test fun anExternalTransactionCannotMakeRepositoryBufferCompletionLookCommitted() = runTest {
+        val entry = rx()
+        store.saveRxLogEntry(entry)
+        val failure = assertFailsWith<PersistenceStoreException> {
+            db.withTransaction { store.saveContact(contact()) }
+        }
+        assertEquals(PersistenceStoreError.InvalidData, failure.error)
+        assertNull(db.contacts().byId(RADIO_A.value, CONTACT_A))
+        assertNull(db.rxLogs().byId(RADIO_A.value, entry.id))
+        store.flushPendingRxLogEntries()
+        assertNotNull(db.rxLogs().byId(RADIO_A.value, entry.id))
+    }
+
     @Test fun concurrentCountersAndSnapshotCapturesPreserveAllUpdates() = runTest {
         store.saveContact(contact())
         (1..20).map { async { store.incrementUnreadCount(entity()) } }.awaitAll()
