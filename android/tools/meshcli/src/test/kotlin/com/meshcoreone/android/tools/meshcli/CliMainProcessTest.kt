@@ -98,32 +98,32 @@ class CliMainProcessTest {
                 peer.expectClientClosed()
             }
         }
+    }
 
-        @Test
-        fun `real deployed main detects a closed stdout pipe after successful socket cleanup`() = runBlocking {
-            CliPeer().use { peer ->
-                Child(cliArgs(peer, "battery"), closedStdout = true).use { child ->
-                    peer.handshake(); peer.expect(20); peer.send(batteryFrame())
-                    val (code, out, err) = child.result()
-                    assertEquals(8, code)
-                    assertEquals("", out)
-                    assertTrue(err.contains("\"code\":\"output_failed\""))
-                    peer.expectClientClosed()
-                }
+    @Test
+    fun `real deployed main detects a closed stdout pipe after successful socket cleanup`() = runBlocking {
+        CliPeer().use { peer ->
+            Child(cliArgs(peer, "battery"), closedStdout = true).use { child ->
+                peer.handshake(); peer.expect(20); peer.send(batteryFrame())
+                val (code, out, err) = child.result()
+                assertEquals(8, code)
+                assertEquals("", out)
+                assertTrue(err.contains("\"code\":\"output_failed\""))
+                peer.expectClientClosed()
             }
         }
+    }
 
-        @Test
-        fun `real deployed main detects a closed stderr pipe without an exception stack or false success`() = runBlocking {
-            CliPeer().use { peer ->
-                Child(cliArgs(peer, "battery"), closedStderr = true).use { child ->
-                    peer.handshake(); peer.expect(20); peer.send(bytes(1, 1))
-                    val (code, out, err) = child.result()
-                    assertEquals(8, code)
-                    assertEquals("", out)
-                    assertEquals("", err)
-                    peer.expectClientClosed()
-                }
+    @Test
+    fun `real deployed main detects a closed stderr pipe without an exception stack or false success`() = runBlocking {
+        CliPeer().use { peer ->
+            Child(cliArgs(peer, "battery"), closedStderr = true).use { child ->
+                peer.handshake(); peer.expect(20); peer.send(bytes(1, 1))
+                val (code, out, err) = child.result()
+                assertEquals(8, code)
+                assertEquals("", out)
+                assertEquals("", err)
+                peer.expectClientClosed()
             }
         }
     }

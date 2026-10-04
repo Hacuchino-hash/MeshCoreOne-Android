@@ -13,11 +13,12 @@ import unittest
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 
-from controller.ci_evidence import read_xml, suite_counts
+from controller.ci_evidence import counts as require_counts, read_xml, suite_counts
 from controller.errors import PortError
 from controller.gates import Binding, policy_revision
 from controller.model import git, load_manifest, tree
 from controller.module_junit import bounded_directory, linked, safe_reports
+from controller.runtime_inputs import required_inputs as required_runtime_inputs
 from controller.schema import decode_json, fields, load_json
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
@@ -29,11 +30,48 @@ SOURCE_PREFIX = "MeshCore/Tests/"
 BASELINE = EVIDENCE / "baseline-native.json"
 BASELINE_SHA256 = "b090ca122bbd28fd72a6e9654bd8590e4b5db3ef497b9530135e728d8bc7bcd4"
 MODULES = {
-    "protocol": ("android/core/protocol/build/test-results/test", 4708),
-    "meshcli": ("android/tools/meshcli/build/test-results/test", 1),
+    "protocol": ("android/core/protocol/build/test-results/test", 4711),
+    "meshcli": ("android/tools/meshcli/build/test-results/test", 87),
 }
-TEXT = {".kt", ".kts", ".java", ".py", ".json", ".xml", ".md", ".txt", ".tsv", ".properties", ".lockfile", ".swift"}
-TEXT_NAMES = {"LICENSE", "NOTICE"}
+TEXT = {
+    ".kt", ".kts", ".java", ".py", ".json", ".xml", ".md", ".txt", ".tsv",
+    ".properties", ".lockfile", ".swift", ".toml", ".yml", ".yaml", ".ps1", ".bat", ".sh",
+}
+TEXT_NAMES = {"LICENSE", "NOTICE", "gradlew"}
+EVIDENCE_SCOPE = "actual code/JUnit/source families; not independent acceptance or hardware"
+LOCAL_SCOPE = "local immutable candidate execution; no hosted run authority"
+LOCAL_EXECUTOR_SCOPE = "explicit local CI executor forwarding; no hosted run authority"
+CLI_PREFIX = "com.meshcoreone.android.tools.meshcli."
+CLI_FACTORIES = {
+    "CliArgumentsTest": {"invalidArguments": 21, "forbiddenOperations": 14},
+    "CliTcpTest": {"completeReadQueries": 6, "terminalFailures": 9, "contactCompleteness": 4, "bidiControlCharacters": 12},
+}
+CLI_SINGLES = """CliArgumentsTest|help performs no transport construction
+CliArgumentsTest|unknown user text and escape sequences never enter generic errors
+CliArgumentsTest|usage rejection with an unavailable stderr still returns output failure without a socket
+CliArgumentsTest|IPv4 IPv6 and default options are canonical and DNS free
+CliArgumentsTest|deadline and index boundary values are admitted without unsigned wrap
+CliTcpTest|ACK advertisements and message content coalesced with read response are not fake success or logs
+CliTcpTest|coalesced device rejection cannot lose the race to a valid singleton response
+CliTcpTest|channel pipeline uses capability and real acknowledged TCP writes with gaps and ignored indexes
+CliTcpTest|missing channel is partial at injected idle deadline without serial fake reconciliation
+CliTcpTest|overall deadline covers handshake and closes real socket before any next query
+CliTcpTest|caller cancellation reports no result and closes even after owning job cancellation
+CliTcpTest|failed teardown never publishes an otherwise valid successful query
+CliTcpTest|output IOException is explicit and does not leak or reopen the transport
+CliTcpTest|capability rejection does not send any out of range channel command
+CliTcpTest|device strings stay UTF8 and terminal control characters are escaped
+CliMainProcessTest|real deployed main prints help and exits zero without a peer
+CliMainProcessTest|real deployed main rejects unknown text with usage exit and sanitized stderr
+CliMainProcessTest|real deployed main reads actual framed TCP and returns actual battery with zero exit
+CliMainProcessTest|real deployed main preserves unsupported nonzero exit after genuine device rejection
+CliMainProcessTest|real deployed main detects a closed stdout pipe after successful socket cleanup
+CliMainProcessTest|real deployed main detects a closed stderr pipe without an exception stack or false success"""
+TCP_CASES = (
+    "unanswered arbitrary TCP matcher quarantines typed successor and fresh physical connection clears it",
+    "retained TCP link blocks both logical reuse and another session until exact old owner closes",
+    "cancelled owning job still awaits actual TCP close and releases a fresh session claim",
+)
 
 ALIASES = """Ed25519ToX25519Tests|Public key conversion round-trip with CryptoKit|crypto.Ed25519ToX25519Test|Public key conversion round-trip with independent RFC keys
 EventDispatcherDropTests|droppedEventCount increments when a slow consumer overflows the buffer|event.EventDispatcherTest|Slow consumer preserves latest 100 with exact counted and observed oldest drops
@@ -122,17 +160,32 @@ def aliases():
     return result
 
 
+def required_cli_cases():
+    rows = [line.split("|") for line in CLI_SINGLES.splitlines()]
+    result = {(CLI_PREFIX + scope, method + "()") for scope, method in rows}
+    for scope, factories in CLI_FACTORIES.items():
+        result.update((CLI_PREFIX + scope, f"{method}()[{index}]")
+                      for method, total in factories.items() for index in range(1, total + 1))
+    if len(result) != 87:
+        raise PortError("Malformed declared CLI assertion/family inventory")
+    return result
+
+
 def checked_checkout(repo, head, required):
     entries = tree(repo, head)
     missing = set(required) - entries.keys()
     if missing:
         raise PortError("Required inputs are not committed: " + repr(sorted(missing)[:3]))
     raw = {}
+    total_size = 0
     for path in sorted(required):
         local = repo.joinpath(*path.split("/"))
         bounded_directory(local.parent, repo)
         if linked(local) or not local.is_file() or local.stat().st_size > 16 * 1024 * 1024:
             raise PortError("Missing/unsafe/oversized immutable input: " + path)
+        total_size += local.stat().st_size
+        if total_size > 64 * 1024 * 1024:
+            raise PortError("Oversized complete immutable input set")
         data = local.read_bytes()
         canonical = checkout_bytes(local, data)
         if blob(data) == entries[path]:
@@ -162,7 +215,7 @@ def native_source_scopes(repo):
 
 def original_accounting(repo, catalog, details, manifest, native):
     fields(catalog, {"schema_version", "source_sha", "entries"}, label="frozen original-case catalog")
-    if catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
+    if type(catalog["schema_version"]) is not int or catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
         raise PortError("Frozen case catalog pin/version mismatch")
     if details["source_sha"] != SOURCE or details["manifest_sha256"] != MANIFEST:
         raise PortError("Original assertion/parameter detail provenance mismatch")
@@ -233,17 +286,18 @@ def original_accounting(repo, catalog, details, manifest, native):
 
 def invocation_record(path, head, host):
     if path is None:
-        return {"scope": "local immutable candidate execution; no hosted run authority", "head_sha": head, "host": host}
+        return {"scope": LOCAL_SCOPE, "head_sha": head, "host": host}
     return validate_invocation(load_json(path), head, host)
 
 
 def validate_invocation(record, head, host):
     fields(record, {"schema_version", "stage", "identity", "host"}, label="explicit CI invocation forwarding")
-    if record["schema_version"] != 1 or record["stage"] not in ("verify", "protocol") or record["host"] != host:
+    if (type(record["schema_version"]) is not int or record["schema_version"] != 1
+            or record["stage"] not in ("verify", "protocol") or record["host"] != host):
         raise PortError("Invalid invocation version/stage/host")
     identity = record["identity"]
     if identity is None:
-        return {"scope": "explicit local CI executor forwarding; no hosted run authority", "head_sha": head, "host": host}
+        return {"scope": LOCAL_EXECUTOR_SCOPE, "head_sha": head, "host": host}
     fields(identity, {"binding", "run_id", "run_attempt"}, label="actual hosted invocation identity")
     bound = Binding.parse(identity["binding"])
     if bound.head_sha != head or bound.source_sha != SOURCE or bound.manifest_sha256 != MANIFEST or bound.policy_revision != POLICY:
@@ -258,12 +312,20 @@ def validate_invocation(record, head, host):
 def required_inputs(entries, manifest):
     roots = ("android/core/protocol/", "android/core/model/", "android/core/contracts/", "android/tools/meshcli/")
     required = {p for p in entries if p.startswith(roots) and (
-        "/src/" in p or p.endswith((".kts", ".lockfile", ".py", ".md"))
+        "/src/" in p or p.endswith((".kts", ".lockfile", ".py", ".md", ".json"))
     )} | {
         "docs/android/test-cases.json", "docs/android/port-manifest.json", "docs/android/automation-policy.json",
         "docs/android/evidence/WP-004/inventory-details.json", "docs/android/evidence/WP-109/baseline-native.json",
         "android/core/testing/fixtures/protocol-vectors.tsv", "android/core/testing/fixtures/protocol-vectors.json",
+        "LICENSE",
+        *("android/app/src/main/assets/licenses/" + name
+          for name in ("GPL-3.0.txt", "MeshCore-MIT.txt", "BouncyCastle-MIT.txt", "Apache-2.0.txt")),
     }
+    required.update(required_runtime_inputs())
+    required.update(p for p in entries if p.startswith("android/build-logic/") and (
+        "/src/" in p or Path(p).suffix in {".kts", ".lockfile", ".properties", ".toml"}
+    ))
+    required.update(p for p in entries if p.startswith("android/gradle/dependency-locks/") and p.endswith(".lockfile"))
     required.update(i["path"] for i in manifest.inputs("WP-109"))
     required.update(p for p in entries if p.startswith("docs/android/evidence/WP-102/") and p.endswith((".tsv", ".json")))
     return required
@@ -288,6 +350,8 @@ def collect(repo, output, invocation=None):
     entries = tree(repo, head)
     roots = ("android/core/protocol/", "android/core/model/", "android/core/contracts/", "android/tools/meshcli/")
     required = required_inputs(entries, manifest)
+    if len(required) > 2048:
+        raise PortError("Oversized complete immutable input set")
     native_roots = [r + "src" for r in roots]
     if any(git(repo, "ls-files", "--others", "-z", "--", *native_roots).split(b"\0")):
         raise PortError("Uncommitted compiled native source inputs")
@@ -320,7 +384,7 @@ def collect(repo, output, invocation=None):
             raise PortError("Immutable blob collision")
         file.write_bytes(data)
     result = {
-        "schema_version": 1, "scope": "actual code/JUnit/source families; not independent acceptance or hardware",
+        "schema_version": 1, "scope": EVIDENCE_SCOPE,
         "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
         "policy_revision": POLICY, "invocation": run, "inputs": inputs, "counts": counts,
         "native_cases": native, "raw_reports": raw_records, "original_cases": originals,
@@ -341,7 +405,8 @@ def validate_bundle(output, repo, head):
         "unique_original_native_bindings", "new_original_cases", "reviewed_exclusions", "physical_radio_verified",
     }
     fields(value, required, label="complete WP-109 evidence")
-    if value["schema_version"] != 1 or value["work_package"] != "WP-109" or value["head_sha"] != head:
+    if (type(value["schema_version"]) is not int or value["schema_version"] != 1
+            or value["scope"] != EVIDENCE_SCOPE or value["work_package"] != "WP-109" or value["head_sha"] != head):
         raise PortError("Stale/malformed CLI evidence binding")
     if (value["source_sha"], value["manifest_sha256"], value["policy_revision"]) != (SOURCE, MANIFEST, POLICY):
         raise PortError("Frozen evidence pin mismatch")
@@ -355,8 +420,12 @@ def validate_bundle(output, repo, head):
         validate_invocation(invocation, head, invocation["host"])
     else:
         fields(invocation, {"scope", "head_sha", "host"}, label="local immutable execution")
-        if invocation["head_sha"] != head or invocation["host"] not in ("linux", "windows"):
+        if (invocation["scope"] not in (LOCAL_SCOPE, LOCAL_EXECUTOR_SCOPE)
+                or invocation["head_sha"] != head or invocation["host"] not in ("linux", "windows")):
             raise PortError("Stale local invocation")
+    fields(value["counts"], set(MODULES), label="complete module-discovery counts")
+    for module, (_, minimum) in MODULES.items():
+        require_counts(value["counts"][module], minimum=minimum)
     for path, identity in value["inputs"].items():
         if entries.get(path) != identity:
             raise PortError("Stale/fabricated raw input identity")
@@ -381,7 +450,8 @@ def validate_bundle(output, repo, head):
     unique = len({(o["native_test"]["class"], o["native_test"]["name"]) for o in original})
     if original != value["original_cases"] or value["original_declarations"] != 486 or value["unique_original_native_bindings"] != unique:
         raise PortError("Incomplete/tampered original assertion/parameter accounting")
-    if value["new_original_cases"] != 0 or value["reviewed_exclusions"] != 0 or value["physical_radio_verified"] is not False:
+    if (any(type(value[key]) is not int or value[key] != 0 for key in ("new_original_cases", "reviewed_exclusions"))
+            or value["physical_radio_verified"] is not False):
         raise PortError("Invented original cases/exclusions/hardware acceptance")
     return value
 
@@ -398,10 +468,13 @@ def validate_native_floor(repo, native):
     actual = {(c["class"], c["name"]) for c in native["protocol"]}
     if len(expected) != 4708 or not expected <= actual:
         raise PortError("Removed/replaced baseline protocol identities")
-    cli_classes = {c["class"] for c in native["meshcli"]}
-    mandatory = {"CliArgumentsTest", "CliTcpTest", "CliMainProcessTest"}
-    if not {"com.meshcoreone.android.tools.meshcli." + n for n in mandatory} <= cli_classes:
-        raise PortError("Actual parser/socket/deployed-main CLI suites are mandatory")
+    tcp_expected = {(NATIVE_PREFIX + "parity.TcpOwnershipParityTest", method + "()") for method in TCP_CASES}
+    if not tcp_expected <= actual:
+        raise PortError("New real-TCP ownership/quarantine/cancellation assertions are mandatory")
+    cli_expected = required_cli_cases()
+    cli_actual = {(c["class"], c["name"]) for c in native["meshcli"]}
+    if not cli_expected <= cli_actual:
+        raise PortError("Missing actual CLI assertion/family rows: " + repr(sorted(cli_expected - cli_actual)[:4]))
 
 
 def baseline(directory):

@@ -103,8 +103,11 @@ arbitrary timing sleeps. Loopback is **not** physical-radio evidence.
 and the real protocol test finalizer from this owned build script. Its strict
 collector preserves every raw JUnit testcase/log node and immutable input blob,
 requires all486 original MeshCore declarations/parameter families and every
-existing4,708 native identity, and distinguishes reused assertions from new
-native cases. Missing, zero, skipped, malformed, changed or stale proof fails.
+existing4,708 native identity, all three new TCP consumer identities and all87
+declared CLI identities/parameter rows, not merely a nonzero count or class
+presence. It retains immutable build-logic/catalog/wrapper/locks/runtime and
+notice inputs as well as source/tests, and distinguishes reused assertions from
+new native cases. Missing, reduced, skipped, malformed, changed or stale proof fails.
 The generic root `core|feature|platform` collector does not count `tools`;
 the separate full CLI bundle is mandatory for coordinator replay.
 

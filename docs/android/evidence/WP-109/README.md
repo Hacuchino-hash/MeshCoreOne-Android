@@ -39,6 +39,18 @@ LRM/RLM, embeddings/overrides/pop and isolate controls. This closes the omitted
 ALM/LRM/RLM escape branches without changing source parser text behavior.
 The candidate declares87 CLI cases after these15 genuinely new native-only
 rows; they are not added original Swift declarations or duplicated parity labels.
+Actual d4721a47 normal protocol37242211561/attempt1 is green on both hosts, but
+the independently downloaded full Gradle log reports **73 CLI cases, not87**.
+The two new process tests and twelve-row bidi factory were mistakenly declared
+as local functions, so compilation/class-presence gates did not discover them.
+They are now class-level declarations. The reader requires all87 exact CLI
+identities/rows and all three new real-TCP identities in addition to the unchanged
+4,708 baseline, so this concrete reduced-discovery run no longer passes.
+No threshold is reduced and no green status substitutes for complete raw proof.
+The reader also rejects boolean schema/count substitutes and invented local
+authority, and retains the declared immutable CI/build-logic/catalog/wrapper/
+locks/notice inputs. Its complete input set is capped at2,048 files/64MiB with
+the existing per-file checks; binary artifacts retain exact bytes.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless

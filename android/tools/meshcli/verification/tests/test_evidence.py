@@ -39,6 +39,20 @@ class EvidenceTests(unittest.TestCase):
                         "commit", "--quiet", "-m", "fixture"], check=True, capture_output=True)
         return subprocess.check_output(["git", "-C", str(self.root), "rev-parse", "HEAD"]).decode().strip()
 
+    def native_floor_fixture(self):
+        retained = (reader.EVIDENCE / "baseline-native.json").read_bytes().replace(b"\r\n", b"\n")
+        baseline = self.root / "docs" / "android" / "evidence" / "WP-109" / "baseline-native.json"
+        baseline.parent.mkdir(parents=True, exist_ok=True)
+        baseline.write_bytes(retained)
+        return {
+            "protocol": json.loads(retained)["cases"] + [
+                {"class": reader.NATIVE_PREFIX + "parity.TcpOwnershipParityTest", "name": method + "()", "outcome": "passed"}
+                for method in reader.TCP_CASES
+            ],
+            "meshcli": [{"class": scope, "name": name, "outcome": "passed"}
+                        for scope, name in sorted(reader.required_cli_cases())],
+        }
+
     def test_complete_raw_case_and_log_bytes_survive(self):
         self.report()
         cases, raw, counts = reader.junit(self.reports, self.root, 1)
@@ -114,7 +128,7 @@ class EvidenceTests(unittest.TestCase):
         }
         path.write_text(json.dumps(record), encoding="utf-8")
         self.assertEqual(record, reader.invocation_record(path, head, "linux"))
-        for field, value in [("schema_version", 2), ("stage", "prepare"), ("host", "windows")]:
+        for field, value in [("schema_version", 2), ("schema_version", True), ("stage", "prepare"), ("host", "windows")]:
             wrong = {**record, field: value}
             path.write_text(json.dumps(wrong), encoding="utf-8")
             with self.assertRaises(PortError):
@@ -165,13 +179,8 @@ class EvidenceTests(unittest.TestCase):
     def test_frozen_baseline_accepts_checkout_newlines_not_changed_identities(self):
         retained = (reader.EVIDENCE / "baseline-native.json").read_bytes().replace(b"\r\n", b"\n")
         self.assertEqual(reader.BASELINE_SHA256, reader.sha(retained.replace(b"\n", b"\r\n")))
-        native = {
-            "protocol": json.loads(retained)["cases"],
-            "meshcli": [{"class": "com.meshcoreone.android.tools.meshcli." + name, "name": "fixture()", "outcome": "passed"}
-                        for name in ("CliArgumentsTest", "CliTcpTest", "CliMainProcessTest")],
-        }
-        baseline = self.root / "docs/android/evidence/WP-109/baseline-native.json"
-        baseline.parent.mkdir(parents=True)
+        native = self.native_floor_fixture()
+        baseline = self.root / "docs" / "android" / "evidence" / "WP-109" / "baseline-native.json"
         for data in (retained, retained.replace(b"\n", b"\r\n")):
             baseline.write_bytes(data)
             reader.validate_native_floor(self.root, native)
@@ -180,6 +189,35 @@ class EvidenceTests(unittest.TestCase):
         baseline.write_bytes(changed)
         with self.assertRaises(PortError):
             reader.validate_native_floor(self.root, native)
+
+    def test_every_new_tcp_and_cli_row_is_required_not_only_class_presence_or_total(self):
+        native = self.native_floor_fixture()
+        reader.validate_native_floor(self.root, native)
+        self.assertEqual(87, len(native["meshcli"]))
+        incomplete = {**native, "meshcli": [
+            case for case in native["meshcli"]
+            if not case["name"].startswith("bidiControlCharacters()")
+            and "detects a closed" not in case["name"]
+        ]}
+        self.assertEqual(73, len(incomplete["meshcli"]), "Reproduces actual d472 discovery, not native execution")
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, incomplete)
+        replaced = {**native, "meshcli": [*native["meshcli"][:-1], {
+            "class": reader.CLI_PREFIX + "CliTcpTest", "name": "unrelated replacement()", "outcome": "passed",
+        }]}
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, replaced)
+        without_tcp = {**native, "protocol": native["protocol"][:-1]}
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, without_tcp)
+
+    def test_complete_count_schema_rejects_booleans_and_nonintegral_values(self):
+        valid = {"discovered": 87, "run": 87, "passed": 87, "failed": 0, "errors": 0, "skipped": 0}
+        self.assertEqual(valid, reader.require_counts(valid, minimum=87))
+        for key, invalid in (("failed", False), ("errors", 0.0), ("passed", "87"), ("skipped", None)):
+            with self.subTest(key=key):
+                with self.assertRaises(PortError):
+                    reader.require_counts({**valid, key: invalid}, minimum=87)
 
     def test_required_inputs_include_tools_production_tests_hooks_and_source_scope(self):
         class Manifest:
@@ -190,12 +228,17 @@ class EvidenceTests(unittest.TestCase):
             "android/tools/meshcli/src/test/MainTest.kt": "b" * 40,
             "android/tools/meshcli/verification/tests/test_reader.py": "c" * 40,
             "android/tools/meshcli/build.gradle.kts": "d" * 40,
+            "android/build-logic/convention/src/main/BuildConventions.kt": "e" * 40,
+            "android/gradle/dependency-locks/immutable.lockfile": "f" * 40,
         }
         required = reader.required_inputs(entries, Manifest())
         self.assertTrue(set(entries) <= required)
         self.assertIn("MeshCore/Tests/original.swift", required)
         self.assertIn("docs/android/evidence/WP-109/baseline-native.json", required)
         self.assertIn("android/core/testing/fixtures/protocol-vectors.tsv", required)
+        self.assertTrue(reader.required_runtime_inputs() <= required)
+        self.assertIn("LICENSE", required)
+        self.assertIn("android/app/src/main/assets/licenses/BouncyCastle-MIT.txt", required)
 
 
 if __name__ == "__main__":

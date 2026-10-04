@@ -331,27 +331,27 @@ class CliTcpTest {
                 assertEquals(1, output.out.toString().count { it == '\n' })
             }
         }
+    }
 
-        @TestFactory
-        fun bidiControlCharacters() = listOf(
-            '\u061c' to "\\u061c", '\u200e' to "\\u200e", '\u200f' to "\\u200f",
-            '\u202a' to "\\u202a", '\u202b' to "\\u202b", '\u202c' to "\\u202c",
-            '\u202d' to "\\u202d", '\u202e' to "\\u202e", '\u2066' to "\\u2066",
-            '\u2067' to "\\u2067", '\u2068' to "\\u2068", '\u2069' to "\\u2069",
-        ).map { (control, escaped) ->
-            DynamicTest.dynamicTest("$escaped inside a real device model is escaped without losing text") {
-                runBlocking {
-                    supervisorScope {
-                        CliPeer().use { peer ->
-                            val output = CapturedConsole()
-                            val result = async { MeshCli.execute(cliArgs(peer, "device"), output.console) }
-                            peer.handshake(); peer.expect(22, 3); peer.send(deviceFrame("before${control}after"))
-                            assertEquals(0, result.await())
-                            assertTrue(output.out.toString().contains("\"model\":\"before${escaped}after\""))
-                            assertFalse(output.out.toString().contains(control))
-                            assertEquals("", output.err.toString())
-                            peer.expectClientClosed()
-                        }
+    @TestFactory
+    fun bidiControlCharacters() = listOf(
+        '\u061c' to "\\u061c", '\u200e' to "\\u200e", '\u200f' to "\\u200f",
+        '\u202a' to "\\u202a", '\u202b' to "\\u202b", '\u202c' to "\\u202c",
+        '\u202d' to "\\u202d", '\u202e' to "\\u202e", '\u2066' to "\\u2066",
+        '\u2067' to "\\u2067", '\u2068' to "\\u2068", '\u2069' to "\\u2069",
+    ).map { (control, escaped) ->
+        DynamicTest.dynamicTest("$escaped inside a real device model is escaped without losing text") {
+            runBlocking {
+                supervisorScope {
+                    CliPeer().use { peer ->
+                        val output = CapturedConsole()
+                        val result = async { MeshCli.execute(cliArgs(peer, "device"), output.console) }
+                        peer.handshake(); peer.expect(22, 3); peer.send(deviceFrame("before${control}after"))
+                        assertEquals(0, result.await())
+                        assertTrue(output.out.toString().contains("\"model\":\"before${escaped}after\""))
+                        assertFalse(output.out.toString().contains(control))
+                        assertEquals("", output.err.toString())
+                        peer.expectClientClosed()
                     }
                 }
             }
