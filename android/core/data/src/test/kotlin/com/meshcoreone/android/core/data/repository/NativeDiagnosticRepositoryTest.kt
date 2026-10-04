@@ -65,14 +65,39 @@ class NativeDiagnosticRepositoryTest : RepositoryTest() {
             val failure = assertFailsWith<PersistenceStoreException> {
                 store.createSavedTracePath(RADIO_A, "invalid run", Bytes.of(0x80), 1, bad)
             }
-            assertIs<DatabaseValueException>(failure.cause)
+            assertEquals("trace hops", assertIs<DatabaseValueException>(failure.cause).field)
             assertTrue(store.fetchSavedTracePaths(RADIO_A).isEmpty())
+            assertNull(db.traceRuns().byId(RADIO_A.value, bad.id))
         }
         val bad = TracePathRunDTO(UUID.randomUUID(), AT, true, 1, SnapshotList.of(Double.NaN))
         val missing = assertFailsWith<PersistenceStoreException> {
             store.appendTracePathRun(entity(id = UUID.randomUUID()), bad)
         }
         assertEquals(PersistenceStoreError.FetchFailed("SavedTracePath not found"), missing.error)
+    }
+
+    @Test fun emptyFiniteNegativeFractionalAndZeroTraceRunsKeepTheirEncodedBytes() = runTest {
+        val empty = TracePathRunDTO(UUID.randomUUID(), AT, true, 1, SnapshotList.empty())
+        val path = store.createSavedTracePath(RADIO_A, "finite", Bytes.of(0x80), 1, empty)
+        assertEquals(Bytes.utf8("[]"), assertNotNull(db.traceRuns().byId(RADIO_A.value, empty.id)).hopsData)
+        val finite = empty.copy(id = UUID.randomUUID(), date = AT.plusNanos(1), hopsSNR = SnapshotList.of(-1.5, 0.125, 7.0))
+        store.appendTracePathRun(entity(id = path.id), finite)
+        assertEquals(Bytes.utf8("[-1.5,0.125,7]"), assertNotNull(db.traceRuns().byId(RADIO_A.value, finite.id)).hopsData)
+        val zeros = empty.copy(id = UUID.randomUUID(), date = AT.plusNanos(2), hopsSNR = SnapshotList.of(0.0, -0.0))
+        store.appendTracePathRun(entity(id = path.id), zeros)
+        assertEquals(Bytes.utf8("[0,-0]"), assertNotNull(db.traceRuns().byId(RADIO_A.value, zeros.id)).hopsData)
+        val runs = assertNotNull(store.fetchSavedTracePath(entity(id = path.id))).runs
+        assertEquals(3, runs.size)
+        assertTrue(runs[0].hopsSNR.isEmpty())
+        assertEquals(listOf(-1.5, 0.125, 7.0), runs[1].hopsSNR)
+        assertEquals(2, runs[2].hopsSNR.size)
+        assertTrue(runs[2].hopsSNR.all { it == 0.0 })
+        for (value in listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
+            val bad = empty.copy(id = UUID.randomUUID(), hopsSNR = SnapshotList.of(value))
+            assertFailsWith<PersistenceStoreException> { store.appendTracePathRun(entity(id = path.id), bad) }
+            assertNull(db.traceRuns().byId(RADIO_A.value, bad.id))
+            assertEquals(3, assertNotNull(store.fetchSavedTracePath(entity(id = path.id))).runs.size)
+        }
     }
 
     @Test fun malformedStoredTraceDataSurfacesItsConverterCauseAndLeavesTheRowIntact() = runTest {

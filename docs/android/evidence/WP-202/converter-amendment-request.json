@@ -1,8 +1,15 @@
 {
   "schema_version": 1,
   "work_package": "WP-202",
-  "status": "requested-not-authorized",
+  "status": "active-coordinator-amendment",
   "receipt": "autonomous-WP-202-dc15f1ba",
+  "amendment_receipt": {
+    "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+    "independently_reviewed": "Frozen SavedTracePath.swift86-90 JSONEncoder behavior; exact ValueConverters.kt:doublesToBlob line71 and inverse finite check; actual153/152/1 trace failure.",
+    "decision": "ACTIVE only the pre-JSONArray finite-value guard with unchanged typed field/reason/signature/valid bytes/decode wrapper/inverse/all other methods.",
+    "local_execution": "Java temporarily held by WP204; WP202 diagnostic/full-source execution requires explicit next slot.",
+    "not_granted": "Schema/entity/model/contract or other converter method edits; empty-data fallback; broad NPE catch; source/golden/case/policy changes."
+  },
   "app_session": "e83ac80e-ce2c-45c1-9574-3e04f1de87a6",
   "native_project_alias": "8a3ef5a7-3f45-4c93-8ecb-e252fa000482",
   "current_base_sha": "fbb7eb6f88f1b3a74eaddb68cac911ff52650d02",

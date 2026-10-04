@@ -27,6 +27,21 @@
     },
     "runtime_limit": "Published immutable first-party Foundation source facts, not an executed Apple SDK/macOS oracle. The existing frozen Swift/macOS backup oracle has not been modified or relabeled."
   },
+  "trace_json_valid_bytes": {
+    "repository": "Android platform/libcore",
+    "tag": "android-12.0.0_r1",
+    "path": "json/src/main/java/org/json/JSONObject.java",
+    "source_url": "https://android.googlesource.com/platform/libcore/+/refs/tags/android-12.0.0_r1/json/src/main/java/org/json/JSONObject.java?format=TEXT",
+    "source_decoded_utf8_sha256": "65ecb3978dcc075fbf55f613d0bbfee6957a3ef84d1cd014d0393f28a0f05a3f",
+    "number_encoder_line": 751,
+    "independent_facts": "numberToString checks the double, emits -0 for negative zero, emits exact integral values as Long text, and otherwise uses Number text. JSONArray joins these values with commas.",
+    "vectors": [
+      { "values": [], "encoded_utf8": "[]" },
+      { "values": [-1.5, 0.125, 7.0], "encoded_utf8": "[-1.5,0.125,7]" },
+      { "value_descriptions": ["positive zero", "negative zero"], "encoded_utf8": "[0,-0]" }
+    ],
+    "scope": "Independent published API31 encoder facts matching the existing converter expression; no candidate-generated expected bytes or dependency/source/golden change."
+  },
   "content_based_deduplication": {
     "source": "MC1Services/Sources/MC1Services/Utilities/DeduplicationKey.swift",
     "algorithm": "SHA256 over exact UTF8 content; uppercase first four digest bytes; canonical uppercase UUID segment and UInt32 decimal timestamp.",

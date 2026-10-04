@@ -95,6 +95,15 @@ high-bit/null/empty fields, and cancellation on the Room commit-return edge.
 Those methods executed in the153-case suite; the actual remaining failure
 is isolated in
 [`converter-amendment-request.json`](converter-amendment-request.json).
+The coordinator subsequently admitted that exact one-path fix. Only the
+pre-JSONArray finite-value guard is added; every other converter byte/
+method/signature is unchanged. NaN and both infinities retain the original
+typed-failure/rollback expectations. Additional real-DAO assertions cover
+empty, negative/fractional/integral and signed-zero arrays against independently
+pinned API31 JSON encoding facts, and confirm invalid appends do not delete
+committed finite runs. The renewed diagnostic/full native run is still
+pending WP204's temporary slot release; the last failed153-case evidence is
+not rewritten as success before execution.
 
 The coordinator explicitly released WP204's slot and granted WP202 one
 exclusive bounded Java lane. Commands use one worker, in-process Kotlin,
