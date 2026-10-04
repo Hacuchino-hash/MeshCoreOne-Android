@@ -137,7 +137,7 @@ internal class ScheduledOperations {
     }
 
     private suspend fun awaitCompletion(job: Job) {
-        withTimeout(5_000) {
+        withTimeout(3_000) {
             while (!job.isCompleted) {
                 scheduler.runCurrent()
                 yield()
