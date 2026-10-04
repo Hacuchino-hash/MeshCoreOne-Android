@@ -331,6 +331,15 @@ class SourcePipelineTest(unittest.TestCase):
         self.assertEqual(self.summary["plural_keys"], len(default_plurals))
         self.assertEqual(self.summary["generated_keys"], len(default_strings) + len(default_plurals))
 
+    def test_generated_headers_pass_the_actual_trusted_traceability_validator(self):
+        from controller.model import load_manifest
+        from portmap import port_map
+        mapped = {entry["implementation"]: entry for entry in port_map(load_manifest(c.REPOSITORY))}
+        for path in self.outputs:
+            if path.startswith(c.KOTLIN) and path.endswith(".kt"):
+                self.assertTrue(mapped[path]["generated_inputs"], path)
+                self.assertEqual([], mapped[path]["sources"])
+
     def test_source_signature_agreement_all_locales_and_no_unmapped_keys(self):
         for message in self.messages:
             with self.subTest(key=message.key):

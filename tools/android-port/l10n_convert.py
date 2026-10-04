@@ -776,7 +776,11 @@ def validate_resource_xml(data: bytes, location: str) -> None:
 
 def kotlin_table(messages: list[Message], domain: str, table: str) -> tuple[str, bytes]:
     object_name = domain.title() + table + "Strings"
+    sources = sorted({
+        value.path for message in messages for value in (*message.strings.values(), *message.plurals.values())
+    })
     lines = [
+        generated_header(sources),
         f"// {NOTICE}",
         "package com.meshcoreone.android.core.l10n.generated",
         "",
@@ -814,6 +818,10 @@ def kotlin_table(messages: list[Message], domain: str, table: str) -> tuple[str,
     return KOTLIN + f"/{object_name}.kt", ("\n".join(lines) + "\n").encode()
 
 
+def generated_header(sources: list[str]) -> str:
+    return f"// GeneratedFrom: {GENERATOR}; inputs: " + ", ".join(f"{path}@{REFERENCE}" for path in sources)
+
+
 def json_bytes(value) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode()
 
@@ -845,8 +853,11 @@ def generate(root: Path = REPOSITORY) -> tuple[dict[str, bytes], dict]:
     if len(subdivisions) != 59 or any(m.plurals or m.base.format.arguments or set(m.strings) != set(LOCALES) for m in subdivisions):
         fail("RegionalSubdivisionLocalizationTests", "expected 59 fully localized, nonformatted subdivision keys")
     lines = [
+        generated_header(sorted({
+            "MC1Services/Sources/MC1Services/Services/RegionalAreas.swift",
+            *(value.path for message in subdivisions for value in message.strings.values()),
+        })),
         f"// {NOTICE}",
-        f"// PortedFrom: MC1Services/Sources/MC1Services/Services/RegionalAreas.swift@{REFERENCE}",
         "package com.meshcoreone.android.core.l10n.generated",
         "",
         "import android.content.res.Resources",

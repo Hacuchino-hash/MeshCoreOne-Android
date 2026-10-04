@@ -1,5 +1,5 @@
 // PortedFrom: MC1/Resources/Generated/L10n.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-005 Typed generated printf calls and lossless Long plural selection for the twelve locales.
+// WP-005 Native typed printf calls and lossless Long plural selection for the twelve locales.
 package com.meshcoreone.android.core.l10n
 
 import android.content.res.Resources

@@ -40,7 +40,7 @@ typed argument positions, quantities, actual locale sources/fallbacks, correctio
 fingerprints and every generated output digest. Filename/header counts are not
 asserted as behavioral parity.
 
-The 64 Python cases exercise grammar/escaping/comments/encoding/continuations,
+The 65 Python cases exercise grammar/escaping/comments/encoding/continuations,
 typed/positional/named/percent/finite-float formats, safe plist and all-six-quantity
 shapes, actual xcstrings, complete pinned-source counts, collisions, real fallback,
 determinism, output/pin/correction drift and strict JUnit evidence failures.
@@ -58,14 +58,16 @@ not committed. No host PATH, memory, license or main-checkout setting was change
 
 | Exact command/task selection | Actual result |
 | --- | --- |
-| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**; 64 discovered/passed, zero failures/errors/skips; all 63 outputs regenerated. |
+| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**; 65 discovered/passed, zero failures/errors/skips; all 63 outputs regenerated. |
 | `python .\tools\android-port\l10n_convert.py --check` | **Passed**; no source/output/key-map drift. |
+| `python .\tools\android-port\portmap.py` | **Passed** after correcting generated headers to the validator's canonical `GeneratedFrom` disposition. All 12 generated Kotlin files declare actual pinned inputs; no conflicting handwritten/generated disposition. |
 | `python .\tools\android-port\controller\verification_config.py --check` | **Passed** on the initial foundation; trusted overlay intact, no feature acceptance inferred. |
 | `python .\tools\android-port\controller\validate.py` | **Passed**; 1,866 pinned files, 65 WPs and 185 edges unchanged. |
 | `python .\tools\android-port\controller\test_runner.py --quiet` | **Passed**; 161 discovered/run/passed, zero failed/errors/skipped (controller fixtures, not Android/iOS parity). |
+| `python .\tools\android-port\controller\ci.py python` | **Passed** on merged main after the candidate header repair: manifest/traceability/notices, 165 controller and 15 scaffold Python cases, no failure/error/skip. Private output directory, no toolchain provisioning or gate publication. |
 | `:core:l10n:dependencies --write-locks --dependency-verification strict` | **Passed**; module-local lock created from existing pinned aliases. |
 | `:core:l10n:assembleDebug --write-locks --dependency-verification strict` | **Passed**, including real AAPT resource processing and production Kotlin compilation; initial empty `androidApis` state initialized. |
-| `:core:l10n:assembleDebug --dependency-verification strict` | **Passed** on merged main `050ac690`, with all 64 converter tests rerun; no lock/checksum update flags. Final constrained heap was 640m. |
+| `:core:l10n:assembleDebug --dependency-verification strict` | **Passed** on merged main `050ac690`, including the final canonical-header repair and all 65 converter tests rerun; no lock/checksum update flags. Final constrained heap was 640m. |
 | `:core:l10n:testDebugUnitTest :core:l10n:verifyL10nTests --dependency-verification strict --no-build-cache --rerun-tasks` | **Failed** before discovery: existing `annotation-jvm:1.7.0` module is pinned but its JAR is absent from shared verification metadata. |
 | `:core:l10n:lintDebug --dependency-verification strict` | **Failed** on the same JAR while generating the unit-test lint model; no lint pass claimed. |
 
@@ -96,6 +98,14 @@ edit unleased shared verification metadata, change dependency versions, add
 unrelated dependencies, trust whole artifact groups or disable verification.
 Once the shared owner supplies the exact checksum, rerun the same module suites
 and lint, record discovered XML counts, and repair this same candidate.
+
+The first hosted Android run stopped earlier in the Python stage because the
+initial generator notice was not the validator's canonical `GeneratedFrom`
+header. This was an in-scope candidate bug, not a reason to weaken the validator.
+The generator and native helper disposition were corrected, outputs regenerated,
+and the actual trusted traceability validator passed. A new regression case runs
+that validator against every generated Kotlin file. This same normal PR is
+repaired rather than replaced.
 
 ## Boundaries and historical diagnostic
 
