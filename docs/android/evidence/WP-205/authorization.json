@@ -1,0 +1,32 @@
+{
+  "scope": "User-directed native implementation authorization trace, not a dispatcher, review or completion receipt",
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "work_package": "WP-205",
+  "owner": "connectivity-engineer",
+  "coordinator_lease": "autonomous-WP-205-0ae60699",
+  "coordinator_lease_source": "Explicit coordinator message recording an active SQL lease",
+  "project_id": "663db92c-ed50-4a77-aded-bda85a7c503a",
+  "project_session_alias": "0bdc2276-e010-4c61-ad20-e523bed48a7d",
+  "execution_session_id": "09d597dd-d530-44a6-bdfa-32ad1b81bfc4",
+  "branch": "cbattlegear-curly-guide",
+  "initial_head": "0ae606992bf58c8d3f2bf08b7a26406c97f12f84",
+  "initial_worktree_clean": true,
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "source_tree": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "actual_prerequisite_merge": {
+    "work_package": "WP-108",
+    "merge_commit_sha": "eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730",
+    "verified_ancestor_of_initial_head": true
+  },
+  "authorized_write_paths": [
+    "android/core/ble/",
+    "docs/android/deviations/WP-205.md",
+    "docs/android/evidence/WP-205/"
+  ],
+  "shared_amendments": [],
+  "nested_workers_or_sessions_started": false,
+  "normal_pr_target": "main",
+  "final_integration_and_merge": "Independent coordinator review"
+}

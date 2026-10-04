@@ -1,0 +1,1921 @@
+{
+  "generated_by": "docs/android/evidence/WP-205/source-map.py",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "work_package": "WP-205",
+  "scope": "Original-to-native assertion accounting; not execution, parity acceptance or hardware evidence",
+  "owned_inputs": [
+    {
+      "path": "MC1Services/Sources/MC1Services/Errors/BLEError.swift",
+      "blob_sha": "b89ec73cb39da04808f1af2779f94079c67abcce",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLELinkDiagnostics.swift",
+      "blob_sha": "8681a7ff116272c34d78a1cbcc9380d0e3142eac",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEPhase.swift",
+      "blob_sha": "c4489926dbff28ccafffb1097927ef804ef1c26b",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEPhaseKind.swift",
+      "blob_sha": "eeb2478b0a137ea4edb6e0d9fcfff6b2d6fe0768",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEServiceUUID.swift",
+      "blob_sha": "d01e389f8d30b0f3093bddd920d2ccc55d67aed3",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEStateMachine+CBDelegate.swift",
+      "blob_sha": "89ac809a384146be4bb6602f40889d8f4965acd0",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEStateMachine+CallbackHandlers.swift",
+      "blob_sha": "0dffd94b0652f880025bcb25fd7c11e4695fe54d",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEStateMachine.swift",
+      "blob_sha": "99a01f315b89410e5bbf66ff2eb21186b6834528",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BLEStateMachineProtocol.swift",
+      "blob_sha": "168c0565bb818b4c6ba21125674af18a4c622f3e",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/BluetoothAvailability.swift",
+      "blob_sha": "48daf098c34886a9da3cc020013f7bb90ce8f7e3",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/DiscoveredDevice.swift",
+      "blob_sha": "841d5699459186389531fd2326c3c1d19d69623e",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/iOSBLETransport.swift",
+      "blob_sha": "8aae33588c3ceeb328fee4d0b9ee5d0cc42fddc4",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Transport/iOSMeshTransport.swift",
+      "blob_sha": "365d4c2d723c64b69b08c164ae1935f0a4af42af",
+      "kind": "production",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Mocks/MockBLEStateMachine.swift",
+      "blob_sha": "4722932c45d1826d118bcd310d1d3a06597d5f8a",
+      "kind": "support",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Mocks/MockMeshTransport.swift",
+      "blob_sha": "336f59e37ce4d19e4c215771a5569cf473020891",
+      "kind": "support",
+      "original_declarations": 0
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "kind": "test",
+      "original_declarations": 5
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "kind": "test",
+      "original_declarations": 6
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineBondSuspectRecoveryTests.swift",
+      "blob_sha": "d03756beefa2fd510651199e21c1def8fb360a81",
+      "kind": "test",
+      "original_declarations": 2
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "kind": "test",
+      "original_declarations": 7
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "kind": "test",
+      "original_declarations": 8
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "kind": "test",
+      "original_declarations": 8
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "kind": "test",
+      "original_declarations": 10
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "kind": "test",
+      "original_declarations": 20
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "kind": "test",
+      "original_declarations": 7
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "kind": "test",
+      "original_declarations": 13
+    },
+    {
+      "path": "MC1Tests/Helpers/MockMeshTransport.swift",
+      "blob_sha": "9fdfc14215883db17bc6ef82c6462b5de28444bb",
+      "kind": "support",
+      "original_declarations": 0
+    },
+    {
+      "path": "docs/guides/BLE_Transport.md",
+      "blob_sha": "05c946daa300e041394a9fa3c04976acdd7fd1d3",
+      "kind": "reference",
+      "original_declarations": 0
+    }
+  ],
+  "original_declarations": 86,
+  "cases": [
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "source_blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "original_id": "BLEPhaseTests::idle phase has correct name()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "idle phase has correct name"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "source_blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "original_id": "BLEPhaseTests::idle is not part of discovery chain()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "idle is not part of discovery chain"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "source_blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "original_id": "BLEPhaseTests::idle phase is not active()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "idle phase is not active"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "source_blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "original_id": "BLEPhaseTests::idle phase has no peripheral()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "idle phase has no peripheral"
+      },
+      "adaptation": "A-01",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEPhaseTests.swift",
+      "source_blob_sha": "611a8ada3a952b58f3eb5699a79b723edaeab065",
+      "original_id": "BLEPhaseTests::idle phase has no deviceID()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "idle phase has no deviceID"
+      },
+      "adaptation": "A-01",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::transient connect failure below cap re-arms and stays auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::exhausting the budget with encryption timeouts gives up as an auth failure()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::exhausting the budget with generic failures gives up as a connection failure()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::a definitive auth code tears down immediately without re-arming()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::exhausting the budget before foreground confirmation keeps auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineAutoReconnectRetryTests.swift",
+      "source_blob_sha": "15930606163ed2e9b604a7b559a954b98857dd42",
+      "original_id": "BLEStateMachineAutoReconnectRetryTests::exhausting the budget while inactive keeps auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineBondSuspectRecoveryTests.swift",
+      "source_blob_sha": "d03756beefa2fd510651199e21c1def8fb360a81",
+      "original_id": "BLEStateMachineBondSuspectRecoveryTests::wedged auto-reconnect discovery escalates a silent stall to an auth failure()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "MTU request without a callback is bounded by the discovery deadline"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineBondSuspectRecoveryTests.swift",
+      "source_blob_sha": "d03756beefa2fd510651199e21c1def8fb360a81",
+      "original_id": "BLEStateMachineBondSuspectRecoveryTests::disconnect in the discovery-complete window settles fully instead of forking()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "disconnect after subscription reply before adoption preserves auth classification"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::failed auto-reconnect maps a bond-invalidation error to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "AndroidGattAdapterTest",
+        "method": "real nonzero authentication callback status preserves typed recovery"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::full disconnect while connected maps a bond-invalidation error to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "bond loss is definitive even after a connected verified firmware session"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::full disconnect while connected preserves a nil error as nil()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "clean disconnect is not mislabeled authentication or other app ownership"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::full disconnect while auto-reconnecting maps a bond-invalidation error to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "bonding failure during setup cannot leak a continuation"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::auto-reconnect service discovery failure maps to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleGattStatusTest",
+        "method": "ATT status maps to source typed errors and retains operation metadata"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::auto-reconnect characteristic discovery failure maps to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleGattStatusTest",
+        "method": "ATT status maps to source typed errors and retains operation metadata"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineDisconnectionMappingTests.swift",
+      "source_blob_sha": "39c1af16c8c86c439a47ed2512f814ec59730985",
+      "original_id": "BLEStateMachineDisconnectionMappingTests::auto-reconnect notification subscription failure maps to authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleGattStatusTest",
+        "method": "ATT status maps to source typed errors and retains operation metadata"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::empty service discovery holds auto-reconnect and the next didConnect is adopted()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "empty successful service discovery fails closed without an OS reconnect hold"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::a stale disconnect dropped by the timestamp fence still ends in adoption()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleStreamTest",
+        "method": "old disconnect after rapid reconnect is rejected despite matching device handle"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::missing characteristics with nil error holds auto-reconnect and didConnect is adopted()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "missing TX or RX characteristics never create a partial connected transport"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::notification subscription not notifying with nil error holds auto-reconnect()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "notification subscription without completion cannot claim connected"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::notifying subscription with tx-rx missing from phase holds auto-reconnect()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "missing or duplicated notification CCCD fails before negotiation or writes"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::service discovery with a CB error still tears down through the error mapping()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleGattStatusTest",
+        "method": "ATT status maps to source typed errors and retains operation metadata"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::characteristic discovery with a CB error still tears down through the error mapping()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleGattStatusTest",
+        "method": "ATT status maps to source typed errors and retains operation metadata"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineEmptyGATTHoldTests.swift",
+      "source_blob_sha": "326cf2979ee34068390f4c9039e43a44b8219bb7",
+      "original_id": "BLEStateMachineEmptyGATTHoldTests::explicit disconnect during auto-reconnect still cleans up fully without notifying loss()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "receiver and readiness operations end on explicit idempotent disconnect"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::out-of-range encryption timeouts with a live bond keep auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::a didConnect mid-episode is adopted cleanly and clears the failure tally()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::a mixed majority of encryption timeouts with a recent bond keeps auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::exhausted budget while inactive with no bond verification keeps auto-reconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::exhausted budget with a stale bond verification escalates within one episode()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::exhausted budget with no bond verification record escalates within one episode()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::a definitive bond error escalates immediately even with a recent verification()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineFringeEncryptionGraceTests.swift",
+      "source_blob_sha": "85eb6c839bb1c375d27bf0831a72f03a70daf4f1",
+      "original_id": "BLEStateMachineFringeEncryptionGraceTests::a definitive bond error escalates immediately while inactive()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::willRestoreState resumes a parked waitingForBluetooth continuation before claiming the machine()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "disconnect invalidates a connect queued behind the old attempt"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::failPendingBluetoothWait is a no-op outside waitingForBluetooth()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "disconnect is idempotent"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::isReconnecting disconnect in idle does not resurrect autoReconnecting()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "isAutoReconnecting returns false when idle"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::isReconnecting disconnect in waitingForBluetooth resumes the parked continuation instead of leaking it()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "disconnect and duplicate terminal callbacks cannot close twice"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::discoveryComplete teardown records the bond-loss classification for the in-flight connect()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "disconnect after subscription reply before adoption preserves auth classification"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::advancing the connection generation clears a stale discoveryComplete teardown error()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "close completion is awaited before a new generation opens"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::shutdown cancels the RSSI keepalive that its direct phase write bypasses()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "cancellation closes the active operation once and joins its timer"
+      },
+      "adaptation": "A-07",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::stale didWriteValue callback is dropped instead of resuming the newer write()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "stale write callback is dropped instead of resuming the newer write"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::write error carrying a bond-invalidation code surfaces as authenticationFailed()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "AndroidGattAdapterTest",
+        "method": "real nonzero authentication callback status preserves typed recovery"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineRestorationAndTeardownTests.swift",
+      "source_blob_sha": "1f54fdbddb8a1443ca316a0db43c64ea8daa2ee5",
+      "original_id": "BLEStateMachineRestorationAndTeardownTests::write error without an auth code stays a writeError()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "AndroidGattAdapterTest",
+        "method": "status133 is a retained GATT failure not guessed pairing or competing app"
+      },
+      "adaptation": "A-02",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::initializes in idle phase()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "initializes in idle phase"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::isConnected returns false when idle()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "isConnected returns false when idle"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::connectedDeviceID returns nil when idle()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "connectedDeviceID returns nil when idle"
+      },
+      "adaptation": "A-01",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::isAutoReconnecting returns false when idle()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "isAutoReconnecting returns false when idle"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::linkDiagnostics reports the idle phase when idle()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "linkDiagnostics reports the idle phase when idle"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect returns immediately when idle()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "disconnect returns immediately when idle"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::connect throws appropriate error for unknown UUID()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "Bluetooth addresses are redacted connection handles not UUID identities"
+      },
+      "adaptation": "A-01",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::send throws notConnected when idle()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "send throws notConnected when idle"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect is idempotent()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "disconnect is idempotent"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::activate is idempotent()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "construction is idempotent activation without a physical connection"
+      },
+      "adaptation": "A-01",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::connection generation starts at zero()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleValuesTest",
+        "method": "connection generation starts at zero"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect callback from previous generation is rejected()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleStreamTest",
+        "method": "old disconnect after rapid reconnect is rejected despite matching device handle"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect callback at tolerance boundary is accepted()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "wrong generation operation and reply kind cannot complete the current waiter"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect callback beyond tolerance is rejected()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "wrong generation operation and reply kind cannot complete the current waiter"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::advancing the connection generation resets the discovery-extension budget()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineTests::disconnect callback is accepted when timestamp is at or after generation start()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "connect discovers MTU and subscribes in exact whole operation order"
+      },
+      "adaptation": "A-04",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineDiscoveryWatchdogTests::connected peripheral mid-discovery extends the window instead of tearing down()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "discovery timeout is forty seconds for the whole chain not each request"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineDiscoveryWatchdogTests::connected peripheral with a spent budget escalates to an auth failure()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleDiscoveryTest",
+        "method": "MTU request without a callback is bounded by the discovery deadline"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineDiscoveryWatchdogTests::extending re-arms the watchdog so a later timeout still tears the link down()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "discovery timeout is forty seconds for the whole chain not each request"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineTests.swift",
+      "source_blob_sha": "c96f76e3832fba1572f2f8c8193b261cce8b1fc8",
+      "original_id": "BLEStateMachineDiscoveryWatchdogTests::disconnected peripheral tears down instead of extending()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "disconnect and duplicate terminal callbacks cannot close twice"
+      },
+      "adaptation": "A-03",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::readiness wait returns immediately when peripheral is already ready()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleOperationFailureTest",
+        "method": "matching immediate callbacks register before triggering and leave no timer"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::readiness wait resumes when the peripheral signals it can write again()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "concurrent writes are serialized through completion not just initial calls"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::readiness wait resumes on disconnect so a sender never hangs across a drop()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleLifecycleTest",
+        "method": "receiver and readiness operations end on explicit idempotent disconnect"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::readiness wait fails via the timeout backstop when the peripheral stays silent()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "write readiness timeout is exactly five seconds and invalidates its GATT"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::peripheral-ready callback with no pending waiter is a safe no-op()",
+      "original_parameter_family": "single",
+      "disposition": "native-equivalent",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "stale write callback is dropped instead of resuming the newer write"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::capability is true when the write characteristic advertises writeWithoutResponse()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "without response capability requires characteristic and verified firmware evidence"
+      },
+      "adaptation": "A-05",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BLEStateMachineWriteWithoutResponseTests.swift",
+      "source_blob_sha": "b32c7d82ac262b3913cdc5e718291da619e18597",
+      "original_id": "BLEStateMachineWriteWithoutResponseTests::capability is false when the write characteristic is write-only (ESP32)()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleWriteTest",
+        "method": "write only ESP32 characteristic stays on acknowledged writes"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::successful RSSI with live session refreshes an existing verification()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "successful RSSI with live session refreshes an existing verification"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::failed RSSI does not refresh verification()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "failed RSSI does not refresh verification"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::pre-handshake connected without session-live does not refresh()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "pre handshake connected without session live does not refresh"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::stale session-live after phase teardown does not refresh on re-connect()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "stale session live after phase teardown does not refresh on reconnect"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::dead-stack with preserved connected phase does not refresh()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "dead stack with preserved connected phase does not refresh"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::refresh never creates a verification that was cleared()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "refresh never creates a verification that was cleared"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::clear then tick and tick then clear both leave nil()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "clear then tick and tick then clear both leave nil"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::stale bond still escalates to bondSuspect despite live-session RSSI ticks()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "stale bond and live RSSI never shield a definitive authentication failure"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::cross-launch seed after RSSI refresh is recent not handshake-aged()",
+      "original_parameter_family": "single",
+      "disposition": "component-equivalent-consumer-proof-deferred",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "cross launch seed uses the refreshed date without manufacturing a new verification"
+      },
+      "adaptation": "A-07",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::joint zombie shield does not force fringe grace after preserve failures()",
+      "original_parameter_family": "single",
+      "disposition": "platform-adaptation",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "joint zombie shield cannot gain new freshness after session live is cleared"
+      },
+      "adaptation": "A-06",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::onBondRefreshed fires only when refresh mutates()",
+      "original_parameter_family": "single",
+      "disposition": "ported",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "onBondRefreshed fires only when refresh mutates"
+      },
+      "adaptation": null,
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::forget after RSSI hop does not resurrect bond keys()",
+      "original_parameter_family": "single",
+      "disposition": "component-equivalent-consumer-proof-deferred",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "forget after RSSI hop invalidates the refresh rather than resurrecting keys"
+      },
+      "adaptation": "A-07",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    },
+    {
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Transport/BondShieldRefreshTests.swift",
+      "source_blob_sha": "b3de21cc2679bad6ac86bc08efc23f732f077273",
+      "original_id": "BondShieldRefreshTests::epoch gate blocks persist after clear even if shouldPersist was true()",
+      "original_parameter_family": "single",
+      "disposition": "component-equivalent-consumer-proof-deferred",
+      "native_assertion": {
+        "suite": "BleBondRefreshTest",
+        "method": "epoch gate blocks an old refresh after clear even when a new verification was seeded"
+      },
+      "adaptation": "A-07",
+      "execution": "requires actual raw JUnit binding",
+      "review": "proposed; no independent acceptance claimed"
+    }
+  ],
+  "native_assertion_methods": [
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "API appropriate notification signature avoids duplicate legacy and modern delivery"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "Bluetooth power broadcast reads actual state and closes the current handle"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "an early wrong GATT cannot become the adopted connection handle"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "bond broadcast never trusts a supplied PIN or peer extras"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "bond required returns system pairing recovery without silently creating a bond"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "callback notification bytes are copied at entry across the platform looper queue"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "descriptor rejection is terminal even if local routing was enabled"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "immediate write rejection or status failure cannot report success"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "late native callback after reconnect cannot acknowledge the new GATT write"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "local notification rejection is not a successful CCCD subscription"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "native adapter absence is a distinct unavailable capability"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "native cleanup attempts close after disconnect permission failure and surfaces both causes"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "native no callback MTU times out and all receiver registrations are removed"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "permission denial is checked before native connectGatt or receiver registration"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "permission revocation on a callback is explicit rather than an empty receive stream"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real RSSI callback retains signed dBm and reports failure without treating it as bond proof"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real adapter binds a synchronous connect callback only to the returned GATT"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real characteristic and descriptor write overloads match the actual API level"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real descriptor rejects wrong object even when UUID matches"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real nonzero authentication callback status preserves typed recovery"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real notifications retain equal empty and unknown frames before a receiver attaches"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real too small MTU is rejected and requested MTU never substitutes for it"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real write command path requires firmware evidence and preserves whole frames"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "real write rejects wrong GATT characteristic and operation callback kinds"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "service changed invalidates old attributes without any hidden cache refresh"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "status133 is a retained GATT failure not guessed pairing or competing app"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "unsolicited MTU change fails closed rather than overstating frame capability"
+    },
+    {
+      "suite": "AndroidGattApi37Test",
+      "method": "API37 native settings use explicit LE connect and verified explicit MTU"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "RSSI callback from a stopped generation cannot refresh a live successor"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "clear then tick and tick then clear both leave nil"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "cross launch seed uses the refreshed date without manufacturing a new verification"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "dead stack with preserved connected phase does not refresh"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "epoch gate blocks an old refresh after clear even when a new verification was seeded"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "failed RSSI does not refresh verification"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "forget after RSSI hop invalidates the refresh rather than resurrecting keys"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "joint zombie shield cannot gain new freshness after session live is cleared"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "onBondRefreshed fires only when refresh mutates"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "pre handshake connected without session live does not refresh"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "refresh never creates a verification that was cleared"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "stale bond and live RSSI never shield a definitive authentication failure"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "stale session live after phase teardown does not refresh on reconnect"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "successful RSSI with live session refreshes an existing verification"
+    },
+    {
+      "suite": "BleBondRefreshTest",
+      "method": "wrong radio and generation cannot claim a live app session"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "MTU callback is actual capability not the requested number"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "MTU request without a callback is bounded by the discovery deadline"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "RX indication only or read only is not NUS notification support"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "TX must actually advertise acknowledged writes"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "a non NUS service and duplicate NUS services cannot be adopted"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "absent Bluetooth adapter is not scanning ready or a successful connection"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "disconnect after subscription reply before adoption preserves auth classification"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "empty successful service discovery fails closed without an OS reconnect hold"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "invalid actual MTU values cannot advertise frame capacity"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "missing TX or RX characteristics never create a partial connected transport"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "missing or duplicated notification CCCD fails before negotiation or writes"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "notification subscription without completion cannot claim connected"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "permission denial occurs before opening a physical GATT"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "powered off Bluetooth never becomes an indefinite readiness waiter"
+    },
+    {
+      "suite": "BleDiscoveryTest",
+      "method": "too small negotiated MTU is a typed recovery failure"
+    },
+    {
+      "suite": "BleGattStatusTest",
+      "method": "ATT status maps to source typed errors and retains operation metadata"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "bond loss is definitive even after a connected verified firmware session"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "bonding failure during setup cannot leak a continuation"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "cancellation before connect creates no GATT and propagates cancellation"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "clean disconnect is not mislabeled authentication or other app ownership"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "close completion is awaited before a new generation opens"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "close failures are surfaced and not replaced with connection success"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "connect discovers MTU and subscribes in exact whole operation order"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "connecting twice retains the same handle generation and flow"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "connection default expires at exactly ten seconds"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "construction is idempotent activation without a physical connection"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "disconnect cancellation still closes the handle then propagates"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "disconnect invalidates a connect queued behind the old attempt"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "discovery timeout is forty seconds for the whole chain not each request"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "explicit reconnect uses fifteen second discovery without an implicit loop"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "physical close never runs while the callback state monitor is held"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "receiver and readiness operations end on explicit idempotent disconnect"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "required bond cannot publish an unbonded connection"
+    },
+    {
+      "suite": "BleLifecycleTest",
+      "method": "terminal operation failure retains a cleanup failure as suppressed metadata"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "cancellation closes the active operation once and joins its timer"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "disconnect and duplicate terminal callbacks cannot close twice"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "late callback after timeout cannot satisfy a replacement generation"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "matching immediate callbacks register before triggering and leave no timer"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "permission revocation during each operation is not a timeout or fake success"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "power off during each operation terminates it with explicit recovery"
+    },
+    {
+      "suite": "BleOperationFailureTest",
+      "method": "wrong generation operation and reply kind cannot complete the current waiter"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "bursts beyond the source 512 queue never conflate or silently drop packets"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "collector cancellation does not close a process owned physical link"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "late notification after receiver close cannot resurrect a connection"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "notification payloads have immutable value semantics"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "notifications arriving during CCCD completion are retained before connect adoption"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "notifications queue before subscription with exact equal empty and high bit values"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "old disconnect after rapid reconnect is rejected despite matching device handle"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "old flow terminates and never consumes a new connection generation"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "one ingestion drain is enforced rather than splitting packets among collectors"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "unexpected failure drains complete packets then surfaces its typed cause"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "wrong GATT same address disconnect does not terminate the active receiver"
+    },
+    {
+      "suite": "BleStreamTest",
+      "method": "wrong characteristic identity cannot enter the ingestion drain"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "Bluetooth addresses are redacted connection handles not UUID identities"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "NUS UUIDs preserve the independent pinned literals"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "connectedDeviceID returns nil when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "connection generation starts at zero"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "disconnect is idempotent"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "disconnect returns immediately when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "firmware evidence does not follow from MTU or characteristic properties"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "idle is not part of discovery chain"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "idle phase has correct name"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "idle phase has no deviceID"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "idle phase has no peripheral"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "idle phase is not active"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "initializes in idle phase"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "invalid deadlines and MTU configuration are rejected"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "isAutoReconnecting returns false when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "isConnected returns false when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "linkDiagnostics reports the idle phase when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "send throws notConnected when idle"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "source phase names and discovery projection are explicit"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "source timeout defaults remain ten forty fifteen five seconds"
+    },
+    {
+      "suite": "BleValuesTest",
+      "method": "typed recovery distinguishes power permission pairing and firmware"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "ATT attribute maximum is 512 and oversized commands are never split"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "MTU minus three and the firmware limit both constrain complete writes"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "cancelling a queued send does not cancel the unrelated active write"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "concurrent writes are serialized through completion not just initial calls"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "firmware capabilities cannot be replaced or inherited by a new generation"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "firmware maximum can be smaller than ATT capability"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "larger unverified firmware frames fail before issuing or truncating"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "pipelining is independent firmware opt in not inferred from MTU"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "queued old generation send cannot write to a rapid reconnection"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "stale write callback is dropped instead of resuming the newer write"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "unverified without response falls back to acknowledged send"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "verified write commands skip acknowledged write pacing as in the source"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "without response capability requires characteristic and verified firmware evidence"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "write commands and acknowledged writes share the entire operation queue"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "write only ESP32 characteristic stays on acknowledged writes"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "write pacing applies to sequential and queued acknowledged writes"
+    },
+    {
+      "suite": "BleWriteTest",
+      "method": "write readiness timeout is exactly five seconds and invalidates its GATT"
+    }
+  ],
+  "inherited_adapter_runtime_suites": [
+    "AndroidGattApi31Test",
+    "AndroidGattApi32Test",
+    "AndroidGattApi33Test",
+    "AndroidGattApi37Test"
+  ]
+}
