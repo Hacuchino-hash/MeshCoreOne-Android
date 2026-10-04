@@ -62,6 +62,16 @@ fallback. The localization-specific source/resource/family verifier still runs
 and retains its own evidence. This additive unit-run proof is not original-case
 parity, instrumentation, radio behavior or a protected WP acceptance receipt.
 
+The WP-201 `verifyDomainRoomTests` hook validates current immutable model,
+contracts and Room inputs, the frozen original 114 families/215 native identity
+minimum, and the initial v1 schema. It allows additional executed cases and
+unrelated committed native-module successors. Its historical writer-scope
+audit runs only when explicitly requested with an exact base, never implicitly
+in the evergreen root task. Historical `local-evidence.json` is unchanged;
+current execution/run metadata and additive cases are separate. The collector
+and its temporary-Git/raw-XML regressions are mandatory committed runtime
+inputs. This is not a new source-parity or WP-201 acceptance receipt.
+
 No detekt, ktlint, Kover, localization synchronization, full source-case catalog,
 instrumentation, Swift/macOS oracle or hardware task is invented here. Their
 actual tooling, output contracts and acceptance remain WP-004/005 and the owning

@@ -35,6 +35,8 @@ FIXED_INPUTS = (
     "android/gradle/wrapper/gradle-wrapper.jar", "android/gradle/wrapper/gradle-wrapper.properties",
     "android/gradle/libs.versions.toml", "android/gradle/verification-metadata.xml",
     "android/build-logic/gradle/verification-metadata.xml",
+    "docs/android/evidence/WP-201/collect_evidence.py",
+    "tools/android-port/tests/test_domain_room_evidence.py",
 )
 
 
