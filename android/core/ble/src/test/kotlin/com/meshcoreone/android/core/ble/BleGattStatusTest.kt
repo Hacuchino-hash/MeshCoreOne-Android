@@ -24,12 +24,15 @@ class BleGattStatusTest(
         assertEquals(expected, failure.error)
         assertEquals(kind, failure.operation)
         assertEquals(status, failure.status)
+        assertEquals(GattStatusDomain.Att, failure.statusDomain)
         if (!authentication) assertFalse(failure.error == BleError.DeviceConnectedToOtherApp)
     }
 
     companion object {
         @JvmStatic @Parameterized.Parameters(name = "{0}-status{1}")
-        fun statuses(): List<Array<Any>> = GattOperationKind.entries.flatMap { kind ->
+        fun statuses(): List<Array<Any>> = listOf(
+            GattOperationKind.DiscoverServices, GattOperationKind.Mtu, GattOperationKind.Subscribe, GattOperationKind.Write,
+        ).flatMap { kind ->
             listOf(
                 arrayOf<Any>(kind, 5, true), arrayOf<Any>(kind, 8, true), arrayOf<Any>(kind, 12, true), arrayOf<Any>(kind, 15, true),
                 arrayOf<Any>(kind, 3, false), arrayOf<Any>(kind, 6, false), arrayOf<Any>(kind, 133, false),

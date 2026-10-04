@@ -8,6 +8,7 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
@@ -35,6 +36,29 @@ import org.robolectric.shadows.ShadowBluetoothAdapter
 import org.robolectric.shadows.ShadowBluetoothGatt
 
 abstract class AndroidGattAdapterTest {
+    @Test fun `modern platform entry points reject unsupported actual API levels before invoking them`() = runTest {
+        val fixture = AndroidGattFixture()
+        fixture.transport.connect()
+        if (Build.VERSION.SDK_INT < 37) {
+            assertEquals(BleError.PlatformApiUnavailable(37, Build.VERSION.SDK_INT),
+                assertFailsWith<BleTransportException> {
+                    PlatformGattApi.connectModern(fixture.context, BleDeviceHandle(fixture.address), object : BluetoothGattCallback() {}) { it.run() }
+                }.error)
+        }
+        if (Build.VERSION.SDK_INT < 33) {
+            assertEquals(BleError.PlatformApiUnavailable(33, Build.VERSION.SDK_INT),
+                assertFailsWith<BleTransportException> {
+                    PlatformGattApi.writeModern(fixture.gatt, fixture.tx, byteArrayOf(1), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                }.error)
+            assertEquals(BleError.PlatformApiUnavailable(33, Build.VERSION.SDK_INT),
+                assertFailsWith<BleTransportException> {
+                    PlatformGattApi.descriptorModern(fixture.gatt, fixture.cccd, byteArrayOf(1, 0))
+                }.error)
+        }
+        assertEquals(1, fixture.gatts.size)
+        fixture.transport.disconnect()
+    }
+
     @Test fun `an early wrong GATT cannot become the adopted connection handle`() = runTest {
         val fixture = AndroidGattFixture()
         fixture.beforeConnected = { expected ->
@@ -187,14 +211,17 @@ abstract class AndroidGattAdapterTest {
     }
 
     @Test fun `real nonzero authentication callback status preserves typed recovery`() = runTest {
-        val fixture = AndroidGattFixture()
-        fixture.transport.connect()
-        fixture.shadow.status = 5
-        val failure = assertFailsWith<BleTransportException> { fixture.transport.send(Bytes.of(0x16, 0x03)) }
-        assertEquals(BleError.AuthenticationFailed, failure.error)
-        assertEquals(5, failure.status)
-        assertEquals(BleRecovery.PairInSystem, failure.recovery)
-        assertEquals(1, fixture.shadow.closeCount)
+        for (status in listOf(5, 8, 12, 15)) {
+            val fixture = AndroidGattFixture()
+            fixture.transport.connect()
+            fixture.shadow.status = status
+            val failure = assertFailsWith<BleTransportException> { fixture.transport.send(Bytes.of(0x16, 0x03)) }
+            assertEquals(BleError.AuthenticationFailed, failure.error)
+            assertEquals(status, failure.status)
+            assertEquals(GattStatusDomain.Att, failure.statusDomain)
+            assertEquals(BleRecovery.PairInSystem, failure.recovery)
+            assertEquals(1, fixture.shadow.closeCount)
+        }
     }
 
     @Test fun `status133 is a retained GATT failure not guessed pairing or competing app`() = runTest {
@@ -373,5 +400,35 @@ abstract class AndroidGattAdapterTest {
         assertFalse(fixture.transport.diagnostics.value.firmwareVerified)
         assertEquals(0, fixture.shadow.closeCount)
         fixture.transport.disconnect()
+    }
+
+    @Test fun `mixed case address uses canonical uppercase in actual Android device lookup`() = runTest {
+        val fixture = AndroidGattFixture(addressInput = "aa:bB:cC:dD:ee:Ff")
+        fixture.transport.connect()
+        assertEquals("AA:BB:CC:DD:EE:FF", fixture.gatt.device.address)
+        assertEquals("AA:BB:CC:DD:EE:FF", fixture.transport.diagnostics.value.handle?.address)
+        assertTrue(fixture.transport.isConnected())
+        fixture.transport.disconnect()
+    }
+
+    @Test fun `connection status eight is HCI timeout with or without an active write`() = runTest {
+        for (pendingWrite in listOf(false, true)) {
+            val fixture = AndroidGattFixture()
+            fixture.transport.connect()
+            val operation = if (pendingWrite) {
+                fixture.shadow.pause = GattOperationKind.Write
+                async { assertFailsWith<BleTransportException> { fixture.transport.send(Bytes.of(0x16, 0x03)) } }
+            } else null
+            runCurrent()
+            requireNotNull(fixture.shadow.gattCallback).onConnectionStateChange(fixture.gatt, 8, BluetoothProfile.STATE_DISCONNECTED)
+            runCurrent()
+            val failure = operation?.await() ?: assertFailsWith<BleTransportException> { fixture.transport.receivedData().toList() }
+            assertEquals(BleError.ConnectionTimeout, failure.error)
+            assertEquals(GattStatusDomain.ConnectionState, failure.statusDomain)
+            assertEquals(8, failure.status)
+            assertEquals(if (pendingWrite) GattOperationKind.Write else GattOperationKind.Connect, failure.operation)
+            assertEquals(BleRecovery.RetryWithNewConnection, failure.recovery)
+            assertEquals(1, fixture.shadow.closeCount)
+        }
     }
 }

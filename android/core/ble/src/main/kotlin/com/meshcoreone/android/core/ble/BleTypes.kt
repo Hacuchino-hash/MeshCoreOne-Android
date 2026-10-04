@@ -45,15 +45,17 @@ enum class BondState { None, Bonding, Bonded }
 enum class BleConnectMode { Initial, Reconnect }
 enum class RejectedCallback { Connection, Operation, Attribute, Kind, Duplicate, Closed }
 
-class BleDeviceHandle(val address: String) {
+class BleDeviceHandle(address: String) {
+    val address: String = address.uppercase(java.util.Locale.ROOT)
+
     init {
-        if (!ADDRESS.matches(address)) throw BleTransportException(BleError.DeviceNotFound)
+        if (!ADDRESS.matches(this.address)) throw BleTransportException(BleError.DeviceNotFound)
     }
 
     override fun equals(other: Any?): Boolean =
-        other is BleDeviceHandle && address.equals(other.address, ignoreCase = true)
+        other is BleDeviceHandle && address == other.address
 
-    override fun hashCode(): Int = address.uppercase(java.util.Locale.ROOT).hashCode()
+    override fun hashCode(): Int = address.hashCode()
     override fun toString(): String = "BleDeviceHandle(redacted)"
 
     companion object {

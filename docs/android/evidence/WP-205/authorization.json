@@ -25,7 +25,18 @@
     "docs/android/deviations/WP-205.md",
     "docs/android/evidence/WP-205/"
   ],
-  "shared_amendments": [],
+  "shared_amendments": [
+    {
+      "source": "Explicit coordinator receipt on autonomous-WP-205-0ae60699, bound native alias0bdc2276-e010-4c61-ad20-e523bed48a7d",
+      "write_paths": [
+        "android/gradle/dependency-locks/core-ble.lockfile",
+        "android/gradle/verification-metadata.xml"
+      ],
+      "bounds": "Only BLE lock for existing pinned test graph and three nontransitive SDK configs, and only six independently verified JAR/POM checksums; no other root locks/components/checksums/versions/catalog/workflow/production dependency changes",
+      "exclusive_root_xml_until_explicit_release": true,
+      "hardware_or_full_wp_gate_advanced": false
+    }
+  ],
   "nested_workers_or_sessions_started": false,
   "normal_pr_target": "main",
   "final_integration_and_merge": "Independent coordinator review"

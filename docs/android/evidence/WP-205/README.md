@@ -5,10 +5,13 @@ Owning branch: `cbattlegear-curly-guide`. Execution session:
 `09d597dd-d530-44a6-bdfa-32ad1b81bfc4`; native project alias:
 `0bdc2276-e010-4c61-ad20-e523bed48a7d`.
 
-**Candidate implementation, not completion/parity certification.** The real
-production module and debug APK build. BLE assertion execution is currently
-blocked by the existing strict module lock and the narrowly requested additional
-test SDK admission. No planned/native test is counted as passed.
+**Implemented native component with actual assertion evidence, not hardware or
+full-product certification.** The complete BLE suite has **292
+discovered/run/passed, 0 failed/errors/skipped**, including real
+SDK31/32/33/37 framework sandbox bodies. Final BLE lint has zero warnings/errors.
+The normal root graph/schema/runtime resolution and real debug APK pass.
+Historical missing-lock, checksum-binding, test compilation, API37 bootstrap,
+code-cache and review-repair failures remain distinct from these results.
 
 | Binding | Actual value |
 | --- | --- |
@@ -45,7 +48,13 @@ frozen declarations**, plus each actual native assertion method. It is generated
 from the immutable case/inventory inputs, not candidate test output or altered
 goldens. Original iOS retry/restoration semantics are proposed native adaptations,
 and process-store bond race proof remains explicitly separate. Headers and
-method names are not passing execution evidence.
+method names alone are not passing execution evidence.
+[source-case-execution.json](source-case-execution.json) now binds each of the
+86 original declarations to actual passing JUnit classname/method/artifact
+identities, without turning a native adaptation or deferred consumer test into
+claimed iOS/product parity. [verified-results.json](verified-results.json)
+records all thirteen complete `junit/TEST-*.xml` reports, exact counters,
+current production inputs, lint and original/stored byte hashes.
 
 The [Nordic spike](nordic-spike.md) binds actual source/POM/license hashes and
 official API signatures. No Nordic dependency/binary or hidden refresh is linked.
@@ -77,12 +86,23 @@ metaspace512m, test256m/metaspace256m, SerialGC and two processors.
 | `python .\android\scaffold\inspect_apk.py` | **Passed** actual debug identity/min31/target37/launcher/notices/fixture exclusion |
 | Actual ZIP/DEX scan | **Passed**, all real BLE/GATT/NUS/bond classes packaged and Robolectric/fake/test fixtures absent |
 | Existing `controller.apk_alignment.inspect_alignment` with the actual APK/private SDK | **Passed**, zipalign `-P 16` and all four ELF PT_LOAD sets; no physical/native-runtime proof |
+| Launcher `:core:ble:dependencies --write-locks --dependency-verification strict --no-build-cache --quiet` after the concrete receipt | **Passed**, only leased BLE lock content changes; exact six approved SDK JAR/POM verification entries, no other version/checksum/component added |
+| First actual full native run `:core:ble:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | **291 discovered/run,263 passed,28 failed,0 errors/skipped**: real API37 bodies initially blocked by JDK FileDescriptor access; raw evidence preserved, not skipped |
+| API37 selector after BLE-test-only JPMS export | **28 discovered/run/passed,0 failed/errors/skipped** on the actual API37 runtime |
+| Final launcher `:core:ble:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` after all independent review repairs | **292 discovered/run/passed,0 failed/errors/skipped**, complete thirteen raw suites |
+| Final separate launcher `:core:ble:lintDebug --dependency-verification strict --no-build-cache --quiet` | **Passed**, zero warnings/Error/Fatal after explicit actual API guards and typed local operation overlap |
+| Final launcher `verifyScaffoldTests verifyRoomSchema validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies :app:assembleDebug --dependency-verification strict --no-build-cache --quiet` | **Passed**, actual root hook executes BLE, normal graph/schema/strict artifacts and final debug APK |
 | `git diff --check`, immutable source-root diff and complete leased write-path validator | **Passed** no source/manifest/policy/shared path edits |
 | `python .\tools\android-port\controller\test_runner.py --quiet` after reconciliation | **187 discovered/run/passed, 0 failed/errors/skipped**, merged controller fixtures only, not BLE credit |
 | `python .\tools\android-port\controller\verification_config.py --check` and `python .\tools\android-port\controller\workflows.py` after reconciliation | **Passed** unchanged canonical verification and workflow trust boundaries |
 
-The measured debug APK SHA-256 is
+The historical initial measured debug APK SHA-256 is
 `10bc9863fbf5510e6648df1f406d5742e1e1033cffc464e5d94e675fd1d178fc`.
+The final independently reviewed/fixed local APK SHA-256 is
+`0329037ea42775cded768fe162af3e8b0437265ab1750b623b1593891e5e716e`,
+with actual debug/min31/target37/notices/native static alignment and test-only
+SDK/helper/fixture exclusion in `final-apk-inspection.json` and
+`final-apk-alignment.json`.
 Raw build/failure logs are retained as deterministic `logs/*.log.gz`, whose
 decompression reproduces the complete unchanged runner bytes including its
 progress-line whitespace; original and stored hashes are both recorded.
@@ -91,15 +111,21 @@ results are in `apk-inspection.json` and `apk-alignment.json`. Their current
 source/byte hashes are bound separately; final exact-head hosted proof is still
 required. The APK/tool caches themselves are not committed.
 
-## Actionable admission/hosted blockers
+## Admission, independent repair and honest remaining gates
 
 [dependency-request.json](dependency-request.json) preserves the actual
 pre-discovery failure and narrow module-lock request; no strict verification
 was disabled, no lock edited and no failure replaced with a success summary.
 [sdk-test-admission-request.json](sdk-test-admission-request.json) requests
-only the source-declared, published-checksummed SDK32/33/37 test artifacts so
-their native API branches run on their actual framework, not a fake API number
-on SDK31. None has been downloaded/executed or admitted yet.
+only the source-declared, published-checksummed SDK32/33/37 test artifacts.
+The explicit coordinator receipt on the same session/lease now admits exactly
+the BLE lock and those six root verification entries. The initial worker
+SDK33/37 JAR/POM tuple association was wrong; the coordinator independently
+checked all archive/POM bytes, versions, license and absence of dependencies.
+Corrected values are used, while the rejected old mapping remains recorded.
+All four actual framework JARs are now independently hash/size verified and
+executed offline. No new production dependency or APK notice obligation is
+invented by these unpackaged test inputs.
 
 Within the leased module build file, root `verifyScaffoldTests` now depends on
 the actual `:core:ble:testDebugUnitTest` task. The coordinator separately owns
@@ -115,13 +141,45 @@ at the same strict BLE-lock check before discovery. Exact jobs/artifact
 IDs/archive hashes are recorded; that run is not claimed green. The normal
 implementation-candidate PR is
 [the existing review](https://github.com/cbattlegear/MeshCoreOne-Android/pull/18).
-The merged helper does not admit the missing dependencies: main0394b83 still
-contains neither the BLE test lock graph nor SDK32/33/37 pins. No shared-path
-amendment receipt has arrived. Final same-head passing BLE/native/lint proof
-still requires that concrete admission.
+The merged helper alone did not admit the dependencies; the subsequent explicit
+serialized receipt is recorded in `authorization.json`. The Gradle lock writer's
+LF-only working-tree side effects on33 other locks were restored to their exact
+pre-command SHA only after proving no content changed; all63 unleased lock
+bytes remain unchanged. No unrelated lock is authored or staged.
 
-There is no passing hosted BLE, independent review, hardware, iOS BLE,
-protected-gate or release/signing result yet.
+Independent read-only review of frozen7f identified four real bugs. All are
+fixed with actual regressions: RSSI budget begins after queue admission;
+disconnect wakes old pacing before a fresh connect; connection-state/HCI
+status8 remains timeout regardless of pending operation while genuine ATT8
+remains authorization failure; mixed-case addresses reach the actual adapter
+as uppercase. Source expectations come from the exact Nordic/API status-domain
+definitions, not candidate output. The old synthetic ATT “connect/RSSI”
+parameter rows were replaced by correct procedure-domain rows and actual
+connection-state regressions, not ignored or weakened.
+
+| Final suite | Actual cases passed |
+| --- | ---: |
+| API31 framework | 30 |
+| API32 framework | 30 |
+| API33 framework | 30 |
+| API37 framework/settings | 31 |
+| Bond refresh | 15 |
+| Discovery | 15 |
+| ATT status families | 28 |
+| Lifecycle | 18 |
+| Operation adversarial families | 42 |
+| Independent review regressions | 3 |
+| Notification/receiver generations | 12 |
+| Values/source defaults | 21 |
+| Whole-write/capability/pacing | 17 |
+| **Total** | **292** |
+
+Local raw module collector/replay and final same-head hosted Windows/Linux
+schema2 proof are recorded separately after their exact candidate/run bindings,
+not inferred from the local totals. Three source process-store consumer proofs,
+proposed platform adaptations and physical API31/37/OEM/bond/MTU scenarios
+remain explicitly separate. No hardware, iOS BLE, full-license/protected human
+gate, privileged reviewer/publisher or release/signing result is claimed.
 
 Canonical WP-205 manifest verification remains historically unconfigured.
 This candidate does not rewrite the plan/policy/reference or invent a completion

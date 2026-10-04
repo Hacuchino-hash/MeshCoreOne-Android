@@ -3,7 +3,6 @@ package com.meshcoreone.android.core.ble
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -16,6 +15,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
+import android.os.Build
 import java.util.concurrent.Executor
 import java.util.concurrent.RejectedExecutionException
 
@@ -97,10 +97,12 @@ internal object PlatformGattApi : AndroidGattApi {
         context, false, callback, BluetoothDevice.TRANSPORT_LE, BluetoothDevice.PHY_LE_1M_MASK, handler,
     )
 
-    @TargetApi(37)
     override fun connectModern(
         context: Context, handle: BleDeviceHandle, callback: BluetoothGattCallback, executor: Executor,
     ): BluetoothGatt? {
+        if (Build.VERSION.SDK_INT < 37) {
+            throw BleTransportException(BleError.PlatformApiUnavailable(37, Build.VERSION.SDK_INT), GattOperationKind.Connect)
+        }
         val settings = BluetoothGattConnectionSettings.Builder()
             .setTransport(BluetoothDevice.TRANSPORT_LE)
             .setAutoConnectEnabled(false)
@@ -125,10 +127,14 @@ internal object PlatformGattApi : AndroidGattApi {
         return gatt.writeCharacteristic(characteristic)
     }
 
-    @TargetApi(33)
     override fun writeModern(
         gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, writeType: Int,
-    ): Int = gatt.writeCharacteristic(characteristic, value.copyOf(), writeType)
+    ): Int {
+        if (Build.VERSION.SDK_INT < 33) {
+            throw BleTransportException(BleError.PlatformApiUnavailable(33, Build.VERSION.SDK_INT), GattOperationKind.Write)
+        }
+        return gatt.writeCharacteristic(characteristic, value.copyOf(), writeType)
+    }
 
     @Suppress("DEPRECATION")
     override fun descriptorLegacy(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, value: ByteArray): Boolean {
@@ -136,9 +142,12 @@ internal object PlatformGattApi : AndroidGattApi {
         return gatt.writeDescriptor(descriptor)
     }
 
-    @TargetApi(33)
-    override fun descriptorModern(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, value: ByteArray): Int =
-        gatt.writeDescriptor(descriptor, value.copyOf())
+    override fun descriptorModern(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, value: ByteArray): Int {
+        if (Build.VERSION.SDK_INT < 33) {
+            throw BleTransportException(BleError.PlatformApiUnavailable(33, Build.VERSION.SDK_INT), GattOperationKind.Subscribe)
+        }
+        return gatt.writeDescriptor(descriptor, value.copyOf())
+    }
 
     override fun disconnect(gatt: BluetoothGatt) { gatt.disconnect() }
     override fun close(gatt: BluetoothGatt) { gatt.close() }
@@ -147,10 +156,10 @@ internal object PlatformGattApi : AndroidGattApi {
 internal fun immediateFailure(kind: GattOperationKind, status: Int?): BleTransportException =
     when (status) {
         BluetoothStatusCodes.ERROR_MISSING_BLUETOOTH_CONNECT_PERMISSION ->
-            BleTransportException(BleError.BluetoothUnauthorized, kind, status)
+            BleTransportException(BleError.BluetoothUnauthorized, kind, status, statusDomain = GattStatusDomain.PlatformStart)
         BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED ->
-            BleTransportException(BleError.BluetoothPoweredOff, kind, status)
+            BleTransportException(BleError.BluetoothPoweredOff, kind, status, statusDomain = GattStatusDomain.PlatformStart)
         BluetoothStatusCodes.ERROR_DEVICE_NOT_BONDED ->
-            BleTransportException(BleError.BondRequired(BondState.None), kind, status)
-        else -> BleTransportException(BleError.GattRejected(kind, status), kind, status)
+            BleTransportException(BleError.BondRequired(BondState.None), kind, status, statusDomain = GattStatusDomain.PlatformStart)
+        else -> BleTransportException(BleError.GattRejected(kind, status), kind, status, statusDomain = GattStatusDomain.PlatformStart)
     }

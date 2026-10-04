@@ -12,7 +12,8 @@ MIT protocol module.
 
 The process connection owner supplies a `BleDeviceHandle` from an authorized
 selection and owns transport/session teardown. An address is only an ephemeral
-connection handle, not persistent radio identity. Construct a new target's
+connection handle, not persistent radio identity. Addresses are canonicalized
+to uppercase with `Locale.ROOT` before actual Android device lookup. Construct a new target's
 transport after awaiting the old transport's disconnect. The host must declare
 and grant `BLUETOOTH_CONNECT`; permission/power denial is typed recovery rather
 than a successful empty transport. WP-206/207 own pairing/PIN UI, CDM, scanning,
@@ -27,7 +28,8 @@ so one queued, checked MTU request owns that operation.
 `connect()` is idempotent. `connect(BleConnectMode.Reconnect)` is an explicit
 owner request, not a background loop. Defaults are 10 seconds for link setup,
 40 seconds for the entire initial discovery/MTU/subscription chain, 15 seconds
-for explicit reconnect discovery and 5 seconds for writes/RSSI operations.
+for explicit reconnect discovery and 5 seconds for writes/RSSI callbacks after
+their queue admission. Queued RSSI work does not consume its callback deadline.
 Deadlines and write pacing use an injectable monotonic `BleClock`.
 
 ## Bytes and capability safety
@@ -70,12 +72,16 @@ before triggering; callbacks validate the owning GATT and exact attribute
 objects. A timed-out/cancelled operation invalidates its GATT because Android
 does not provide a per-write callback sequence. Old callbacks cannot complete
 new-generation work. Native cleanup is requested once and its completion is
-awaited before another GATT opens. Cleanup failures are surfaced or attached
+awaited before another GATT opens. Acknowledged pacing observes connection termination, so an old generation's
+sleep cannot delay a new connect. Cleanup failures are surfaced or attached
 as suppressed metadata; cancellation is not converted to success.
 
 `diagnostics` is the current-state projection, not an event/ACK queue.
 `BleTransportException` preserves typed source/native errors, operation/status,
-cause and `BleRecovery`; localized UI belongs to WP-304.
+cause, raw status domain and `BleRecovery`; localized UI belongs to WP-304.
+Connection-state/HCI status8 is a connection timeout even during a pending
+write; ATT procedure status8 is insufficient authorization. Neither the numeric
+code alone nor the pending operation chooses its domain.
 
 ## Bond verification and RSSI
 
@@ -114,5 +120,9 @@ physical Android/OEM/radio certification.
 See [evidence](../../../docs/android/evidence/WP-205/README.md),
 [source accounting](../../../docs/android/evidence/WP-205/source-cases.json),
 and [adaptations](../../../docs/android/deviations/WP-205.md).
-Dependency admission and test execution are recorded there separately; no
-planned case is counted as passed.
+All four framework JARs use isolated nontransitive test configurations, exact
+independently verified SHA-256 metadata and offline loading. The BLE test JVM
+exports `java.base/jdk.internal.access` only for Robolectric4.17's API37
+shared-memory bootstrap on the pinned JDK21. No such flag reaches the APK.
+Dependency admission, raw actual execution and historical failures are recorded
+separately; no planned case is counted as passed.

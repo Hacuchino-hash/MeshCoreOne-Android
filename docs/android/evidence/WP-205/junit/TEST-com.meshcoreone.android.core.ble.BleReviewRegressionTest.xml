@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.ble.BleReviewRegressionTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-04T08:06:11.592Z" hostname="BATTLEGEAR" time="0.193">
+  <properties/>
+  <testcase name="connection HCI status is not reinterpreted as ATT by the pending operation" classname="com.meshcoreone.android.core.ble.BleReviewRegressionTest" time="0.036"/>
+  <testcase name="disconnect wakes acknowledged pacing and new connect issues before the old deadline" classname="com.meshcoreone.android.core.ble.BleReviewRegressionTest" time="0.144"/>
+  <testcase name="RSSI deadline starts after two valid queued write callbacks complete" classname="com.meshcoreone.android.core.ble.BleReviewRegressionTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

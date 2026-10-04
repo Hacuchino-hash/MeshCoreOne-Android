@@ -25,11 +25,14 @@ import org.robolectric.shadow.api.Shadow
 import org.robolectric.shadows.ShadowBluetoothAdapter
 import org.robolectric.shadows.ShadowBluetoothGatt
 
-internal class AndroidGattFixture(configuration: BleConfiguration = BleConfiguration()) {
+internal class AndroidGattFixture(
+    configuration: BleConfiguration = BleConfiguration(),
+    addressInput: String = "02:00:00:00:00:01",
+) {
     val application: Application = RuntimeEnvironment.getApplication()
     val context: Context = application
     val clock = TestClock()
-    val address = "02:00:00:00:00:01"
+    val address = addressInput.uppercase(java.util.Locale.ROOT)
     val adapter: BluetoothAdapter
     val device: BluetoothDevice
     val service = BluetoothGattService(UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E"), BluetoothGattService.SERVICE_TYPE_PRIMARY)
@@ -81,7 +84,7 @@ internal class AndroidGattFixture(configuration: BleConfiguration = BleConfigura
         } else {
             Shadows.shadowOf(device).setGattConnectionInterceptor { opened(it) }
         }
-        transport = BleTransport(AndroidGattFacade(context, BleDeviceHandle(address)), configuration, object : BleClock {
+        transport = BleTransport(AndroidGattFacade(context, BleDeviceHandle(addressInput)), configuration, object : BleClock {
             override val now: Duration get() = clock.now
             override suspend fun sleepUntil(deadline: Duration) = clock.sleepUntil(deadline)
         })
@@ -102,7 +105,7 @@ class ControlledGattShadow : ShadowBluetoothGatt() {
     var reject: GattOperationKind? = null
     var status = BluetoothGatt.GATT_SUCCESS
     var actualMtu = 517
-    var rssi = -50
+    var returnedRssi = -50
     var rssiStatus = BluetoothGatt.GATT_SUCCESS
     var rejectLocalNotification = false
     val calls = mutableListOf<String>()
@@ -138,7 +141,7 @@ class ControlledGattShadow : ShadowBluetoothGatt() {
     override fun readRemoteRssi(): Boolean {
         calls.add("rssi")
         if (reject == GattOperationKind.Rssi) return false
-        if (pause != GattOperationKind.Rssi) requireNotNull(gattCallback).onReadRemoteRssi(realGatt, rssi, rssiStatus)
+        if (pause != GattOperationKind.Rssi) requireNotNull(gattCallback).onReadRemoteRssi(realGatt, returnedRssi, rssiStatus)
         return true
     }
 

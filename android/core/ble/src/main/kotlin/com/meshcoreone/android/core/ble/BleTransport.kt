@@ -14,6 +14,7 @@ import kotlin.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 
 class BleTransport(
@@ -84,6 +86,7 @@ class BleTransport(
         var earliestNextWrite = Duration.ZERO
         var terminated = false
         var terminalCause: Throwable? = null
+        val termination = CompletableDeferred<Unit>()
         var closeReceipt: CompletableDeferred<Unit>? = null
         var closeStarted = false
         var liveRadioId: UUID? = null
@@ -301,12 +304,18 @@ class BleTransport(
             active?.also { checkConnection(it, connected = true) }
                 ?: throw BleTransportException(BleError.NotConnected, GattOperationKind.Rssi)
         }
-        val reply = perform(connection, clock.now + configuration.timeouts.write, GattOperationKind.Rssi) {
-            GattOperation.Rssi(it)
+        val reply = operationMutex.withLock {
+            synchronized(lock) { checkConnection(connection, connected = true) }
+            performLocked(connection, clock.now + configuration.timeouts.write, GattOperationKind.Rssi) {
+                GattOperation.Rssi(it)
+            }
         }
         if (reply !is GattReply.Rssi) throw BleTransportException(BleError.InvalidResponse, GattOperationKind.Rssi)
         if (reply.status != 0) {
-            throw BleTransportException(BleError.RssiReadFailed(reply.status), GattOperationKind.Rssi, reply.status)
+            throw BleTransportException(
+                BleError.RssiReadFailed(reply.status), GattOperationKind.Rssi, reply.status,
+                statusDomain = GattStatusDomain.RadioMeasurement,
+            )
         }
         val refreshed = synchronized(lock) {
             checkConnection(connection, connected = true)
@@ -336,7 +345,7 @@ class BleTransport(
                 if (requestWriteCommand && writeCommands(connection)) GattWriteMode.WithoutResponse
                 else GattWriteMode.WithResponse
             }
-            if (mode == GattWriteMode.WithResponse) clock.sleepUntil(connection.earliestNextWrite)
+            if (mode == GattWriteMode.WithResponse) awaitWritePacing(connection)
             currentCoroutineContext().ensureActive()
             val tx = synchronized(lock) {
                 checkConnection(connection, connected = true)
@@ -357,6 +366,28 @@ class BleTransport(
                 if (mode == GattWriteMode.WithResponse) {
                     connection.earliestNextWrite = clock.now + configuration.writePacing
                 }
+            }
+        }
+    }
+
+    private suspend fun awaitWritePacing(connection: Connection) {
+        val deadline = synchronized(lock) {
+            checkConnection(connection, connected = true)
+            connection.earliestNextWrite
+        }
+        if (deadline <= clock.now) return
+        coroutineScope {
+            val sleeper = async(start = CoroutineStart.UNDISPATCHED) { clock.sleepUntil(deadline) }
+            try {
+                select {
+                    connection.termination.onAwait {
+                        synchronized(lock) { checkConnection(connection, connected = true) }
+                    }
+                    sleeper.onAwait { }
+                }
+                synchronized(lock) { checkConnection(connection, connected = true) }
+            } finally {
+                withContext(NonCancellable) { sleeper.cancelAndJoin() }
             }
         }
     }
@@ -450,7 +481,7 @@ class BleTransport(
         override fun onDisconnected(connection: GattConnection, status: Int) {
             handleCallback(connection) { current ->
                 val failure = when {
-                    status != 0 -> gattFailure(current.pending?.operation?.kind ?: GattOperationKind.Connect, status)
+                    status != 0 -> connectionStateFailure(current.pending?.operation?.kind ?: GattOperationKind.Connect, status)
                     current.phase == BlePhase.Connected -> null
                     else -> BleTransportException(BleError.ConnectionFailed("gatt.disconnectedDuringSetup"))
                 }
@@ -565,6 +596,7 @@ class BleTransport(
             connection.closeStarted = true
             requireNotNull(connection.closeReceipt)
         }
+        connection.termination.complete(Unit)
         connection.ingress.finish()
         connection.pending?.result?.completeExceptionally(
             connection.terminalCause ?: BleTransportException(BleError.NotConnected),

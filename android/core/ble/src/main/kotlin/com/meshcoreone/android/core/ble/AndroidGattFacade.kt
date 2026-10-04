@@ -75,7 +75,7 @@ internal class AndroidGattConnection(
             return
         }
         if (pending != null) {
-            events.onFailure(this, operation.key, immediateFailure(operation.kind, BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY))
+            events.onFailure(this, operation.key, BleTransportException(BleError.GattOperationInProgress(operation.kind), operation.kind))
             return
         }
         pending = operation
@@ -219,7 +219,7 @@ internal class AndroidGattConnection(
                 val operation = pending as? GattOperation.Connect
                 if (operation == null) return@dispatch reject(RejectedCallback.Kind)
                 if (status != BluetoothGatt.GATT_SUCCESS) {
-                    fail(operation, gattFailure(operation.kind, status))
+                    fail(operation, connectionStateFailure(operation.kind, status))
                 } else if (newState == BluetoothProfile.STATE_CONNECTED) {
                     try {
                         finish(operation, status, GattReply.Connected(api.bondState(context, handle)))

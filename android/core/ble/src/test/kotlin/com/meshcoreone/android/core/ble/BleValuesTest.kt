@@ -80,6 +80,7 @@ class BleValuesTest {
     }
     @Test fun `Bluetooth addresses are redacted connection handles not UUID identities`() {
         val handle = BleDeviceHandle("aa:bb:cc:dd:ee:ff")
+        assertEquals("AA:BB:CC:DD:EE:FF", handle.address)
         assertEquals(handle, BleDeviceHandle("AA:BB:CC:DD:EE:FF"))
         assertEquals(handle.hashCode(), BleDeviceHandle("AA:BB:CC:DD:EE:FF").hashCode())
         assertEquals("BleDeviceHandle(redacted)", handle.toString())

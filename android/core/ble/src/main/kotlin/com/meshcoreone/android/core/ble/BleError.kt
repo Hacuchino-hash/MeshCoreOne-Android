@@ -22,6 +22,8 @@ sealed interface BleError {
     data class CharacteristicPropertyMissing(val property: GattProperty) : BleError
     data class BondRequired(val state: BondState) : BleError
     data class GattRejected(val operation: GattOperationKind, val status: Int?) : BleError
+    data class GattOperationInProgress(val operation: GattOperationKind) : BleError
+    data class PlatformApiUnavailable(val minimum: Int, val actual: Int) : BleError
     data class MtuTooSmall(val actual: Int, val minimum: Int) : BleError
     data class InvalidMtu(val actual: Int) : BleError
     data class FrameTooLarge(val actual: Int, val maximum: Int) : BleError
@@ -41,15 +43,18 @@ enum class BleRecovery {
     ReduceFrame, UseSingleReceiver, HostConfiguration,
 }
 
+enum class GattStatusDomain { Att, ConnectionState, PlatformStart, RadioMeasurement }
+
 class BleTransportException(
     val error: BleError,
     val operation: GattOperationKind? = null,
     val status: Int? = null,
     cause: Throwable? = null,
+    val statusDomain: GattStatusDomain? = null,
 ) : Exception("ble.${error.javaClass.simpleName}", cause) {
     val recovery: BleRecovery
         get() = when (error) {
-            BleError.BluetoothUnavailable -> BleRecovery.HostConfiguration
+            BleError.BluetoothUnavailable, is BleError.PlatformApiUnavailable -> BleRecovery.HostConfiguration
             BleError.BluetoothUnauthorized -> BleRecovery.GrantBluetoothConnect
             BleError.BluetoothPoweredOff -> BleRecovery.EnableBluetooth
             BleError.DeviceNotFound -> BleRecovery.SelectDevice
@@ -68,5 +73,14 @@ internal fun gattFailure(kind: GattOperationKind, status: Int): BleTransportExce
         kind == GattOperationKind.Write -> BleError.WriteError("gatt.status.$status")
         else -> BleError.ConnectionFailed("gatt.status.$status")
     }
-    return BleTransportException(error, kind, status)
+    return BleTransportException(error, kind, status, statusDomain = GattStatusDomain.Att)
+}
+
+internal fun connectionStateFailure(kind: GattOperationKind, status: Int): BleTransportException {
+    val error = when (status) {
+        5 -> BleError.AuthenticationFailed
+        8, 147 -> BleError.ConnectionTimeout
+        else -> BleError.ConnectionFailed("gatt.status.$status")
+    }
+    return BleTransportException(error, kind, status, statusDomain = GattStatusDomain.ConnectionState)
 }

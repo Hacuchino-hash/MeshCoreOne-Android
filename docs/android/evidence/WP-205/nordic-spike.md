@@ -49,6 +49,13 @@ that Nordic is incompatible or that its optional refresh API always executes.
 Executable facade/adapter regressions supplement this source/API spike and
 must be recorded with their actual raw reports before publication.
 
+Independent review additionally checked the same revision's
+`no/nordicsemi/android/ble/error/GattError.java`: `parseConnectionError` treats
+connection-state8 as `GATT CONN TIMEOUT`, while `parse` treats ATT8 as
+insufficient authorization. The native status-domain repair and actual pending
+write/no-pending regressions preserve this independent distinction rather than
+using an operation kind to reinterpret an HCI callback as ATT.
+
 ## Official API37 checks
 
 `javap` against the provisioned, pinned API37.2 `android.jar` confirms:

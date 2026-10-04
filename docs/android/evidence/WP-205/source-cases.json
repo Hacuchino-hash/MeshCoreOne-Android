@@ -1401,6 +1401,10 @@
     },
     {
       "suite": "AndroidGattAdapterTest",
+      "method": "connection status eight is HCI timeout with or without an active write"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
       "method": "descriptor rejection is terminal even if local routing was enabled"
     },
     {
@@ -1414,6 +1418,14 @@
     {
       "suite": "AndroidGattAdapterTest",
       "method": "local notification rejection is not a successful CCCD subscription"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "mixed case address uses canonical uppercase in actual Android device lookup"
+    },
+    {
+      "suite": "AndroidGattAdapterTest",
+      "method": "modern platform entry points reject unsupported actual API levels before invoking them"
     },
     {
       "suite": "AndroidGattAdapterTest",
@@ -1710,6 +1722,18 @@
     {
       "suite": "BleOperationFailureTest",
       "method": "wrong generation operation and reply kind cannot complete the current waiter"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
+      "method": "RSSI deadline starts after two valid queued write callbacks complete"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
+      "method": "connection HCI status is not reinterpreted as ATT by the pending operation"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
+      "method": "disconnect wakes acknowledged pacing and new connect issues before the old deadline"
     },
     {
       "suite": "BleStreamTest",

@@ -75,7 +75,8 @@
     "verification_configuration_check": "passed, canonical feature verification still unconfigured",
     "workflow_boundaries": "passed, no settings/activation change"
   },
-  "remaining_blocker": "Coordinator's merged module-proof helper is integrated, but the unchanged scope still does not authorize the shared BLE dependency lock or additional SDK32/33/37 verification metadata. Actual main0394b83 does not contain either admission.",
-  "shared_dependency_amendment_received": false,
+  "historical_remaining_blocker": "At reconciliation the unchanged scope did not authorize the shared BLE dependency lock or additional SDK32/33/37 verification metadata. A subsequent explicit coordinator receipt resolved this blocker, not the helper merge itself.",
+  "shared_dependency_amendment_received": true,
+  "later_independent_review_repairs": "The byte-identical rebased historical code was subsequently corrected for all four independently reviewed queue deadline, pacing termination, HCI/ATT domain and lowercase lookup bugs. Final passing native evidence is separate.",
   "physical_hardware_or_human_gate_advanced": false
 }
