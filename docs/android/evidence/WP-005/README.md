@@ -18,7 +18,9 @@ Kickoff reservation `autonomous-WP-005-979dd73b` binds CLI session
 for `android/gradle/verification-metadata.xml`'s preexisting annotation JAR
 checksum, then for `android/app/src/main/AndroidManifest.xml` solely to add the
 application localeConfig attribute. The delivered checksum is now read-only;
-no other shared-file permission, live-ledger or gate receipt is asserted.
+the later exact `.github/workflows/android-ci.yml` grant adds only the validated
+post-verify feature-evidence retention step. No other shared-file permission,
+live-ledger or gate receipt is asserted.
 
 ## Measured implementation and original families
 
@@ -69,8 +71,8 @@ binaries/debug keys or host PATH/pagefile/memory changes are committed.
 
 | Exact command/selection | Result |
 | --- | --- |
-| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**, 65 discovered/passed, zero failed/errors/skipped, 63 regenerated outputs. |
-| `python .\tools\android-port\l10n_convert.py --check --self-test` | **Passed**, same 65 cases, no source/output/key-map/correction drift. |
+| `python .\tools\android-port\l10n_convert.py --write --self-test` | **Passed**, 74 discovered/passed, zero failed/errors/skipped, 63 regenerated outputs; original expectations unchanged. |
+| `python .\tools\android-port\l10n_convert.py --check --self-test` | **Passed**, same 74 cases, no source/output/key-map/correction drift. |
 | `python .\tools\android-port\portmap.py` | **Passed**, canonical generated-input dispositions, no conflicting headers. |
 | `python .\tools\android-port\controller\verification_config.py --check` | **Passed**, unchanged trusted overlay; no feature acceptance inferred. |
 | `python .\tools\android-port\controller\validate.py` | **Passed**, 1,866 pinned files, 65 WPs and 185 edges unchanged. |
@@ -147,6 +149,41 @@ APK-internal entry identifiers use ZIP's slash convention, not host paths.
 The ignored library attribute remains removed. Application ID/min31/target37,
 permissions/providers/components/backup/label/signing behavior remain unchanged.
 This is static compiled-APK verification only, not physical Settings UI.
+
+## Portable localization assertion retention
+
+An independent coordinator replay of both final001978 scaffold bundles found
+the legacy raw root/standalone reports but no raw `core:l10n` XML. The actual
+25 cases executed successfully; the issue was missing independently replayable
+feature proof. No failed-test claim or passing fallback is made.
+
+The exact authorized workflow step after existing `verify` calls:
+
+```powershell
+python tools/android-port/l10n_convert.py --check `
+  --verify-android-tests android/core/l10n/build/test-results/testDebugUnitTest `
+  --copy-android-junit (Join-Path (Join-Path $env:ANDROID_CI_OUTPUT 'l10n') 'junit')
+```
+
+Only the existing bundle gains `l10n/junit/TEST-*.xml` (four complete verbatim
+reports) and `l10n/junit/summary.json` (typed 25-case counts, class inventory,
+head/source/run/attempt, executed-source hashes and report hashes/sizes).
+The unchanged inspect collector adds them to its original artifact index and
+SHA256SUMS; permissions, checkout credentials, pinned actions/toolchain,
+upload prefixes/layout, mandatory legacy root47/raw data and root aggregator
+are unchanged. Artifacts are data and are never executed.
+
+Nine added positive/negative Python cases verify byte-identical BOM/CRLF raw
+copies and replayable counts, idempotence, missing/zero/skipped/malformed/duplicate/
+unknown/stale data, unsafe/repository/link/source-overlap paths, changed-after-
+validation bytes, immutable stale destination and invalid CI bindings. All25
+Kotlin cases and every expected string/quantity remain unchanged. Fresh strict
+actual module tests pass, and the real copy CLI retained all4reports/25cases
+byte-for-byte in a private absolute directory.
+
+Precommit `ci.py python` correctly rejected the edited workflow against immutable
+HEAD; this was not bypassed. The committed-head stage and both new hosted
+bundles must be inspected/replayed before claiming final portable CI proof.
 
 See [deviations](../../deviations/WP-005.md) for native adaptation boundaries.
 No new account/billing/analytics/GMS/model/updater/APK-installer code exists.

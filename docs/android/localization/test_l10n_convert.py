@@ -2,9 +2,11 @@
 
 import copy
 import json
+import os
 from pathlib import Path
 import plistlib
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
@@ -581,6 +583,150 @@ class EvidenceTest(unittest.TestCase):
                 (directory / f"TEST-{name}.xml").write_text(f'<testsuite tests="{count}" failures="0" errors="0" skipped="0">{cases}</testsuite>')
             with self.assertRaisesRegex(c.ConversionError, "missing original case"):
                 c.check_android_tests(directory)
+
+
+class JUnitRetentionTest(unittest.TestCase):
+    def setUp(self):
+        build = c.host_path(c.REPOSITORY, c.MODULE + "/build/l10n-python-tests")
+        build.mkdir(parents=True, exist_ok=True)
+        self.temporary = tempfile.TemporaryDirectory(dir=build)
+        self.root = Path(self.temporary.name)
+        self.source = self.root / "source"
+        self.output = self.root / "retained"
+        self.source.mkdir()
+        self.write_reports()
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def write_reports(self):
+        originals = dict(c.ORIGINAL_CASES)
+        timestamp = max(time.time_ns(), max(path.stat().st_mtime_ns for path in c.android_test_inputs()) + 1_000_000)
+        for name, count in c.ANDROID_CASE_MINIMUMS.items():
+            methods = [f"assertion{index}" for index in range(count)]
+            if name in originals:
+                methods[0] = originals[name]
+            cases = "".join(f'<testcase classname="{name}" name="{method}"/>\r\n' for method in methods)
+            raw = b"\xef\xbb\xbf" + (
+                f'<testsuite name="{name}" tests="{count}" failures="0" errors="0" skipped="0">\r\n'
+                + cases + "</testsuite>\r\n"
+            ).encode()
+            path = self.source / f"TEST-{name}.xml"
+            path.write_bytes(raw)
+            os.utime(path, ns=(timestamp, timestamp))
+
+    def test_complete_raw_reports_are_byte_identical_and_summary_is_typed(self):
+        result = c.copy_android_junit(self.source, self.output)
+        self.assertEqual(25, result["android_tests"]["discovered"])
+        self.assertEqual(4, result["android_tests"]["suites"])
+        self.assertEqual(c.ANDROID_CASE_MINIMUMS, result["android_tests"]["class_counts"])
+        self.assertRegex(result["candidate_head"], r"^[0-9a-f]{40}$")
+        self.assertEqual(c.REFERENCE, result["source_pin"])
+        self.assertTrue(result["source_sha256"])
+        expected = {path.name for path in self.source.glob("TEST-*.xml")} | {"summary.json"}
+        self.assertEqual(expected, {path.name for path in self.output.iterdir()})
+        for source in self.source.glob("TEST-*.xml"):
+            self.assertEqual(source.read_bytes(), (self.output / source.name).read_bytes())
+        self.assertEqual(result, json.loads((self.output / "summary.json").read_text(encoding="utf-8")))
+        self.assertEqual(result, c.copy_android_junit(self.source, self.output))
+        self.assertEqual(c.check_android_tests(self.source), c.check_android_tests(self.output))
+
+    def test_missing_suite_rejects_retention_without_creating_output(self):
+        next(self.source.glob("TEST-*.xml")).unlink()
+        with self.assertRaisesRegex(c.ConversionError, "suite inventory"):
+            c.copy_android_junit(self.source, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_zero_skipped_and_malformed_reports_never_create_passing_artifacts(self):
+        first = next(self.source.glob("TEST-*.xml"))
+        for failure in ("zero", "skipped", "malformed"):
+            self.write_reports()
+            suite = ET.fromstring(first.read_bytes())
+            if failure == "zero":
+                for case in list(suite):
+                    suite.remove(case)
+                suite.set("tests", "0")
+            elif failure == "skipped":
+                suite.set("skipped", "1")
+                ET.SubElement(suite[0], "skipped")
+            else:
+                suite.set("tests", "not-an-integer")
+            first.write_bytes(ET.tostring(suite))
+            with self.subTest(failure=failure), self.assertRaises(c.ConversionError):
+                c.copy_android_junit(self.source, self.output)
+            self.assertFalse(self.output.exists())
+
+    def test_duplicate_cases_and_unknown_suites_reject_retention(self):
+        first = next(self.source.glob("TEST-*.xml"))
+        duplicate = self.source / "TEST-duplicate.xml"
+        duplicate.write_bytes(first.read_bytes())
+        with self.assertRaisesRegex(c.ConversionError, "duplicate testcase"):
+            c.copy_android_junit(self.source, self.output)
+        duplicate.unlink()
+        duplicate.write_bytes(b'<testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="unknown" name="assertion"/></testsuite>')
+        with self.assertRaisesRegex(c.ConversionError, "suite inventory"):
+            c.copy_android_junit(self.source, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_stale_source_reports_cannot_be_relabelled_as_current_evidence(self):
+        older = min(path.stat().st_mtime_ns for path in c.android_test_inputs()) - 1_000_000_000
+        for path in self.source.glob("TEST-*.xml"):
+            os.utime(path, ns=(older, older))
+        with self.assertRaisesRegex(c.ConversionError, "stale JUnit evidence"):
+            c.copy_android_junit(self.source, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_stale_destination_refuses_overwrite_and_preserves_old_bytes(self):
+        c.copy_android_junit(self.source, self.output)
+        summary = self.output / "summary.json"
+        value = json.loads(summary.read_text(encoding="utf-8"))
+        value["candidate_head"] = "0" * 40
+        summary.write_bytes(c.json_bytes(value))
+        previous = summary.read_bytes()
+        with self.assertRaisesRegex(c.ConversionError, "stale/missing/modified"):
+            c.copy_android_junit(self.source, self.output)
+        self.assertEqual(previous, summary.read_bytes())
+
+    def test_relative_readonly_source_and_overlapping_output_paths_are_rejected(self):
+        for destination in (
+            Path("relative-junit"),
+            c.host_path(c.REPOSITORY, "MC1/Resources/Localization/junit"),
+            c.host_path(c.REPOSITORY, "docs/android/evidence/WP-005/junit"),
+            self.source,
+            self.source / "child",
+            self.root,
+        ):
+            with self.subTest(path=str(destination)), self.assertRaises(c.ConversionError):
+                c.copy_android_junit(self.source, destination)
+        self.assertFalse(self.output.exists())
+
+    def test_linked_output_path_and_changed_report_fail_explicitly(self):
+        original = Path.is_symlink
+        with patch.object(Path, "is_symlink", lambda path: path == self.output or original(path)):
+            with self.assertRaisesRegex(c.ConversionError, "symlink/junction"):
+                c.copy_android_junit(self.source, self.output)
+        check = c.check_android_tests
+
+        def changed_after_validation(directory):
+            result = check(directory)
+            first = next(directory.glob("TEST-*.xml"))
+            first.write_bytes(first.read_bytes() + b" ")
+            return result
+
+        with patch.object(c, "check_android_tests", side_effect=changed_after_validation):
+            with self.assertRaisesRegex(c.ConversionError, "changed after validation"):
+                c.copy_android_junit(self.source, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_invalid_ci_binding_fails_without_passing_output(self):
+        for values in (
+            {"GITHUB_REPOSITORY": "wrong/repository"},
+            {"GITHUB_RUN_ID": "12", "GITHUB_RUN_ATTEMPT": "0"},
+        ):
+            with self.subTest(values=values), patch.dict(c.os.environ, values):
+                with self.assertRaisesRegex(c.ConversionError, "identity"):
+                    c.copy_android_junit(self.source, self.output)
+        self.assertFalse(self.output.exists())
 
 
 if __name__ == "__main__":

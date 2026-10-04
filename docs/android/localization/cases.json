@@ -30,7 +30,8 @@
     "Safe plist schema/duplicates/entities/XML, zero/one/two/few/many/other shapes and second-argument quantity",
     "Actual xcstrings schema, named parameter preservation/reordering, missing locale and unsupported schema failures",
     "All pinned source/file/blob/key counts, namespace collisions, deterministic outputs, real fallback, exact billing exclusions and stale source/correction/output rejection",
-    "Missing/zero/malformed/failed/skipped/duplicate/incomplete Android JUnit evidence rejection"
+    "Missing/zero/malformed/failed/skipped/duplicate/incomplete Android JUnit evidence rejection",
+    "Complete byte-identical raw25-case JUnit retention and typed head/source/run/hash summary; reject stale sources/destinations, unsafe/link/overlap paths, changed bytes and invalid CI identity"
   ],
   "not_claimed": [
     "Full widget/shortcut execution or WP-404 intent runtime behavior",

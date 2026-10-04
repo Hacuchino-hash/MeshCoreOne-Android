@@ -1,7 +1,8 @@
 """WP-005: deterministic, pinned Apple localization -> Android resources.
 
-Only the declared generated outputs are writable. The Swift tree is always an
-immutable input, including in tests and --write mode. No third-party packages.
+Only declared generated outputs and explicit private JUnit-retention directories
+are writable. Swift is always immutable, including in tests and --write mode.
+No third-party packages.
 """
 
 from __future__ import annotations
@@ -10,10 +11,12 @@ import argparse
 from dataclasses import dataclass, field
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
@@ -1039,9 +1042,15 @@ def check_android_tests(directory: Path, required: set[str] = ANDROID_SUITES) ->
     discovered = 0
     identities = set()
     class_counts = {}
+    fingerprints = []
     for report in reports:
+        if report.is_symlink():
+            fail(report.name, "linked JUnit reports are forbidden")
+        data = report.read_bytes()
+        if len(data) > 2 * 1024 * 1024 or b"<!DOCTYPE" in data or b"<!ENTITY" in data:
+            fail(report.name, "oversized/entity-bearing JUnit report")
         try:
-            suite = ET.parse(report).getroot()
+            suite = ET.fromstring(data)
         except ET.ParseError as error:
             fail(report.name, f"malformed JUnit XML: {error}")
         cases = list(suite.findall("testcase"))
@@ -1063,6 +1072,7 @@ def check_android_tests(directory: Path, required: set[str] = ANDROID_SUITES) ->
             identities.add(identity)
             class_counts[identity[0]] = class_counts.get(identity[0], 0) + 1
         discovered += len(cases)
+        fingerprints.append({"name": report.name, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
     if classes != required:
         fail(str(directory), f"Android suite inventory mismatch: {sorted(classes ^ required)}")
     if required == ANDROID_SUITES:
@@ -1074,8 +1084,95 @@ def check_android_tests(directory: Path, required: set[str] = ANDROID_SUITES) ->
                 fail(str(directory), f"missing original case family {name}/{method}")
     return {
         "discovered": discovered, "passed": discovered, "failed": 0, "errors": 0, "skipped": 0,
-        "suites": len(reports), "class_counts": dict(sorted(class_counts.items())),
+        "suites": len(reports), "class_counts": dict(sorted(class_counts.items())), "reports": fingerprints,
     }
+
+
+def android_test_inputs() -> list[Path]:
+    module = host_path(REPOSITORY, MODULE)
+    paths = [module / "build.gradle.kts", host_path(REPOSITORY, GENERATOR), host_path(REPOSITORY, CONFIG),
+             host_path(REPOSITORY, ADAPTATIONS), host_path(REPOSITORY, KEY_MAP)]
+    paths += sorted(path for path in (module / "src").rglob("*") if path.is_file())
+    if any(not path.is_file() for path in paths):
+        fail("Android JUnit retention", "missing executed localization source/configuration")
+    return paths
+
+
+def no_linked_path(path: Path) -> None:
+    for part in (path, *path.parents):
+        if part.is_symlink() or part.is_junction():
+            fail(str(path), "symlink/junction evidence paths are forbidden")
+
+
+def copy_android_junit(directory: Path, destination: Path) -> dict:
+    if not destination.is_absolute():
+        fail(str(destination), "JUnit retention requires a private absolute output directory")
+    no_linked_path(directory)
+    no_linked_path(destination)
+    source = directory.resolve()
+    output = destination.resolve()
+    repository = REPOSITORY.resolve()
+    owned_build = host_path(REPOSITORY, MODULE + "/build").resolve()
+    if output.is_relative_to(repository) and not output.is_relative_to(owned_build):
+        fail(str(destination), "JUnit retention cannot write repository/source paths")
+    if output == source or output.is_relative_to(source) or source.is_relative_to(output):
+        fail(str(destination), "JUnit source/output overlap is forbidden")
+
+    counts = check_android_tests(source)
+    inputs = android_test_inputs()
+    latest_input = max(path.stat().st_mtime_ns for path in inputs)
+    payloads = {}
+    for record in counts["reports"]:
+        report = source / record["name"]
+        if report.stat().st_mtime_ns < latest_input:
+            fail(report.name, "stale JUnit evidence predates current localization inputs")
+        raw = report.read_bytes()
+        if len(raw) != record["bytes"] or hashlib.sha256(raw).hexdigest() != record["sha256"]:
+            fail(report.name, "JUnit report changed after validation")
+        payloads[record["name"]] = raw
+
+    repository_name = "cbattlegear/MeshCoreOne-Android"
+    if os.environ.get("GITHUB_REPOSITORY", repository_name) != repository_name:
+        fail("JUnit retention", "unexpected CI repository identity")
+    run = {name: os.environ.get(name) for name in ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT")}
+    if any(run.values()) and any(not value or not value.isascii() or not value.isdigit() or int(value) < 1 for value in run.values()):
+        fail("JUnit retention", "missing/malformed CI run/attempt identity")
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=REPOSITORY, capture_output=True, check=True, text=True,
+    ).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        fail("JUnit retention", "malformed candidate Git identity")
+    summary = {
+        "schema_version": 1, "work_package": "WP-005", "repository": repository_name,
+        "candidate_head": head, "source_pin": REFERENCE,
+        "scope": "Complete validated raw localization JUnit evidence; not device/iOS/legal or gate approval",
+        "android_tests": counts, "run_id": run["GITHUB_RUN_ID"], "run_attempt": run["GITHUB_RUN_ATTEMPT"],
+        "runner_os": os.environ.get("RUNNER_OS"), "source_reports": MODULE + "/build/test-results/testDebugUnitTest",
+        "source_sha256": {
+            path.relative_to(REPOSITORY).as_posix(): hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+            for path in inputs
+        },
+    }
+    payloads["summary.json"] = json_bytes(summary)
+    if output.exists():
+        actual = set(path.name for path in output.iterdir()) if output.is_dir() else set()
+        if actual != set(payloads) or any(not (output / name).is_file() or (output / name).is_symlink()
+                                          or (output / name).read_bytes() != data for name, data in payloads.items()):
+            fail(str(destination), "stale/missing/modified retained JUnit evidence; refusing overwrite")
+        return summary
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    no_linked_path(output.parent)
+    with tempfile.TemporaryDirectory(prefix=".l10n-junit-", dir=output.parent) as temporary:
+        staged = Path(temporary)
+        for name, data in payloads.items():
+            (staged / name).write_bytes(data)
+        if check_android_tests(staged) != counts:
+            fail(str(destination), "retained JUnit discovery differs from validated source")
+        if any((staged / name).read_bytes() != data for name, data in payloads.items()):
+            fail(str(destination), "retained JUnit bytes differ from validated source")
+        staged.replace(output)
+    return summary
 
 
 def self_test() -> int:
@@ -1097,7 +1194,10 @@ def main() -> int:
     mode.add_argument("--check", action="store_true", help="Read-only drift check (the default)")
     parser.add_argument("--self-test", action="store_true", help="Require real positive/negative parser and source assertions")
     parser.add_argument("--verify-android-tests", type=Path, help="Fail closed on missing/malformed/zero/failed/skipped JUnit evidence")
+    parser.add_argument("--copy-android-junit", type=Path, help="Retain complete validated raw XML/counts in a private absolute evidence directory")
     args = parser.parse_args()
+    if args.copy_android_junit and (not args.verify_android_tests or args.write):
+        parser.error("--copy-android-junit requires --verify-android-tests and read-only --check mode")
     try:
         outputs, summary = generate()
         check_outputs(REPOSITORY, outputs, args.write)
@@ -1106,7 +1206,12 @@ def main() -> int:
         if args.self_test:
             result["python_tests"] = self_test()
         if args.verify_android_tests:
-            result["android_tests"] = check_android_tests(args.verify_android_tests)
+            if args.copy_android_junit:
+                retained = copy_android_junit(args.verify_android_tests, args.copy_android_junit)
+                result["android_tests"] = retained["android_tests"]
+                result["retained_junit"] = {"files": len(retained["android_tests"]["reports"]), "summary": "summary.json"}
+            else:
+                result["android_tests"] = check_android_tests(args.verify_android_tests)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (OSError, ConversionError, UnicodeError, subprocess.SubprocessError) as error:

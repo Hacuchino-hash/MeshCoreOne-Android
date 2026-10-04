@@ -79,7 +79,41 @@ The module extends the existing `verifyScaffoldTests` aggregate with
 `verifyL10nTests`, which requires the four nonempty localization JUnit suites,
 minimum family counts, the two original test methods, and no failure/error/skip.
 The original four scaffold suites are not counted as localization coverage.
-No shared workflow/catalog/build-logic/manifest-policy file is modified.
+The exact authorized post-verify step in `android-ci.yml` additionally retains
+complete raw localization evidence; catalog/build-logic/manifest-policy and the
+workflow's permissions/checkouts/actions/pins/artifact prefix remain unchanged.
+
+### Portable raw localization proof
+
+```powershell
+python .\tools\android-port\l10n_convert.py --check `
+  --verify-android-tests .\android\core\l10n\build\test-results\testDebugUnitTest `
+  --copy-android-junit (Join-Path (Join-Path $env:ANDROID_CI_OUTPUT 'l10n') 'junit')
+```
+
+The existing CI bundle contains `l10n/junit/TEST-*.xml` (all four complete
+verbatim reports, 25 actual cases) and `l10n/junit/summary.json`. The summary
+has typed discovered/passed/failed/errors/skipped/class counts, candidate Git
+head, source pin, CI run/attempt, executed-source hashes and each raw report's
+size/SHA256. No report content, header, whitespace, UTF8 BOM or assertion
+is normalized or truncated during retention.
+
+Retention calls the same strict checker before any copy, requires current-source
+freshness and verifies the copied bytes/counts. Missing/malformed/zero/failed/
+skipped/duplicate/incomplete or stale reports and stale destinations fail;
+changed-after-validation reports cannot receive passing evidence. Existing
+identical output is idempotent; different old evidence is never overwritten as
+success. The private output must be absolute, outside repository sources (or
+inside ignored module build fixtures), nonlinked and nonoverlapping with reports.
+Copying stages all files before publishing the directory and never executes
+artifact contents or writes into the read-only Swift tree.
+
+The retention step is immediately after the existing strict `verify` stage.
+The unchanged controller's later `inspect` stage includes these extra files in
+the original bundle manifest and SHA256SUMS. Legacy root/standalone raw XML,
+their 47-case discovery proof, upload names/layout and independent root aggregator
+remain untouched; localization assertions are independently replayable data,
+not substituted for that legacy evidence.
 
 The module owns its dependency lock in
 `android/core/l10n/gradle/dependency-locks/core-l10n.lockfile`; all versions and
