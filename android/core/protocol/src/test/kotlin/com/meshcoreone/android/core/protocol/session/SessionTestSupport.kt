@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -124,9 +125,11 @@ internal fun TestScope.fixture(
     ),
     transport: SessionRadioTransport = SessionRadioTransport(),
     randomTag: () -> UInt = { 0xaabbccddu },
+    owningJob: Job? = null,
 ): SessionFixture {
     val diagnostics = mutableListOf<SessionDiagnostic>()
-    val session = MeshCoreSession(transport, configuration, SchedulerClock(testScheduler), backgroundScope.coroutineContext, randomTag, diagnostics::add)
+    val context = if (owningJob == null) backgroundScope.coroutineContext else backgroundScope.coroutineContext + owningJob
+    val session = MeshCoreSession(transport, configuration, SchedulerClock(testScheduler), context, randomTag, diagnostics::add)
     return SessionFixture(transport, session, diagnostics)
 }
 
