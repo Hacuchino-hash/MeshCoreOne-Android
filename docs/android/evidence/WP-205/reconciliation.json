@@ -78,5 +78,41 @@
   "historical_remaining_blocker": "At reconciliation the unchanged scope did not authorize the shared BLE dependency lock or additional SDK32/33/37 verification metadata. A subsequent explicit coordinator receipt resolved this blocker, not the helper merge itself.",
   "shared_dependency_amendment_received": true,
   "later_independent_review_repairs": "The byte-identical rebased historical code was subsequently corrected for all four independently reviewed queue deadline, pacing termination, HCI/ATT domain and lowercase lookup bugs. Final passing native evidence is separate.",
-  "physical_hardware_or_human_gate_advanced": false
+  "physical_hardware_or_human_gate_advanced": false,
+  "latest_authorized_reconciliation": {
+    "coordinator_verified_merged_main": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
+    "previous_verified_base": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
+    "old_published_head": "92a90e74025e58e0046e71b6dae9e79d04232022",
+    "rebased_pre_followup_head": "fb7a116f99f2d207e208e4ccc4f8e84b2ccf2fad",
+    "only_owning_branch_rebased": true,
+    "uncommitted_followup_preserved_and_restored": true,
+    "previous_ble_inputs_identical_after_rebase": true,
+    "immutable_source_manifest_policy_unchanged": true,
+    "required_force_with_lease_guard": "92a90e74025e58e0046e71b6dae9e79d04232022",
+    "published_after_rebase": false,
+    "pre_integration_local_proof": "docs/android/evidence/WP-205/historical-pre-dc15-proof.json",
+    "historical_reviewed_head_hosted_proof": {
+      "head_sha": "92a90e74025e58e0046e71b6dae9e79d04232022",
+      "base_sha": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
+      "run_id": 37189270725,
+      "run_attempt": 1,
+      "conclusion": "success",
+      "ble_passed_per_host": 292,
+      "not_followup_or_integrated_proof": true,
+      "linux_artifact_id": 11297414536,
+      "linux_archive_sha256": "398746db2e0728eb30d5fecd8efeadc1c687eb1f57d8a8ab7b9ab61dff9c95ae",
+      "windows_artifact_id": 11298965321,
+      "windows_archive_sha256": "a32d5a046adbf7c3908258d937c76691987653ef94b89e6f49ec61b83b44eb2a"
+    },
+    "integrated_validation_status": "Blocked before Gradle by shared-host memory/pagefile exhaustion; merged WP-201 whole-repository ownership assertion also rejects legitimate WP-205 inputs",
+    "root_dependency_files_modified_by_followup": false,
+    "readiness_failure_log": {
+      "path": "docs/android/evidence/WP-205/logs/wp205-dc15-readiness-failure.log.gz",
+      "size_bytes": 183,
+      "sha256": "55f8808e4a212803e6bc7ab7b86e06cbba597bbf0beefe6df292b3b7920e7ec1",
+      "original_runner_size_bytes": 193,
+      "original_runner_sha256": "a38db1e6a3f9d4aba346153a678dd82f100801a368a713687c34b11c4faf0f71",
+      "encoding": "gzip; exact complete captured readiness-subprocess output bytes"
+    }
+  }
 }

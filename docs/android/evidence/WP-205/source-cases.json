@@ -1729,11 +1729,23 @@
     },
     {
       "suite": "BleReviewRegressionTest",
+      "method": "RSSI timeout before submission leaves the ready link usable and no pending timer"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
       "method": "connection HCI status is not reinterpreted as ATT by the pending operation"
     },
     {
       "suite": "BleReviewRegressionTest",
       "method": "disconnect wakes acknowledged pacing and new connect issues before the old deadline"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
+      "method": "unsubmitted startup timeout still closes every incomplete setup phase"
+    },
+    {
+      "suite": "BleReviewRegressionTest",
+      "method": "write timeout before submission does not invalidate the ready link"
     },
     {
       "suite": "BleStreamTest",

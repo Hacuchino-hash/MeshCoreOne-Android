@@ -6,17 +6,31 @@ Owning branch: `cbattlegear-curly-guide`. Execution session:
 `0bdc2276-e010-4c61-ad20-e523bed48a7d`.
 
 **Implemented native component with actual assertion evidence, not hardware or
-full-product certification.** The complete BLE suite has **292
+full-product certification.** The complete BLE suite has **295
 discovered/run/passed, 0 failed/errors/skipped**, including real
 SDK31/32/33/37 framework sandbox bodies. Final BLE lint has zero warnings/errors.
 The normal root graph/schema/runtime resolution and real debug APK pass.
 Historical missing-lock, checksum-binding, test compilation, API37 bootstrap,
-code-cache and review-repair failures remain distinct from these results.
+code-cache and review-repair failures remain distinct from these results,
+including the reproduced pre-submission timeout defect at reviewed head92.
+
+The coordinator subsequently verified merged main
+`dc15f1ba445acf3230383ea68d4827c592f3fafa`. Only this owning branch was
+rebased onto it, and the scoped timeout repair was restored unchanged.
+The 295-case local proof above is preserved as **pre-dc15 integration proof**,
+not a passing integrated run. The first normal integrated root attempt failed
+in private-JDK readiness before Gradle started during shared-host paging/memory
+exhaustion. Read-only replay also reproduced the merged WP-201 collector's
+whole-repository ownership assertion rejecting legitimate WP-205 paths.
+Neither its unleased script nor global tool/storage settings were changed;
+final integrated root and exact-head Windows/Linux proof remain required.
 
 | Binding | Actual value |
 | --- | --- |
 | Verified clean initial merged main | `0ae606992bf58c8d3f2bf08b7a26406c97f12f84` |
-| Coordinator-verified reconciled merged main | `0394b83c9b47fa0d7198e2d631f7ddb313cd370d` |
+| Historical coordinator-verified reconciled main | `0394b83c9b47fa0d7198e2d631f7ddb313cd370d` |
+| Latest coordinator-verified merged main | `dc15f1ba445acf3230383ea68d4827c592f3fafa` |
+| Independently reviewed head before timeout follow-up | `92a90e74025e58e0046e71b6dae9e79d04232022` |
 | Rebased byte-identical implementation | `fa0aa6f71d589236f28004cd42c5c92541fa8698` |
 | Actual WP-108 prerequisite merge/ancestor | `eaf0fdb956afcb20e2de3d7d6550e0cbeeb50730` |
 | Read-only source commit | `db14559b39d32322b06477c6ae676112f583db50` |
@@ -89,7 +103,9 @@ metaspace512m, test256m/metaspace256m, SerialGC and two processors.
 | Launcher `:core:ble:dependencies --write-locks --dependency-verification strict --no-build-cache --quiet` after the concrete receipt | **Passed**, only leased BLE lock content changes; exact six approved SDK JAR/POM verification entries, no other version/checksum/component added |
 | First actual full native run `:core:ble:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | **291 discovered/run,263 passed,28 failed,0 errors/skipped**: real API37 bodies initially blocked by JDK FileDescriptor access; raw evidence preserved, not skipped |
 | API37 selector after BLE-test-only JPMS export | **28 discovered/run/passed,0 failed/errors/skipped** on the actual API37 runtime |
-| Final launcher `:core:ble:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` after all independent review repairs | **292 discovered/run/passed,0 failed/errors/skipped**, complete thirteen raw suites |
+| Eager-clock reproduction `:core:ble:testDebugUnitTest --tests com.meshcoreone.android.core.ble.BleReviewRegressionTest --dependency-verification strict --no-build-cache --quiet` against reviewed production | **4 discovered/run,3 passed,1 failed,0 errors/skipped**; zero RSSI submissions followed by the healthy-link assertion failure |
+| Targeted launcher `:core:ble:testDebugUnitTest --tests com.meshcoreone.android.core.ble.BleReviewRegressionTest --tests com.meshcoreone.android.core.ble.BleOperationFailureTest --tests com.meshcoreone.android.core.ble.BleLifecycleTest --dependency-verification strict --no-build-cache --quiet` | **66 discovered/run/passed,0 failed/errors/skipped**, all three raw suites retained |
+| Final launcher `:core:ble:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` after the timeout follow-up | **295 discovered/run/passed,0 failed/errors/skipped**, complete thirteen raw suites |
 | Final separate launcher `:core:ble:lintDebug --dependency-verification strict --no-build-cache --quiet` | **Passed**, zero warnings/Error/Fatal after explicit actual API guards and typed local operation overlap |
 | Final launcher `verifyScaffoldTests verifyRoomSchema validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies :app:assembleDebug --dependency-verification strict --no-build-cache --quiet` | **Passed**, actual root hook executes BLE, normal graph/schema/strict artifacts and final debug APK |
 | `git diff --check`, immutable source-root diff and complete leased write-path validator | **Passed** no source/manifest/policy/shared path edits |
@@ -98,8 +114,10 @@ metaspace512m, test256m/metaspace256m, SerialGC and two processors.
 
 The historical initial measured debug APK SHA-256 is
 `10bc9863fbf5510e6648df1f406d5742e1e1033cffc464e5d94e675fd1d178fc`.
-The final independently reviewed/fixed local APK SHA-256 is
-`0329037ea42775cded768fe162af3e8b0437265ab1750b623b1593891e5e716e`,
+The historical reviewed-head92 local APK SHA-256 is
+`0329037ea42775cded768fe162af3e8b0437265ab1750b623b1593891e5e716e`.
+The final timeout-follow-up local APK SHA-256 is
+`9c3899dd72c39ab6df19a667f54f4510dd5b4e8a5b7c0af7f489d644cb9ddadc`,
 with actual debug/min31/target37/notices/native static alignment and test-only
 SDK/helper/fixture exclusion in `final-apk-inspection.json` and
 `final-apk-alignment.json`.
@@ -132,7 +150,8 @@ the actual `:core:ble:testDebugUnitTest` task. The coordinator separately owns
 generic raw XML copying/counter replay/source bindings in trusted CI. That
 follow-up actually merged at the coordinator-verified main
 `0394b83c9b47fa0d7198e2d631f7ddb313cd370d`, and only this owning branch was
-rebased onto it; all authored BLE production remains byte-identical.
+rebased onto it. BLE production was byte-identical at that reconciliation;
+subsequent bounded independent-review repairs are recorded separately.
 
 [Reconciliation](reconciliation.json) preserves the actual old-head failure:
 Android scaffold CI run37184367506/attempt1 at
@@ -157,6 +176,20 @@ definitions, not candidate output. The old synthetic ATT “connect/RSSI”
 parameter rows were replaced by correct procedure-domain rows and actual
 connection-state regressions, not ignored or weakened.
 
+[unsubmitted-timeout-repair.json](unsubmitted-timeout-repair.json) records the
+later same-review follow-up, its genuine failed reproduction, all66 targeted
+and295 complete passing cases, actual production hashes and current APK/lint.
+A timer may complete synchronously before facade invocation. The skipped
+request still throws its typed timeout, removes its pending waiter and joins
+the timer, but does not close a healthy READY link. The RSSI regression proves
+zero submissions, connected/close0/pending0/timer completion and a subsequent
+actual submitted callback completing on the same generation. The write
+equivalent and all four unsubmitted startup phases are also exercised.
+Entering the facade remains conservatively ambiguous even if it throws;
+submitted timeout/cancellation, bond loss and incomplete setup still close.
+Complete failed and targeted XML are retained in their separate historical
+directories, not merged into the current full-suite counters.
+
 | Final suite | Actual cases passed |
 | --- | ---: |
 | API31 framework | 30 |
@@ -168,11 +201,11 @@ connection-state regressions, not ignored or weakened.
 | ATT status families | 28 |
 | Lifecycle | 18 |
 | Operation adversarial families | 42 |
-| Independent review regressions | 3 |
+| Independent review regressions | 6 |
 | Notification/receiver generations | 12 |
 | Values/source defaults | 21 |
 | Whole-write/capability/pacing | 17 |
-| **Total** | **292** |
+| **Total** | **295** |
 
 Local raw module collector/replay and final same-head hosted Windows/Linux
 schema2 proof are recorded separately after their exact candidate/run bindings,

@@ -1,9 +1,7 @@
 {
-  "scope": "Actual final local component verification; exact-head hosted schema2 proof is recorded separately",
-  "repository": "cbattlegear/MeshCoreOne-Android",
-  "work_package": "WP-205",
+  "scope": "Historical actual uncommitted repair proof before authorized dc15 integration; not final-head evidence",
   "base_sha": "0394b83c9b47fa0d7198e2d631f7ddb313cd370d",
-  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "reviewed_head_sha": "92a90e74025e58e0046e71b6dae9e79d04232022",
   "counts": {
     "discovered": 295,
     "run": 295,
@@ -14,91 +12,91 @@
   },
   "junit": [
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi31Test.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi31Test.xml",
       "size_bytes": 6469,
       "sha256": "6dd829580aefc9f2628cca70cc898c1fd778dc2bebd1716ec0beaa0bfed38ac9",
       "original_runner_size_bytes": 6505,
       "original_runner_sha256": "6a9f0e493dddeace2b50e862e5d187d558263f6b81fe349185d11913cb28910e"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi32Test.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi32Test.xml",
       "size_bytes": 6469,
       "sha256": "f033e9dc873ce582a151e5bc0ec883b651b394dedcede8f680ec44d80c18e979",
       "original_runner_size_bytes": 6505,
       "original_runner_sha256": "5ac9a64b7b5464df78902f6ea412d2998480b6231a991e6a4e29065bb7190d7b"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi33Test.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi33Test.xml",
       "size_bytes": 6468,
       "sha256": "d0170cf7ad230fcdbea1115a361faa855e2b6a9b6e28081f5d0bc41ae90219a1",
       "original_runner_size_bytes": 6504,
       "original_runner_sha256": "a7334f008a8a73f71f42fb719e5a079f583b2ddd5a292df32d186a071aaabc95"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi37Test.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.AndroidGattApi37Test.xml",
       "size_bytes": 6642,
       "sha256": "ad34559c90753a5257d14d4e24f0b294463c3e9cc7e2e80d370b4bedd9c038c4",
       "original_runner_size_bytes": 6679,
       "original_runner_sha256": "7bf3137ccf45e9fa80b6016547b61b71bd9d5c2ff435173e9ddbee266b9a3383"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleBondRefreshTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleBondRefreshTest.xml",
       "size_bytes": 2788,
       "sha256": "fe41da177905e0f1b809a786a337825dcb265e406a925eb132e5af42d89a85c6",
       "original_runner_size_bytes": 2809,
       "original_runner_sha256": "f755a7af64b8b9914615f5dc6f741a8ccb2cdef4e12997979e6fd76d59d48b85"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleDiscoveryTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleDiscoveryTest.xml",
       "size_bytes": 2763,
       "sha256": "6a72c90701dd0a3b3a6317bf74f841ea7d3d34815d2f0771bad5bbba2c12fc32",
       "original_runner_size_bytes": 2784,
       "original_runner_sha256": "3736ffd88cb933e47f5802b53c20119cbde5017ce4197044f0e320b8d2f58ede"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleGattStatusTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleGattStatusTest.xml",
       "size_bytes": 5494,
       "sha256": "8bab8e15dba193d4dad8f8181845e016267d48bc80f5afeafaed7913309ff5f2",
       "original_runner_size_bytes": 5528,
       "original_runner_sha256": "83079e67a113f15a08ac5b8db3d7adceae7e3eaa8e11ce5b876b1296f4374538"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleLifecycleTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleLifecycleTest.xml",
       "size_bytes": 3252,
       "sha256": "627037d9b26119168bf1eaf8d3581679195e42e576c0fe5f7353d7b19b907c05",
       "original_runner_size_bytes": 3276,
       "original_runner_sha256": "0c5331093051042a3db540c4d80e76cd5b0bbffe7d82f352c1e2adb907972e66"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleOperationFailureTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleOperationFailureTest.xml",
       "size_bytes": 8031,
       "sha256": "1aecd3c4833f243ced1f033a6098f3b353718fd5e0882ab14d6189c61fa0c68a",
       "original_runner_size_bytes": 8079,
       "original_runner_sha256": "2597138e73d6762c8c80d8cb723d8d273bdd5acd27661c7bf1df4e7cf1efa804"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleReviewRegressionTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleReviewRegressionTest.xml",
       "size_bytes": 1406,
       "sha256": "65939717997852cbc777b22655035383c551d31af6f3ee4196e6e327b17abf84",
       "original_runner_size_bytes": 1418,
       "original_runner_sha256": "61247c083ce8acc67e72628ae83efb7ba6d13a368ce52c73806df698f677a335"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleStreamTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleStreamTest.xml",
       "size_bytes": 2316,
       "sha256": "07e17dcbe916101df5a15ab6bb8f18c66d15b0398d2676a133ab0a67ae2ec3d6",
       "original_runner_size_bytes": 2334,
       "original_runner_sha256": "b578b77b5be455db4484b986a535b8706090df3fddfb607b264d492f3727bb06"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleValuesTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleValuesTest.xml",
       "size_bytes": 3177,
       "sha256": "3e100fc5f0292d4a4912691f08131fceffca63f46e80f57b65bb23ce00357b82",
       "original_runner_size_bytes": 3204,
       "original_runner_sha256": "09dd34764bc049528a9618dd1ff1e92cc1adbf6da033503982a9b7b99e437708"
     },
     {
-      "path": "docs/android/evidence/WP-205/junit/TEST-com.meshcoreone.android.core.ble.BleWriteTest.xml",
+      "path": "docs/android/evidence/WP-205/historical-pre-dc15-junit/TEST-com.meshcoreone.android.core.ble.BleWriteTest.xml",
       "size_bytes": 3052,
       "sha256": "7dc0ec62f894d208af4978c81b154b25ac99a0a3da99c45220e7de1276aad34e",
       "original_runner_size_bytes": 3075,
@@ -136,78 +134,6 @@
     }
   ],
   "logs": [
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-ble-lock-generation.log.gz",
-      "size_bytes": 5166,
-      "sha256": "8ba61df09eb0a57743dc08e737716f80cc4d5cf86694c54d4b4e5427ca235714",
-      "original_runner_size_bytes": 63346,
-      "original_runner_sha256": "e7501b4334ae28ef81baf9bb88bed38a1b070777bf477d10fefb80752b99b67e",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-targeted-after-admission.log.gz",
-      "size_bytes": 813,
-      "sha256": "c793af383b21c6b60cc412923336b608412df4326a645df2e9d81a1d2a59a317",
-      "original_runner_size_bytes": 1458,
-      "original_runner_sha256": "16a913f1fa9322d8e37555a4e8d366e72cd898af52f40e74545fc2c2a14b8baf",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-full-native-tests.log.gz",
-      "size_bytes": 522,
-      "sha256": "a03a49bea5757a54f57ada01046cd75a09e8c1b26979ec7d3e255b5a5dd153cd",
-      "original_runner_size_bytes": 829,
-      "original_runner_sha256": "076a879105f0f178c3218f4b70f0433985a2ab5d630e867aad54d557ae422b4b",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-final-guards-tests-lint.log.gz",
-      "size_bytes": 710,
-      "sha256": "92b884bb7141ffb42f29461dca301b9096d3cb148cf397cec89937d5b4a29542",
-      "original_runner_size_bytes": 1213,
-      "original_runner_sha256": "6c50b982351849ef2433aa31198eb1921204cd117b10230b5e31e83c3edc7587",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-final-guards-tests-lint-repaired.log.gz",
-      "size_bytes": 4160,
-      "sha256": "4abade169f12f4c7a61ddcb38bfaf97d1b11452b45d20954bdf0e45f3f87f298",
-      "original_runner_size_bytes": 253409,
-      "original_runner_sha256": "4a7e45a9e0dd3b125dc02be0ff08f1cc32090c793519dc84e86a1bf7d6dae24c",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-independent-review-regressions.log.gz",
-      "size_bytes": 518,
-      "sha256": "cf3fc2291a5473b5e4a6e5b950a0f54da6a9850fcbea144c1e0d8208bace4730",
-      "original_runner_size_bytes": 824,
-      "original_runner_sha256": "a0aaad1973d787677ef7a96c58ba6282e17b04143b4672b178c0ff3592c667af",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-final-four-fixes-full-tests.log.gz",
-      "size_bytes": 218,
-      "sha256": "8ade295034bba14c63952ea5dad4a0fcc280f91d90b35604f17c9ed7aa8ece09",
-      "original_runner_size_bytes": 340,
-      "original_runner_sha256": "62a94841b8a8ee037fd9009acfcfa51e5be212b973238f1b20d2c1ef5b7c19cc",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-final-clean-lint.log.gz",
-      "size_bytes": 218,
-      "sha256": "8ade295034bba14c63952ea5dad4a0fcc280f91d90b35604f17c9ed7aa8ece09",
-      "original_runner_size_bytes": 340,
-      "original_runner_sha256": "62a94841b8a8ee037fd9009acfcfa51e5be212b973238f1b20d2c1ef5b7c19cc",
-      "encoding": "gzip; exact complete runner bytes"
-    },
-    {
-      "path": "docs/android/evidence/WP-205/logs/wp205-final-root-and-apk.log.gz",
-      "size_bytes": 968,
-      "sha256": "28deedfd252bc526463b4a8aa7750f0d5349cbd10f3ecbc6cfbf10fd43c7c7a6",
-      "original_runner_size_bytes": 3168,
-      "original_runner_sha256": "9d332b6b796f90ede3c62efebf4c16d1332b32b8e4a7787df6fd198bd1ed3b80",
-      "encoding": "gzip; exact complete runner bytes"
-    },
     {
       "path": "docs/android/evidence/WP-205/logs/wp205-unsubmitted-timeout-red.log.gz",
       "size_bytes": 517,
@@ -249,22 +175,58 @@
       "encoding": "gzip; exact complete runner bytes"
     }
   ],
-  "lint": {
-    "sha256": "a4150903520c5012f6285a9db3152eea0347eee4cf929599f7dc4d75cc51767d",
-    "warnings": 0
+  "apk_sha256": "9c3899dd72c39ab6df19a667f54f4510dd5b4e8a5b7c0af7f489d644cb9ddadc",
+  "targeted": {
+    "counts": {
+      "discovered": 66,
+      "run": 66,
+      "passed": 66,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports": [
+      {
+        "path": "docs/android/evidence/WP-205/historical-unsubmitted-targeted-junit/TEST-com.meshcoreone.android.core.ble.BleLifecycleTest.xml",
+        "size_bytes": 3248,
+        "sha256": "0dbc7fc9fa87e666a6286dabf216f5fc25820965fa506d5d9436c64a92286162",
+        "original_runner_size_bytes": 3272,
+        "original_runner_sha256": "67d97db417a449a7c356896dab1286fc246e2df53750bf385303784ad24128e0"
+      },
+      {
+        "path": "docs/android/evidence/WP-205/historical-unsubmitted-targeted-junit/TEST-com.meshcoreone.android.core.ble.BleOperationFailureTest.xml",
+        "size_bytes": 8029,
+        "sha256": "4ed574cb23bcbe861699af6c0ac5956ee4d1970da6618141b3422ff09c1abc54",
+        "original_runner_size_bytes": 8077,
+        "original_runner_sha256": "78f7cf18a06ac4c43ccf28bd87809dffeeb72cf8d6b36f699ad5813c4c178c1d"
+      },
+      {
+        "path": "docs/android/evidence/WP-205/historical-unsubmitted-targeted-junit/TEST-com.meshcoreone.android.core.ble.BleReviewRegressionTest.xml",
+        "size_bytes": 1406,
+        "sha256": "8ee3ad4e8a9c04ab7dc430ee3bb2c0b0718f216568cdae8e464e7b1780bbeeda",
+        "original_runner_size_bytes": 1418,
+        "original_runner_sha256": "85219e84191945d003ba5cdfacc04fa11b7b3a4e8336cb21eb6becfeff51d5a6"
+      }
+    ]
   },
-  "root_verify_schema_graph_runtime_and_apk": "passed normal declared strict tasks",
-  "hardware_or_full_human_gate_verified": false,
-  "historical_jdk_bootstrap_failure": {
-    "discovered": 291,
-    "run": 291,
-    "passed": 263,
-    "failed": 28,
-    "errors": 0,
-    "skipped": 0
-  },
-  "historical_wrong_sdk33_sdk37_binding": "rejected, corrected by independent coordinator byte verification",
-  "independent_review_four_bugs": "all corrected; queue admission, pacing termination, connection-versus-ATT domains, actual uppercase device lookup",
-  "historical_verified_head_before_followup": "92a90e74025e58e0046e71b6dae9e79d04232022",
-  "independent_review_followup": "unsubmitted timeout preserves ready link; submitted ambiguity and every incomplete setup phase still close"
+  "reproduction": {
+    "counts": {
+      "discovered": 4,
+      "run": 4,
+      "passed": 3,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports": [
+      {
+        "path": "docs/android/evidence/WP-205/historical-unsubmitted-timeout-junit/TEST-com.meshcoreone.android.core.ble.BleReviewRegressionTest.xml",
+        "size_bytes": 8177,
+        "sha256": "c548428c2cabdb5b68288b038edcd119ed0f2526bae6ca4155aba3f328cc0180",
+        "original_runner_size_bytes": 8270,
+        "original_runner_sha256": "4c7f53f1db3110cbd22813b9c32349688cd5c75467204d63c2c8417b3d4641d3"
+      }
+    ],
+    "failure": "RSSI timeout before submission leaves the ready link usable and no pending timer"
+  }
 }

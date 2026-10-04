@@ -39,5 +39,19 @@
   ],
   "nested_workers_or_sessions_started": false,
   "normal_pr_target": "main",
-  "final_integration_and_merge": "Independent coordinator review"
+  "final_integration_and_merge": "Independent coordinator review",
+  "xml_path_only_handoff_request": {
+    "request": "https://github.com/cbattlegear/MeshCoreOne-Android/pull/18#issuecomment-5981511065",
+    "path": "android/gradle/verification-metadata.xml",
+    "published_commit": "92a90e74025e58e0046e71b6dae9e79d04232022",
+    "rebased_commit_with_same_blob": "fb7a116f99f2d207e208e4ccc4f8e84b2ccf2fad",
+    "git_blob": "fad6f9bc00f9be911bcde5d2d19b4e8828dc13f3",
+    "complete_committed_sha256": "ad8b7cf63f661aa2ded1d23234280acffd901ef45f3e0cf554f8a887323fe85c",
+    "complete_committed_size_bytes": 268252,
+    "all_six_admitted_sdk_hashes_verified": true,
+    "further_wp205_xml_writes_required": false,
+    "recipient_path_lease_activated": false,
+    "ble_module_and_lock_transferred": false,
+    "scope": "Explicit request for coordinator-serialized XML-only transfer; not an inferred lease or protected-gate receipt"
+  }
 }

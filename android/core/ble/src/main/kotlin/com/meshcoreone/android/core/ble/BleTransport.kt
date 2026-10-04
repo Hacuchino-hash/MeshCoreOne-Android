@@ -420,25 +420,34 @@ class BleTransport(
             clock.sleepUntil(deadline)
             pending.result.completeExceptionally(timeoutError)
         }
+        var submissionAttempted = false
         var completed = false
         try {
             currentCoroutineContext().ensureActive()
-            if (!pending.result.isCompleted) connection.gatt.submit(pending.operation)
+            if (!pending.result.isCompleted) {
+                // Entering the facade may issue work even if submission subsequently throws.
+                submissionAttempted = true
+                connection.gatt.submit(pending.operation)
+            }
             pending.result.await().also { completed = true }
         } catch (failure: BleTransportException) {
-            terminate(connection, failure)
-            awaitConnectionClose(connection, failure)
+            if (submissionAttempted) {
+                terminate(connection, failure)
+                awaitConnectionClose(connection, failure)
+            }
             throw failure
         } catch (cancelled: CancellationException) {
-            terminate(connection, cancelled)
-            awaitConnectionClose(connection, cancelled)
+            if (submissionAttempted) {
+                terminate(connection, cancelled)
+                awaitConnectionClose(connection, cancelled)
+            }
             throw cancelled
         } finally {
             withContext(NonCancellable) { timer.cancelAndJoin() }
             synchronized(lock) {
                 if (connection.pending === pending) connection.pending = null
             }
-            if (!completed && !connection.terminated) {
+            if (!completed && submissionAttempted && !connection.terminated) {
                 val aborted = BleTransportException(BleError.AbortedOperation(kind), kind)
                 terminate(connection, aborted)
                 awaitConnectionClose(connection, aborted)

@@ -69,8 +69,11 @@ Disconnect finishes old Flow handles after queued packets drain. Unexpected
 failures also terminate the Flow with the typed cause. Reconnect creates a
 fresh queue and GATT. Every operation captures a generation and sequence
 before triggering; callbacks validate the owning GATT and exact attribute
-objects. A timed-out/cancelled operation invalidates its GATT because Android
-does not provide a per-write callback sequence. Old callbacks cannot complete
+objects. A submitted operation's timeout/cancellation invalidates its GATT
+because Android does not provide a per-write callback sequence. If its deadline
+expires before submission, the unsent request fails and its waiter/timer are
+removed without invalidating an otherwise ready link. Incomplete connection
+setup still closes on any timeout. Old callbacks cannot complete
 new-generation work. Native cleanup is requested once and its completion is
 awaited before another GATT opens. Acknowledged pacing observes connection termination, so an old generation's
 sleep cannot delay a new connect. Cleanup failures are surfaced or attached
@@ -87,8 +90,9 @@ code alone nor the pending operation chooses its domain.
 
 `readRssi()` is an explicit, serialized native operation. Completed nonzero RSSI
 status throws `RssiReadFailed` without inventing a broken bond. Missing callback
-or cancellation invalidates the ambiguous GATT like other operations. No
-periodic Android keepalive is started behind the execution owner's back.
+or cancellation after submission invalidates the ambiguous GATT like other
+operations. No periodic Android keepalive is started behind the execution
+owner's back.
 
 The source's refresh-only bond bookkeeping is preserved through
 `recordBondVerification`, `clearBondVerification`, `setAppSessionLive` and
