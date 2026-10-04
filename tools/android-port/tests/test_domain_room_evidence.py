@@ -292,17 +292,30 @@ class DomainRoomEvidenceTests(unittest.TestCase):
                 self.report()
 
     def test_failed_error_skipped_and_bad_suite_counters_are_rejected(self):
-        for kind in ("failure", "error", "skipped", "false-tests", "missing-count", "negative", "not-integer"):
+        for kind in ("failure", "error", "skipped", "suite-failures", "suite-errors", "suite-skipped",
+                     "false-tests", "missing-count", "negative", "not-integer"):
             path = self.fixture.reports()["model"]
             root = ET.fromstring(path.read_bytes())
             if kind in ("failure", "error", "skipped"):
                 ET.SubElement(root.find("testcase"), kind)
+            elif kind.startswith("suite-"):
+                root.set(kind.removeprefix("suite-"), "1")
             elif kind == "missing-count":
                 root.attrib.pop("tests")
             else:
                 root.set("tests", {"false-tests": "167", "negative": "-1", "not-integer": "invalid"}[kind])
             path.write_bytes(ET.tostring(root))
             with self.subTest(kind=kind), self.assertRaises(PortError):
+                self.report()
+
+    def test_encoded_unsafe_entity_xml_cannot_bypass_the_shared_byte_guard(self):
+        for encoding in ("utf-16", "utf-16-be", "utf-32"):
+            path = self.fixture.reports()["model"]
+            xml = path.read_bytes().decode("utf-8").replace(
+                "</testsuite>", "<system-out>&payload;</system-out></testsuite>")
+            path.write_bytes((f'<?xml version="1.0" encoding="{encoding}"?>'
+                              '<!DOCTYPE testsuite [<!ENTITY payload "fixture-entity">]>' + xml).encode(encoding))
+            with self.subTest(encoding=encoding), self.assertRaisesRegex(PortError, "Unsafe declarations"):
                 self.report()
 
     def test_duplicate_and_missing_test_identities_are_rejected(self):

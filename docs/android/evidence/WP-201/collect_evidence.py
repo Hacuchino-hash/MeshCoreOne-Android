@@ -113,6 +113,13 @@ def collect_junit(repo, baseline):
     for module, relative in MODULES.items():
         directory = repo / relative
         reports = safe_reports(directory, repo)
+        for file in reports:
+            if file.stat().st_size > 8 * 1024 * 1024:
+                raise PortError("Oversized mandatory JUnit report: " + file.name)
+            # The shared byte-level XML guard must not miss UTF-16/32 declarations.
+            declarations = file.read_bytes().replace(b"\0", b"").upper()
+            if b"<!DOCTYPE" in declarations or b"<!ENTITY" in declarations:
+                raise PortError("Unsafe declarations in mandatory JUnit XML: " + file.name)
         counts = suite_counts(directory, minimums[module])
         for file in reports:
             raw = file.read_bytes()
