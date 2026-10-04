@@ -3,7 +3,9 @@
 **Status: actual owned unit/source verification passed113/113; shared
 checksums/consumer locks are admitted and generated. Final integration is
 BLOCKED by512MiB local D8 heap exhaustion and the still-unmerged WP-201 root
-collector repair. No actual APK or both-host root result is claimed yet.**
+collector repair during the initial checkpoint. That repair is now actually
+merged; final normal same-head root/APK/both-host verification is pending.
+No actual APK or both-host root result is claimed yet.**
 
 Repository `cbattlegear/MeshCoreOne-Android`; owner `data-persistence-engineer`.
 ACTIVE coordinator receipt `autonomous-WP-204-dc15f1ba`; app session
@@ -12,6 +14,11 @@ ACTIVE coordinator receipt `autonomous-WP-204-dc15f1ba`; app session
 `663db92c-ed50-4a77-aded-bda85a7c503a`; branch
 `cbattlegear-upgraded-carnival`. Initial verified clean HEAD and actual main:
 `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
+Final coordinator-verified integration base:
+`fbb7eb6f88f1b3a74eaddb68cac911ff52650d02`, actual PR20 merge. Only the
+owning branch was reconciled; original lease/base and failed attempts remain
+unchanged. Rewritten branch publication uses the explicit old remote-tip
+lease `ef903325391dfe8a0d0ec74d85b44c96df802199`.
 The **native CLI/app alias is `00cbcd6f-1b3b-4e40-8d44-2ce4216eb72e`**;
 the separate project alias above is not a replacement for that lease identity.
 
@@ -96,6 +103,9 @@ environment.json and logs remain in this session's artifact directory.
 | `:core:datastore:resolvePreferenceDependencies --write-locks --dependency-verification strict --no-build-cache --quiet`,512MiB/private launcher | Passed exact owned graph plus8 admitted consumer configurations per module. Actual changes only7 app/8 core:data runtime/lint configurations;16/19 new component records, no compile/unrelated lock-state changes |
 | `:core:datastore:lintDebug :core:datastore:verifyPreferencePackaging --dependency-verification strict --no-build-cache --quiet`,512MiB/private launcher | Actual owned lint XML has0 errors/1 UseTomlInstead warning; combined build reached D8 but heap and512MiB metaspace exhausted. Only that owning command tree was stopped; no APK produced |
 | Separate `:core:datastore:verifyPreferencePackaging` in a fresh512MiB private JVM, same strict flags | Failed exit1 after1m5s at actual`:app:mergeExtDexDebug`: Java heap space/D8DexArchiveMergerException. No APK/config/native/notice packaging proof inferred |
+| On actual mergedfbb base, `:core:datastore:verifyPreferenceTests :core:datastore:resolvePreferenceDependencies --dependency-verification strict --no-build-cache --quiet`, one private512MiB JVM | Passed113 real cases/34 originals/41 parameter scenarios and all admitted strict selected graphs; no APK task or ignored suite substituted |
+| `python docs\android\evidence\WP-204\verify_notices.py` immediately after Windows rebase | Correctly failed exit2: app notice checkout had CRLF1458bytes instead of actual publisher1434 |
+| Same verifier with `--normalize`, then check-only again | Passed: only the specifically admitted app notice was normalized after canonical-LF bytes matched the independent publisher receipt. Four module notices retain exact bytes with scoped `-text`; no license terms, global Git config or unrelated app asset changed |
 
 Gradle uses its actual checksum-pinned9.8.0 wrapper and AGP9.4.1 built-in Android
 Kotlin, existing2.3.20 compiler/coroutines1.10.2/BC1.86, one worker/in-process
@@ -227,7 +237,10 @@ source amendment paths are `android/app/src/main/AndroidManifest.xml` and
 The original module/docs lease, exact app BSD notice path and exact root
 verification XML/app/core:data lock paths are active under the serialized
 receipts. Other root locks/catalog/workflows/build files, backup config and
-app resources remain read-only. No source backup-rule rewrite is justified.
+app resources remain read-only. No source backup-rule rewrite is justified. The exact notice verifier is
+wired into actual module `preBuild` and app `mergeDebugAssets`, avoiding a
+Windows-checkout race without fetching or regenerating licensed contents
+during a build.
 
 The additional copyright-asset proposal is exactly the owned module path
 `android/core/datastore/src/main/assets/licenses/WP-204/Protobuf-v28.2-Copyright-LICENSE.txt`,
@@ -246,7 +259,9 @@ the512MiB budget in both the combined and fresh separated invocation, without
 producing an APK. All own private Java processes are confirmed gone; the
 worker gives back the local slot rather than increasing a budget, killing a
 peer, disabling strict verification or claiming a packaged/hardware result.
-Final actual APK/root/runtime/both-host proof must be run with a separately
-authorized adequate budget or normal isolated CI after the actual WP-201
-root-repair merge; the reported open PR head is not a merged prerequisite.
+The coordinator subsequently granted one more bounded owned-validation slot;
+actual113-case and strict selected-graph proof passed on mergedfbb, with the
+notice preBuild hook executing. Final actual APK/root/runtime/both-host proof
+is now requested from normal isolated PR CI on that actual merged base. The
+previous512MiB D8 failures remain retained, not relabeled as APK success.
 No next work package, factory, agent, fleet, merge or approval was started.

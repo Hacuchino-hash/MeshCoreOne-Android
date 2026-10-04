@@ -9,7 +9,7 @@
   "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
   "branch": "cbattlegear-upgraded-carnival",
   "initial_lease_base_sha": "dc15f1ba445acf3230383ea68d4827c592f3fafa",
-  "observed_head_sha": "1d790ebaaa83551017246ea24928cc40e88bc750",
+  "observed_head_sha": "9046679a73fc5ced164f9422dfa034c7ff3d4974",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
   "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
@@ -1670,12 +1670,12 @@
   "native_input_files": [
     {
       "path": "android/core/datastore/build.gradle.kts",
-      "bytes": 4342,
-      "canonical_lf_sha256": "99edc848a73d438e489ff9799323c2de45730bfd2020d54d36331fdd29ba4fa0"
+      "bytes": 4986,
+      "canonical_lf_sha256": "5416b7844b98442ee10c40d2f832ba808bc8bc6d3272b3b520175e1b7b5bd259"
     },
     {
       "path": "android/core/datastore/gradle.lockfile",
-      "bytes": 22667,
+      "bytes": 22835,
       "canonical_lf_sha256": "c38b45e0cd61981a33cea198e0bf7d70b8b6f31f03c67a1cb5e4aa883c70d061"
     },
     {

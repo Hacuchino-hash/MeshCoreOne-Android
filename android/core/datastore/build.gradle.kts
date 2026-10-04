@@ -65,6 +65,21 @@ tasks.withType<Test>().configureEach {
     systemProperty("repositoryDirectory", repository.absolutePath)
 }
 
+val verifyPreferenceNotices by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require independently verified notice bytes and normalize only the admitted Windows app notice."
+    workingDir(repository)
+    commandLine(
+        "python", repository.resolve("docs").resolve("android").resolve("evidence")
+            .resolve("WP-204").resolve("verify_notices.py").absolutePath, "--normalize",
+    )
+}
+
+tasks.named("preBuild") { dependsOn(verifyPreferenceNotices) }
+gradle.projectsEvaluated {
+    rootProject.project(":app").tasks.named("mergeDebugAssets") { dependsOn(verifyPreferenceNotices) }
+}
+
 val verifyPreferenceTests by tasks.registering(Exec::class) {
     group = "verification"
     description = "Require every WP-204 original family and complete nonzero persistence JUnit evidence."
