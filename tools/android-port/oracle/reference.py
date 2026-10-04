@@ -50,7 +50,10 @@ def repo_path(repo: Path, path: str) -> Path:
 
 def write_or_check(path: Path, data: bytes, *, check: bool):
     if check:
-        if not path.is_file() or path.read_bytes() != data:
+        current = path.read_bytes() if path.is_file() else None
+        if path.suffix in (".json", ".tsv", ".swift", ".txt", ".md") and current is not None:
+            current = current.replace(b"\r\n", b"\n")
+        if current != data:
             raise OracleError(f"Missing or stale generated output: {path}. Review drift before --regenerate.")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)

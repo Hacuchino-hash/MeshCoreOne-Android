@@ -154,6 +154,52 @@ func modified(
 }
 
 @MainActor
+func executeCryptoTests(suite: AssertionSuite) throws -> [String: Any] {
+  let sourceSHA = "db14559b39d32322b06477c6ae676112f583db50"
+  let channelOracle = SourceChannelOracle()
+  let normal = try channelOracle.packet(timestamp: 1_703_123_456, txtType: 0, message: "Alice: Hello mesh!")
+  let utf8Text = "Hi\u{4F60}\u{1F600}"
+  let highBit = try channelOracle.packet(timestamp: 0x80000000, txtType: 2, message: utf8Text)
+  try suite.test("channel-crypto-normal") {
+    guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: normal, secret: channelOracle.secret) else {
+      throw OracleFailure(description: "Pinned channel crypto rejected its independent Swift-test oracle")
+    }
+    try suite.expect(timestamp == 1_703_123_456 && type == 0 && text == "Alice: Hello mesh!", "Normal plaintext semantics")
+  }
+  try suite.test("channel-crypto-high-bit-utf8") {
+    guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: highBit, secret: channelOracle.secret) else {
+      throw OracleFailure(description: "Pinned crypto rejected high-bit/UTF-8 input")
+    }
+    try suite.expect(timestamp == 0x80000000 && type == 2 && text == utf8Text, "Unsigned little-endian timestamp/UTF-8")
+  }
+  try suite.test("channel-crypto-corrupted-mac") {
+    var corrupted = normal
+    corrupted[0] ^= 0xFF
+    if case .hmacFailed = ChannelCrypto.decrypt(payload: corrupted, secret: channelOracle.secret) {
+      try suite.expect(true, "Source typed HMAC failure")
+    } else { throw OracleFailure(description: "Wrong corrupted-MAC outcome") }
+  }
+  try suite.test("channel-crypto-wrong-key") {
+    if case .hmacFailed = ChannelCrypto.decrypt(payload: normal, secret: Data(repeating: 0, count: 16)) {
+      try suite.expect(true, "Source wrong-key failure")
+    } else { throw OracleFailure(description: "Wrong incorrect-key outcome") }
+  }
+  try suite.test("channel-crypto-truncated") {
+    if case .payloadTooShort = ChannelCrypto.decrypt(payload: Data([0x00, 0x01, 0x02, 0x03]), secret: channelOracle.secret) {
+      try suite.expect(true, "Source short-packet failure")
+    } else { throw OracleFailure(description: "Wrong truncated-crypto outcome") }
+  }
+  return [
+    "source_sha": sourceSHA,
+    "origin": "Actual compiled pinned Swift-test CommonCrypto/CryptoKit helpers; no candidate Kotlin",
+    "vectors": [
+      ["id": "normal", "packet_hex": normal.map { String(format: "%02x", $0) }.joined(), "byte_count": normal.count],
+      ["id": "high-bit-utf8", "packet_hex": highBit.map { String(format: "%02x", $0) }.joined(), "byte_count": highBit.count]
+    ]
+  ]
+}
+
+@MainActor
 func executeTests(output: URL) throws {
   let sourceSHA = "db14559b39d32322b06477c6ae676112f583db50"
   let suite = AssertionSuite()
@@ -330,50 +376,9 @@ func executeTests(output: URL) throws {
     try suite.expect(try parseBackup(data: data).version == 0, "Pinned source accepts versions <=1; do not silently fix it")
   }
 
-  let channelOracle = SourceChannelOracle()
-  let normal = try channelOracle.packet(timestamp: 1_703_123_456, txtType: 0, message: "Alice: Hello mesh!")
-  let utf8Text = "Hi\u{4F60}\u{1F600}"
-  let highBit = try channelOracle.packet(timestamp: 0x80000000, txtType: 2, message: utf8Text)
-  try suite.test("channel-crypto-normal") {
-    guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: normal, secret: channelOracle.secret) else {
-      throw OracleFailure(description: "Pinned channel crypto rejected its independent Swift-test oracle")
-    }
-    try suite.expect(timestamp == 1_703_123_456 && type == 0 && text == "Alice: Hello mesh!", "Normal plaintext semantics")
-  }
-  try suite.test("channel-crypto-high-bit-utf8") {
-    guard case let .success(timestamp, type, text) = ChannelCrypto.decrypt(payload: highBit, secret: channelOracle.secret) else {
-      throw OracleFailure(description: "Pinned crypto rejected high-bit/UTF-8 input")
-    }
-    try suite.expect(timestamp == 0x80000000 && type == 2 && text == utf8Text, "Unsigned little-endian timestamp/UTF-8")
-  }
-  try suite.test("channel-crypto-corrupted-mac") {
-    var corrupted = normal
-    corrupted[0] ^= 0xFF
-    if case .hmacFailed = ChannelCrypto.decrypt(payload: corrupted, secret: channelOracle.secret) {
-      try suite.expect(true, "Source typed HMAC failure")
-    } else { throw OracleFailure(description: "Wrong corrupted-MAC outcome") }
-  }
-  try suite.test("channel-crypto-wrong-key") {
-    if case .hmacFailed = ChannelCrypto.decrypt(payload: normal, secret: Data(repeating: 0, count: 16)) {
-      try suite.expect(true, "Source wrong-key failure")
-    } else { throw OracleFailure(description: "Wrong incorrect-key outcome") }
-  }
-  try suite.test("channel-crypto-truncated") {
-    if case .payloadTooShort = ChannelCrypto.decrypt(payload: Data([0x00, 0x01, 0x02, 0x03]), secret: channelOracle.secret) {
-      try suite.expect(true, "Source short-packet failure")
-    } else { throw OracleFailure(description: "Wrong truncated-crypto outcome") }
-  }
-
+  let crypto = try executeCryptoTests(suite: suite)
   try encoded.write(to: output.appendingPathComponent("reference-envelope.json"))
   try compressed.write(to: output.appendingPathComponent("reference-envelope.meshcoreone"))
-  let crypto: [String: Any] = [
-    "source_sha": sourceSHA,
-    "origin": "Actual compiled pinned Swift-test CommonCrypto/CryptoKit helpers; no candidate Kotlin",
-    "vectors": [
-      ["id": "normal", "packet_hex": normal.map { String(format: "%02x", $0) }.joined(), "byte_count": normal.count],
-      ["id": "high-bit-utf8", "packet_hex": highBit.map { String(format: "%02x", $0) }.joined(), "byte_count": highBit.count]
-    ]
-  ]
   try json(crypto).write(to: output.appendingPathComponent("channel-crypto-oracle.json"))
   let report: [String: Any] = [
     "source_sha": sourceSHA,

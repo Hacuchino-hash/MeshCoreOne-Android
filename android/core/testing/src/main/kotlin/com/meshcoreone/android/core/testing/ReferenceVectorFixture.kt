@@ -1,6 +1,7 @@
 // AndroidOnly: WP-004 Strict test-only reader for independently copied protocol fixtures.
 package com.meshcoreone.android.core.testing
 
+import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -8,24 +9,11 @@ import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 import java.util.Collections
 
-class FixtureBytes(bytes: ByteArray) {
-    private val storage = bytes.copyOf()
-    val size: Int
-        get() = storage.size
-
-    fun copyBytes(): ByteArray = storage.copyOf()
-
-    override fun equals(other: Any?): Boolean =
-        other is FixtureBytes && storage.contentEquals(other.storage)
-
-    override fun hashCode(): Int = storage.contentHashCode()
-}
-
 data class ReferenceVector(
     val id: String,
     val category: String,
     val role: String,
-    val bytes: FixtureBytes,
+    val bytes: Bytes,
     val sourcePath: String,
     val sourceBlob: String,
     val sourceLine: Int,
@@ -78,10 +66,8 @@ object ReferenceVectorFixture {
             ) {
                 throw FixtureFormatException("Invalid vector bytes/provenance at line ${index + 3}")
             }
-            val bytes = ByteArray(count) { offset ->
-                fields[3].substring(offset * 2, offset * 2 + 2).toInt(16).toByte()
-            }
-            vectors.add(ReferenceVector(fields[0], fields[1], fields[2], FixtureBytes(bytes),
+            val bytes = Bytes.fromHex(fields[3])
+            vectors.add(ReferenceVector(fields[0], fields[1], fields[2], bytes,
                 fields[5], fields[6], sourceLine, fields[8]))
         }
         if (vectors.isEmpty()) throw FixtureFormatException("Zero independent fixture vectors")

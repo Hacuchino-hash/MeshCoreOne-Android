@@ -290,6 +290,18 @@ class InventorySchemaTests(unittest.TestCase):
                 write_or_check(path, b'{"changed":true}\n', check=True)
             self.assertEqual(path.read_bytes(), b'{}\n')
 
+    def test_text_checkout_crlf_is_normalized_but_binary_and_content_are_not(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "output.json"
+            path.write_bytes(b'{\r\n  "value": 1\r\n}\r\n')
+            write_or_check(path, b'{\n  "value": 1\n}\n', check=True)
+            with self.assertRaises(OracleError):
+                write_or_check(path, b'{\n  "value": 2\n}\n', check=True)
+            binary = Path(root) / "output.meshcoreone"
+            binary.write_bytes(b"\r\n")
+            with self.assertRaises(OracleError):
+                write_or_check(binary, b"\n", check=True)
+
 
 class FrozenInventoryTests(unittest.TestCase):
     @classmethod

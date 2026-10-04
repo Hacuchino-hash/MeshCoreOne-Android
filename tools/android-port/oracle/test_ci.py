@@ -26,14 +26,14 @@ def reports(directory):
 
 
 class HelperDiscoveryTests(unittest.TestCase):
-    def test_all_five_actual_new_suites_are_required(self):
+    def test_all_six_actual_new_suites_are_required(self):
         with tempfile.TemporaryDirectory() as root:
             reports(Path(root))
             result = verify_junit(Path(root))
-            self.assertEqual(result["discovered"], 32)
-            self.assertEqual(result["passed"], 32)
+            self.assertEqual(result["discovered"], 35)
+            self.assertEqual(result["passed"], 35)
             self.assertEqual(result["skipped"], 0)
-            self.assertEqual(len(result["suites"]), 5)
+            self.assertEqual(len(result["suites"]), 6)
 
     def test_missing_empty_malformed_and_unknown_xml_fail(self):
         with tempfile.TemporaryDirectory() as root:

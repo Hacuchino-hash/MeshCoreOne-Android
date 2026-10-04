@@ -35,6 +35,17 @@
     "data_encoding": "Codable Data/base64",
     "uuid_encoding": "Foundation UUID canonical text",
     "compression": "The exact pinned NSData/Compression .zlib implementation, not ZIP/GZIP",
+    "observed_wire_container": {
+      "format": "raw-deflate",
+      "source_head": "6e22d4768e80af943887fe4e9f48c12074f4f89f",
+      "workflow_run_id": 37167976130,
+      "workflow_run_attempt": 1,
+      "macos_job_id": 111334847461,
+      "compressed_fixture_bytes": 1835,
+      "rfc1950_probe": "zlib-format-error",
+      "raw_deflate_probe": "decoded",
+      "android_requirement": "Use an explicitly raw/nowrap DEFLATE decoder for these actual reference exports (for example Java Inflater(true)); default RFC1950-wrapped Inflater is incompatible. The Swift algorithm name zlib is not framing proof."
+    },
     "max_compressed_bytes": 52428800,
     "max_expanded_bytes": 536870912,
     "legacy_fields": "Keep source decodeIfPresent defaults and required fields; the oracle exercises actual codecs.",

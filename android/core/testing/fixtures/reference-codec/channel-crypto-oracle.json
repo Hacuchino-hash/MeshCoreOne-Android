@@ -1,0 +1,1 @@
+{"origin":"Actual compiled pinned Swift-test CommonCrypto\/CryptoKit helpers; no candidate Kotlin","source_sha":"db14559b39d32322b06477c6ae676112f583db50","vectors":[{"byte_count":34,"id":"normal","packet_hex":"a0e6215565cf0555d9e4a5e4824dc70018a6021e8232bb0509500bdf22a90e97978f"},{"byte_count":18,"id":"high-bit-utf8","packet_hex":"0286f8417ae853883d70891f32ce1174ebfd"}]}

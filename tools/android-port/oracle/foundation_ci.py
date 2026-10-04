@@ -47,6 +47,11 @@ EXPECTED_TESTS = {
         "invalidHexByteCountAndSourceFieldsFail", "malformedUtf8IsNotSilentlyReplaced",
         "oversizedFixtureInputFailsBeforeDecoding",
     },
+    "ReferenceCodecFixtureTest": {
+        "actualSwiftCompressionDecodesToExactSwiftExportBytesOnTheJvm",
+        "authoritativeSwiftFixtureRetainsUnixFractionsBinaryUuidAndUtf8",
+        "truncatedActualReferenceCompressionIsNotAcceptedAsComplete",
+    },
 }
 PACKAGE = "com.meshcoreone.android.core.testing."
 

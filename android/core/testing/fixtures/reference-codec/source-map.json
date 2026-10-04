@@ -1,0 +1,4620 @@
+{
+  "schema_version": 1,
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "generator": "tools/android-port/oracle/codec_harness.py",
+  "harness_sha256": "87fddb64d4d99dc89848f2bb2bc3cddacbf125da467f771d226db70b727f38c2",
+  "sources": [
+    {
+      "path": "MC1Services/Sources/MC1Services/Errors/AppBackupError.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "e9bec2a1bb111f650bb19704e71ac9eb03b2bc76",
+      "utf8_bytes": 1454,
+      "sha256": "d25b9c6d3930a8e89304cd30718006b01ada334706e0267b018a220d0b0ec2f1",
+      "staged_file": "reference-01.swift",
+      "staged_sha256": "708f9d36ea14ea09bf4ca7d2afbae0377954bf093cf4910cc2fa1167bb28d84c",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "d25b9c6d3930a8e89304cd30718006b01ada334706e0267b018a220d0b0ec2f1"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Extensions/Data+Extensions.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "8a3e98971def687b471cb02016b42cdb836a3bdb",
+      "utf8_bytes": 3618,
+      "sha256": "2f3628637ad9b00f451fcbacb132b232b71d61f40baa74389dfda0859660c7c5",
+      "staged_file": "reference-02.swift",
+      "staged_sha256": "f4fbfa934ba314d1c9c01b77ffacbf77d47abe7ff705f4212b21fe40c57b1858",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "2f3628637ad9b00f451fcbacb132b232b71d61f40baa74389dfda0859660c7c5"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/BlockedChannelSender.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "cbc20e9432872700359d5a7274e50638a721f816",
+      "utf8_bytes": 1671,
+      "sha256": "a4a7ca3a92e745b98d01a9cd54e06a068c9554d71c4a7c6cdc7a44d4fb9523bf",
+      "staged_file": "reference-03.swift",
+      "staged_sha256": "c8b3610beb0ebf8b96b5414b117286dbc9aa3604f94ae70e26d163a1c6ef1d4d",
+      "fragments": [
+        {
+          "type": "BlockedChannelSenderDTO",
+          "stored_properties": [
+            "id",
+            "name",
+            "radioID",
+            "dateBlocked"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 45,
+              "end_line": 45,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 46,
+              "end_line": 46,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 47,
+              "end_line": 47,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "dateBlocked",
+              "kind": "let",
+              "line": 48,
+              "end_line": 48,
+              "sha256": "4cedcc32a54bd1c47f5661fd440e012df3fcaab7e0107fc5e162df4a80e8a87b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 50,
+              "end_line": 60,
+              "sha256": "73bec993d97f0d35c49154a6884df53dbed5a3ae43e91f0bbb55e259ebb6f0a0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 62,
+              "end_line": 67,
+              "sha256": "439972bb8ce8718f38075fdbe088b9d05439e6f3a114847aa8e9ac1addc08d1e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "0ec31cdd09b0c3e375b1bbee7f1120574c6f75a075f07917120f4c2ab6015efc"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/Channel.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "3cca331e353d6504514025ec2758317449927cb9",
+      "utf8_bytes": 18132,
+      "sha256": "438c19c0129a0926873d64c0de891c4d9928bfcd3124872ddf6ab90954d7fbd5",
+      "staged_file": "reference-04.swift",
+      "staged_sha256": "b1cd6da8e7504784f3f2075ec66807d052a4be9baacaec186e68bec006465b84",
+      "fragments": [
+        {
+          "type": "ChannelDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "index",
+            "name",
+            "secret",
+            "isEnabled",
+            "lastMessageDate",
+            "unreadCount",
+            "unreadMentionCount",
+            "notificationLevel",
+            "isFavorite",
+            "floodScopeModeRawValue",
+            "regionScope"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 237,
+              "end_line": 237,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 238,
+              "end_line": 238,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "index",
+              "kind": "let",
+              "line": 239,
+              "end_line": 239,
+              "sha256": "95bf841aebb9ccd301242a147453580fdffaa81961c414801cd6807b8f9bf568",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 240,
+              "end_line": 240,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "secret",
+              "kind": "let",
+              "line": 241,
+              "end_line": 241,
+              "sha256": "3803852f9d9c601e6a1c8aec7301d352bf46d00b67f47a41b4ae14448d8b0c95",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isEnabled",
+              "kind": "let",
+              "line": 242,
+              "end_line": 242,
+              "sha256": "e3e10a8c76496ce8a999817c4c36bbaccfd209bb5d7b9d9fecb7b13bad943cf5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastMessageDate",
+              "kind": "let",
+              "line": 243,
+              "end_line": 243,
+              "sha256": "a30646ce4fd145ab3babdcc05d6bb7255afdfb450ea5ced9be8110d8ef17c521",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "unreadCount",
+              "kind": "let",
+              "line": 244,
+              "end_line": 244,
+              "sha256": "c64526f69f99e217e768714b6a9ef802ff496b3816cdc69eaa26d019ad9d25b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "unreadMentionCount",
+              "kind": "let",
+              "line": 245,
+              "end_line": 245,
+              "sha256": "a0f1b9d1ad285d58ed3eb7dccfffd31a110232e3b8f894682d62852a472f1446",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notificationLevel",
+              "kind": "let",
+              "line": 246,
+              "end_line": 246,
+              "sha256": "2fb317e44c449c2b27a10a23f49c40abebde3905e23b18d799665a80dcb39a36",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isFavorite",
+              "kind": "let",
+              "line": 247,
+              "end_line": 247,
+              "sha256": "34d37a89768238a9b3e5d9e3666b11843cfa934bd54b2a1d1105df6bdeda611c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "floodScopeModeRawValue",
+              "kind": "let",
+              "line": 248,
+              "end_line": 248,
+              "sha256": "0c7e63d1f8406f5a7964aa52bdb6ea8cfff36e6296d8c323109bc9b26bce0d2c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "regionScope",
+              "kind": "let",
+              "line": 249,
+              "end_line": 249,
+              "sha256": "e4781a0ca7a7efe83deb9702a25416e240c948c435be3d9de8fd2caf59f0afe8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "CodingKeys",
+              "kind": "enum",
+              "line": 264,
+              "end_line": 268,
+              "sha256": "7eacfbb64c6f78803e20b65f5f1810a97fea2bca1f4f68201eb84f530149d7e4",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 270,
+              "end_line": 291,
+              "sha256": "7639c18a1c9caefcc41f67eb57ec887dc0d1b0d531c0443c91aebeda69ebc358",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "encode",
+              "kind": "func",
+              "line": 293,
+              "end_line": 308,
+              "sha256": "5810f211e4d297ae41bb705df30825c0885adeb8643d6a28a75475fa3ff8338f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 333,
+              "end_line": 361,
+              "sha256": "1abba5c473313e1de8ffd1e0a3412eca633285000ff7efb7b7d345e7f3af428d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 444,
+              "end_line": 472,
+              "sha256": "bd5f2abf4efe2d549b93c840795c19bfa1cfbe16d274c353953596f92d1ac04d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "isMuted",
+              "kind": "var",
+              "line": 252,
+              "end_line": 254,
+              "sha256": "ba50a7ff6039badbf62f6878275e02faf9a8210146721e9ea0daf3f81e7fb5ab",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "floodScope",
+              "kind": "var",
+              "line": 257,
+              "end_line": 259,
+              "sha256": "acf82e5b09996440018f9018abca394341fc5e6d41611937966c2a5c1258f63d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 310,
+              "end_line": 330,
+              "sha256": "2c8a9a7164f51f48b1d7c10f91acd0a3558d436707c83711de261f970b2d6a6e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 364,
+              "end_line": 372,
+              "sha256": "eaa55ab39c41136759c29e4d6459c3cf6e8013bba9e5961eb36e71324b8429f1",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 375,
+              "end_line": 383,
+              "sha256": "a13e76d1757fcbcc9c01b03064261e2fbf98734252290502a6d9f9456e12b1cc",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 386,
+              "end_line": 394,
+              "sha256": "489b92795e71d1313c6e7407e30a5609067e8b9d397847ea42f484c468b5d45a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 400,
+              "end_line": 409,
+              "sha256": "efda2f6e32372fe24938bd786e73da95851e1e2cf5765de2fc4f05af1829a3b8",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 416,
+              "end_line": 425,
+              "sha256": "851c13d7dd84558299a6108882509029f004e1e80621bb90e68b7fdbbe3cf9d5",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 430,
+              "end_line": 439,
+              "sha256": "3dc616d9289dd916a60e6ac3408835fd731060fe8de97d05348f4e3d186f78a7",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isPublicChannel",
+              "kind": "var",
+              "line": 474,
+              "end_line": 476,
+              "sha256": "bf3a62070d2a2bf28d01f5955cd2a9f63b81cbac7db0752dde631dfca0a39244",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasSecret",
+              "kind": "var",
+              "line": 478,
+              "end_line": 480,
+              "sha256": "c7d0fffb9a8d9710279cbaa26222a899fd68e9e3deb6eb73706e102c4109b641",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isEncryptedChannel",
+              "kind": "var",
+              "line": 484,
+              "end_line": 486,
+              "sha256": "49119b11b9da152df234a7c419f2740089b8a33660cd721e248c8805e9c4126e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "a3ec5f48255f3907f2a9598da8a2dda21f4ac7c4840631aa5362b0151d9479be"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/ChannelFloodScope.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "a481801892e09b2afd35cf1b090c5dab888a2173",
+      "utf8_bytes": 1660,
+      "sha256": "17527cceabfb6fbda93454fbcf85eb151a9d074cdc2fcf8879aba015600f8303",
+      "staged_file": "reference-05.swift",
+      "staged_sha256": "cddde6a2e5d954ad7894c1526450aa306fe8742b7a06eb6cf668d724a56849ce",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "17527cceabfb6fbda93454fbcf85eb151a9d074cdc2fcf8879aba015600f8303"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/ConnectionMethod.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "5f6983c509a1f7b14c1fc9933fbea085ebae345a",
+      "utf8_bytes": 1314,
+      "sha256": "8c3a20ece0927381275ef29bbdafbb8fed7100436d1f88f1a7137a9121a3c16c",
+      "staged_file": "reference-06.swift",
+      "staged_sha256": "80cfc60dac181347ae7e28a6f07e5ba6d3eaf2eae974594b5d3985cfae865a93",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "8c3a20ece0927381275ef29bbdafbb8fed7100436d1f88f1a7137a9121a3c16c"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/Contact.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "7b6ecd2e224c1b1651edeba8a0019426881e7db4",
+      "utf8_bytes": 19237,
+      "sha256": "c404d89dec418edde9985c261b3a4985c09cc7fc9839f685fa4d4b15672450bd",
+      "staged_file": "reference-07.swift",
+      "staged_sha256": "4e3db7c044a7607c99b851ca5dca6556ec948234247d3041cf34178f57ece095",
+      "fragments": [
+        {
+          "type": "ContactDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "publicKey",
+            "name",
+            "typeRawValue",
+            "flags",
+            "outPathLength",
+            "outPath",
+            "lastAdvertTimestamp",
+            "latitude",
+            "longitude",
+            "lastModified",
+            "lastHeardTimestamp",
+            "nickname",
+            "isBlocked",
+            "isMuted",
+            "isFavorite",
+            "lastMessageDate",
+            "unreadCount",
+            "unreadMentionCount",
+            "ocvPreset",
+            "customOCVArrayString",
+            "avatarImageData"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 296,
+              "end_line": 296,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 297,
+              "end_line": 297,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "publicKey",
+              "kind": "let",
+              "line": 298,
+              "end_line": 298,
+              "sha256": "921c4b5a2840fa4ee90078cf93902390eb08506817a1d0f1650abcbd87ed81c7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 299,
+              "end_line": 299,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "typeRawValue",
+              "kind": "let",
+              "line": 300,
+              "end_line": 300,
+              "sha256": "e13bdeaaff03c4e50e8fe625270042e25ec847119708520a1dd07d7cc34059cf",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "flags",
+              "kind": "let",
+              "line": 301,
+              "end_line": 301,
+              "sha256": "93866f80c383f5ee56943281508307c3450c0f0021f3741d4e7c5e82efe97a93",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "outPathLength",
+              "kind": "let",
+              "line": 302,
+              "end_line": 302,
+              "sha256": "95ef1a4fbe45593e61a8fd1de8fa7b6a77b3794acbb94a539e3f6f9466438b01",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "outPath",
+              "kind": "let",
+              "line": 303,
+              "end_line": 303,
+              "sha256": "8034bb28a8f2e2ef0fb85e7eaa74a7b53d75560fa30d6b86015c9e34814a73f5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastAdvertTimestamp",
+              "kind": "let",
+              "line": 304,
+              "end_line": 304,
+              "sha256": "38ad1083605852185e7ebc6fead4b6534803881fc55f7d5c5cb092240bd2300a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "latitude",
+              "kind": "let",
+              "line": 305,
+              "end_line": 305,
+              "sha256": "fd56799db888f31292999b2b3062cf0ec11fd1831d3aab46d12c3bec83e641f5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "longitude",
+              "kind": "let",
+              "line": 306,
+              "end_line": 306,
+              "sha256": "706cb15129fcb4f7ce43137dcddcdb59ae003d02e64f22d3763aba1296687818",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastModified",
+              "kind": "let",
+              "line": 307,
+              "end_line": 307,
+              "sha256": "f321304ef1f7a513e7ef60f2dbbbd921b2222531730d044660f7a802fb0d016e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastHeardTimestamp",
+              "kind": "let",
+              "line": 309,
+              "end_line": 309,
+              "sha256": "316dc6b48cda85d3f3e34d8dca2a5e5637bcdecd6a1a32cbed9267c828d395f0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "nickname",
+              "kind": "let",
+              "line": 310,
+              "end_line": 310,
+              "sha256": "cddeaa6b560ed3d257dcb3459a885bb170ed621e0ee40460c3b5d3ab717958a3",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isBlocked",
+              "kind": "let",
+              "line": 311,
+              "end_line": 311,
+              "sha256": "37abfd8179ee637ddf65d1c41ebeabbbc1e4c055c16c6e9d9fcc934176cc0770",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isMuted",
+              "kind": "let",
+              "line": 312,
+              "end_line": 312,
+              "sha256": "ae65c822e3a391b7ede254c6ac78acb2a5c0634cfbdf3f54353f1721e4dc6a89",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isFavorite",
+              "kind": "let",
+              "line": 313,
+              "end_line": 313,
+              "sha256": "34d37a89768238a9b3e5d9e3666b11843cfa934bd54b2a1d1105df6bdeda611c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastMessageDate",
+              "kind": "let",
+              "line": 314,
+              "end_line": 314,
+              "sha256": "a30646ce4fd145ab3babdcc05d6bb7255afdfb450ea5ced9be8110d8ef17c521",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "unreadCount",
+              "kind": "let",
+              "line": 315,
+              "end_line": 315,
+              "sha256": "c64526f69f99e217e768714b6a9ef802ff496b3816cdc69eaa26d019ad9d25b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "unreadMentionCount",
+              "kind": "let",
+              "line": 316,
+              "end_line": 316,
+              "sha256": "a0f1b9d1ad285d58ed3eb7dccfffd31a110232e3b8f894682d62852a472f1446",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "ocvPreset",
+              "kind": "let",
+              "line": 317,
+              "end_line": 317,
+              "sha256": "a978031104969bc4368765c5387f09f49d5b517989e3722b453da5d356c6c36b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "customOCVArrayString",
+              "kind": "let",
+              "line": 318,
+              "end_line": 318,
+              "sha256": "0b638698743f1c35af1d31e4f4149b7c7b2083dda0d542b68ed3501f8f947527",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "avatarImageData",
+              "kind": "let",
+              "line": 319,
+              "end_line": 319,
+              "sha256": "8d0ba37c9d160a8d530a49aad5b1ee8e77ef1d2f7d337e70290062056d57801d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 348,
+              "end_line": 396,
+              "sha256": "a3903a93ca253f63b9a6febd5c7e6f9dae8798dd09b704c4cb44b62d0440b9c5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 321,
+              "end_line": 345,
+              "sha256": "a8612562610f3f838a517b1d0cfcf256fcb0e5423a05acf42d85f636792bceed",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "type",
+              "kind": "var",
+              "line": 398,
+              "end_line": 400,
+              "sha256": "fa384ec234d0fda96b928859d1698b81331512b7d78d96de3aa434a43da458d7",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "displayName",
+              "kind": "var",
+              "line": 402,
+              "end_line": 404,
+              "sha256": "50c36b567a20b06a237953e738594721920f4c1ce529adb73222c1723dfa0f64",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "publicKeyPrefix",
+              "kind": "var",
+              "line": 406,
+              "end_line": 408,
+              "sha256": "4f536ea37fa4b640a08fd0e07e04f2f59cf0f433ad0cf33c938e798e475b359a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isFloodRouted",
+              "kind": "var",
+              "line": 410,
+              "end_line": 412,
+              "sha256": "e96e4a3b7c728385fa529e5285365e00d6865b65198080542be3860c9b00f00d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashSize",
+              "kind": "var",
+              "line": 415,
+              "end_line": 417,
+              "sha256": "b478db31993eba10da77c226dec018309bc4551ca7a9c109c3dd0025baf1dcb0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHopCount",
+              "kind": "var",
+              "line": 420,
+              "end_line": 422,
+              "sha256": "d1a0ea95ea952e5398e8687a13dc1c523fac4fbf25ffac3f6eac061874bdd7de",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "displayedHopCount",
+              "kind": "func",
+              "line": 427,
+              "end_line": 429,
+              "sha256": "0fc4b615e807ad4029aec3a46a7a3f804ad265608fcde4ec5d1255654f7aae57",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathByteLength",
+              "kind": "var",
+              "line": 432,
+              "end_line": 434,
+              "sha256": "344fd11b48f967bc694005adb01e490b847b90689da403730814b71565304a3a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHops",
+              "kind": "var",
+              "line": 438,
+              "end_line": 440,
+              "sha256": "27930fd852fd890c68dd2c4cb9f6716160212b476772865294142401c3f92c95",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathNodesHex",
+              "kind": "var",
+              "line": 443,
+              "end_line": 445,
+              "sha256": "0d077211a15908cb289a7a6f89844b0158d7c2cb320f6a43eb8726e3f9f14226",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathString",
+              "kind": "var",
+              "line": 448,
+              "end_line": 450,
+              "sha256": "ed8e76c6e73e97c466c080e49b152e752c276260a7a389275520e0e7deb1cab6",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasLocation",
+              "kind": "var",
+              "line": 452,
+              "end_line": 458,
+              "sha256": "27520702c0d24bdae28c0911eb946e893a3e2b94d5cea1ed789fb802c704df84",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "publicKeyHex",
+              "kind": "var",
+              "line": 460,
+              "end_line": 462,
+              "sha256": "73cfd2237b4a17076a31fc76f11d244879d13f4fc844591c83718527e159a347",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 465,
+              "end_line": 478,
+              "sha256": "f1826861d7c2552c69f531dda1e5d8d29d987a90b199250c8cf3486a3d2fa69b",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 481,
+              "end_line": 494,
+              "sha256": "fc0b886c418b2a7e983dfdd3013d8cc18476b445ba6fa724db43dd287b25884e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 497,
+              "end_line": 510,
+              "sha256": "d32585f5e493e224bd34027f7bc448e2862d419a37929af748a676830020eecf",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "activeOCVArray",
+              "kind": "var",
+              "line": 513,
+              "end_line": 530,
+              "sha256": "7992ded7837cd331376d669b3e81efd7964a0ea41c9fec41e3d790b3caf1ca8c",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "recencyTimestamp",
+              "kind": "var",
+              "line": 536,
+              "end_line": 538,
+              "sha256": "edf8b89411e1b99e79636e3d8e3f271a16077713e589439be4de3981f595198f",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "matchesStaleNodePrune",
+              "kind": "func",
+              "line": 542,
+              "end_line": 544,
+              "sha256": "a322a385b8e5000caf13cc89be3233226e7baaf0fe846a98bc55d2a458dfa61d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "recencyDate",
+              "kind": "var",
+              "line": 546,
+              "end_line": 548,
+              "sha256": "a7915b6370f37109b23a9933930e6dfcdc31cbffc7383d5c6e5859fff36ecb93",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "resolvableName",
+              "kind": "var",
+              "line": 550,
+              "end_line": 552,
+              "sha256": "2ce232a6c03d6ac2a0e3d2baf235b0fc6b435f572ac5c47133babd4fbef65123",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "toContactFrame",
+              "kind": "func",
+              "line": 555,
+              "end_line": 569,
+              "sha256": "5d1f8802c2238be94a27f92ab42f56a4b0a8ddf8de0b3c542e56c9ff775ce5fd",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "floodedContactFrame",
+              "kind": "func",
+              "line": 574,
+              "end_line": 588,
+              "sha256": "8a524c683d36d7d2e214c0a7346ac30239cc0a25a535f3d9b16d9c09eaa87ec0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [
+            "Omit non-Codable RepeaterResolvable conformance and its computed UI/path members."
+          ],
+          "fragment_sha256": "d423c73e3afd1d87e4e399fe8515bd249cc1a9bdfc15491de7667fb73a26e1db"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/Device.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "823bee3ced673712a51bfa5332dbba81cd4dfed5",
+      "utf8_bytes": 30886,
+      "sha256": "8b4d5db45dd7c0a72c48283258969053a0053a15e8e55de55ded4b5ca1c7f1b4",
+      "staged_file": "reference-08.swift",
+      "staged_sha256": "dd49d045e8f5245289f23249108675a4eebff6d0abd7f7ed808c686c24d1e1d9",
+      "fragments": [
+        {
+          "type": "DeviceDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "publicKey",
+            "nodeName",
+            "firmwareVersion",
+            "firmwareVersionString",
+            "manufacturerName",
+            "buildDate",
+            "maxContacts",
+            "maxChannels",
+            "frequency",
+            "bandwidth",
+            "spreadingFactor",
+            "codingRate",
+            "txPower",
+            "maxTxPower",
+            "latitude",
+            "longitude",
+            "blePin",
+            "clientRepeat",
+            "pathHashMode",
+            "defaultFloodScopeName",
+            "preRepeatFrequency",
+            "preRepeatBandwidth",
+            "preRepeatSpreadingFactor",
+            "preRepeatCodingRate",
+            "manualAddContacts",
+            "autoAddConfig",
+            "autoAddMaxHops",
+            "multiAcks",
+            "telemetryModeBase",
+            "telemetryModeLoc",
+            "telemetryModeEnv",
+            "advertLocationPolicy",
+            "lastConnected",
+            "lastContactSync",
+            "isActive",
+            "ocvPreset",
+            "appliedRadioPresetID",
+            "customOCVArrayString",
+            "connectionMethods",
+            "knownRegions"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "var",
+              "line": 329,
+              "end_line": 329,
+              "sha256": "3b1c8ef2c23aceee98bf433afa2d5612f4a4b92f5cc58c2201cecef258b70673",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 330,
+              "end_line": 330,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "publicKey",
+              "kind": "var",
+              "line": 331,
+              "end_line": 331,
+              "sha256": "a10b9853c07a1b5a281921f83d41f4fb8ea4a0c4dafa7dbad665a129200b3c84",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "nodeName",
+              "kind": "var",
+              "line": 332,
+              "end_line": 332,
+              "sha256": "8e459257a543e9323449ff3c8d8c62769f2e320dec11c2ac82d85bdf87a55af9",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "firmwareVersion",
+              "kind": "var",
+              "line": 333,
+              "end_line": 333,
+              "sha256": "db2468c4606f2485a5a8d14d076d777a11f8c9e8109e0696b65fc55d342ae5e5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "firmwareVersionString",
+              "kind": "var",
+              "line": 334,
+              "end_line": 334,
+              "sha256": "19414a8179154c1901b257cc4920a0d331f79b5c8199c39169fae9fbc030389b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "manufacturerName",
+              "kind": "var",
+              "line": 335,
+              "end_line": 335,
+              "sha256": "e502ad7e8810bbdfa66bd9595f4a91e8585abfc31d1b71b06dcbcf37e5d52c0b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "buildDate",
+              "kind": "var",
+              "line": 336,
+              "end_line": 336,
+              "sha256": "dc452551ccd6501f0282e3a107e65d79cd9ce77809848c6e554450d1e4096b8b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "maxContacts",
+              "kind": "var",
+              "line": 337,
+              "end_line": 337,
+              "sha256": "81534f787609dd4810f366d256c78c3fe760c4a47da0c6a603a482421851aea6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "maxChannels",
+              "kind": "var",
+              "line": 338,
+              "end_line": 338,
+              "sha256": "4b4bed06fd11e9889ae224323d6f8616d8305e58d6e40d5b07a7fc915518b83d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "frequency",
+              "kind": "var",
+              "line": 339,
+              "end_line": 339,
+              "sha256": "fd6793216f2293c1394fbb65188cf55a4c37d73b11589702393ddbcc112aeb2c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "bandwidth",
+              "kind": "var",
+              "line": 340,
+              "end_line": 340,
+              "sha256": "49f27df264b305dc7e524d272dafab29ba9ee18e74b3d653a2ea7e9b382c4151",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "spreadingFactor",
+              "kind": "var",
+              "line": 341,
+              "end_line": 341,
+              "sha256": "ca41cdae6a28d3d920523cd9f0005d7db748170d877468aad842971d3b8ec944",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "codingRate",
+              "kind": "var",
+              "line": 342,
+              "end_line": 342,
+              "sha256": "78d573d0faf46525ed465d5342bc38e17dbab538b44e45334eff2e87997c0b7e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "txPower",
+              "kind": "var",
+              "line": 343,
+              "end_line": 343,
+              "sha256": "a0437c4178f00bb32c0d1251cdd944192654ea67f95866c15781fb231050408b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "maxTxPower",
+              "kind": "var",
+              "line": 344,
+              "end_line": 344,
+              "sha256": "2969ed045441fbe89c96fa9deece197674e672568870068b4e762557e7fa31e5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "latitude",
+              "kind": "var",
+              "line": 345,
+              "end_line": 345,
+              "sha256": "6010b69f7218ea27cd28539cfa91d74bd5a0af17df69124184201f7325189f8a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "longitude",
+              "kind": "var",
+              "line": 346,
+              "end_line": 346,
+              "sha256": "05d478575cd3aec8c42496c9339a9431dbc596bced7693252157943f61b520cd",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "blePin",
+              "kind": "var",
+              "line": 347,
+              "end_line": 347,
+              "sha256": "a158da720f366d16c252eb3b5028df8deeff2da3902e7b1a949107743860703b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "clientRepeat",
+              "kind": "var",
+              "line": 348,
+              "end_line": 348,
+              "sha256": "cb8c4c02e582b234b2497eb77d42693285487231d2b884db30774c48aca12dac",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathHashMode",
+              "kind": "var",
+              "line": 349,
+              "end_line": 349,
+              "sha256": "308f73d5ede14ae5a4c7460873f173add072073bbbd12734374583b82bf1ddab",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "defaultFloodScopeName",
+              "kind": "var",
+              "line": 352,
+              "end_line": 352,
+              "sha256": "2ba87f80dd8b72be610d4fa217c54b429564e85c50ba92eb8f18095f07a53a20",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "preRepeatFrequency",
+              "kind": "var",
+              "line": 373,
+              "end_line": 373,
+              "sha256": "ac5573277da5db9963ee2b0ef3b31e04f8954d98daf6751db8b8bcf314db9d9a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "preRepeatBandwidth",
+              "kind": "var",
+              "line": 374,
+              "end_line": 374,
+              "sha256": "2a621f15595a59216386c60b3d7234b37ba962a62a9dc2f16cdb68fda5c7105b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "preRepeatSpreadingFactor",
+              "kind": "var",
+              "line": 375,
+              "end_line": 375,
+              "sha256": "4c5c247c3d3e351af088196b632d922288f49d968c343ca8d84debfc03d7103c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "preRepeatCodingRate",
+              "kind": "var",
+              "line": 376,
+              "end_line": 376,
+              "sha256": "7a945541f0b3c0af505c3bf4a8ae489656d069a431904f72217ac69928a0b157",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "manualAddContacts",
+              "kind": "var",
+              "line": 377,
+              "end_line": 377,
+              "sha256": "d330ae78adb7e472034ed58007da599cb60454132fa26f1a13cf032d592c2fdd",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "autoAddConfig",
+              "kind": "var",
+              "line": 378,
+              "end_line": 378,
+              "sha256": "c3b3f917add10277a4d7745bbcf16a75c10703605be05a292a83025685a5de8a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "autoAddMaxHops",
+              "kind": "var",
+              "line": 379,
+              "end_line": 379,
+              "sha256": "c4ccb0f81ce26b51ae9252d213a93207139e80dd26ba06ad549442744320fea4",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "multiAcks",
+              "kind": "var",
+              "line": 380,
+              "end_line": 380,
+              "sha256": "cc78b679a3c14309c61293df4a24c28f5aa0cad473506018303a23f51c2fd648",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "telemetryModeBase",
+              "kind": "var",
+              "line": 381,
+              "end_line": 381,
+              "sha256": "5876c0d27ad7cbde9bb9945993ef7487cecaa00ce012e52908f42b3cfdb59545",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "telemetryModeLoc",
+              "kind": "var",
+              "line": 382,
+              "end_line": 382,
+              "sha256": "7367f94458ceb681fe1b1748fc7f2140ebc79dd806bde1e7a33e6920b9e4c6ac",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "telemetryModeEnv",
+              "kind": "var",
+              "line": 383,
+              "end_line": 383,
+              "sha256": "a662c4874c42a95813756665e0d69dc88fd578a425eff4a7df781a8b17e27a17",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "advertLocationPolicy",
+              "kind": "var",
+              "line": 384,
+              "end_line": 384,
+              "sha256": "a480c6a3ee814168166277ea638fe51e23b17f11e6e866ecfb89d33c232f92e7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastConnected",
+              "kind": "var",
+              "line": 385,
+              "end_line": 385,
+              "sha256": "c2a9965bdbbe53128eb52078d2bbaba89806e5108a4130c61589c77030556c9f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastContactSync",
+              "kind": "var",
+              "line": 386,
+              "end_line": 386,
+              "sha256": "f2cbf18f58134b426456f4bc698cae5470496d748e85224371cb5aecfe4dd4e3",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isActive",
+              "kind": "var",
+              "line": 387,
+              "end_line": 387,
+              "sha256": "65c09fc33795865280d0a7e9f16dafbe5997863664a12beddec45e8082b62b07",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "ocvPreset",
+              "kind": "var",
+              "line": 388,
+              "end_line": 388,
+              "sha256": "43b755aa5986e283a02a03a3798cedc506a048436e3713e836a95373b535406b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "appliedRadioPresetID",
+              "kind": "var",
+              "line": 389,
+              "end_line": 389,
+              "sha256": "5938a4ed8d9ccc45c1058ba91b1cf110a28ff523d8c3a9b210cd70cb50f34266",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "customOCVArrayString",
+              "kind": "var",
+              "line": 390,
+              "end_line": 390,
+              "sha256": "54fa0ab5f2b27cc99eef9899aadd84243d35ef19f319e4b382cce8b432331f72",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "connectionMethods",
+              "kind": "var",
+              "line": 391,
+              "end_line": 391,
+              "sha256": "39b3dd2640e7637cedfe27ed3d6d137c7e5c7a3e93450addc3a842f21621d5a2",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "knownRegions",
+              "kind": "var",
+              "line": 392,
+              "end_line": 392,
+              "sha256": "c73d23b65837c87dadf14fdc45538e64ef0ae65e0b17faae5c06c8166cf570dc",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 489,
+              "end_line": 575,
+              "sha256": "d218d90a3f52406437dfe871c5e793ea7c306669269b924566e75fe5be7bdf99",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "hashSize",
+              "kind": "var",
+              "line": 355,
+              "end_line": 357,
+              "sha256": "f2b562c5f8292445cd7f97d317e8ab00d327a3374b17bd2c98e220cd7d423f18",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "traceHashSize",
+              "kind": "var",
+              "line": 361,
+              "end_line": 363,
+              "sha256": "474761f359b247a9968dcb4b623898b1b666dad2605d3c3bb235db9b2a12d0cc",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasLocation",
+              "kind": "var",
+              "line": 365,
+              "end_line": 371,
+              "sha256": "27520702c0d24bdae28c0911eb946e893a3e2b94d5cea1ed789fb802c704df84",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "autoAddMode",
+              "kind": "var",
+              "line": 395,
+              "end_line": 397,
+              "sha256": "3bf90c32c24352aa4d04d37700517ea49ee127511cbda18d4b3dd1fa05bf37eb",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "autoAddContacts",
+              "kind": "var",
+              "line": 400,
+              "end_line": 402,
+              "sha256": "58cd21a2ab06c2016ccdee36e522c2309197bbb039430b4ac3d6d00419b24c21",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "autoAddRepeaters",
+              "kind": "var",
+              "line": 405,
+              "end_line": 407,
+              "sha256": "065867d4c2668035544a83b6010c0f1ce40f2f5ea7dc9a9ed9d6175d5f9285b3",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "autoAddRoomServers",
+              "kind": "var",
+              "line": 410,
+              "end_line": 412,
+              "sha256": "faa5e3b7d2b346086d4df0d05a3e6e20331b83ab8a8315a9c9808a15113b8d82",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "overwriteOldest",
+              "kind": "var",
+              "line": 415,
+              "end_line": 417,
+              "sha256": "e0c3060dca5e383ec6a738ba34d19a598f15569edc9cfda13a6201608b83769e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsAutoAddConfig",
+              "kind": "var",
+              "line": 421,
+              "end_line": 423,
+              "sha256": "f22b6365f3f80fbd03ecf30a7fd4c4f6aa9cbba357d2c0fe9e5216b1c53fa835",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsAutoAddMaxHops",
+              "kind": "var",
+              "line": 426,
+              "end_line": 428,
+              "sha256": "e0d667679b760cb81567a0417ca2c8b79aa966164e6d5bbfea34db4aee6fb800",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsTraceHashSizeOverride",
+              "kind": "var",
+              "line": 435,
+              "end_line": 437,
+              "sha256": "5658b04930c416c68bb9570ad0e1b47c483f74f4aa0fedd9ed4247e702152073",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsClientRepeat",
+              "kind": "var",
+              "line": 440,
+              "end_line": 442,
+              "sha256": "80c6a676cf97dc5fae103c5ae37f5983f508144e4e64d315a7e60e84bd00722d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsPathHashMode",
+              "kind": "var",
+              "line": 445,
+              "end_line": 447,
+              "sha256": "8ee76f5a3b418c030e228c522ce639aa61eb7cea10073317e0224be78ff0dde5",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsDefaultFloodScope",
+              "kind": "var",
+              "line": 450,
+              "end_line": 452,
+              "sha256": "8d799cd8c4a1a8d7b003897182bfbd9e9d917d63599b8ce14f29192d9858f814",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsUnscopedFloodSend",
+              "kind": "var",
+              "line": 456,
+              "end_line": 458,
+              "sha256": "3650031c9350519ddaeaefed2019b31e2de190aa36457338f1ec25f79de6a267",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "supportsAdHocRepeaterRequest",
+              "kind": "var",
+              "line": 464,
+              "end_line": 466,
+              "sha256": "5ea838737c8b6d005279156ffbc8d1ab7b95f1514e41f54737fd310a5edab1ef",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "advertLocationPolicyMode",
+              "kind": "var",
+              "line": 469,
+              "end_line": 471,
+              "sha256": "ef4ba90396053c3f04277f4c03d5c08a6f9eb3441a1eb4065ea3fd8dea1fc95a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "telemetryModes",
+              "kind": "var",
+              "line": 474,
+              "end_line": 476,
+              "sha256": "233d06667b425be4a6696bf92c62c2a8f6d85cb56eba5ea52981046b0af29fe5",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "sharesLocationPublicly",
+              "kind": "var",
+              "line": 479,
+              "end_line": 481,
+              "sha256": "349eb6a2db4f86032eef0c77269ffd2acdafe4795f66c27e0a5f150731603858",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasPreRepeatSettings",
+              "kind": "var",
+              "line": 484,
+              "end_line": 487,
+              "sha256": "81de1b1865f779fa007b655a3f02a4a7c1f00a4321deabc8e361c4bfd79e55fe",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 577,
+              "end_line": 620,
+              "sha256": "26903300d511cddbcdcf18b74b89becf9c825c8d5db031e7637b528785554096",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "publicKeyPrefix",
+              "kind": "var",
+              "line": 623,
+              "end_line": 625,
+              "sha256": "4f536ea37fa4b640a08fd0e07e04f2f59cf0f433ad0cf33c938e798e475b359a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "copy",
+              "kind": "func",
+              "line": 628,
+              "end_line": 632,
+              "sha256": "b8d02651311b782d1853b4feabf22fbd981a4c542359a2db76586556a6667097",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "activeOCVArray",
+              "kind": "var",
+              "line": 635,
+              "end_line": 652,
+              "sha256": "7992ded7837cd331376d669b3e81efd7964a0ea41c9fec41e3d790b3caf1ca8c",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "updating",
+              "kind": "func",
+              "line": 656,
+              "end_line": 674,
+              "sha256": "57215ccc8797134a47891583ab44fc2fddcc32764f58a8bd76b3cdb1a12f8728",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "savingPreRepeatSettings",
+              "kind": "func",
+              "line": 677,
+              "end_line": 684,
+              "sha256": "ed7aa0de82eff592e1f195dd2085da526180108eb25a387901b36b6504d4702e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "clearingPreRepeatSettings",
+              "kind": "func",
+              "line": 687,
+              "end_line": 694,
+              "sha256": "c1402e3b599be9b92b38c116dbebbce73d2482b94214f79038e98dd62f6e22cf",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "cleanedForImport",
+              "kind": "func",
+              "line": 701,
+              "end_line": 706,
+              "sha256": "40b431f23c204f78a87e9322e846dd6d1965b666363a7faf96fcafa54a875b7a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "redactedForBackup",
+              "kind": "func",
+              "line": 718,
+              "end_line": 752,
+              "sha256": "03c86805ea9eaf607babf4ca31226cb076b08339e4b443b9c8876a1d7df6f2af",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "c5cd027a5de7e1606e0bce9fba4a9ed357cb07efebbc85237a1837c53657854f"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/DiscoveredNode.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "693361288e9419e3dc389ba83af3320ea4316ad6",
+      "utf8_bytes": 5678,
+      "sha256": "55e590689fba4f13b669ec09aebf8b5890f74092f9dcf172b71742b328b6fd28",
+      "staged_file": "reference-09.swift",
+      "staged_sha256": "14b8156f2cf37bdc3b1d2a2cc5219bf05936e6f2825ae5d82bfe29ee1bdc6a82",
+      "fragments": [
+        {
+          "type": "DiscoveredNodeDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "publicKey",
+            "name",
+            "typeRawValue",
+            "lastHeard",
+            "lastAdvertTimestamp",
+            "latitude",
+            "longitude",
+            "outPathLength",
+            "outPath",
+            "inboundHopCount",
+            "inboundHopAdvertTimestamp"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 95,
+              "end_line": 95,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 97,
+              "end_line": 97,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "publicKey",
+              "kind": "let",
+              "line": 98,
+              "end_line": 98,
+              "sha256": "921c4b5a2840fa4ee90078cf93902390eb08506817a1d0f1650abcbd87ed81c7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 99,
+              "end_line": 99,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "typeRawValue",
+              "kind": "let",
+              "line": 100,
+              "end_line": 100,
+              "sha256": "e13bdeaaff03c4e50e8fe625270042e25ec847119708520a1dd07d7cc34059cf",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastHeard",
+              "kind": "let",
+              "line": 101,
+              "end_line": 101,
+              "sha256": "3c15d41ccc0a3df78eaf5cf63f15d71c66925fd2d76c2d52300d1cec7b3ba636",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastAdvertTimestamp",
+              "kind": "let",
+              "line": 102,
+              "end_line": 102,
+              "sha256": "38ad1083605852185e7ebc6fead4b6534803881fc55f7d5c5cb092240bd2300a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "latitude",
+              "kind": "let",
+              "line": 103,
+              "end_line": 103,
+              "sha256": "fd56799db888f31292999b2b3062cf0ec11fd1831d3aab46d12c3bec83e641f5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "longitude",
+              "kind": "let",
+              "line": 104,
+              "end_line": 104,
+              "sha256": "706cb15129fcb4f7ce43137dcddcdb59ae003d02e64f22d3763aba1296687818",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "outPathLength",
+              "kind": "let",
+              "line": 105,
+              "end_line": 105,
+              "sha256": "95ef1a4fbe45593e61a8fd1de8fa7b6a77b3794acbb94a539e3f6f9466438b01",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "outPath",
+              "kind": "let",
+              "line": 106,
+              "end_line": 106,
+              "sha256": "8034bb28a8f2e2ef0fb85e7eaa74a7b53d75560fa30d6b86015c9e34814a73f5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "inboundHopCount",
+              "kind": "let",
+              "line": 107,
+              "end_line": 107,
+              "sha256": "8ecad0a413943ce75d9209eafb476e9723d0ac9965cf3a01fd10afa843951a31",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "inboundHopAdvertTimestamp",
+              "kind": "let",
+              "line": 108,
+              "end_line": 108,
+              "sha256": "217577c7ee2c43b822a868abe4885f3cb4af62157d6839b6d16b72d4cb2378b2",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 153,
+              "end_line": 181,
+              "sha256": "dca678761539970e362f0f3808d25996910286262cf4df6418b3dbb9bd1558e7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "nodeType",
+              "kind": "var",
+              "line": 110,
+              "end_line": 112,
+              "sha256": "d2b6d72bbf9daf8801ac08c6a12ccd7384b1564a49f5087fa9a8bedf03954280",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasLocation",
+              "kind": "var",
+              "line": 114,
+              "end_line": 116,
+              "sha256": "d0af91c872ec77178c7a1d5d27b87cc92bab02e2d72ae0a1cae80cca7c0ab901",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isFloodRouted",
+              "kind": "var",
+              "line": 118,
+              "end_line": 120,
+              "sha256": "e96e4a3b7c728385fa529e5285365e00d6865b65198080542be3860c9b00f00d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashSize",
+              "kind": "var",
+              "line": 122,
+              "end_line": 124,
+              "sha256": "b478db31993eba10da77c226dec018309bc4551ca7a9c109c3dd0025baf1dcb0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHopCount",
+              "kind": "var",
+              "line": 126,
+              "end_line": 128,
+              "sha256": "d1a0ea95ea952e5398e8687a13dc1c523fac4fbf25ffac3f6eac061874bdd7de",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "displayedHopCount",
+              "kind": "var",
+              "line": 133,
+              "end_line": 135,
+              "sha256": "7e0d9d945eea430b5efc2198abb8898094c97affbe1f6e5895b61724933adca2",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathByteLength",
+              "kind": "var",
+              "line": 137,
+              "end_line": 139,
+              "sha256": "344fd11b48f967bc694005adb01e490b847b90689da403730814b71565304a3a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathNodesHex",
+              "kind": "var",
+              "line": 141,
+              "end_line": 143,
+              "sha256": "9ee6dbcccd222091edea862f15bc54d173b6b2f56019161b36fa21c92f1972f4",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "recencyDate",
+              "kind": "var",
+              "line": 145,
+              "end_line": 147,
+              "sha256": "60052f1446ea6b49aa3f2505e7dad82fe624f7f46c16aa58e673051544f62f1b",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "resolvableName",
+              "kind": "var",
+              "line": 149,
+              "end_line": 151,
+              "sha256": "61db43a2c68155b3c1e878d383135dee7e570387e5f7dea1e304a22ff94aca0a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 183,
+              "end_line": 197,
+              "sha256": "f115dc879208ea6f07a0ce95ee0f4d723752c70d96527e44cce6a45c1077564a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [
+            "Omit non-Codable RepeaterResolvable conformance and its computed UI/path members."
+          ],
+          "fragment_sha256": "12861a006ea2217283b698c1befbe0721276a6f84c6f5ad2d3a6be598c808c52"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/Message.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "27caa780e5d8ee1dcf4fd5dab661ef9945a5fe26",
+      "utf8_bytes": 27386,
+      "sha256": "6ef9808020995024a7847fe4e5bb5f07b72d4a85edfec5ea8be263931d51e399",
+      "staged_file": "reference-10.swift",
+      "staged_sha256": "6975a84d0d6c91ed11a07585abc6af01ae2953b33791be5c051776f404aa2ee9",
+      "fragments": [
+        {
+          "type": "MessageDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "contactID",
+            "channelIndex",
+            "text",
+            "timestamp",
+            "createdAt",
+            "sortDate",
+            "direction",
+            "status",
+            "textType",
+            "ackCode",
+            "pathLength",
+            "snr",
+            "pathNodes",
+            "senderKeyPrefix",
+            "senderNodeName",
+            "isRead",
+            "replyToID",
+            "roundTripTime",
+            "heardRepeats",
+            "sendCount",
+            "retryAttempt",
+            "maxRetryAttempts",
+            "deduplicationKey",
+            "linkPreviewURL",
+            "linkPreviewTitle",
+            "linkPreviewImageData",
+            "linkPreviewIconData",
+            "linkPreviewFetched",
+            "containsSelfMention",
+            "mentionSeen",
+            "failureSeen",
+            "timestampCorrected",
+            "senderTimestamp",
+            "reactionSummary",
+            "routeType",
+            "regionScope",
+            "regionScopeMatches"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "var",
+              "line": 344,
+              "end_line": 344,
+              "sha256": "3b1c8ef2c23aceee98bf433afa2d5612f4a4b92f5cc58c2201cecef258b70673",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 345,
+              "end_line": 345,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "contactID",
+              "kind": "var",
+              "line": 346,
+              "end_line": 346,
+              "sha256": "0a1ff1e3b195d8f8bad62ea15f9f81aac2694864be87131652b239025adc2fe7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "channelIndex",
+              "kind": "var",
+              "line": 347,
+              "end_line": 347,
+              "sha256": "ae49b2da51330563eb0e40b81731d803eb101ebc3df8cbf114e1c256d1a4cce5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "text",
+              "kind": "var",
+              "line": 348,
+              "end_line": 348,
+              "sha256": "218ad0aac172e2e7c5927ba7f8b45d1a9e2bd05fd3b6e1612deba443d16b4de4",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "timestamp",
+              "kind": "var",
+              "line": 349,
+              "end_line": 349,
+              "sha256": "b31d4b35bde3a6471c293851370cceee2920fb0a9cc205a5e6eecb63e37034d4",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "createdAt",
+              "kind": "var",
+              "line": 350,
+              "end_line": 350,
+              "sha256": "8eb2accbaec531ded50755ee73971f3e6787e693a1cf2d75c4c878e6bd291001",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "sortDate",
+              "kind": "var",
+              "line": 351,
+              "end_line": 351,
+              "sha256": "307309903a3ac977398c94988600c6264edd4c798ca7a9f50685defa03d7a5cd",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "direction",
+              "kind": "var",
+              "line": 352,
+              "end_line": 352,
+              "sha256": "af616ad662238d5502e40f39476d2ba0c23d154060aaf4db00a9f5bd92058a51",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "status",
+              "kind": "var",
+              "line": 353,
+              "end_line": 353,
+              "sha256": "efd7d6a80b89f83fed041f6b78899b54a120d3ab2f2cc0f1baa82478e5db0443",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "textType",
+              "kind": "var",
+              "line": 354,
+              "end_line": 354,
+              "sha256": "0a353303eefef3416e9ebf9961f92b361704e8912bf4714edd2ce138fee7ecbc",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "ackCode",
+              "kind": "var",
+              "line": 355,
+              "end_line": 355,
+              "sha256": "2ebc5f9dda1e2cf89c30b960d9b758c4be6293a2bcda2dedc9378bbb0e20deba",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathLength",
+              "kind": "var",
+              "line": 356,
+              "end_line": 356,
+              "sha256": "7fd9cd926dbf52c13b98429f6dd5b097919a5590e2e1d0357c9e475b85049fd8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "snr",
+              "kind": "var",
+              "line": 357,
+              "end_line": 357,
+              "sha256": "e5403827f60e762fa4a4247f3fd44c1ad825d72effb5c6587c3c34a0a99b1763",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathNodes",
+              "kind": "var",
+              "line": 358,
+              "end_line": 358,
+              "sha256": "575f9959f67260db8a0129c1e7a807843eeb5dc008d29a4e8f9aabe15bbc3b39",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "senderKeyPrefix",
+              "kind": "var",
+              "line": 359,
+              "end_line": 359,
+              "sha256": "b0ed5dca808eb5782e2f1a7fd18ba869cb8194a217a1e695e3e2bafbbaf59d3a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "senderNodeName",
+              "kind": "var",
+              "line": 360,
+              "end_line": 360,
+              "sha256": "bbd58a6a81476ff9078bea1e817747a41618e301f26fcc348d504eccee373826",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isRead",
+              "kind": "var",
+              "line": 361,
+              "end_line": 361,
+              "sha256": "e3725a1d05be2614360b8053d48a27cecd81d653a10f46c7e96fbf4f565d282d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "replyToID",
+              "kind": "var",
+              "line": 362,
+              "end_line": 362,
+              "sha256": "a2b07c882fff8a1c3fc679b007254f428737b043a1f73fb040e36bcc8b9ab098",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "roundTripTime",
+              "kind": "var",
+              "line": 363,
+              "end_line": 363,
+              "sha256": "d74116b5b6895f2147836e2ab30744ea4bda7f2c3b3c99a46d918a2367bd8e77",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "heardRepeats",
+              "kind": "var",
+              "line": 364,
+              "end_line": 364,
+              "sha256": "552e66f8a6618130650b4909e7dc5e976381e40a5b0898aaf3f17f04654cd1c5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "sendCount",
+              "kind": "var",
+              "line": 365,
+              "end_line": 365,
+              "sha256": "83a7438882a807cc4b94f1a7fad5094b7de1436cb6a2089f40bc301eaed91926",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "retryAttempt",
+              "kind": "var",
+              "line": 366,
+              "end_line": 366,
+              "sha256": "e4b27b6e54a683ed8723202735110417182aedca968ccd04451e8d1aa1508c7a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "maxRetryAttempts",
+              "kind": "var",
+              "line": 367,
+              "end_line": 367,
+              "sha256": "4fe83db7e987934f0f3385237dba909e1fb99de66c8c4d1eb3094bd851cd5e61",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "deduplicationKey",
+              "kind": "var",
+              "line": 368,
+              "end_line": 368,
+              "sha256": "50021b3c45ee015f4557bee154ad2a1f944f24d133f09954d8dac05b40d3c1be",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewURL",
+              "kind": "var",
+              "line": 369,
+              "end_line": 369,
+              "sha256": "8e99629bc7ee751f71d31eee805b29ecb3b35d32d266db8cfdf01a6998d214da",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewTitle",
+              "kind": "var",
+              "line": 370,
+              "end_line": 370,
+              "sha256": "d888187dd49c81269286399f6976f071b61bb359a9601a1d1f27ea5291d88484",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewImageData",
+              "kind": "var",
+              "line": 371,
+              "end_line": 371,
+              "sha256": "1d9053f9600edd27842f8ce5872dbd5e063fa6c34ca046f7691cb14498a63709",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewIconData",
+              "kind": "var",
+              "line": 372,
+              "end_line": 372,
+              "sha256": "425a7683e863aa6b3affd5d3fe1127eeba3d4d32fc35a82f4cee81e7c60f73b8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewFetched",
+              "kind": "var",
+              "line": 373,
+              "end_line": 373,
+              "sha256": "9a9c9a39490a0f0e576802868d75dc33d2fec302450067209a69da273601311e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "containsSelfMention",
+              "kind": "var",
+              "line": 374,
+              "end_line": 374,
+              "sha256": "b5bd8091f7d9775659ccb8426291854646dbc4b418e10f65432114016c0133d9",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mentionSeen",
+              "kind": "var",
+              "line": 375,
+              "end_line": 375,
+              "sha256": "900dce02c84047eec637b98e7d43b908787e8a3c9e932abd4907119d9024574f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "failureSeen",
+              "kind": "var",
+              "line": 376,
+              "end_line": 376,
+              "sha256": "b5cb3605caa7c837070e142cfac1ba2deafcfec1b1711e8e84cf375213777721",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "timestampCorrected",
+              "kind": "var",
+              "line": 377,
+              "end_line": 377,
+              "sha256": "52efbc08d449b9fffd52e0154eb8652a4f3ee4ea29c96b786da6f1209c8cbed9",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "senderTimestamp",
+              "kind": "var",
+              "line": 378,
+              "end_line": 378,
+              "sha256": "9cc8ca51fa4b994033515e7f27fb27190ecd7825153e54224402edbd39bfc43c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "reactionSummary",
+              "kind": "var",
+              "line": 379,
+              "end_line": 379,
+              "sha256": "71fa64f3b51ed23b187e1e2a3fc8712b4268b01f1e778184672b92847e5ad4a9",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "routeType",
+              "kind": "var",
+              "line": 380,
+              "end_line": 380,
+              "sha256": "34112227b44c57f41f6cd82b831ade2f9dbb22872fe09dcd6af8ec8bf720292f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "regionScope",
+              "kind": "var",
+              "line": 381,
+              "end_line": 381,
+              "sha256": "65b8af14f7af7127602f861a3bac4b9ab35070107ae62a87f2c508750d6881ca",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "regionScopeMatches",
+              "kind": "var",
+              "line": 383,
+              "end_line": 383,
+              "sha256": "d60b37eed4ef8b949aaf10d5ef213211868973573daaeb6dadd7d535716693ab",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "CodingKeys",
+              "kind": "enum",
+              "line": 389,
+              "end_line": 398,
+              "sha256": "2cc668b649097d813b25ce856dd8b76ccbbdfa805a9e3e9c1f96d370a8d759f8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 400,
+              "end_line": 443,
+              "sha256": "90ff6ea9ec4263a91b3a6684eaa71b532f55f980146314dfa70272a7f69bdaf7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 498,
+              "end_line": 578,
+              "sha256": "643bac5f0fef13ddac3d6dcc53e47b177f1d37d499ed89f4e22803ee4e026e39",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 445,
+              "end_line": 495,
+              "sha256": "b1edf4b7afcd9ce4463bc8c842bd6a05af7bf15f7c35e94e90d04e09fea6eace",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isOutgoing",
+              "kind": "var",
+              "line": 580,
+              "end_line": 582,
+              "sha256": "ed9239101230084c1ff161851bde98ee333b9cfa4b32900d7f6e6f01e5aa566f",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isChannelMessage",
+              "kind": "var",
+              "line": 584,
+              "end_line": 586,
+              "sha256": "21b2f32694c2cc9fa840d7bbc9654ca9c0a34a2db4993f5474cea26fccb9ee61",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "reactionTimestamp",
+              "kind": "var",
+              "line": 591,
+              "end_line": 593,
+              "sha256": "6bb20fb96e77908555b6a49cdb57913c6b2833172c655b0ecf1384c6b14a357c",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isPending",
+              "kind": "var",
+              "line": 595,
+              "end_line": 597,
+              "sha256": "0ce2b30beb7a80ec8c14963d2a4028af4e731d91723dd299e60ed1fbcb6e0279",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasFailed",
+              "kind": "var",
+              "line": 599,
+              "end_line": 601,
+              "sha256": "5afe2b8fea7090e8529c734c4eaa6751cc61567f0ec57ab7d311bf499b29a9a6",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "copy",
+              "kind": "func",
+              "line": 604,
+              "end_line": 608,
+              "sha256": "5c26f943e7a1c4e47b925dfeb6157b9610c86415d81d6288677c9e34fff9cbba",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "date",
+              "kind": "var",
+              "line": 611,
+              "end_line": 613,
+              "sha256": "c873a4f817d8674753da80832025a3812cd6fcc34685179445e0a1005da06bf2",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "senderDate",
+              "kind": "var",
+              "line": 616,
+              "end_line": 618,
+              "sha256": "5d6c8c3f0a88865694a8c9300bd65701335220e4b2059bc6d3b0377b6097c68b",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "wireSentDate",
+              "kind": "var",
+              "line": 623,
+              "end_line": 625,
+              "sha256": "aea912f3bfe4948698f8d8b2af226bece285ab1343114ba6816ca665e1bc5dcc",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hopCount",
+              "kind": "var",
+              "line": 628,
+              "end_line": 630,
+              "sha256": "4e0ac73651df20aac53fb1765a2c20d00c02478659a4fab54dacfa048208339f",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isFloodRouted",
+              "kind": "var",
+              "line": 634,
+              "end_line": 638,
+              "sha256": "cee6e675643726e324e42e8e6eb4ab401f5ad12f17bb6d881c84300e68405896",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isDirectRouted",
+              "kind": "var",
+              "line": 641,
+              "end_line": 643,
+              "sha256": "bb8a31c9950ca2f31a763eec9daef0c2ce78be7fe0ecd8f1aa40969259399a3f",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashSize",
+              "kind": "var",
+              "line": 646,
+              "end_line": 648,
+              "sha256": "eca80a9eca30ff49b60f37029d41f1ab37c264b361a42ca28b5712f149d7dd86",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashSizeIfKnown",
+              "kind": "var",
+              "line": 652,
+              "end_line": 654,
+              "sha256": "a8055e0f56a1960c1ba77ccd2eb216d988de61dac9458e01f0a04f8067b59260",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHops",
+              "kind": "var",
+              "line": 658,
+              "end_line": 661,
+              "sha256": "2b86444904c103aa2676fb33184e3075d8f4c6b26aa17c9ad663a901bc3d474d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathNodesHex",
+              "kind": "var",
+              "line": 664,
+              "end_line": 666,
+              "sha256": "0d077211a15908cb289a7a6f89844b0158d7c2cb320f6a43eb8726e3f9f14226",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathString",
+              "kind": "var",
+              "line": 669,
+              "end_line": 671,
+              "sha256": "8aae5971b27e6c7113218981cf64f3a5d8c35fdb4c224c5bcd5b61f975ceb4ff",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathStringForClipboard",
+              "kind": "var",
+              "line": 674,
+              "end_line": 676,
+              "sha256": "33f77030a344959156bc7b405044b645ae47ab79533d5949ff59aaea553d9f17",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "sameSenderReorderWindow",
+              "kind": "let",
+              "line": 682,
+              "end_line": 682,
+              "sha256": "82d0e3f8984e7278a136379a597ea8226092aa18f15be88a212e207d8094f942",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "reorderSameSenderClusters",
+              "kind": "func",
+              "line": 692,
+              "end_line": 723,
+              "sha256": "c69eb2f3743ec6473c9292c5f26c5d76643af44151314fd9ec16a956600f8af2",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isSameSender",
+              "kind": "func",
+              "line": 725,
+              "end_line": 738,
+              "sha256": "c2604d34e0b5a96508fc03982744794bcc25217b3dd7adb521e1e0ca3af5e967",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "0d703e9e96654a36f39e78fe48c7dc03754c8461614f32b3ab3b22722ffc7634"
+        },
+        {
+          "name": "MessageStatus",
+          "kind": "enum",
+          "line": 6,
+          "end_line": 13,
+          "sha256": "1166d6e4e81bf70599b056d7e5475bbc122a7f59e5bb83143f4a99c30130a4f3",
+          "purpose": "unchanged production enum/value type"
+        },
+        {
+          "name": "MessageDirection",
+          "kind": "enum",
+          "line": 16,
+          "end_line": 19,
+          "sha256": "366c618dc8310cae36d5fe389d164f8a273fcb2c93e55d13680a9fed4fa1be7f",
+          "purpose": "unchanged production enum/value type"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/MessageRepeat.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "169b321747071acff54308a1667b2001241c936b",
+      "utf8_bytes": 5502,
+      "sha256": "8f637e26fa0a91d85ad7998ddfe3526b6758ce6c2bc3d54c12c820dfd20d0196",
+      "staged_file": "reference-11.swift",
+      "staged_sha256": "7ab729ab30f60ccf2daaab1bf88d590d7f215b4c2d0a66b575a93ff5ccb44a45",
+      "fragments": [
+        {
+          "type": "MessageRepeatDTO",
+          "stored_properties": [
+            "id",
+            "messageID",
+            "receivedAt",
+            "pathNodes",
+            "pathLength",
+            "snr",
+            "rssi",
+            "rxLogEntryID"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 85,
+              "end_line": 85,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "messageID",
+              "kind": "var",
+              "line": 86,
+              "end_line": 86,
+              "sha256": "2709c9612f9900ad06a48addb187d7b82a5e709d07f318b1d97371ded9823e14",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "receivedAt",
+              "kind": "let",
+              "line": 87,
+              "end_line": 87,
+              "sha256": "c53a872577f0139f7ef2ab2f0b87519f6a8f566cb99efdbe88bbf403de164915",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathNodes",
+              "kind": "let",
+              "line": 88,
+              "end_line": 88,
+              "sha256": "f33e3488fdbb27baca92ca3cbf37b359d6e4e479f5c14cb6741559afc3c54e4d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathLength",
+              "kind": "let",
+              "line": 89,
+              "end_line": 89,
+              "sha256": "b8b0639cb489b8acb0b167c1f17d0db76bd47f2b859c393de6e9ffa8f035fd56",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "snr",
+              "kind": "let",
+              "line": 90,
+              "end_line": 90,
+              "sha256": "15b01bf92df5fb24f3098ad32b11980f49b67d03f16d5a61bbd66d5c616900eb",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "rssi",
+              "kind": "let",
+              "line": 91,
+              "end_line": 91,
+              "sha256": "3cd85f3e5f484b6b2155d766f00719299012de0e1e6b655204feb8de2a927f4e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "rxLogEntryID",
+              "kind": "let",
+              "line": 92,
+              "end_line": 92,
+              "sha256": "f159d58ef01a8ccf45976ab7c4260a38642fce58c64deed9ae8a58d80040a89b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 105,
+              "end_line": 123,
+              "sha256": "e8ec2ab186040ba21faed963585a5ac535ffc80738e7defe95ee213db1d9e43e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 94,
+              "end_line": 103,
+              "sha256": "ffafd484f63ec3d549e2ea532b07e0b4566ecc62c3d48cc4fa32d4fa75b5de03",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hashSize",
+              "kind": "var",
+              "line": 128,
+              "end_line": 130,
+              "sha256": "9238277dafa8bdf60e6aea55d4d9971c13b0c900635fcd58910a59ae767a2c0c",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "repeaterHash",
+              "kind": "var",
+              "line": 133,
+              "end_line": 138,
+              "sha256": "3e613eab85141542ad0d644c907a0e66431cca34645cca6a9665c51f4290ec67",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hopCount",
+              "kind": "var",
+              "line": 141,
+              "end_line": 145,
+              "sha256": "5d8df2a1cd3c2062f667d6e8ccaf635dbe556c904a19ae661803198ebef92470",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "repeaterHashFormatted",
+              "kind": "var",
+              "line": 148,
+              "end_line": 151,
+              "sha256": "1ff0f274d870cfd2bacf9c7783154cfe0508fea4a93538b0906c56a318eee577",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathNodesHex",
+              "kind": "var",
+              "line": 154,
+              "end_line": 156,
+              "sha256": "4ba234ef20677d129e4f43c61b6797d1ce23c121b7ea221c5285a72c8dcbdd15",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "snrQuality",
+              "kind": "var",
+              "line": 159,
+              "end_line": 161,
+              "sha256": "c8bc3ec079a2182346bfeaf44ef46ee9108f06cb1e99e1d7f83d4cc1ad2dab65",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "snrLevel",
+              "kind": "var",
+              "line": 164,
+              "end_line": 166,
+              "sha256": "a5ff3b02a64617ed3101c24bf49e5f1abd2677f651030d7400d4f47d1e9e0a47",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "rssiFormatted",
+              "kind": "var",
+              "line": 169,
+              "end_line": 172,
+              "sha256": "8f8005fca927a0adae2c1618e29f29d1e30de30e9c92b46401296d06ea3672c2",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "snrFormatted",
+              "kind": "var",
+              "line": 175,
+              "end_line": 178,
+              "sha256": "8f37f9a8821ded1df79839b703a5b47d2f63e724af3c37f7afff8af95bb9a797",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashSizeIfKnown",
+              "kind": "var",
+              "line": 182,
+              "end_line": 184,
+              "sha256": "a8055e0f56a1960c1ba77ccd2eb216d988de61dac9458e01f0a04f8067b59260",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHops",
+              "kind": "var",
+              "line": 187,
+              "end_line": 189,
+              "sha256": "c85cd711dcb85b631f98fa7df8a171a7e1033c991694c4ed345ee616be6c556a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathString",
+              "kind": "var",
+              "line": 192,
+              "end_line": 194,
+              "sha256": "8aae5971b27e6c7113218981cf64f3a5d8c35fdb4c224c5bcd5b61f975ceb4ff",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathStringForClipboard",
+              "kind": "var",
+              "line": 197,
+              "end_line": 199,
+              "sha256": "33f77030a344959156bc7b405044b645ae47ab79533d5949ff59aaea553d9f17",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "a3cf1386b25e59982e90eb525b6e237bdaff61b14e247183b81d48ba5ad5225f"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/NodeStatusSnapshot.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "028db01ce9bf60e7a695e7cd4b4e3147fa5cd45c",
+      "utf8_bytes": 14451,
+      "sha256": "dda9702287d5968025fbf55fead8cdf74dc7b1c53a0d1e62ff3b7dcd10874ad7",
+      "staged_file": "reference-12.swift",
+      "staged_sha256": "f55258c7807074bc3804d0c0c335450a5f2468fa35a0e4c92b3133627925c826",
+      "fragments": [
+        {
+          "type": "NodeStatusSnapshotDTO",
+          "stored_properties": [
+            "id",
+            "timestamp",
+            "nodePublicKey",
+            "batteryMillivolts",
+            "lastSNR",
+            "lastRSSI",
+            "noiseFloor",
+            "uptimeSeconds",
+            "rxAirtimeSeconds",
+            "packetsSent",
+            "packetsReceived",
+            "receiveErrors",
+            "sentDirect",
+            "sentFlood",
+            "receivedDirect",
+            "receivedFlood",
+            "directDuplicates",
+            "floodDuplicates",
+            "postedCount",
+            "postPushCount",
+            "neighborSnapshots",
+            "telemetryEntries",
+            "latitude",
+            "longitude",
+            "altitude"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 308,
+              "end_line": 308,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "timestamp",
+              "kind": "let",
+              "line": 309,
+              "end_line": 309,
+              "sha256": "acc0f770144410696ae1939c5b0180d2a2c8a7b47f35cb6f8b5bbff78aa9df33",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "nodePublicKey",
+              "kind": "let",
+              "line": 310,
+              "end_line": 310,
+              "sha256": "6b407cec44d1c85d5bc421af9cedd92b2659306006c82631ec2b8c81ca3d85af",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "batteryMillivolts",
+              "kind": "let",
+              "line": 311,
+              "end_line": 311,
+              "sha256": "25e24c273a4cc6fb6608ec08760f31893e4f1a0a04bc254fe111d2f7c128c9ed",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastSNR",
+              "kind": "let",
+              "line": 312,
+              "end_line": 312,
+              "sha256": "2887019c7cc48491354b6a91bfe228e4cbc64c388b6dc19ff9fe761cf168240d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastRSSI",
+              "kind": "let",
+              "line": 313,
+              "end_line": 313,
+              "sha256": "fc6daf513a50c53fe021146fd9e3904ff9b4f9e5abc2c960c9e1f5b0d0afad53",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "noiseFloor",
+              "kind": "let",
+              "line": 314,
+              "end_line": 314,
+              "sha256": "b4edf5750f6c56faeabc242c22d6331d5c3cdb042f8196c56bf2d2bf8b908767",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "uptimeSeconds",
+              "kind": "let",
+              "line": 315,
+              "end_line": 315,
+              "sha256": "b19a7e254277f4bb7e9da2c9bdaf4ed550da31d39258525f32eb8f06df250144",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "rxAirtimeSeconds",
+              "kind": "let",
+              "line": 316,
+              "end_line": 316,
+              "sha256": "4e7fcf9458d0abf61d0b66039dc8ca23394b38bda8e12c2e3f03b6e7901d2b64",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "packetsSent",
+              "kind": "let",
+              "line": 317,
+              "end_line": 317,
+              "sha256": "1d1b0b6c9b1ec4f5cca8c12fb6a4ff2268d61ddaea7c5f10ef4b907f1012f0ec",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "packetsReceived",
+              "kind": "let",
+              "line": 318,
+              "end_line": 318,
+              "sha256": "0ad3f6854bccbf9d1ef301fa52b8edadffee3deef516007cedd247ae6031c185",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "receiveErrors",
+              "kind": "let",
+              "line": 319,
+              "end_line": 319,
+              "sha256": "be2ba785b7a9d477547113ba0d595336c6a46b974f7496bb0a996e03cdc837c6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "sentDirect",
+              "kind": "let",
+              "line": 322,
+              "end_line": 322,
+              "sha256": "c41788b622d6096ca02fc488bd56540c559ed2130595bdb6983a909c04fabe4c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "sentFlood",
+              "kind": "let",
+              "line": 323,
+              "end_line": 323,
+              "sha256": "534b21dc52560c11d1c407b71f3f9d378f7e85f01b3906aa1128811d2afab68b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "receivedDirect",
+              "kind": "let",
+              "line": 324,
+              "end_line": 324,
+              "sha256": "e9d8584b3b2f0e1292ece29af26ae6eb00ad64efe6ef06bfd7e8656dfbb30c61",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "receivedFlood",
+              "kind": "let",
+              "line": 325,
+              "end_line": 325,
+              "sha256": "260c40832f5597b6e65c1aa03de318e06bfb829faa223dabc9b368855723ce13",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "directDuplicates",
+              "kind": "let",
+              "line": 326,
+              "end_line": 326,
+              "sha256": "61085cf9b1f7c4b6643ab006be64604ae98f1a59cb2d92af55408ab23d076cf2",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "floodDuplicates",
+              "kind": "let",
+              "line": 327,
+              "end_line": 327,
+              "sha256": "d7939422259cdbe3fe6cb66ee1c228fd286503f82867323e5b940bf8fafbf204",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "postedCount",
+              "kind": "let",
+              "line": 329,
+              "end_line": 329,
+              "sha256": "ff6a77d2c2b49e40f5c6e78c145056a243d4001367d933620ea4fa74595b95ae",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "postPushCount",
+              "kind": "let",
+              "line": 330,
+              "end_line": 330,
+              "sha256": "6e3b83b8bdc3ede99aef5bacb7b9039441e2554c7d3e0ca6ec2fae62a92076ef",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "neighborSnapshots",
+              "kind": "let",
+              "line": 331,
+              "end_line": 331,
+              "sha256": "8a650f25656e63136e34cca7388997e31a57ad8956bf8002c2b139ffe923f133",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "telemetryEntries",
+              "kind": "let",
+              "line": 332,
+              "end_line": 332,
+              "sha256": "a95062f03b061914230cd0c609c9e10f7a12495c1f402f335e19dcf03b5c1d36",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "latitude",
+              "kind": "let",
+              "line": 333,
+              "end_line": 333,
+              "sha256": "a7c050f9b923bdbfdb7a8ba17d705ee7214e671fed2397c054ca6c6ac4f8631f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "longitude",
+              "kind": "let",
+              "line": 334,
+              "end_line": 334,
+              "sha256": "c1886d3477c3da18bc62c2a6724d07511c7963e60e8a5fcda4ce8d4c31fea8ca",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "altitude",
+              "kind": "let",
+              "line": 335,
+              "end_line": 335,
+              "sha256": "9e99a58da7df944a6d1c3f81bb23c2f3253f82f5dc2c93cb8dac2d047e2555e3",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 365,
+              "end_line": 417,
+              "sha256": "1458f5dddda71086ba0fbae40f1bd058754a070559b9a053ec25df0eca03f7ef",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 337,
+              "end_line": 363,
+              "sha256": "cd1e5b40fa82283dedf454135fea31f566ef81f5200524768d82741da03db846",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "validCoordinate",
+              "kind": "var",
+              "line": 421,
+              "end_line": 425,
+              "sha256": "35edd041106881115c81fd2a014321acca1e729c6287921785bc2eb94c391864",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "d9dee42dce42cd7e1dccf43254c730e5b641f9fff443a6a9958c766e64bb1d8f"
+        },
+        {
+          "name": "NeighborSnapshotEntry",
+          "kind": "struct",
+          "line": 111,
+          "end_line": 121,
+          "sha256": "aede9002c7984dfc819b9f466e08ef9c35633d11bd5033298aca3a9dd0011cfc",
+          "purpose": "unchanged production enum/value type"
+        },
+        {
+          "name": "TelemetrySnapshotEntry",
+          "kind": "struct",
+          "line": 124,
+          "end_line": 134,
+          "sha256": "33c7d9646e5a9e86dcd63833e39fa3376ffc4b1baa187fffe4f63d66a952d09c",
+          "purpose": "unchanged production enum/value type"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/NotificationLevel.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "9e55e90c4edb5ace79572e86136440528863e708",
+      "utf8_bytes": 1300,
+      "sha256": "6543b105bd958c741eb7f4973b5b4f8022ca7931d61ef8ecd7dea14946c58c9b",
+      "staged_file": "reference-13.swift",
+      "staged_sha256": "dd99cc530fbdfc68e7cbaae68d3c5fffda2f516e7d63274103acb5c35cd2fc5b",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "6543b105bd958c741eb7f4973b5b4f8022ca7931d61ef8ecd7dea14946c58c9b"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/ProtocolTypes.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "085e2957ccec3698d47446060e9ee0cee102ecbd",
+      "utf8_bytes": 2325,
+      "sha256": "769039cbf11ca145ab253137d9ee27e0f500639d0f7362f54a4204a268081c7c",
+      "staged_file": "reference-14.swift",
+      "staged_sha256": "2740688535925dce4f04bd8eb10bd1aab978826dc4804c2b90ef030d3f0f3711",
+      "fragments": [
+        {
+          "name": "TextType",
+          "kind": "enum",
+          "line": 35,
+          "end_line": 39,
+          "sha256": "3cebec8591f60f90a03f3c280693319c0ed34a86b2eedc74adf9e55377203dfb",
+          "purpose": "unchanged production enum/value type"
+        },
+        {
+          "name": "RemoteNodeRole",
+          "kind": "enum",
+          "line": 44,
+          "end_line": 56,
+          "sha256": "028bf735538a2f3efb5502c4efed955b76d6ad7ae5c27ac73934caca21105e18",
+          "purpose": "unchanged production enum/value type"
+        },
+        {
+          "name": "RoomPermissionLevel",
+          "kind": "enum",
+          "line": 59,
+          "end_line": 84,
+          "sha256": "d3aafa6d9611a1d79d8256b66688b1cc86c5a42c24937a8691d4c83e6cb3b05b",
+          "purpose": "unchanged production enum/value type"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/Reaction.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "fed9026236e4cac1d37fd4491cb9f6c80303467c",
+      "utf8_bytes": 3464,
+      "sha256": "8f86af928b584f8b8990d8739f8cc1b725bb3e6987d0630bdc15cb559a544341",
+      "staged_file": "reference-15.swift",
+      "staged_sha256": "90f441a785d141334eef9be693b203c6e57dceced820b3a93d29c52eb7f4e5d6",
+      "fragments": [
+        {
+          "type": "ReactionDTO",
+          "stored_properties": [
+            "id",
+            "messageID",
+            "emoji",
+            "senderName",
+            "messageHash",
+            "rawText",
+            "receivedAt",
+            "channelIndex",
+            "contactID",
+            "radioID"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 88,
+              "end_line": 88,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "messageID",
+              "kind": "var",
+              "line": 89,
+              "end_line": 89,
+              "sha256": "2709c9612f9900ad06a48addb187d7b82a5e709d07f318b1d97371ded9823e14",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "emoji",
+              "kind": "let",
+              "line": 90,
+              "end_line": 90,
+              "sha256": "f1c643bb48401b8154460e84ed37da515ddeabe46dea864172f792d35b83d405",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "senderName",
+              "kind": "let",
+              "line": 91,
+              "end_line": 91,
+              "sha256": "69c9e9e04cc8dbb97e0e2b9510fce236fd3228ac9d7c0aef5c5e7b7b6829e01d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "messageHash",
+              "kind": "let",
+              "line": 92,
+              "end_line": 92,
+              "sha256": "fb392421d6a625fb0367486767727ff1195073a262025a9ec49c7f9cdc195caf",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "rawText",
+              "kind": "let",
+              "line": 93,
+              "end_line": 93,
+              "sha256": "4ea5b541cc769ff34a7a017a29989cc0f2b81de7beddd1ce2b255d39dff1dd0c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "receivedAt",
+              "kind": "let",
+              "line": 94,
+              "end_line": 94,
+              "sha256": "c53a872577f0139f7ef2ab2f0b87519f6a8f566cb99efdbe88bbf403de164915",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "channelIndex",
+              "kind": "var",
+              "line": 97,
+              "end_line": 97,
+              "sha256": "ae49b2da51330563eb0e40b81731d803eb101ebc3df8cbf114e1c256d1a4cce5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "contactID",
+              "kind": "var",
+              "line": 98,
+              "end_line": 98,
+              "sha256": "0a1ff1e3b195d8f8bad62ea15f9f81aac2694864be87131652b239025adc2fe7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 99,
+              "end_line": 99,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 114,
+              "end_line": 136,
+              "sha256": "ddf8e9556633fc110def6d32dcff675da4795755c9512c7f49284a2cdfafd794",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 101,
+              "end_line": 112,
+              "sha256": "0d55097cc7422995f37af2a67438fe2e9d10cb60de454a82bbc0abf97f67d605",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "4162a966c266a9ea549ba31ff76673e0af693665a45003f4ab999b96c0b7f2b0"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/RegionSelection.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "cab9e454e58227b0d33f2aa0fe72cf5d20abfa49",
+      "utf8_bytes": 2327,
+      "sha256": "b9376dab4c34b4f1287f687744dfface85861d4b6440029b3d165cc3465fa4c0",
+      "staged_file": "reference-16.swift",
+      "staged_sha256": "7b3b62021e0626c3d3ff0088d339815c5716986e235f3b6641a5b484ab43abae",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "b9376dab4c34b4f1287f687744dfface85861d4b6440029b3d165cc3465fa4c0"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/RemoteNodeSession.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "eb906796c3f68d8e5c6e76515e6afdccebd3c832",
+      "utf8_bytes": 13973,
+      "sha256": "cd29b125f49af3a91197504cc7b978c88b671ce0a140b06b813e186396689664",
+      "staged_file": "reference-17.swift",
+      "staged_sha256": "6b3aaac1d0fdac84fbaebd65ca57430aa24cf951046b7e88b6a2b728c3740e06",
+      "fragments": [
+        {
+          "type": "RemoteNodeSessionDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "publicKey",
+            "name",
+            "role",
+            "latitude",
+            "longitude",
+            "isConnected",
+            "permissionLevel",
+            "lastConnectedDate",
+            "lastBatteryMillivolts",
+            "lastUptimeSeconds",
+            "lastNoiseFloor",
+            "unreadCount",
+            "notificationLevel",
+            "isFavorite",
+            "lastRxAirtimeSeconds",
+            "neighborCount",
+            "lastSyncTimestamp",
+            "lastMessageDate"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 242,
+              "end_line": 242,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 243,
+              "end_line": 243,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "publicKey",
+              "kind": "let",
+              "line": 244,
+              "end_line": 244,
+              "sha256": "921c4b5a2840fa4ee90078cf93902390eb08506817a1d0f1650abcbd87ed81c7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 245,
+              "end_line": 245,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "role",
+              "kind": "let",
+              "line": 246,
+              "end_line": 246,
+              "sha256": "c0e4d60384aabec67f4025b586cf073f404334a0c4de0fbfcfc5facddac09d8b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "latitude",
+              "kind": "let",
+              "line": 247,
+              "end_line": 247,
+              "sha256": "fd56799db888f31292999b2b3062cf0ec11fd1831d3aab46d12c3bec83e641f5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "longitude",
+              "kind": "let",
+              "line": 248,
+              "end_line": 248,
+              "sha256": "706cb15129fcb4f7ce43137dcddcdb59ae003d02e64f22d3763aba1296687818",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isConnected",
+              "kind": "let",
+              "line": 249,
+              "end_line": 249,
+              "sha256": "460673e5d744834d94b3e685ee8bdeb31020fc8996a3a623f5e7bf1b226f5e1b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "permissionLevel",
+              "kind": "let",
+              "line": 250,
+              "end_line": 250,
+              "sha256": "2008faba54d9c691278fd9cca9bb0ac82c393e1d995efb7d05596ea76c0540fd",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastConnectedDate",
+              "kind": "let",
+              "line": 251,
+              "end_line": 251,
+              "sha256": "c07ad95dd1843739ab28777db12ff6efd1f701fdeaf7f1b88b98bce4ae0971d7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastBatteryMillivolts",
+              "kind": "let",
+              "line": 252,
+              "end_line": 252,
+              "sha256": "f0bfbf76d8c7d19faf3118ab0e41d551888269fa5864f2c62875a64d6835af1a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastUptimeSeconds",
+              "kind": "let",
+              "line": 253,
+              "end_line": 253,
+              "sha256": "22f2f89c1c9a95281347a550aeb50ea2f90af4bbf9fb30e5c1802990bd293fbf",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastNoiseFloor",
+              "kind": "let",
+              "line": 254,
+              "end_line": 254,
+              "sha256": "d13e7b10a95474e80c1b623ed2821be4a6a199a521724c4982803d6c97ce9950",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "unreadCount",
+              "kind": "let",
+              "line": 255,
+              "end_line": 255,
+              "sha256": "c64526f69f99e217e768714b6a9ef802ff496b3816cdc69eaa26d019ad9d25b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notificationLevel",
+              "kind": "let",
+              "line": 256,
+              "end_line": 256,
+              "sha256": "2fb317e44c449c2b27a10a23f49c40abebde3905e23b18d799665a80dcb39a36",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isFavorite",
+              "kind": "let",
+              "line": 257,
+              "end_line": 257,
+              "sha256": "34d37a89768238a9b3e5d9e3666b11843cfa934bd54b2a1d1105df6bdeda611c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastRxAirtimeSeconds",
+              "kind": "let",
+              "line": 264,
+              "end_line": 264,
+              "sha256": "64073835b36e566491020ae2ba8b89d9f9f365c449424abf02901a8e54027efd",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "neighborCount",
+              "kind": "let",
+              "line": 265,
+              "end_line": 265,
+              "sha256": "203de3e91cf9c8b86a959621765183fd5e6c0b51a4f420be310ce7a78446fab2",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastSyncTimestamp",
+              "kind": "let",
+              "line": 266,
+              "end_line": 266,
+              "sha256": "0c3715d40a4ae625f288458163a597f9584881fe240b1d988e43ec27f6ed85cb",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "lastMessageDate",
+              "kind": "let",
+              "line": 267,
+              "end_line": 267,
+              "sha256": "a30646ce4fd145ab3babdcc05d6bb7255afdfb450ea5ced9be8110d8ef17c521",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 302,
+              "end_line": 344,
+              "sha256": "149290cd9ee86777a1e6c00d877b6ba4a63f77c52a59eb2374e928a32c55c34e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "isMuted",
+              "kind": "var",
+              "line": 260,
+              "end_line": 262,
+              "sha256": "ba50a7ff6039badbf62f6878275e02faf9a8210146721e9ea0daf3f81e7fb5ab",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 269,
+              "end_line": 299,
+              "sha256": "32319a8b4127c57a0794665ce726844f8e589396a2954b2ff83d5e92fde15636",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 347,
+              "end_line": 360,
+              "sha256": "f4359f93b7ceae700d81e9c85c2d13f28160a05d10defe30313b7c6a9920afd0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "with",
+              "kind": "func",
+              "line": 363,
+              "end_line": 376,
+              "sha256": "5ed2995a5f636c66970008bb445472126beeebba00f4390736abe7bc963311f8",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "publicKeyPrefix",
+              "kind": "var",
+              "line": 378,
+              "end_line": 380,
+              "sha256": "4f536ea37fa4b640a08fd0e07e04f2f59cf0f433ad0cf33c938e798e475b359a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "publicKeyHex",
+              "kind": "var",
+              "line": 382,
+              "end_line": 384,
+              "sha256": "f45cf6bdcc1adf636407ae2b88b64e223e50fef40cf92dbf00f140dd90936ccc",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isRoom",
+              "kind": "var",
+              "line": 386,
+              "end_line": 388,
+              "sha256": "31e562c6c9fe3c5bdeb36c2a074c1d8647ac77e97ce9b33a05eacc83caaf6a4f",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isRepeater",
+              "kind": "var",
+              "line": 390,
+              "end_line": 392,
+              "sha256": "db670c3d2fdc3f9976d5e51dc3cd0c6c1922842d9920f44404586c901a50b56a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "canPost",
+              "kind": "var",
+              "line": 394,
+              "end_line": 396,
+              "sha256": "32d8a1f7fe1d55db88f573cc84229801ebf95758a6950ae2cc70eeb4f050b782",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "isAdmin",
+              "kind": "var",
+              "line": 398,
+              "end_line": 400,
+              "sha256": "e659911c36c8929c5835e5a8d93bfa8fb53ea3263695c9cb1c183183be870fb6",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "hasLocation",
+              "kind": "var",
+              "line": 404,
+              "end_line": 410,
+              "sha256": "27520702c0d24bdae28c0911eb946e893a3e2b94d5cea1ed789fb802c704df84",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "coordinate",
+              "kind": "var",
+              "line": 412,
+              "end_line": 415,
+              "sha256": "26d64068cd05025ae7fdebf7420367b8986e82b939fdea7e49d9674116002464",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "25237126ccd88ab3bc0d376db4ac07134d79f7609834b2645e86446fc1e4c010"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/RoomMessage.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "4b4eb7bd393636adc00bf6d2c3679f6461c35921",
+      "utf8_bytes": 8166,
+      "sha256": "0790e6968091b228cb96ec52fde7166c11bbc2c9e5584043cada03b9e0db46fe",
+      "staged_file": "reference-18.swift",
+      "staged_sha256": "251ae0da994d7bcd20dde1f70e5fd5dbfbcd42bdd74e8930664c0fd344fdec1c",
+      "fragments": [
+        {
+          "type": "RoomMessageDTO",
+          "stored_properties": [
+            "id",
+            "sessionID",
+            "authorKeyPrefix",
+            "authorName",
+            "text",
+            "timestamp",
+            "createdAt",
+            "isFromSelf",
+            "deduplicationKey",
+            "statusRawValue",
+            "ackCode",
+            "roundTripTime",
+            "retryAttempt",
+            "maxRetryAttempts",
+            "failureSeen"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 150,
+              "end_line": 150,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "sessionID",
+              "kind": "var",
+              "line": 151,
+              "end_line": 151,
+              "sha256": "30428ce5e9baeb858d6422596427da140d3d5aabdd00fb9d5bd1e3063858b5d1",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "authorKeyPrefix",
+              "kind": "let",
+              "line": 152,
+              "end_line": 152,
+              "sha256": "e4341877f312b1a1270d8840b6ec986666c7a783a0f6c523f090449d1ea82cac",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "authorName",
+              "kind": "let",
+              "line": 153,
+              "end_line": 153,
+              "sha256": "b72906fbe47e6a5b5272cb96c67ebbf83c69deb76bc39e40fd54fe60719cb3c5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "text",
+              "kind": "let",
+              "line": 154,
+              "end_line": 154,
+              "sha256": "78e3033cdab54b2a354d41825ca5cc0f067335a80362f55da7e1cfb9fc545fa6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "timestamp",
+              "kind": "let",
+              "line": 155,
+              "end_line": 155,
+              "sha256": "153fce21b47e16aecfe614fd385883bf38b810a4daa6d72fc868b5e15c4da304",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "createdAt",
+              "kind": "let",
+              "line": 156,
+              "end_line": 156,
+              "sha256": "106a48e8ed9f433c22be2a7e68e1ed6cbd5af554799c58a4df4b7bf05923a8b9",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "isFromSelf",
+              "kind": "let",
+              "line": 157,
+              "end_line": 157,
+              "sha256": "f4195ee7e407dec87d322d0dd5e0e1274daba7234c85b177d48acdee3f0aff21",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "deduplicationKey",
+              "kind": "let",
+              "line": 158,
+              "end_line": 158,
+              "sha256": "a751dd5f0dc750e19ed34a9d478f3473cd209ec6aac2d486e66c1cee1945a862",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "statusRawValue",
+              "kind": "let",
+              "line": 159,
+              "end_line": 159,
+              "sha256": "17021c9320674921146e460714eced66fe767be8819ec4941ec6374bba53f7d3",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "ackCode",
+              "kind": "let",
+              "line": 160,
+              "end_line": 160,
+              "sha256": "f3fc158ea275b0e9c19f0e5fc083c989acbc413f403cd527fc9f3b099cc44b16",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "roundTripTime",
+              "kind": "let",
+              "line": 161,
+              "end_line": 161,
+              "sha256": "70161499ce9ffca261a4a3984f5ec229a52580c4c965347ba51e5e6ca1caebf8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "retryAttempt",
+              "kind": "let",
+              "line": 162,
+              "end_line": 162,
+              "sha256": "c07c1d07b82f13022b39c6c56245388474aba0f27c81157840ea6ba364a88a48",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "maxRetryAttempts",
+              "kind": "let",
+              "line": 163,
+              "end_line": 163,
+              "sha256": "87158ad36006dd3ed68afffaf0055b5e53fa55f77b4f0fa56d665a6e53f9ac17",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "failureSeen",
+              "kind": "let",
+              "line": 164,
+              "end_line": 164,
+              "sha256": "270c6c0c5a329c5bdd1a564a898c3b4f219058cfcb0139df60ae50b7643f0ae0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 184,
+              "end_line": 219,
+              "sha256": "19f5e9247a2e793ee7d57efa93d0b403f5daf7cd2631e1fad237810287da083f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "CodingKeys",
+              "kind": "enum",
+              "line": 221,
+              "end_line": 225,
+              "sha256": "f1888a36a88d4cd14de231c8b48d39fb212bf8f91fb5f051f4a43fa1fbecdb88",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 227,
+              "end_line": 244,
+              "sha256": "b6cce941dbac31763e05dce947e615fb0b1ca1139d965650a9adc53280193b32",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 166,
+              "end_line": 182,
+              "sha256": "27699fe1415825a9fbf67ac7bad58abe86300b39cadf0ab8c3f08d89332015ba",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "authorDisplayName",
+              "kind": "var",
+              "line": 246,
+              "end_line": 248,
+              "sha256": "66abdd455300b7839c37b631b3d84632bcbe414077d4b933a06d26d06e8f0452",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "date",
+              "kind": "var",
+              "line": 250,
+              "end_line": 252,
+              "sha256": "b6b4b7e3118308f8a6ebadd8c7fb965a1fef66dfcd13739a40b3d71dea1fea59",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "status",
+              "kind": "var",
+              "line": 254,
+              "end_line": 256,
+              "sha256": "cba48983d5d64fadd6299cdee02a205a4100e3f7f32f603d65ab782fe723e6af",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "5c8e6baffdc4bebd4bd459dfb27a7bb2289259f5228ff609e7fbfa6e92c9ee11"
+        },
+        {
+          "name": "generateDeduplicationKey",
+          "kind": "func",
+          "line": 134,
+          "end_line": 143,
+          "sha256": "640afc9c07e05b3ddf0db507e19b4d2ae8f121bc777e49a2d3b5a6e903b307c7",
+          "purpose": "exact pure function in a namespace, not a SwiftData model"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Models/SavedTracePath.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "13f2b2dbc5658aeefd3ed19f74468bb7db998dd9",
+      "utf8_bytes": 5704,
+      "sha256": "178fed2d87beba4b953563cfed2f43ffed90404888eafd8677e7ba18768d8158",
+      "staged_file": "reference-19.swift",
+      "staged_sha256": "87ebd1ab10fa29bcb26b6fc1bf4ca36a77cff1780bfe059f348532280db34c4c",
+      "fragments": [
+        {
+          "type": "SavedTracePathDTO",
+          "stored_properties": [
+            "id",
+            "radioID",
+            "name",
+            "pathBytes",
+            "hashSize",
+            "createdDate",
+            "runs"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 141,
+              "end_line": 141,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "radioID",
+              "kind": "var",
+              "line": 142,
+              "end_line": 142,
+              "sha256": "0af2502e3017816e83984f9a83ac41d6fa56fad6d9cc058a162869795878869f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "name",
+              "kind": "let",
+              "line": 143,
+              "end_line": 143,
+              "sha256": "97bcc591f4b397b5e041d5dc6f583b28aec55898f184c9fdf88b9387e9dca1a8",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "pathBytes",
+              "kind": "let",
+              "line": 144,
+              "end_line": 144,
+              "sha256": "f3c9d69bd8ae9a10a84b5b2786882801e48c90774cc9fce76e9b5ba8c44e8423",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "hashSize",
+              "kind": "let",
+              "line": 145,
+              "end_line": 145,
+              "sha256": "b8a2bea1fc09639ffaed30428757375069e9ccf2948f39e9af1f046ee9ea1708",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "createdDate",
+              "kind": "let",
+              "line": 146,
+              "end_line": 146,
+              "sha256": "e36f6a9fd0782a5fd8fd7a803f19bd44b3615f43235aa1076148d03b7e7cd30e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "runs",
+              "kind": "let",
+              "line": 147,
+              "end_line": 147,
+              "sha256": "4c00b7b4471d10b5b5910a4932ca6a9e823f14800de32febd5a91bd1d33bf6eb",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 159,
+              "end_line": 175,
+              "sha256": "e7c22ac3f8a4ab9868cfc8fe3cbc0dc4b1094d845fa1055ea5f28291b943674d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 149,
+              "end_line": 157,
+              "sha256": "47da01e30cbeffa4f2a8eabbac9c2eb41f4ffb53828462480592d3219060327e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "runCount",
+              "kind": "var",
+              "line": 177,
+              "end_line": 179,
+              "sha256": "3b3d0aa66974e6a35b37f25168f61107134603b996a8717507a4526e631eab14",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "lastRunDate",
+              "kind": "var",
+              "line": 181,
+              "end_line": 183,
+              "sha256": "b199663c897c038f3ac8ec4bcb8017e255d86927fc369e851f054adf7a0d78cd",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "averageRoundTripMs",
+              "kind": "var",
+              "line": 185,
+              "end_line": 190,
+              "sha256": "69f7622baeee580955619af81f0406d2f2dc64b8f86a16b6571c153dbd310fac",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "successRate",
+              "kind": "var",
+              "line": 192,
+              "end_line": 196,
+              "sha256": "ec411e981d4dc9ee5c9b1cd04a196c79411f56b0d55925cb0f108a720b292a89",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "recentRTTs",
+              "kind": "var",
+              "line": 199,
+              "end_line": 205,
+              "sha256": "4ca9148cb67a48e13ba3ee51f72eb5b79a5c19fd6b1961bcf557c9d8cd1b171d",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "pathHashBytes",
+              "kind": "var",
+              "line": 208,
+              "end_line": 210,
+              "sha256": "c366d3706176a813078c43b9f66d3c3ae3085af703c283fcd61771147279cb32",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "65dc707c5118e98865e49521db68289a0281c627b44aec1313e51e388026ab9c"
+        },
+        {
+          "type": "TracePathRunDTO",
+          "stored_properties": [
+            "id",
+            "date",
+            "success",
+            "roundTripMs",
+            "hopsSNR"
+          ],
+          "retained": [
+            {
+              "name": "id",
+              "kind": "let",
+              "line": 215,
+              "end_line": 215,
+              "sha256": "35109c99b809ede5f55b275d0965a595985cf873978b7ac0a5e61d374c83a0b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "date",
+              "kind": "let",
+              "line": 216,
+              "end_line": 216,
+              "sha256": "5ae1249748b3e3bbd4e92617760a4da21f55ac618c98ac7b879669b4274ce3d2",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "success",
+              "kind": "let",
+              "line": 217,
+              "end_line": 217,
+              "sha256": "40d2658d5e0cb6ce561880a8cf3d18738e5dba4d101388252ffeab4974aae52c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "roundTripMs",
+              "kind": "let",
+              "line": 218,
+              "end_line": 218,
+              "sha256": "f1727f4a048eb7d862c6a761136cf8491f6f2f79ac65f3071cb7ffe5f40ea34e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "hopsSNR",
+              "kind": "let",
+              "line": 219,
+              "end_line": 219,
+              "sha256": "3a8106b4c39ea3159cd055685bcb8adf613dcdf98cc8fb2301955d4713ffc459",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 229,
+              "end_line": 235,
+              "sha256": "6e183cd529eed46326384a1c1daa72425e5d649ec6375566956b73ce34be853c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 221,
+              "end_line": 227,
+              "sha256": "3ed5cab416eed04c65fd43a08541123d823d4283081a5d630e98124bc69aa6aa",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "c52dad15ff2c5ddf899d92a3f9bf60527e8d3f85fc9f84b3bba311ae841a0005"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/AppBackupEnvelope.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "80dffab8a06268b07603c473053b9917b41c8570",
+      "utf8_bytes": 15017,
+      "sha256": "590f65479bfa39fd279bb84e56c6e9581975315619cf3199bcbd53fe0d289525",
+      "staged_file": "reference-20.swift",
+      "staged_sha256": "852ae6d3282c22eaf401d96ddc0a8756ada2acfd16a771700a096e545b4b5be3",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "590f65479bfa39fd279bb84e56c6e9581975315619cf3199bcbd53fe0d289525"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Sources/MC1Services/Services/BackupUserDefaults.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "21741b50d70aee0eead86d46a0bfaacb3b49ad38",
+      "utf8_bytes": 11823,
+      "sha256": "aa15f9099606357c52d077cd51013bf397f4136a4db860252274541c911fe3aa",
+      "staged_file": "reference-21.swift",
+      "staged_sha256": "73378d615463c872959e2ecc60d5740a404e55a57e953a234f7de6df05e11dd5",
+      "fragments": [
+        {
+          "type": "BackupUserDefaults",
+          "stored_properties": [
+            "hasCompletedOnboarding",
+            "liveActivityEnabled",
+            "mapStyleSelection",
+            "selectedThemeID",
+            "appColorSchemePreference",
+            "mapShowLabels",
+            "mapClusteringEnabled",
+            "mapNorthLocked",
+            "showDiscoveredNodesOnMap",
+            "mapFilterMainMap",
+            "mapFilterTracePath",
+            "mapFilterNeighborSNR",
+            "mapColorSchemePreference",
+            "replyWithQuote",
+            "showInlineImages",
+            "autoPlayGIFs",
+            "showIncomingPath",
+            "showIncomingHopCount",
+            "showIncomingRegion",
+            "showIncomingHeardCount",
+            "showIncomingSendTime",
+            "autoDeleteStaleNodesDays",
+            "discoverySortOrder",
+            "nodesSortOrder",
+            "tracePathViewMode",
+            "linkPreviewsEnabled",
+            "linkPreviewsAutoResolveDM",
+            "linkPreviewsAutoResolveChannels",
+            "showMapPreviewThumbnails",
+            "frequentEmojis",
+            "recentEmojis",
+            "hasSeenRepeaterDragHint",
+            "translationTargetLanguage",
+            "useDefaultTranslationApp",
+            "translationOffersEnabled",
+            "regionSelection",
+            "notifyContactMessages",
+            "notifyChannelMessages",
+            "notifyRoomMessages",
+            "notifyNewContacts",
+            "notifyNewContactsContact",
+            "notifyNewContactsRepeater",
+            "notifyNewContactsRoom",
+            "notifyReactions",
+            "notificationSoundEnabled",
+            "notificationBadgeEnabled",
+            "notifyLowBattery"
+          ],
+          "retained": [
+            {
+              "name": "hasCompletedOnboarding",
+              "kind": "var",
+              "line": 8,
+              "end_line": 8,
+              "sha256": "55e87fb01b8045af90727488feab46b82b162095ea521d5550fe6a39d5738e85",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "liveActivityEnabled",
+              "kind": "var",
+              "line": 9,
+              "end_line": 9,
+              "sha256": "b8547b9881e9ffa933dc472b1e72db4472e7426d41939c06ebeb9c342b4a12d1",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapStyleSelection",
+              "kind": "var",
+              "line": 10,
+              "end_line": 10,
+              "sha256": "843b49f2b8f6aeb1e5dfda3dd0ada98e581737a070a82538b4ed01c1c25154f1",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "selectedThemeID",
+              "kind": "var",
+              "line": 11,
+              "end_line": 11,
+              "sha256": "80db868bcad2ba9207248726617f3caaa5ebd26379d608f5b3e3b32fa8f9f970",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "appColorSchemePreference",
+              "kind": "var",
+              "line": 12,
+              "end_line": 12,
+              "sha256": "d2c09f30c32bbc5afbff62242796cd045ca31612d2a4f839b0cf17ce5232d407",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapShowLabels",
+              "kind": "var",
+              "line": 13,
+              "end_line": 13,
+              "sha256": "2a639b74159f59e48f9550671debb8ec2e35d73d8fc4cab55ba43c628e3f9194",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapClusteringEnabled",
+              "kind": "var",
+              "line": 14,
+              "end_line": 14,
+              "sha256": "e7f37f218685fa939be1205a955868d19ef87dd0c89e75bdf37156624da00152",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapNorthLocked",
+              "kind": "var",
+              "line": 15,
+              "end_line": 15,
+              "sha256": "18c08e4afe05f4ca4a751c943368018059fe063e3180b041efce8bba4f70da3f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showDiscoveredNodesOnMap",
+              "kind": "var",
+              "line": 16,
+              "end_line": 16,
+              "sha256": "6336d9a5c0bacfb2f64bed7cbc6d6ce76e2a53c5c425b6ce359442b98c63a89d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapFilterMainMap",
+              "kind": "var",
+              "line": 17,
+              "end_line": 17,
+              "sha256": "ab164d6b026bd01e53252f19786495bde8d4ef95e30c1d796cf6216f9e5c33a0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapFilterTracePath",
+              "kind": "var",
+              "line": 18,
+              "end_line": 18,
+              "sha256": "8a82c6c6711b434df0c9b15c509c49a689a0850f1da925935fc9912f498121d0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapFilterNeighborSNR",
+              "kind": "var",
+              "line": 19,
+              "end_line": 19,
+              "sha256": "b4c015a9224f631f52e38ed2e57e49a0e6473bd80ef965777c89a6eb4fea696c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "mapColorSchemePreference",
+              "kind": "var",
+              "line": 20,
+              "end_line": 20,
+              "sha256": "9c9dbae4d1813a138ebaff745086299264e0032f8a327e9f8e544e4a1c0c343b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "replyWithQuote",
+              "kind": "var",
+              "line": 21,
+              "end_line": 21,
+              "sha256": "f3d2bc0c895b58c33fceab7548c5f296a4cb89ced9e8caaaf7bd8ce2f8f1480c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showInlineImages",
+              "kind": "var",
+              "line": 22,
+              "end_line": 22,
+              "sha256": "74428d0ece996c02b0f5c0a4387493160868823480c9daebfef34a206ffb438c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "autoPlayGIFs",
+              "kind": "var",
+              "line": 23,
+              "end_line": 23,
+              "sha256": "b968c8f5254ec9a19446fba204cccdf9ff034e376437a12ed6b2faa9776d27b1",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showIncomingPath",
+              "kind": "var",
+              "line": 24,
+              "end_line": 24,
+              "sha256": "eb1c7be90ac76ca9e88838e221612dba2256064cd9dc896085dfcb996619c10c",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showIncomingHopCount",
+              "kind": "var",
+              "line": 25,
+              "end_line": 25,
+              "sha256": "56db11496e2779a9d755551e4b4bf7fb7982b0114cc996c234d658e9fba42573",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showIncomingRegion",
+              "kind": "var",
+              "line": 26,
+              "end_line": 26,
+              "sha256": "8193281ed310928f45c71dc80bb7d86954bc3f8ca21f459b3a7bb28022d4f723",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showIncomingHeardCount",
+              "kind": "var",
+              "line": 27,
+              "end_line": 27,
+              "sha256": "8d1948cba60fd80c3acf7e9ee2407dfb7d60621cae1cc923b42fce69ccfbf47a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showIncomingSendTime",
+              "kind": "var",
+              "line": 28,
+              "end_line": 28,
+              "sha256": "f199687f85d5c526f8ffe28da939d33aa1ae46d42f81e2ad7b09044472493502",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "autoDeleteStaleNodesDays",
+              "kind": "var",
+              "line": 29,
+              "end_line": 29,
+              "sha256": "18c8c5cce97bb38a5db6e6a756fa018973d0250b413afd931f99838017647843",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "discoverySortOrder",
+              "kind": "var",
+              "line": 30,
+              "end_line": 30,
+              "sha256": "caa6b140a0f506794816605c8707f0e94fa603955e33f9131676c52a7519a5c5",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "nodesSortOrder",
+              "kind": "var",
+              "line": 31,
+              "end_line": 31,
+              "sha256": "810da07544bc08405d6d732bf38daf98d970123d2c41c0336c9c2fd0838b18ed",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "tracePathViewMode",
+              "kind": "var",
+              "line": 32,
+              "end_line": 32,
+              "sha256": "30e08cff8c01bc77a0a7c61dd9e08a91341240e4d714426268de911b2f06125f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewsEnabled",
+              "kind": "var",
+              "line": 33,
+              "end_line": 33,
+              "sha256": "0abc776fd6d6dc72bf73c804d636f26f83745400b13b6a7b746253a2cf14dd7e",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewsAutoResolveDM",
+              "kind": "var",
+              "line": 34,
+              "end_line": 34,
+              "sha256": "4177cfea0d6eb1a071a45f3cb73de7cffcb2154100dc467c232a2f44d5d594b6",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "linkPreviewsAutoResolveChannels",
+              "kind": "var",
+              "line": 35,
+              "end_line": 35,
+              "sha256": "af09cccae28724339e3b797c9288878e8e8f8ec215741050a2b8724c5c629ff0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "showMapPreviewThumbnails",
+              "kind": "var",
+              "line": 36,
+              "end_line": 36,
+              "sha256": "5d3448fbe588e68394425d3c5f53eaa4c3f245db78def61d31535790ed8b4432",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "frequentEmojis",
+              "kind": "var",
+              "line": 37,
+              "end_line": 37,
+              "sha256": "436e2b09746661248f678988c7ee9464855ba5afc9ad95706c2b29165865ff84",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "recentEmojis",
+              "kind": "var",
+              "line": 38,
+              "end_line": 38,
+              "sha256": "95bc591a68aa82641d4525dcaa7df2576d11aced205039e7cef594bb6804c0b4",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "hasSeenRepeaterDragHint",
+              "kind": "var",
+              "line": 39,
+              "end_line": 39,
+              "sha256": "0984c45e9583bdd61128c48d80207f6fb44f402894949bd65c47ccb9ca5ea52a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "translationTargetLanguage",
+              "kind": "var",
+              "line": 40,
+              "end_line": 40,
+              "sha256": "2765c7551847429802ee28407b605aaae6fbfb007b40049a3a8d388820366139",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "useDefaultTranslationApp",
+              "kind": "var",
+              "line": 41,
+              "end_line": 41,
+              "sha256": "bd4e206ea352b0f39ca6653a851b14635a0c0e357294ac3dd460b70f587bee8d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "translationOffersEnabled",
+              "kind": "var",
+              "line": 42,
+              "end_line": 42,
+              "sha256": "53e342a0534f018891f3827fa63b434498bd7fb7339fe5459593340e3e924604",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "regionSelection",
+              "kind": "var",
+              "line": 43,
+              "end_line": 43,
+              "sha256": "4496906c81ba4e9c7f8501451ea11c5afacaacf692d62c78e2e37fe6fe1c052f",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyContactMessages",
+              "kind": "var",
+              "line": 47,
+              "end_line": 47,
+              "sha256": "6e3c0ffe1217908e446b4b0a47d09dfd5922772a6a9407402c69c435326bd959",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyChannelMessages",
+              "kind": "var",
+              "line": 48,
+              "end_line": 48,
+              "sha256": "032cc7cde06dcdb2de2568abc69be39193f00c8464c3bf7530cbd0af1bf669e7",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyRoomMessages",
+              "kind": "var",
+              "line": 49,
+              "end_line": 49,
+              "sha256": "38fb02cb5a08b63181a219dd8640fcfb8776154221312e18aeee20e41d987ae0",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyNewContacts",
+              "kind": "var",
+              "line": 50,
+              "end_line": 50,
+              "sha256": "bb08ee461cc16ee3e8e285bc6f58e2ef67e66ac1127b281ef3fe90ac7a7fe09a",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyNewContactsContact",
+              "kind": "var",
+              "line": 51,
+              "end_line": 51,
+              "sha256": "45f6357c40ecdd7689e58ecb44e6ba6da341dab338268772dbedbaaedc309888",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyNewContactsRepeater",
+              "kind": "var",
+              "line": 52,
+              "end_line": 52,
+              "sha256": "4999737df0d3e9bc81a6aef87e42dd28ea71b6d5dc591a9b54c89e48d749f766",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyNewContactsRoom",
+              "kind": "var",
+              "line": 53,
+              "end_line": 53,
+              "sha256": "e052825cdf443ace0930c95ad576a77b5e23ef2b1fb215b55af7caff493af170",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyReactions",
+              "kind": "var",
+              "line": 54,
+              "end_line": 54,
+              "sha256": "5184ad073b82e4c2d27413222015dfa52ae34b9183d5701fbbe7836c6e761f1d",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notificationSoundEnabled",
+              "kind": "var",
+              "line": 55,
+              "end_line": 55,
+              "sha256": "3f9d1705ba91c4b7d6d4483332489b9b7b3af5730842bdd266bfb3a48e2d72da",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notificationBadgeEnabled",
+              "kind": "var",
+              "line": 56,
+              "end_line": 56,
+              "sha256": "8aabd989208d3eba94167813cdccba035ae6480e2a8572dba7b7c0b3faad169b",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "notifyLowBattery",
+              "kind": "var",
+              "line": 57,
+              "end_line": 57,
+              "sha256": "499f2c4d20d2d726004e3d529c3823cbda06ce2b2881758fd8ca5b81e72b87c1",
+              "purpose": "exact production stored property/Codable/value initializer"
+            },
+            {
+              "name": "init",
+              "kind": "init",
+              "line": 59,
+              "end_line": 59,
+              "sha256": "70e5d44549999ce6949d4fe8c799b04e19a378bc5c1e1e9a245db7ac914af095",
+              "purpose": "exact production stored property/Codable/value initializer"
+            }
+          ],
+          "omitted": [
+            {
+              "name": "autoDeleteStaleNodesDaysKey",
+              "kind": "let",
+              "line": 63,
+              "end_line": 63,
+              "sha256": "4e4f02401b4fe88565b9bc47ac54a69fa9c145d2b6fc37bb3073cb89e3fcd23e",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "frequentEmojisKey",
+              "kind": "let",
+              "line": 64,
+              "end_line": 64,
+              "sha256": "a2dd2c6f99f9ef9dcb10eaf5c03dc254c7745525a3d3f190fc6086992a9e6ad0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "recentReactionEmojisKey",
+              "kind": "let",
+              "line": 65,
+              "end_line": 65,
+              "sha256": "d21bf5a5f191535dc60b25d0342b1166c9d3c5880123d694d68304993c94b1c2",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "regionSelectionKey",
+              "kind": "let",
+              "line": 67,
+              "end_line": 67,
+              "sha256": "fded66b0205449d1374e0ccdd0ae3ecb505557063d68b5601d2965c573933e3a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "specialCasedPropertyNames",
+              "kind": "let",
+              "line": 72,
+              "end_line": 77,
+              "sha256": "475933ac1ef1633f925e88d63e89efb5fb4443503bc8a0df37374b3818e73c1c",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "loadRegionSelection",
+              "kind": "func",
+              "line": 84,
+              "end_line": 87,
+              "sha256": "47e39f6ebec8dafd68a8284e8b7f537d963c1f8be28c0554760c84e61775b74b",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "persistRegionSelection",
+              "kind": "func",
+              "line": 89,
+              "end_line": 98,
+              "sha256": "18c3d651107d99226118d964258b4bd6d4ac122e69e5a6830dc5c32962cf0b25",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "boolMappings",
+              "kind": "let",
+              "line": 109,
+              "end_line": 142,
+              "sha256": "304cf2c00d30f20a0b619f490250d43eb33917306afeb6a8a7095071c65303c0",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "boolMappingKeys",
+              "kind": "var",
+              "line": 146,
+              "end_line": 148,
+              "sha256": "2a453d067e6d59e552197dca595479002e815999ed1a7dacd67e26d713bd1892",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "stringMappings",
+              "kind": "let",
+              "line": 151,
+              "end_line": 163,
+              "sha256": "c8b5379af2125e3cb6146b266cb90dad539b8d35fd97a5e74213e2b5fd933e97",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "stringMappingKeys",
+              "kind": "var",
+              "line": 167,
+              "end_line": 169,
+              "sha256": "b69b00f43035d11dde6e24ed81a7d33a7a55eed93123b45fc6dfda9078efcf43",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "snapshot",
+              "kind": "func",
+              "line": 175,
+              "end_line": 205,
+              "sha256": "b6f72833b975cb24d684704a5c459d6324d15683be190687649aa72931c7dd47",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "restore",
+              "kind": "func",
+              "line": 214,
+              "end_line": 256,
+              "sha256": "2a0489f5f3cfb08a65fb2f9b48b5ff12c39b05bca64d46fae47e665a67aab9b6",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            },
+            {
+              "name": "removeKeys",
+              "kind": "func",
+              "line": 259,
+              "end_line": 263,
+              "sha256": "b812472137afa38108b2ba996e5eb25c5cde83ddd00f3b1a7fc597021aa1f47a",
+              "purpose": "non-codec behavior/SwiftData model conversion"
+            }
+          ],
+          "adaptations": [],
+          "fragment_sha256": "fcfbedf609a3fb172fb681b72a7cea3467727b2645fb9529d616f71f41ccb443"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/AppBackupEnvelope+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "1d8197303e90669e9e017041a75789459c89dbf4",
+      "utf8_bytes": 1692,
+      "sha256": "b8c9ad1b329a46112dd2bef6c35c5e6b9eb9a236d5ea510db59ae3d9edca645d",
+      "staged_file": "reference-23.swift",
+      "staged_sha256": "d10ba23885ffa228ab1979f20700151c07db92c4a8a4fb1b9f6cea1608a4ee6b",
+      "fragments": [
+        {
+          "name": "AppBackupEnvelope",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 47,
+          "sha256": "0575525e626225a1fbd0b6ec3570b8bcde401dce57b312272abfdacc0b543bc1",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/ChannelDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "cfdc807ae392438a179eb0c02b5f1702d30a6f11",
+      "utf8_bytes": 1130,
+      "sha256": "6a439f47c3f5811b82ed7ba08455a83f08a10599452e512a0bda9e3309b2f049",
+      "staged_file": "reference-24.swift",
+      "staged_sha256": "1868598b060499ae5da297bc362acf9bf8e5bec9261393d39932bd3dce0c6162",
+      "fragments": [
+        {
+          "name": "ChannelDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 41,
+          "sha256": "e1ba6e1950f259936c4cd57b816c30f21504bf0c934d33b9619bf2bfa871854b",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/ContactDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "fff7bd2c9e81714dc47723e7223633be54965cf7",
+      "utf8_bytes": 1751,
+      "sha256": "736efe4dd9e24448827551e368f33183a12d30394f7e6761b38153fbf593756d",
+      "staged_file": "reference-25.swift",
+      "staged_sha256": "9c93042dee094d9f132bb893f589be92330fa7e3c98e3bed6d0d83af2f78156f",
+      "fragments": [
+        {
+          "name": "ContactDTO",
+          "kind": "extension",
+          "line": 5,
+          "end_line": 60,
+          "sha256": "e1d77d0bd3a0219b92cfff67fcffde2b84ab3fda8321977d4d35e621bff1a41f",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/DeviceDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "ffbeca180d8cbb1833d6cea4984b7fbddd194d69",
+      "utf8_bytes": 1962,
+      "sha256": "3498f197df609e162f496aa05bde37ce830f4c36991fd7fb82cb3832019b9522",
+      "staged_file": "reference-26.swift",
+      "staged_sha256": "ae919a2f3d46680b5ed29dd61c73ca42d59c07e1773793e6e7dba405c4b399e7",
+      "fragments": [
+        {
+          "name": "DeviceDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 67,
+          "sha256": "f032b28e61d41606296734c424da2e5b22aa207f1af43cd31314782f1376f4b2",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/MessageDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "9428f0c258f381d24720e61398fcff1418e07acd",
+      "utf8_bytes": 3249,
+      "sha256": "cb6d6984d44888e6bd515757b189c1351820935e31ea24490765457fcbd15a0e",
+      "staged_file": "reference-27.swift",
+      "staged_sha256": "98faa702227aeaf88c50177dd26dcc3d178b712306fed93b65ba11293e84df71",
+      "fragments": [
+        {
+          "name": "MessageDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 114,
+          "sha256": "7b3075ccccecd35c5448af44c03695c556aaa15394bc1a36729fe20f1de8b2bf",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/MessageRepeatDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "3a4fa02aba2dd41bd53de6876401a19074a99dc8",
+      "utf8_bytes": 746,
+      "sha256": "39d4e099ef8e51fd4b9292e5e638a3ea306b5a26ec8601da6669bbd29ccf09d0",
+      "staged_file": "reference-28.swift",
+      "staged_sha256": "f3b0bd4c61256b2feab2e05e3486e9e53676792193b9cf1af9db55f6599d4c71",
+      "fragments": [
+        {
+          "name": "MessageRepeatDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 32,
+          "sha256": "0dcbab47cc4d5bf381f6b93a2b4b8453cd1da9ce0ebd52e25654afe8b5f6b8e0",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/NodeStatusSnapshotDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "ff3e4c7b65ce65991a3b8e35c7c346420151a6b4",
+      "utf8_bytes": 1942,
+      "sha256": "76d38189afc2d45b85d9aa3c7177cf9f3930924b47a61bd104e9cd7859c2bca7",
+      "staged_file": "reference-29.swift",
+      "staged_sha256": "dc03e0ce0f8c848c40281161cee4b65f4ec3fb1335ad419b5ecc047ed038fd95",
+      "fragments": [
+        {
+          "name": "NodeStatusSnapshotDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 62,
+          "sha256": "4563930905251bfd5f3522d4b3baf507314809d4dd9e20870be7d65be2585137",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/RoomMessageDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "d6f0420d2549380662df19da38e4ca95a347ca0c",
+      "utf8_bytes": 960,
+      "sha256": "e71e4a26da78b6776576903cf73fbba5b0b958b81f59ac776d1ad2d998c398d7",
+      "staged_file": "reference-30.swift",
+      "staged_sha256": "a4b59f575db72fb6cc14b076999c0158b9b132506fd17f86608ed18faa5348a0",
+      "fragments": [
+        {
+          "name": "RoomMessageDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 36,
+          "sha256": "511c0f5af575d7f461eb6f0fb0f37304810a28750f1da1a2906ef2a615ae16da",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MC1Services/Tests/MC1ServicesTests/Helpers/SavedTracePathDTO+Testing.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "4a272074e400661128a5b6ed0bd8af1625fe7f2b",
+      "utf8_bytes": 1193,
+      "sha256": "896c244fd777850202ffd1909474014d1d934beed9e2851844c9fb10f0a2607a",
+      "staged_file": "reference-31.swift",
+      "staged_sha256": "f8fa45db5d4ae1c1a992b11a6eb59d2021fdab986a33811d0ddb41c73961d077",
+      "fragments": [
+        {
+          "name": "SavedTracePathDTO",
+          "kind": "extension",
+          "line": 4,
+          "end_line": 30,
+          "sha256": "ef3010edda1c266a2130dbdc02aa964c87a51b1f68cc83dc25aa3b1d180b6375",
+          "purpose": "unchanged helper; only module imports omitted"
+        },
+        {
+          "name": "TracePathRunDTO",
+          "kind": "extension",
+          "line": 32,
+          "end_line": 54,
+          "sha256": "9a004c136b510f07de2a3f1ebf3907f91cb15ca501f1d6c085394f943fff5d8b",
+          "purpose": "unchanged helper; only module imports omitted"
+        }
+      ]
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Models/ContactTypes.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "2551567b530f80f9daa943700472d6a0bd2b6319",
+      "utf8_bytes": 1362,
+      "sha256": "00922a0536729940c22af113f3ef37a78df6e1c87a04a745cd3c229c579977d6",
+      "staged_file": "reference-33.swift",
+      "staged_sha256": "017e8dabd9571cb964ab6b775d1506ede9f8cfebb08deeacca5a5a88839fb0ca",
+      "fragments": [
+        {
+          "name": "ContactType",
+          "kind": "enum",
+          "line": 9,
+          "end_line": 13,
+          "sha256": "51587421288b1f55407c312a99f2db2507bb1c4ca8cf748453e18a35be580ab4",
+          "purpose": "unchanged production enum/value type"
+        }
+      ]
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Protocol/ChannelCrypto.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "0e53e6958a516369d073a43c0ce8b245282009ce",
+      "utf8_bytes": 4733,
+      "sha256": "e2cdab9d92ff0c621a64752cde24dbef8742bad6d0e5cfdedb100fe77bb671ab",
+      "staged_file": "reference-34.swift",
+      "staged_sha256": "fbae6204956301194ea8ec4dbbb934194957d89cb751884f2c1b9becdd698b43",
+      "fragments": [
+        {
+          "purpose": "unchanged full production source",
+          "sha256": "e2cdab9d92ff0c621a64752cde24dbef8742bad6d0e5cfdedb100fe77bb671ab"
+        }
+      ]
+    },
+    {
+      "path": "MeshCore/Sources/MeshCore/Protocol/RxLogTypes.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "754125ca58e371fabee8390696144dc9a32d8f80",
+      "utf8_bytes": 4549,
+      "sha256": "1976293b5da410fc731e598a6facc4f12f4755933a1aff05772cacb91facf78d",
+      "staged_file": "reference-35.swift",
+      "staged_sha256": "93b8ad64c044b127a2f570f1f7a001ab95998c020363ae807371a0366042b89a",
+      "fragments": [
+        {
+          "name": "RouteType",
+          "kind": "enum",
+          "line": 6,
+          "end_line": 33,
+          "sha256": "8aaf4378dd00c23f2757963cddc5d809d5ac1a7918c6adba428b224a409361fa",
+          "purpose": "unchanged production enum/value type"
+        }
+      ]
+    },
+    {
+      "path": "MeshCore/Tests/MeshCoreTests/ChannelCryptoTests.swift",
+      "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+      "blob_sha": "9e04884f23aca6685acd5f07a9f4d8ee0da8d11e",
+      "utf8_bytes": 10237,
+      "sha256": "d5d8690414ba1cc29409ef098344f0a1121a14d94de9d2f0affe003ea787e2c3",
+      "staged_file": "reference-36.swift",
+      "staged_sha256": "ba16669c7d1fb92ce32109febe1d045c6f90c5e21004319bce98b8f25e83b133",
+      "fragments": [
+        {
+          "name": "testSecret",
+          "kind": "let",
+          "line": 10,
+          "end_line": 13,
+          "sha256": "407df6f26778f57869da9a33e5cbe45b00f35c2cfef4a6478c01b4b0187a5d91",
+          "purpose": "unchanged Swift-test encryption oracle, independent of Kotlin"
+        },
+        {
+          "name": "encryptAES128ECB",
+          "kind": "func",
+          "line": 18,
+          "end_line": 50,
+          "sha256": "166e6b1299e3cabf3a69b1c3a1d942c0659962ba6dfe21d4d651a646156aa558",
+          "purpose": "unchanged Swift-test encryption oracle, independent of Kotlin"
+        },
+        {
+          "name": "computeMAC",
+          "kind": "func",
+          "line": 53,
+          "end_line": 57,
+          "sha256": "e2210397b6d4379035ee942d0b981e725ec7194d13b7ec123eda9c981c7be730",
+          "purpose": "unchanged Swift-test encryption oracle, independent of Kotlin"
+        },
+        {
+          "name": "createEncryptedPayload",
+          "kind": "func",
+          "line": 60,
+          "end_line": 78,
+          "sha256": "1bac489ff8b025804aecee62918c8719971f0a2fab9d9699ff57cc0d477e3d2b",
+          "purpose": "unchanged Swift-test encryption oracle, independent of Kotlin"
+        }
+      ]
+    }
+  ],
+  "source_test_specification": {
+    "path": "MC1Services/Tests/MC1ServicesTests/AppBackupEnvelopeTests.swift",
+    "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+    "blob_sha": "e01d665725efb42991356b3192504d99af1128e5",
+    "utf8_bytes": 24323,
+    "sha256": "db1d774eeb725a1238e3834743708d6bb751554f245c829f0c523b3ffb0b5034"
+  },
+  "scope": "exact production codecs and test helpers; no SwiftData database, radio graph or Android backup implementation"
+}

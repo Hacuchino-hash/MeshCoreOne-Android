@@ -11,9 +11,9 @@ from unittest.mock import patch
 
 from oracle.codec_harness import (
     CODEC_TYPES, EXPECTED_CASES, MAC_ENVIRONMENT, codec_fragment,
-    decode_reference_compression, mac_environment, run, stage, type_definition, validate_swift_report,
+    decode_reference_compression, mac_environment, run, stage, type_definition, validate_swift_report, verify_output,
 )
-from oracle.reference import FrozenReference, OracleError, SOURCE_SHA, sha256
+from oracle.reference import FrozenReference, OracleError, REPO, SOURCE_SHA, json_bytes, sha256
 from oracle.swift import Syntax, declarations
 
 
@@ -122,6 +122,37 @@ class CodecFragmentTests(unittest.TestCase):
 
 
 class CodecEvidenceTests(unittest.TestCase):
+    def test_real_committed_swift_outputs_match_actual_run_and_artifact_digests(self):
+        fixture = REPO / "android" / "core" / "testing" / "fixtures" / "reference-codec"
+        proof = json.loads((fixture / "codec-evidence.json").read_text(encoding="utf-8"))
+        source_map = json.loads((fixture / "source-map.json").read_text(encoding="utf-8"))
+        self.assertEqual(proof["identity"]["binding"]["head_sha"], "6e22d4768e80af943887fe4e9f48c12074f4f89f")
+        self.assertEqual(proof["identity"]["run_id"], 37167976130)
+        self.assertEqual(proof["identity"]["run_attempt"], 1)
+        self.assertEqual(proof["source_map_sha256"], sha256(json_bytes(source_map)))
+        reference = FrozenReference()
+        for source in source_map["sources"]:
+            self.assertEqual(source["blob_sha"], reference.inventory[source["path"]]["blob_sha"])
+        for artifact in proof["artifacts"]:
+            data = (fixture / artifact["path"]).read_bytes()
+            if artifact["path"].endswith(".json"):
+                data = data.replace(b"\r\n", b"\n")
+            self.assertEqual(len(data), artifact["size"])
+            self.assertEqual(sha256(data), artifact["sha256"])
+        verified = verify_output(fixture, source_map)
+        self.assertEqual(verified["swift"]["passed"], 28)
+        self.assertEqual(verified["swift"]["assertions"], 66)
+        self.assertEqual(verified["compression"]["observed_container"], "raw-deflate")
+        self.assertTrue(verified["decoded_semantics_equal"])
+
+    def test_actual_independent_swift_crypto_outputs_are_not_candidate_roundtrips(self):
+        path = REPO / "android" / "core" / "testing" / "fixtures" / "reference-codec" / "channel-crypto-oracle.json"
+        value = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(value["source_sha"], SOURCE_SHA)
+        self.assertIn("no candidate Kotlin", value["origin"])
+        self.assertEqual({item["id"] for item in value["vectors"]}, {"normal", "high-bit-utf8"})
+        self.assertTrue(all(item["byte_count"] == len(bytes.fromhex(item["packet_hex"])) for item in value["vectors"]))
+
     def test_windows_or_linux_cannot_claim_actual_swift_execution(self):
         with patch("oracle.codec_harness.platform.system", return_value="Windows"):
             with self.assertRaisesRegex(OracleError, "isolated macOS"):

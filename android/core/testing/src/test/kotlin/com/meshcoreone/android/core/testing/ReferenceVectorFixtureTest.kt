@@ -1,6 +1,7 @@
 // AndroidOnly: WP-004 Executed fixture-reader assertions, not candidate protocol/backup parity.
 package com.meshcoreone.android.core.testing
 
+import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.io.ByteArrayInputStream
 import java.nio.charset.CharacterCodingException
 import java.nio.charset.StandardCharsets
@@ -26,7 +27,7 @@ class ReferenceVectorFixtureTest {
         assertEquals(49, vectors.size)
         assertEquals(vectors.size, vectors.map { it.id }.toSet().size)
         val timestamp = vectors.single { it.id == "python.setTime_1704067200" }
-        assertContentEquals(byteArrayOf(6, 0x80.toByte(), 0, 0x92.toByte(), 0x65), timestamp.bytes.copyBytes())
+        assertContentEquals(byteArrayOf(6, 0x80.toByte(), 0, 0x92.toByte(), 0x65), timestamp.bytes.toByteArray())
         assertEquals("6535c34bed8e45a5ba9f8cf5b7dbb3b72a244832", timestamp.sourceBlob)
         assertTrue(timestamp.sourceLine > 0)
     }
@@ -34,22 +35,22 @@ class ReferenceVectorFixtureTest {
     @Test
     fun signedJvmBytesPreserveHighBitAndSourceEndianBytes() {
         val vectors = read(fixtureText())
-        val highBit = vectors.single { it.id == "swift.lpp-high-bit-uint32" }.bytes.copyBytes()
+        val highBit = vectors.single { it.id == "swift.lpp-high-bit-uint32" }.bytes.toByteArray()
         assertEquals(128, highBit[2].toInt() and 0xff)
         val endian = vectors.single { it.id == "swift.uint32-little-endian" }
-        assertContentEquals(byteArrayOf(0x78, 0x56, 0x34, 0x12), endian.bytes.copyBytes())
+        assertContentEquals(byteArrayOf(0x78, 0x56, 0x34, 0x12), endian.bytes.toByteArray())
     }
 
     @Test
     fun immutableFixtureBytesHaveContentEqualityAndDefensiveCopies() {
         val original = byteArrayOf(1, 0x80.toByte())
-        val value = FixtureBytes(original)
+        val value = Bytes(original)
         original[0] = 9
-        val returned = value.copyBytes()
+        val returned = value.toByteArray()
         returned[1] = 0
-        assertEquals(FixtureBytes(byteArrayOf(1, 0x80.toByte())), value)
-        assertEquals(FixtureBytes(byteArrayOf(1, 0x80.toByte())).hashCode(), value.hashCode())
-        assertContentEquals(byteArrayOf(1, 0x80.toByte()), value.copyBytes())
+        assertEquals(Bytes(byteArrayOf(1, 0x80.toByte())), value)
+        assertEquals(Bytes(byteArrayOf(1, 0x80.toByte())).hashCode(), value.hashCode())
+        assertContentEquals(byteArrayOf(1, 0x80.toByte()), value.toByteArray())
     }
 
     @Test
