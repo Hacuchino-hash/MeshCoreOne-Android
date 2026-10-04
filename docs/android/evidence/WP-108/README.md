@@ -139,6 +139,13 @@ selection. `rebased-junit/helpers/` contains all **35** helper cases.
 This integrated rerun does not transform WP-104/105 cases into WP-108 port
 credit, nor controller/helpers into physical or iOS parity.
 
+The Windows runner writes CRLF XML and Git stores text with LF. Artifact
+`size_bytes`/`sha256` bind the exact committed XML bytes;
+`original_runner_size_bytes`/`original_runner_sha256` retain the original
+verbatim runner checksums. Every original checksum was independently matched
+with only CRLF restored, and the complete stored testcase/outcome/log nodes
+were reparsed. No XML case, outcome or golden packet was edited or omitted.
+
 ## Acceptance IDs and honest limits
 
 `WP-108-behavior`: real mock/framing/TCP implementations, source capabilities,
