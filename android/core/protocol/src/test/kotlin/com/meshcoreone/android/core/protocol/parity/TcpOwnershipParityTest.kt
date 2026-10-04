@@ -98,6 +98,10 @@ private fun session(transport: WiFiTransport, scope: CoroutineScope, clock: Sess
     transport, SessionConfiguration(defaultTimeout = 1.0, clientIdentifier = "MCore"), clock,
     scope.coroutineContext, onDiagnostic = {},
 )
+private inline fun <reified T : Throwable> correlationCause(failure: Throwable): T = assertNotNull(
+    generateSequence(failure) { it.cause }.take(16).filterIsInstance<T>().firstOrNull(),
+    "The exact canonical correlation type must survive coroutine exception stack recovery",
+)
 
 @Timeout(15)
 class TcpOwnershipParityTest {
@@ -122,7 +126,7 @@ class TcpOwnershipParityTest {
                     clock.advance(50.milliseconds)
                     assertFailsWith<MeshCoreException.Timeout> { request.await() }
                     val failure = assertFailsWith<MeshCoreException.ConnectionLost> { first.getBattery() }
-                    assertEquals("*", assertIs<SessionCorrelationException.UnresolvedReply>(failure.cause).responseFamily)
+                    assertEquals("*", correlationCause<SessionCorrelationException.UnresolvedReply>(failure).responseFamily)
                     val events = first.events()
                     peer.send(battery(1111))
                     assertEquals(1111L, assertIs<MeshEvent.Battery>(events.first { it is MeshEvent.Battery }).info.level)
@@ -161,11 +165,11 @@ class TcpOwnershipParityTest {
                     first.stop(disconnectTransport = false)
                     assertTrue(transport.isConnected())
                     assertEquals(0, sockets.single().closes.get())
-                    assertIs<SessionCorrelationException.RetainedTransport>(
-                        assertFailsWith<MeshCoreException.ConnectionLost> { first.start() }.cause,
+                    correlationCause<SessionCorrelationException.RetainedTransport>(
+                        assertFailsWith<MeshCoreException.ConnectionLost> { first.start() },
                     )
-                    assertIs<SessionCorrelationException.ConcurrentTransportOwner>(
-                        assertFailsWith<MeshCoreException.ConnectionLost> { other.start() }.cause,
+                    correlationCause<SessionCorrelationException.ConcurrentTransportOwner>(
+                        assertFailsWith<MeshCoreException.ConnectionLost> { other.start() },
                     )
                     assertTrue(transport.isConnected(), "An unsuccessful competing session cannot close the retained owner")
                     assertEquals(1, sockets.size)

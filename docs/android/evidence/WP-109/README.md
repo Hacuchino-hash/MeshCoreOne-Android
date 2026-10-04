@@ -8,6 +8,15 @@ Both real compiler logs agree on lines39/43. The scoped repair explicitly
 specializes `suspendCancellableCoroutine<Unit>` in both new injected clocks;
 no expectation, identity floor, timeout or source producer changes. Fresh
 compiled/executed Kotlin/CLI and software acceptance still require proof.
+The actual repaired5bd14bbd normal protocol37234505781/attempt1 then discovered
+all4,711 cases/58 suites on both hosts: all4,708 old identities and the owning-job
+TCP-close case passed, while two new cause assertions failed because coroutine
+stack recovery adds a ConnectionLost copy before the exact canonical typed
+correlation cause. Full actual58-suite bundles/three-case XML and both ZIP
+digests are retained privately. The assertions now search the bounded real
+cause chain for the **same exact type and wildcard metadata**, rather than
+incorrectly assuming a direct cause. This is not a lowered error expectation,
+ignored test, producer repair or passing CLI claim.
 The local JVM lane initially remains held by WP-202 and the
 explicit shared CI forwarding seam needs a separate serialized amendment.
 
