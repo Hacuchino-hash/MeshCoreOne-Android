@@ -15,11 +15,34 @@
   },
   "app_integration": {
     "apk_package": "com.meshcoreone.android.debug",
-    "assemble": "passed",
-    "locale_config_registered": false,
+    "apk_sha256": "929ff4f4cf4da61629d6519987da718a48ad7f1ed2f895dc0ad3b653caa59009",
+    "app_lint": {
+      "errors": 0,
+      "path": "android/app/build/reports/lint-results-debug.xml",
+      "sha256": "dabdb408c446734c64107bbe3dfc04420796d82e964c9df2827985a7a1e87817",
+      "warnings": 9
+    },
+    "assemble": "passed (strict, no build cache)",
+    "authorization": "Coordinator exact one-attribute application manifest grant; no other application changes",
+    "compiled_locale_tags": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "it",
+      "ko",
+      "nl",
+      "pl",
+      "pt-PT",
+      "ru",
+      "uk",
+      "zh-Hans"
+    ],
+    "evidence": "docs/android/evidence/WP-005/apk-locale-registration.json",
+    "locale_config_registered_in_static_apk": true,
     "min_sdk": 31,
-    "module_graph": "passed (30 modules)",
-    "reason": "Actual AGP9.4 merger rejects library localeConfig; exact application attribute handoff sent to coordinator, no unleased app write",
+    "module_graph": "previously passed (30 modules)",
+    "scope": "Actual static APK reference/XML/resources, not physical Settings UI",
     "target_sdk": 37
   },
   "base_head": "050ac6909c65af8e3fc63e5aaf44b1d240f1d8ac",
@@ -58,7 +81,7 @@
         "everyLocalizedLabelPreservesSourceCopyWithoutInventingAPercentSign"
       ],
       "path": "android/core/l10n/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.l10n.AirtimePercentLabelTest.xml",
-      "sha256": "cc4c909d8430b92a23b4835db3ec13cddc6936386a67de6efefe3beb1fc247f1"
+      "sha256": "8de51c5b10fde4f8dca866aed71cdb2fcaae0646688c7302aff443d06b35b91d"
     },
     {
       "cases": [
@@ -77,7 +100,7 @@
         "pluralPartialRemovalSelectsUsingTotalArgumentTwo"
       ],
       "path": "android/core/l10n/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.l10n.L10nFormattingTest.xml",
-      "sha256": "c78f53f34a2b75697ad424af7aea3c8ff78a8e6b780ed710d10ed088da973703"
+      "sha256": "119b6aa07e05e453e4902c54e5a65fd19ec41d2e47368543a3671cb8342b5b22"
     },
     {
       "cases": [
@@ -90,7 +113,7 @@
         "everyFormattedSourceValuePreservesArgumentsPositionsAndLiteralText"
       ],
       "path": "android/core/l10n/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.l10n.LocalizationResourceTest.xml",
-      "sha256": "01c079595f9b3f636988b2e0f33028306034766d67d400af7db48588d5335347"
+      "sha256": "c12d41f2038b5815f1206d3fc07c400f9c1aa8f3f2b9f11f2874bbcff91ebfc7"
     },
     {
       "cases": [
@@ -99,7 +122,7 @@
         "unknownSubdivisionRetainsTheOriginalAbsentValueContract"
       ],
       "path": "android/core/l10n/build/test-results/testDebugUnitTest/TEST-com.meshcoreone.android.core.l10n.RegionalSubdivisionLocalizationTest.xml",
-      "sha256": "ed96f36c611f8d360fb4ad791c62bb8c4a4e4a673f6671d59c70ea16f2eecb8e"
+      "sha256": "5b42e77efdc8173265e441bf24142eac9edf4149ab43b3621e11e9364d66c65d"
     }
   ],
   "lint": {
@@ -128,6 +151,7 @@
   "scope": "Actual local compiled-resource/JUnit/lint execution, not hosted/device/iOS/legal or privileged acceptance",
   "source_binding": "Exact normalized-LF SHA256 values of executed code/configuration; the containing Git commit binds this evidence",
   "source_hashes": {
+    "android/app/src/main/AndroidManifest.xml": "1dbcc7d30044c7b13340a239cbd0af4891b2462124464539d610a095ea2b9664",
     "android/core/l10n/build.gradle.kts": "cc62df1c511574f907757dc1290d571ded5f266f8e9c8ee707e48e8aade622cf",
     "android/core/l10n/src/main/AndroidManifest.xml": "92a1d57a65067c3e482076f2c8ee99b089a3150664439dac4436e7c11706acae",
     "android/core/l10n/src/main/kotlin/com/meshcoreone/android/core/l10n/L10nFormatting.kt": "582bffcc04ee24ce2237f4446299ad0a2c0189e3ae356fea25508d59e5bf49d6",

@@ -15,8 +15,10 @@ Swift reference remains `db14559b39d32322b06477c6ae676112f583db50`.
 Kickoff reservation `autonomous-WP-005-979dd73b` binds CLI session
 `d474b8d5-32c2-4222-b958-2a8d50afe48c` and native/project alias
 `09e1cb9b-b5f4-4e71-9aef-8340ac40e55f`. The coordinator explicitly amended it
-only for `android/gradle/verification-metadata.xml`'s preexisting annotation JAR
-checksum; no other shared-file permission, live-ledger or gate receipt is asserted.
+for `android/gradle/verification-metadata.xml`'s preexisting annotation JAR
+checksum, then for `android/app/src/main/AndroidManifest.xml` solely to add the
+application localeConfig attribute. The delivered checksum is now read-only;
+no other shared-file permission, live-ledger or gate receipt is asserted.
 
 ## Measured implementation and original families
 
@@ -77,6 +79,10 @@ binaries/debug keys or host PATH/pagefile/memory changes are committed.
 | `:core:l10n:lintDebug --dependency-verification strict --no-build-cache --rerun-tasks` | **Passed**, zero errors; 486 source-copy/native warnings, no global disable/baseline. |
 | `:app:assembleDebug validateModuleGraph --dependency-verification strict` | **Passed**, actual app assembly and 30-module boundary graph. |
 | `python .\android\scaffold\inspect_apk.py` | **Passed**, real debug APK package/min/target/notices/fixture-absence contract; not native/device/release proof. |
+| `:app:assembleDebug --dependency-verification strict --no-build-cache` | **Passed** after the exact application opt-in; no other app manifest change. |
+| `:core:l10n:testDebugUnitTest :core:l10n:verifyL10nTests --dependency-verification strict --no-build-cache --rerun-tasks` | **Passed** after opt-in; unchanged 25 cases/four suites, zero failed/errors/skipped; 65 converter assertions rerun. |
+| `:app:lintDebug --dependency-verification strict --no-build-cache` | **Passed** after opt-in; no lint/verification disable or baseline. |
+| Pinned `aapt2 dump xmltree` (APK manifest and packaged locale XML), `aapt2 dump resources` | **Passed**, exact manifest-to-XML resource ID match, all twelve tags and twelve actual source string variants. [Static APK proof](apk-locale-registration.json); not physical Settings UI. |
 
 Final lint warnings: MissingQuantity44, PluralsCandidate56, TypographyDashes44,
 TypographyEllipsis329 and Typos13. Pinned copy is not rewritten or retranslated
@@ -126,15 +132,21 @@ was cleaned up. One shared-host WinError1455 attempt was retried at a lower priv
 heap; normalized input-index provenance reduced map size from 8.43MB to 3.08MB
 without removing origins or weakening assertions. No host/process settings changed.
 
-**Actual APK inspection confirmed an AGP9.4 application opt-in requirement.**
+**Actual APK inspection confirmed and then verified an AGP9.4 app opt-in.**
 The app merger explicitly rejects library `android:localeConfig`; all twelve
 locale XML/resources/properties exist, but system registration was absent.
 The kickoff's app-write handoff was followed: the coordinator received the exact
 one-attribute literal on the existing application:
 `android:localeConfig="@xml/l10n_locales"`.
-No unleased app edit or verified system-registration claim is made. The ignored
-library application attribute was removed rather than represented as effective.
-Application ID/min31/target37 and permission scope remain unchanged.
+The coordinator then explicitly granted only that application attribute. The
+one-line integration is applied and ordinary strict app assembly/module cases/app
+lint pass. Pinned AAPT37.0.0 reads the compiled APK: localeConfig points to
+`xml/l10n_locales`, the APK-internal XML has en/de/es/fr/it/ko/nl/pl/pt-PT/ru/uk/
+zh-Hans, and a canonical widget string contains all twelve compiled source variants.
+APK-internal entry identifiers use ZIP's slash convention, not host paths.
+The ignored library attribute remains removed. Application ID/min31/target37,
+permissions/providers/components/backup/label/signing behavior remain unchanged.
+This is static compiled-APK verification only, not physical Settings UI.
 
 See [deviations](../../deviations/WP-005.md) for native adaptation boundaries.
 No new account/billing/analytics/GMS/model/updater/APK-installer code exists.

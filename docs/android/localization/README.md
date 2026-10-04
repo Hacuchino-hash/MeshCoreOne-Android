@@ -157,15 +157,18 @@ unknown-code `null` contract, not the wider geographic/radio preset behavior.
 `resources.properties` declares English fallback and the owned
 `@xml/l10n_locales` declares all twelve per-app language choices. Actual AGP9.4
 app-merger/APK inspection proved that `android:localeConfig` is rejected from
-library manifests. The app must opt in with this single attribute on its existing
-`<application>`; the scoped handoff to the coordinator is explicit:
+library manifests. The coordinator then granted the exact application-manifest
+path for this one attribute, which is now on the existing `<application>`:
 
 ```xml
 android:localeConfig="@xml/l10n_locales"
 ```
 
-No application ID/SDK/permission/UI change is needed, and absent app wiring
-is not claimed as verified. The five old scaffold tab IDs have generated
+Pinned AAPT37.0.0 inspection of the actual built APK verifies that the manifest
+reference resolves to the packaged XML, all twelve tags are present, and the
+localized string table has all twelve source variants. This is static APK proof,
+not physical Settings UI. No application ID/SDK/permission/UI change is made.
+The five old scaffold tab IDs have generated
 localized aliases to canonical keys. All original English scaffold keys/copy
 remain; incomplete-build explanations are explicitly English-only, not fabricated
 translations or completed-feature copy.
