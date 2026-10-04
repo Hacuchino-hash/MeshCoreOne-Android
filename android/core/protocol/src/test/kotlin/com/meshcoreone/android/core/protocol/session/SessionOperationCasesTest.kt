@@ -78,7 +78,14 @@ class SessionOperationCasesTest {
             assertNotNull(f.session.popPendingContact(filled(0xbb, 32).hexString))
             f.session.flushPendingContacts()
             assertTrue(f.session.cachedPendingContacts.isEmpty())
-            f.transport.receive(contactsEnd()); runCurrent()
+            f.transport.onSend = {
+                assertEquals(hex("04"), it)
+                f.transport.receive(contactsStart(1))
+                f.transport.receive(contactPacket(key, "Caf\u00e9"))
+                f.transport.receive(contactsEnd())
+            }
+            f.session.getContacts()
+            f.transport.onSend = {}
             val before = f.transport.sent.size
             assertEquals(f.session.cachedContacts, f.session.ensureContacts())
             assertEquals(before, f.transport.sent.size)

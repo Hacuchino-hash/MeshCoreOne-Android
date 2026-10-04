@@ -1,5 +1,16 @@
 # WP-107 complete JVM session component
 
+**Independent review repair in progress:** the coordinator's read-only review
+of historical ce93/0394 identified eight real lifecycle/correlation/cache
+defects. Normal pre-repair protocol run37212608599/attempt1 at
+`0a94e1386f41b7b35dcb150574add0964af79a21` executed22 deterministic
+regressions: **22 failed on each host**, while all4,674 prior cases still
+passed. This supersedes any implication that the old green suite established
+complete correctness. Scoped repairs and additional contract cases are being
+implemented on the same PR; final positive exact-head proof remains pending.
+The local resource hold and separately owned WP-201 collector repair are not
+permission to waive validation or mark the component complete.
+
 **Current reconciliation:** the owning branch has been rebased onto the
 coordinator-verified actual main `dc15f1ba445acf3230383ea68d4827c592f3fafa`.
 Protocol production and test bytes are unchanged from historical head

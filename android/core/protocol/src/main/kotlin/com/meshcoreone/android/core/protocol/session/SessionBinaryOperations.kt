@@ -45,29 +45,25 @@ internal suspend fun <T> ExchangeOwner.binary(
     val subscription = core.register(generation)
     val firstMessageSent = CompletableDeferred<Unit>()
     var cadence = core.configuration.binaryRequestRetransmitInterval ?: 0.0
-    var timedOut = false
     var rejectedBeforeMessageSent = false
     try {
         return core.clock.withDeadline(core.configuration.binaryRequestOverallTimeout) {
             coroutineScope {
-                requestContext.sends += 1
-                send(request)
+                send(request, onWriteAttempt = { requestContext.sends += 1 })
                 val retransmit = if (core.configuration.binaryRequestRetransmitInterval == null) null else launch {
                     firstMessageSent.await()
                     while (isActive) {
                         val interval = synchronized(core.lock) { cadence }
                         core.clock.sleepFor(timeoutDuration(interval))
                         ensureActive()
-                        requestContext.sends += 1
                         // A failed resend does not erase an earlier answerable attempt.
                         supervisorScope {
-                            val attempt = async { send(request, cleanup = true) }
+                            val attempt = async { send(request, cleanup = true, onWriteAttempt = { requestContext.sends += 1 }) }
                             val completed = CompletableDeferred<Throwable?>()
                             attempt.invokeOnCompletion { completed.complete(it) }
                             val failure = completed.await()
                             if (failure is CancellationException) throw failure
                             if (failure != null) {
-                                requestContext.sends -= 1
                                 core.diagnostic(SessionDiagnostic.BackgroundFailure(generation.number, "binary-retransmit", failure))
                                 core.requireCurrent(generation)
                             }
@@ -116,13 +112,12 @@ internal suspend fun <T> ExchangeOwner.binary(
             }
         }
     } catch (failure: MeshCoreException.Timeout) {
-        timedOut = true
         if (routedFamily != null) core.unresolved(generation, routedFamily, acceptsErrors = false)
         throw failure
     } finally {
         synchronized(core.lock) { generation.retiredBinaryTags += requestContext.tags }
         if (!rejectedBeforeMessageSent && requestContext.messageSentReplies < requestContext.sends && core.isCurrent(generation)) {
-            core.unresolved(generation, "messageSent", acceptsErrors = timedOut)
+            core.unresolved(generation, "messageSent", acceptsErrors = true)
         }
         core.unregister(generation, subscription)
     }
@@ -273,7 +268,7 @@ internal suspend fun SessionCore.requestRegions(contact: MeshContact): List<Stri
         } finally {
             if (routeChanged) {
                 try {
-                    simple(PacketBuilder.resetPath(contact.publicKey), cleanup = true)
+                    rollbackSimple(PacketBuilder.resetPath(contact.publicKey))
                 } catch (restoreFailure: Exception) {
                     core.diagnostic(SessionDiagnostic.RestoreFailure(generation.number, restoreFailure))
                     if (primaryFailure == null) throw restoreFailure

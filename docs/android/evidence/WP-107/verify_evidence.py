@@ -40,6 +40,7 @@ SESSION_SUITES = {
     "SessionRoleConsumerTest": 2,
     "SessionTcpIntegrationTest": 3,
 }
+REPAIRED_SESSION_SUITES = {**SESSION_SUITES, "ReviewedSessionRegressionTest": 34}
 CROSS_CASES = {
     "ProtocolBugFixTests::requestNeighbours rejects a short public key before sending()",
     "ProtocolBugFixTests::requestStatus throws device error when error response received()",
@@ -69,7 +70,7 @@ def canonical(path):
     return path.read_bytes().replace(b"\r\n", b"\n")
 
 
-def parse_reports(directory, report_prefix="junit/protocol/"):
+def parse_reports(directory, report_prefix="junit/protocol/", expected_session=SESSION_SUITES):
     files = sorted(directory.glob("TEST-*.xml"))
     if not files:
         raise ValueError("Missing mandatory protocol XML")
@@ -98,8 +99,8 @@ def parse_reports(directory, report_prefix="junit/protocol/"):
         suites.append({"suite": root.attrib["name"], **observed,
                        "report": report_prefix + path.name, "sha256_lf": sha(canonical(path))})
     session = {entry["suite"].rsplit(".", 1)[1]: entry["tests"] for entry in suites if ".protocol.session." in entry["suite"]}
-    if session != SESSION_SUITES or totals["tests"] != 4674 or len(files) != 56:
-        raise ValueError("Missing/stale complete 4445-baseline plus 229-session evidence")
+    if session != expected_session or totals["tests"] != 4445 + sum(expected_session.values()) or len(files) != 43 + len(expected_session):
+        raise ValueError("Missing/stale complete baseline and exact session suite evidence")
     return totals, suites, identities, files
 
 
@@ -245,10 +246,12 @@ def integration_reports(output, write):
     return result
 
 
-def capture(base, write):
+def capture(base, write, review_repair=False):
     if base not in BASE_OUTPUTS:
         raise ValueError("Expected coordinator-verified actual merged integration base")
-    output = BASE_OUTPUTS[base]
+    output = DIRECTORY / "review-eight" / "after" if review_repair else BASE_OUTPUTS[base]
+    expected_session = REPAIRED_SESSION_SUITES if review_repair else SESSION_SUITES
+    session_count = sum(expected_session.values())
     manifest = load_manifest(REPO)
     changed = set(git("diff", "--name-only", base).splitlines()) | set(git("ls-files", "--others", "--exclude-standard").splitlines())
     wp = next(entry for entry in manifest.data["work_packages"] if entry["id"] == "WP-107")
@@ -257,7 +260,7 @@ def capture(base, write):
         raise ValueError("Source drift")
     prefix = "" if output == DIRECTORY else output.relative_to(DIRECTORY).as_posix() + "/"
     totals, suites, identities, files = parse_reports(
-        REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test", prefix + "junit/protocol/",
+        REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test", prefix + "junit/protocol/", expected_session,
     )
     cases, sources = case_map(manifest, identities), source_map(manifest)
     apk = REPO / "android" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk"
@@ -309,7 +312,7 @@ def capture(base, write):
         "manifest_sha256": manifest.sha256,
         "semantic_policy_revision": policy_revision(manifest, load_json(REPO / "docs" / "android" / "automation-policy.json")),
         "scope": "Actual local Windows JVM/loopback/static-debug-APK evidence; not hosted/hardware/license/gate authority",
-        "protocol": {**totals, "suites": suites, "baseline_cases": 4445, "session_cases": 229},
+        "protocol": {**totals, "suites": suites, "baseline_cases": 4445, "session_cases": session_count},
         "kotlin_inputs": fingerprint(), "raw_reports": reports, "apk": artifact(apk),
         "apk_session_classes": required, "test_classes_and_GPL_reference_prose_packaged": False,
         "strict_graph": {**saved_reports["strict_graph"], "edge_rows": len(graph.read_text().splitlines()) - 1},
@@ -349,15 +352,23 @@ def capture(base, write):
             "normal_current_head_root_CI_pass_claimed": False,
         }
         historical = load_json(DIRECTORY / "local-results.json")
-        if historical["kotlin_inputs"] != result["kotlin_inputs"]:
+        if not review_repair and historical["kotlin_inputs"] != result["kotlin_inputs"]:
             raise ValueError("Unexpected protocol source/test drift during base-only reconciliation")
-        if load_json(DIRECTORY / "source-cases.json") != cases:
+        if load_json(DIRECTORY / "source-cases.json")["cases"] != cases["cases"]:
             raise ValueError("Original 85-case source catalog changed during base reconciliation")
+        if review_repair:
+            result["commands"][0]["tests"] = totals["tests"]
+            before = {entry["path"]: entry["sha256_lf"] for entry in historical["kotlin_inputs"]["files"]}
+            after = {entry["path"]: entry["sha256_lf"] for entry in result["kotlin_inputs"]["files"]}
+            result["reviewed_repair_inputs"] = [
+                {"path": path, "historical_sha256_lf": before.get(path), "current_sha256_lf": after.get(path)}
+                for path in sorted(before.keys() | after.keys()) if before.get(path) != after.get(path)
+            ]
         result["historical_evidence"] = {
             "base_sha": historical["base_sha"],
             "head_sha": "ce93bfaa22b438aed7e8b7a903a611270a985cd3",
             "record": "docs/android/evidence/WP-107/local-results.json",
-            "protocol_inputs_byte_identical": True,
+            "protocol_inputs_byte_identical": not review_repair,
             "current_base_outputs_are_independent": True,
         }
     for name, value in (("source-cases.json", cases), ("source-map.json", sources), ("local-results.json", result)):
@@ -368,7 +379,7 @@ def capture(base, write):
         elif target.read_text(encoding="utf-8") != expected:
             raise ValueError("Stale/malformed per-WP evidence: " + name)
     print(json.dumps({"result": "verified" if output == DIRECTORY else "local-component-verified-root-aggregate-blocked",
-                      "protocol_tests": totals["tests"], "session_tests": 229,
+                      "protocol_tests": totals["tests"], "session_tests": session_count,
                       "owned_originals": 73, "cross_component_originals": 12, "suites": len(suites)}, indent=2))
 
 
@@ -377,7 +388,8 @@ if __name__ == "__main__":
     parser.add_argument("--base-sha", required=True)
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--review-repair", action="store_true", help="Capture the exact reviewed repair suite separately from historical proof")
     arguments = parser.parse_args()
     if arguments.write == arguments.check:
         parser.error("Choose exactly one of --write or --check")
-    capture(arguments.base_sha, arguments.write)
+    capture(arguments.base_sha, arguments.write, arguments.review_repair)

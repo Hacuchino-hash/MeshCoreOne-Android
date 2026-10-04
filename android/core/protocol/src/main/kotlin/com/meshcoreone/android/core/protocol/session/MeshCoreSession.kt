@@ -53,7 +53,7 @@ class MeshCoreSession(
     suspend fun waitForEvent(matching: (MeshEvent) -> Boolean, timeout: Double? = null): MeshEvent? =
         core.waitForEvent(matching, timeout)
     suspend fun <T> sendAndWait(data: Bytes, timeout: Double? = null, matching: (MeshEvent) -> T?): T =
-        core.exchange { query(data, "custom", timeout, predicate = matching) }
+        core.exchange { query(data, ARBITRARY_RESPONSE_FAMILY, timeout, predicate = matching) }
 
     override suspend fun sendAppStart(): SelfInfo = core.exchange {
         query(PacketBuilder.appStart(core.configuration.clientIdentifier), "selfInfo") { (it as? MeshEvent.SelfInfo)?.info }

@@ -30,6 +30,8 @@ internal sealed interface ResponseDisposition<out T> {
     data object Ignore : ResponseDisposition<Nothing>
 }
 
+internal const val ARBITRARY_RESPONSE_FAMILY = "*"
+
 internal class PendingEvents(val filter: (MeshEvent) -> Boolean) {
     val id: UUID = UUID.randomUUID()
     val channel = Channel<MeshEvent>(Channel.UNLIMITED)
@@ -80,19 +82,6 @@ internal class SessionCore(
     private val context: CoroutineContext,
     val diagnostic: (SessionDiagnostic) -> Unit,
 ) {
-    val lock = Any()
-    private var lifecycleJob = SupervisorJob(context[Job])
-    private var lifecycleScope = CoroutineScope(context + lifecycleJob)
-    private var precedingCleanup: Deferred<Unit>? = null
-    private var nextGeneration = 1L
-    var active: SessionGeneration? = newGeneration()
-        private set
-    private var lastGeneration: SessionGeneration? = null
-    private var retainedTransport = false
-    private var state: ConnectionState = ConnectionState.Disconnected
-    private val stateSubscriptions = linkedMapOf<UUID, Channel<ConnectionState>>()
-    private var stateStreamsEnded = false
-
     init {
         timeoutDuration(configuration.defaultTimeout)
         timeoutDuration(configuration.binaryRequestOverallTimeout)
@@ -104,8 +93,21 @@ internal class SessionCore(
         timeoutDuration(configuration.channelPipelinePostDrainGrace, allowZero = true)
     }
 
+    val lock = Any()
+    private var lifecycleJob = SupervisorJob(context[Job])
+    private var precedingCleanup: Deferred<Unit>? = null
+    private var nextGeneration = 1L
+    var active: SessionGeneration? = newGeneration()
+        private set
+    private var lastGeneration: SessionGeneration? = null
+    private var physicalOwner: SessionGeneration? = null
+    private var retainedTransport = false
+    private var state: ConnectionState = ConnectionState.Disconnected
+    private val stateSubscriptions = linkedMapOf<UUID, Channel<ConnectionState>>()
+    private var stateStreamsEnded = false
+
     private fun newGeneration(): SessionGeneration {
-        ensureLifecycleScope()
+        ensureLifecycleJob()
         val number = nextGeneration
         nextGeneration = Math.addExact(nextGeneration, 1)
         return SessionGeneration(number, context + lifecycleJob) {
@@ -113,10 +115,9 @@ internal class SessionCore(
         }
     }
 
-    private fun ensureLifecycleScope() {
+    private fun ensureLifecycleJob() {
         if (!lifecycleJob.isActive) {
             lifecycleJob = SupervisorJob(context[Job])
-            lifecycleScope = CoroutineScope(context + lifecycleJob)
         }
     }
 
@@ -234,8 +235,11 @@ internal class SessionCore(
     }
 
     suspend fun stop(disconnectTransport: Boolean) {
-        val generation = synchronized(lock) { active ?: lastGeneration } ?: return
-        if (disconnectTransport && !generation.ownsTransport && isCurrent(generation)) {
+        val (generation, physical) = synchronized(lock) {
+            (active ?: lastGeneration ?: physicalOwner) to physicalOwner
+        }
+        if (generation == null) return
+        if (disconnectTransport && physical == null && !generation.ownsTransport && isCurrent(generation)) {
             try {
                 ensureTransportOwnership(generation)
             } catch (failure: MeshCoreException.ConnectionLost) {
@@ -245,8 +249,21 @@ internal class SessionCore(
             }
         }
         val cleanup = endGeneration(generation, null, ConnectionState.Disconnected, finishStateStreams = true,
-            disconnect = disconnectTransport, retain = !disconnectTransport)
-        withContext(NonCancellable) { cleanup.await() }
+            disconnect = disconnectTransport && (physical == null || physical === generation), retain = !disconnectTransport)
+        val physicalCleanup = if (disconnectTransport && physical != null && physical !== generation) {
+            endGeneration(physical, null, ConnectionState.Disconnected, finishStateStreams = true, disconnect = true)
+        } else null
+        withContext(NonCancellable) {
+            var failure: Exception? = null
+            for (task in listOfNotNull(cleanup, physicalCleanup)) {
+                try {
+                    task.await()
+                } catch (issue: Exception) {
+                    if (failure == null) failure = issue else failure.addSuppressed(issue)
+                }
+            }
+            failure?.let { throw it }
+        }
     }
 
     private fun endGeneration(
@@ -279,15 +296,15 @@ internal class SessionCore(
             }
             val previous = generation.teardown
             if (previous != null && (!disconnect || generation.disconnectClaim.get())) return@synchronized previous
-            if (retain) retainedTransport = true
-            ensureLifecycleScope()
+            if (retain && generation.ownsTransport) retainedTransport = true
             val cleanupParent = lifecycleJob
-            val cleanup = lifecycleScope.async(start = CoroutineStart.LAZY) {
+            // Only the bounded, explicitly retained teardown receipt outlives owning-job cancellation.
+            val cleanup = CoroutineScope(context + NonCancellable).async(start = CoroutineStart.LAZY) {
                 previous?.await()
                 try {
-                    if (disconnect && generation.ownsTransport && generation.disconnectClaim.compareAndSet(false, true)) {
+                    if (disconnect && generation.ownsTransport && !generation.disconnectClaim.get()) {
                         SessionTransportOwnership.reserveClose(transport, this@SessionCore, generation.number, !transport.isConnected())
-                        transport.disconnect()
+                        if (generation.disconnectClaim.compareAndSet(false, true)) transport.disconnect()
                     }
                 } catch (failure: Exception) {
                     diagnostic(SessionDiagnostic.BackgroundFailure(generation.number, "disconnect", failure))
@@ -295,10 +312,17 @@ internal class SessionCore(
                     cause.addSuppressed(failure)
                 } finally {
                     generation.job.cancelAndJoin()
-                    SessionTransportOwnership.release(transport, this@SessionCore, generation.number,
-                        retained = transport.isConnected())
+                    if (generation.ownsTransport) {
+                        val connected = transport.isConnected()
+                        SessionTransportOwnership.release(transport, this@SessionCore, generation.number, retained = connected)
+                        synchronized(lock) {
+                            if (physicalOwner === generation) {
+                                retainedTransport = connected
+                                if (!connected) physicalOwner = null
+                            }
+                        }
+                    }
                 }
-                synchronized(lock) { if (disconnect) retainedTransport = false }
             }
             generation.teardown = cleanup
             precedingCleanup = cleanup
@@ -356,6 +380,9 @@ internal class SessionCore(
     fun checkCorrelation(generation: SessionGeneration, family: String, acceptsErrors: Boolean) = synchronized(lock) {
         requireCurrent(generation)
         val unresolved = when {
+            ARBITRARY_RESPONSE_FAMILY in generation.unresolvedReplies -> ARBITRARY_RESPONSE_FAMILY
+            family == ARBITRARY_RESPONSE_FAMILY && generation.unresolvedReplies.isNotEmpty() ->
+                generation.unresolvedReplies.first()
             family in generation.unresolvedReplies -> family
             acceptsErrors && "error" in generation.unresolvedReplies -> "error"
             else -> null
@@ -368,9 +395,12 @@ internal class SessionCore(
     private suspend fun ensureTransportOwnership(generation: SessionGeneration) {
         requireCurrent(generation)
         val disconnected = !transport.isConnected()
-        requireCurrent(generation)
-        SessionTransportOwnership.acquire(transport, this, generation.number, disconnected)
-        synchronized(lock) { generation.ownsTransport = true }
+        synchronized(lock) {
+            requireCurrent(generation)
+            SessionTransportOwnership.acquire(transport, this, generation.number, disconnected)
+            generation.ownsTransport = true
+            physicalOwner = generation
+        }
     }
 
     suspend fun <T> exchange(operation: suspend ExchangeOwner.() -> T): T = exchange(generation(), operation)
@@ -380,6 +410,9 @@ internal class SessionCore(
         try {
             return generation.serializer.withOwnedSerialization {
                 requireCurrent(generation)
+                if (synchronized(lock) { ARBITRARY_RESPONSE_FAMILY in generation.unresolvedReplies }) {
+                    checkCorrelation(generation, ARBITRARY_RESPONSE_FAMILY, acceptsErrors = false)
+                }
                 ensureTransportOwnership(generation)
                 ExchangeOwner(this@SessionCore, generation, this).operation()
             }
@@ -524,11 +557,16 @@ internal class ExchangeOwner(
     val generation: SessionGeneration,
     val context: RequestContext,
 ) {
-    suspend fun send(data: Bytes, cleanup: Boolean = false, withoutResponse: Boolean = false) {
+    suspend fun send(
+        data: Bytes, cleanup: Boolean = false, withoutResponse: Boolean = false,
+        onWriteAttempt: () -> Unit = {},
+    ) {
         core.requireCurrent(generation)
-        context.beforeSend(cleanup)
         supervisorScope {
             val operation = async(start = CoroutineStart.LAZY) {
+                core.requireCurrent(generation)
+                context.beforeSend(cleanup)
+                onWriteAttempt()
                 if (withoutResponse) core.transport.sendWithoutResponse(data) else core.transport.send(data)
             }
             context.attachSend(operation, cleanup)
@@ -556,32 +594,27 @@ internal class ExchangeOwner(
         core.checkCorrelation(generation, family, acceptsErrors)
         val subscription = core.register(generation)
         var sent = false
-        var sending = false
+        var terminalResponse = false
         try {
             return core.clock.withDeadline(timeout ?: core.configuration.defaultTimeout) {
-                sent = true
-                sending = true
-                send(data, cleanup)
-                sending = false
+                send(data, cleanup, onWriteAttempt = { sent = true })
                 for (event in subscription.channel) {
                     when (val result = matcher(event)) {
-                        is ResponseDisposition.Success -> return@withDeadline result.value
-                        is ResponseDisposition.Failure -> throw result.error
+                        is ResponseDisposition.Success -> {
+                            terminalResponse = true
+                            return@withDeadline result.value
+                        }
+                        is ResponseDisposition.Failure -> {
+                            terminalResponse = true
+                            throw result.error
+                        }
                         ResponseDisposition.Ignore -> Unit
                     }
                 }
                 throw generation.failure ?: MeshCoreException.ConnectionLost()
             }
-        } catch (timeoutFailure: MeshCoreException.Timeout) {
-            if (sent) core.unresolved(generation, family, acceptsErrors = true)
-            throw timeoutFailure
-        } catch (cancelled: CancellationException) {
-            if (sent && core.isCurrent(generation)) core.unresolved(generation, family, acceptsErrors = true)
-            throw cancelled
-        } catch (failure: Exception) {
-            if (sending && sent && core.isCurrent(generation)) core.unresolved(generation, family, acceptsErrors = true)
-            throw failure
         } finally {
+            if (sent && !terminalResponse && core.isCurrent(generation)) core.unresolved(generation, family, acceptsErrors = true)
             core.unregister(generation, subscription)
         }
     }
@@ -589,6 +622,24 @@ internal class ExchangeOwner(
     suspend fun simple(data: Bytes, cleanup: Boolean = false) {
         query(data, "ok", errorMatcher = ::deviceError, cleanup = cleanup) {
             if (it is MeshEvent.Ok && it.value == null) Unit else null
+        }
+
+        suspend fun rollbackSimple(data: Bytes) {
+            val ambiguousErrors = synchronized(core.lock) { "error" in generation.unresolvedReplies }
+            match(data, "ok", cleanup = true) {
+                when {
+                    it is MeshEvent.Ok && it.value == null -> ResponseDisposition.Success(Unit)
+                    it is MeshEvent.Error && !ambiguousErrors ->
+                        ResponseDisposition.Failure(MeshCoreException.DeviceError(it.code ?: 0u))
+                    it is MeshEvent.Error -> {
+                        core.diagnostic(SessionDiagnostic.BackgroundFailure(
+                            generation.number, "rollback-uncorrelated-error", MeshCoreException.DeviceError(it.code ?: 0u),
+                        ))
+                        ResponseDisposition.Ignore
+                    }
+                    else -> ResponseDisposition.Ignore
+                }
+            }
         }
     }
 }

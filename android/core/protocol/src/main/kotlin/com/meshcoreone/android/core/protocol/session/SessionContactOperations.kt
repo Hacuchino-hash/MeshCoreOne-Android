@@ -47,6 +47,10 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
     val contacts = mutableListOf<com.meshcoreone.android.core.protocol.model.MeshContact>()
     var total: Long? = null
     var modified: Instant? = null
+    var possiblyWritten = false
+    var terminalResponse = false
+    val invalidation = generation.contacts.invalidationGeneration
+    val incrementalBaseline = since != null && generation.contacts.hasBaseline(since)
     fun snapshot(completed: Boolean) = synchronized(core.lock) {
         generation.contactProgress = ContactStreamProgress(generation.number, total, contacts.size.toLong(), modified, completed)
     }
@@ -54,17 +58,21 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
     try {
         supervisorScope {
             val consumer = async {
-                send(PacketBuilder.getContacts(since))
+                send(PacketBuilder.getContacts(since), onWriteAttempt = { possiblyWritten = true })
                 for (event in subscription.channel) {
                     when (event) {
                         is MeshEvent.ContactsStart -> { total = event.count; progress.markProgress(); snapshot(false) }
                         is MeshEvent.Contact -> { contacts += event.contact; progress.markProgress(); snapshot(false) }
                         is MeshEvent.ContactsEnd -> {
                             modified = event.lastModified
+                            terminalResponse = true
                             progress.markProgress()
                             return@async ContactFetchResult(contacts, total)
                         }
-                        is MeshEvent.Error -> throw MeshCoreException.DeviceError(event.code ?: 0u)
+                        is MeshEvent.Error -> {
+                            terminalResponse = true
+                            throw MeshCoreException.DeviceError(event.code ?: 0u)
+                        }
                         else -> Unit
                     }
                 }
@@ -86,10 +94,13 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
                     consumer.onAwait { it }
                     watchdog.onAwait { throw MeshCoreException.Timeout() }
                 }
-                val complete = since != null || (total != null && contacts.size.toLong() == total)
+                core.requireCurrent(generation)
+                val complete = generation.contacts.commitFetch(
+                    checkNotNull(modified), incrementalBaseline || (since == null && total != null && contacts.size.toLong() == total),
+                    invalidation,
+                )
                 snapshot(complete)
                 if (!complete) {
-                    generation.contacts.markDirty()
                     core.diagnostic(SessionDiagnostic.BackgroundFailure(
                         generation.number, "partial-contact-stream",
                         MeshCoreException.InvalidResponse("complete contactsStart total", "count=${contacts.size}, total=$total"),
@@ -103,12 +114,14 @@ internal suspend fun SessionCore.fetchContacts(since: Instant?): ContactFetchRes
                 watchdog.cancelAndJoin()
             }
         }
-    } catch (failure: MeshCoreException.Timeout) {
-        snapshot(false)
-        generation.contacts.markDirty()
-        core.unresolved(generation, "contacts", acceptsErrors = true)
-        throw failure
     } finally {
+        if (modified == null) {
+            snapshot(false)
+            generation.contacts.invalidateBaseline()
+        }
+        if (possiblyWritten && !terminalResponse && core.isCurrent(generation)) {
+            core.unresolved(generation, "contacts", acceptsErrors = true)
+        }
         core.unregister(generation, subscription)
     }
 }

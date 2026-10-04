@@ -193,13 +193,19 @@ class SessionCompoundAndBoundaryTest {
         nativeCase("cached raw contact deletion and full-table pushes pass through the actual receive drain") {
             val f = fixture(); start(f)
             val key = filled(0x11, 32)
-            f.transport.receive(contactPacket(key)); f.transport.receive(contactsEnd()); runCurrent()
+            f.transport.onSend = {
+                f.transport.receive(contactsStart(1)); f.transport.receive(contactPacket(key)); f.transport.receive(contactsEnd())
+            }
+            f.session.getContacts()
+            f.transport.onSend = {}
             assertNotNull(f.session.getContactByKeyPrefix(key))
             assertFalse(f.session.isContactsDirty)
             f.transport.receive(raw(0x8f, key)); runCurrent()
             assertNull(f.session.getContactByKeyPrefix(key))
             assertTrue(f.session.isContactsDirty)
-            f.transport.receive(contactsEnd()); runCurrent()
+            f.transport.onSend = { f.transport.receive(contactsStart(0)); f.transport.receive(contactsEnd()) }
+            f.session.getContacts()
+            f.transport.onSend = {}
             f.transport.receive(raw(0x90)); runCurrent()
             assertTrue(f.session.isContactsDirty)
             f.session.stop()

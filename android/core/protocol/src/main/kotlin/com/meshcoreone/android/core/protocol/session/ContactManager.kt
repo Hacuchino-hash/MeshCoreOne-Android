@@ -14,13 +14,16 @@ internal class ContactManager {
     private val contacts = linkedMapOf<String, MeshContact>()
     private val pending = linkedMapOf<String, MeshContact>()
     private var lastModified: Instant? = null
+    private var completeBaseline = false
+    private var invalidationVersion = 0L
     private var dirty = true
     private var autoUpdate = false
 
     val cachedContacts: List<MeshContact> get() = synchronized(lock) { EventList(contacts.values) }
     val cachedPendingContacts: List<MeshContact> get() = synchronized(lock) { EventList(pending.values) }
     val needsRefresh: Boolean get() = synchronized(lock) { dirty }
-    val contactsLastModified: Instant? get() = synchronized(lock) { lastModified }
+    val contactsLastModified: Instant? get() = synchronized(lock) { if (completeBaseline) lastModified else null }
+    val invalidationGeneration: Long get() = synchronized(lock) { invalidationVersion }
     val isEmpty: Boolean get() = synchronized(lock) { contacts.isEmpty() }
     val isAutoUpdateEnabled: Boolean get() = synchronized(lock) { autoUpdate }
 
@@ -60,31 +63,46 @@ internal class ContactManager {
     fun updateCache(newContacts: List<MeshContact>, lastModified: Instant) = synchronized(lock) {
         newContacts.forEach { contacts[it.id] = it }
         this.lastModified = lastModified
+        completeBaseline = true
         dirty = false
     }
-    fun markClean(lastModified: Instant) = synchronized(lock) { this.lastModified = lastModified; dirty = false }
-    fun markDirty() = synchronized(lock) { dirty = true }
+    fun markClean(lastModified: Instant) = synchronized(lock) { this.lastModified = lastModified; completeBaseline = true; dirty = false }
+    fun markDirty() = synchronized(lock) { dirty = true; invalidationVersion += 1 }
+    fun hasBaseline(since: Instant): Boolean = synchronized(lock) { completeBaseline && lastModified == since }
+    fun invalidateBaseline() = synchronized(lock) {
+        lastModified = null
+        completeBaseline = false
+        markDirty()
+    }
+    fun commitFetch(lastModified: Instant, complete: Boolean, startedAtInvalidation: Long): Boolean = synchronized(lock) {
+        if (!complete || invalidationVersion != startedAtInvalidation) {
+            invalidateBaseline()
+            false
+        } else {
+            markClean(lastModified)
+            true
+        }
+    }
     fun addPending(contact: MeshContact) = synchronized(lock) { pending[contact.id] = contact; Unit }
     fun popPending(publicKey: String): MeshContact? = synchronized(lock) { pending.remove(publicKey) }
     fun flushPending() = synchronized(lock) { pending.clear() }
     fun remove(contactId: String) = synchronized(lock) {
         contacts.remove(contactId)
         pending.remove(contactId)
-        dirty = true
+        markDirty()
     }
-    fun clear() = synchronized(lock) { contacts.clear(); pending.clear(); lastModified = null; dirty = true }
+    fun clear() = synchronized(lock) { contacts.clear(); pending.clear(); invalidateBaseline() }
     fun setAutoUpdate(enabled: Boolean) = synchronized(lock) { autoUpdate = enabled }
 
     fun trackChanges(event: MeshEvent) = synchronized(lock) {
         when (event) {
             is MeshEvent.Contact -> contacts[event.contact.id] = event.contact
-            is MeshEvent.NewContact -> { pending[event.contact.id] = event.contact; dirty = true }
-            is MeshEvent.ContactsEnd -> { lastModified = event.lastModified; dirty = false }
-            is MeshEvent.Advertisement, is MeshEvent.PathUpdate, MeshEvent.ContactsFull -> dirty = true
+            is MeshEvent.NewContact -> { pending[event.contact.id] = event.contact; markDirty() }
+            is MeshEvent.Advertisement, is MeshEvent.PathUpdate, MeshEvent.ContactsFull -> markDirty()
             is MeshEvent.ContactDeleted -> {
                 contacts.remove(event.publicKey.hexString)
                 pending.remove(event.publicKey.hexString)
-                dirty = true
+                markDirty()
             }
             else -> Unit
         }

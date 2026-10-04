@@ -43,7 +43,7 @@ class ReviewedSessionRegressionTest {
                 assertEquals(2, f.transport.disconnects)
             } finally {
                 owner.cancelAndJoin()
-                f.transport.disconnect()
+                if (f.transport.isConnected()) f.transport.disconnect()
             }
         },
         nativeCase("R2 unresolved public matcher cannot feed a late battery into a typed successor") {
@@ -56,6 +56,7 @@ class ReviewedSessionRegressionTest {
             val next = checkedRequest { f.session.getBattery() }; runCurrent()
             f.transport.receive(batteryPacket(1111)); runCurrent()
             assertFailsWith<MeshCoreException.ConnectionLost> { next.await() }
+            assertFailsWith<MeshCoreException.ConnectionLost> { f.session.reboot() }
             assertEquals(2, f.transport.sent.size, "An unresolved arbitrary predicate cannot admit another wire exchange")
             f.session.stop()
         },
@@ -191,6 +192,186 @@ class ReviewedSessionRegressionTest {
             }
         }
     }
+
+    @TestFactory
+    fun repairedContracts() = listOf(
+        nativeCase("R2 confirmed arbitrary reply leaves a later typed exchange usable") {
+            val f = fixture(); start(f)
+            assertEquals(1111L, command(f, hex("14"), batteryPacket(1111)) {
+                f.session.sendAndWait(hex("14")) { (it as? MeshEvent.Battery)?.info?.level }
+            })
+            assertEquals(2222L, command(f, hex("14"), batteryPacket(2222)) { f.session.getBattery() }.level)
+            assertEquals(3, f.transport.sent.size)
+            f.session.stop()
+        },
+        nativeCase("R2 arbitrary matcher cannot consume an unresolved typed reply either") {
+            val f = fixture(); start(f)
+            val battery = checkedRequest { f.session.getBattery() }; runCurrent()
+            advanceTimeBy(1000); runCurrent()
+            assertFailsWith<MeshCoreException.Timeout> { battery.await() }
+            assertFailsWith<MeshCoreException.ConnectionLost> {
+                f.session.sendAndWait(hex("14")) { (it as? MeshEvent.Battery)?.info }
+            }
+            assertEquals(2, f.transport.sent.size)
+            f.session.stop()
+        },
+        nativeCase("R3 consumed explicit contacts device rejection does not quarantine the next fetch") {
+            val f = fixture(); start(f)
+            assertEquals(3u.toUByte(), assertFailsWith<MeshCoreException.DeviceError> {
+                command(f, hex("04"), hex("0103")) { f.session.getContacts() }
+            }.code)
+            f.transport.onSend = {
+                assertEquals(hex("04"), it)
+                f.transport.receive(contactsStart(1))
+                f.transport.receive(contactPacket(filled(0x11, 32), "fresh"))
+                f.transport.receive(contactsEnd(1000))
+            }
+            assertEquals("fresh", f.session.getContacts().single().advertisedName)
+            assertFalse(f.session.isContactsDirty)
+            f.session.stop()
+        },
+        nativeCase("R5 consumed explicit binary device rejection permits the following setter") {
+            val f = fixture(); start(f)
+            assertEquals(10u.toUByte(), assertFailsWith<MeshCoreException.DeviceError> {
+                command(f, raw(0x1b, filled(0x31, 32)), hex("010a")) { f.session.requestStatus(filled(0x31, 32)) }
+            }.code)
+            command(f, raw(0x08, Bytes.utf8("new")), hex("00")) { f.session.setName("new") }
+            assertEquals(3, f.transport.sent.size)
+            f.session.stop()
+        },
+        nativeCase("R4 valid full baseline permits real incremental refresh and commits only its terminal cursor") {
+            val f = fixture(); start(f)
+            f.transport.onSend = {
+                assertEquals(hex("04"), it)
+                f.transport.receive(contactsStart(1))
+                f.transport.receive(contactPacket(filled(0x11, 32), "A"))
+                f.transport.receive(contactsEnd(1000))
+            }
+            f.session.getContacts()
+            assertEquals(Instant.ofEpochSecond(1000), f.session.core.generation().contacts.contactsLastModified)
+            f.transport.receive(raw(0x80, filled(0x11, 32))); runCurrent()
+            f.transport.onSend = {
+                assertEquals(hex("04e8030000"), it)
+                f.transport.receive(contactsStart(1))
+                f.transport.receive(contactsEnd(2000))
+            }
+            assertTrue(f.session.ensureContacts().isEmpty())
+            assertEquals("A", f.session.cachedContacts.single().advertisedName)
+            assertEquals(Instant.ofEpochSecond(2000), f.session.core.generation().contacts.contactsLastModified)
+            assertFalse(f.session.isContactsDirty)
+            f.session.stop()
+        },
+        nativeCase("R4 incremental data without a valid full baseline cannot establish a pruning cursor") {
+            val f = fixture(); start(f)
+            f.transport.onSend = {
+                assertEquals(hex("04e8030000"), it)
+                f.transport.receive(contactsStart(3))
+                f.transport.receive(contactsEnd(2000))
+            }
+            assertTrue(f.session.getContacts(Instant.ofEpochSecond(1000)).isEmpty())
+            assertTrue(f.session.isContactsDirty)
+            assertNull(f.session.core.generation().contacts.contactsLastModified)
+            f.session.stop()
+        },
+        nativeCase("R4 unsolicited contactsEnd cannot create a complete baseline") {
+            val f = fixture(); start(f)
+            f.transport.receive(contactPacket())
+            f.transport.receive(contactsEnd(2000)); runCurrent()
+            assertEquals(1, f.session.cachedContacts.size)
+            assertTrue(f.session.isContactsDirty)
+            assertNull(f.session.core.generation().contacts.contactsLastModified)
+            f.session.stop()
+        },
+        nativeCase("R4 concurrent cache invalidation cannot be erased by a valid fetch ending later") {
+            val f = fixture(); start(f)
+            f.transport.onSend = {
+                f.transport.receive(contactsStart(1))
+                f.transport.receive(contactPacket())
+                f.transport.receive(raw(0x90))
+                f.transport.receive(contactsEnd(2000))
+            }
+            assertEquals(1, f.session.getContacts().size)
+            assertTrue(f.session.isContactsDirty)
+            assertNull(f.session.core.generation().contacts.contactsLastModified)
+            f.session.stop()
+        },
+        nativeCase("R6 ambiguous rollback rejection is diagnosed and expires at a real bounded deadline") {
+            val f = fixture(SessionConfiguration(
+                defaultTimeout = 1.0, clientIdentifier = "MCore",
+                binaryRequestOverallTimeout = 0.2, binaryRequestRetransmitInterval = null,
+            )); start(f)
+            val request = checkedRequest { f.session.requestRegions(testContact()) }; runCurrent()
+            f.transport.ok(); runCurrent()
+            advanceTimeBy(200); runCurrent()
+            assertEquals(0x0du.toUByte(), f.transport.sent.last()[0])
+            f.transport.error(4); runCurrent()
+            advanceTimeBy(999); runCurrent()
+            assertFalse(request.isCompleted)
+            advanceTimeBy(1); runCurrent()
+            val failure = assertFailsWith<MeshCoreException.Timeout> { request.await() }
+            assertIs<MeshCoreException.Timeout>(failure.suppressed.single())
+            assertEquals(1200L, testScheduler.currentTime)
+            assertEquals(0, f.session.core.generation().pending.size)
+            assertTrue(f.diagnostics.any { it is SessionDiagnostic.RestoreFailure })
+            f.session.stop()
+        },
+        nativeCase("R6 caller cancellation before a lost binary receipt still owns resetPath until bare OK") {
+            val f = fixture(SessionConfiguration(
+                defaultTimeout = 1.0, clientIdentifier = "MCore",
+                binaryRequestOverallTimeout = 0.2, binaryRequestRetransmitInterval = null,
+            )); start(f)
+            val request = checkedRequest { f.session.requestRegions(testContact()) }; runCurrent()
+            f.transport.ok(); runCurrent()
+            request.cancel(); runCurrent()
+            assertFailsWith<CancellationException> { request.await() }
+            advanceTimeBy(200); runCurrent()
+            assertEquals(0x0du.toUByte(), f.transport.sent.last()[0])
+            f.transport.error(10); f.transport.ok(); runCurrent()
+            assertEquals(0, f.session.core.generation().pending.size)
+            assertEquals(listOf(1, 9, 0x39, 0x0d), f.transport.sent.map { it[0].toInt() })
+            f.session.stop()
+        },
+        nativeCase("R6 caller cancellation cannot cancel an in-progress rollback but its deadline can") {
+            val f = fixture(SessionConfiguration(
+                defaultTimeout = 1.0, clientIdentifier = "MCore",
+                binaryRequestOverallTimeout = 0.2, binaryRequestRetransmitInterval = null,
+            )); start(f)
+            val rollbackGate = CompletableDeferred<Unit>()
+            f.transport.onSend = { if (it[0] == 0x0du.toUByte()) rollbackGate.await() }
+            val request = checkedRequest { f.session.requestRegions(testContact()) }; runCurrent()
+            f.transport.ok(); runCurrent()
+            advanceTimeBy(200); runCurrent()
+            assertEquals(0x0du.toUByte(), f.transport.sent.last()[0])
+            request.cancel(); runCurrent()
+            assertFailsWith<CancellationException> { request.await() }
+            assertEquals(1, f.session.core.generation().pending.size)
+            advanceTimeBy(1000); runCurrent()
+            assertEquals(0, f.session.core.generation().pending.size)
+            assertTrue(f.diagnostics.any { it is SessionDiagnostic.RestoreFailure && it.cause is MeshCoreException.Timeout })
+            rollbackGate.complete(Unit)
+            f.session.stop()
+        },
+        nativeCase("R5 possibly-written failed resend is not removed from unconfirmed receipt accounting") {
+            val f = fixture(SessionConfiguration(
+                clientIdentifier = "MCore", binaryRequestOverallTimeout = 2.0, binaryRequestRetransmitInterval = 0.1,
+            )); start(f)
+            val key = filled(0x31, 32)
+            var sends = 0
+            f.transport.onSend = {
+                assertEquals(raw(0x1b, key), it)
+                sends += 1
+                if (sends == 1) f.transport.receive(sentPacket(hex("01020304"), 10))
+                else throw MeshTransportError.SendFailed("after resend write")
+            }
+            val request = checkedRequest { f.session.requestStatus(key) }; runCurrent()
+            advanceTimeBy(100); runCurrent()
+            assertEquals(2, sends)
+            f.transport.receive(statusPacket(key)); runCurrent()
+            assertEquals(1000L, request.await().battery)
+            assertFailsWith<MeshCoreException.ConnectionLost> { f.session.setName("new") }
+            f.session.stop()
+        },
+    )
 
     @TestFactory
     fun constructorValidation() = listOf(
