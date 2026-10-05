@@ -357,11 +357,13 @@ class RuntimeOwnershipTest {
             val fixture = RuntimeFixture(this, dispatcher = UnconfinedTestDispatcher(testScheduler))
             try {
                 fixture.onRegistration = { it.onDisconnected(LinkFailure.ConnectionFailed("registration loss")) }
-                assertFailsWith<CancellationException> { fixture.manager.connect(fixture.platform.target) }
-                assertEquals(1, fixture.links.single().callbackClosures)
+                val work = backgroundScope.async { runCatching { fixture.manager.connect(fixture.platform.target) } }
+                runCurrent(); assertIs<CancellationException>(work.await().exceptionOrNull())
                 assertTrue(fixture.radios.single().frames.isEmpty()); assertEquals(0, fixture.radios.single().connects)
                 assertEquals(0, fixture.radios.single().collectors)
                 assertNull(fixture.manager.snapshot.value.token)
+                fixture.manager.disconnect()
+                assertEquals(1, fixture.links.single().callbackClosures)
             } finally { fixture.close() }
         },
         nativeCase("cancelled sync with delayed completion cannot publish a stale token or ready state") {

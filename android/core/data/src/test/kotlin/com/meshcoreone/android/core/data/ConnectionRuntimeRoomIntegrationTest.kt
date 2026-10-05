@@ -36,7 +36,7 @@ class ConnectionRuntimeRoomIntegrationTest : RepositoryTest() {
             store.saveDevice(restored)
             h.manager.connect(h.target)
             assertEquals(original, h.manager.connectedDevice!!.radioId)
-            val contact = ContactDTO(radioId = original, publicKey = Bytes(ByteArray(32) { 7 }), name = "Recipient")
+            val contact = ContactDTO(radioId = original, publicKey = Bytes(ByteArray(32) { 7 }), name = "Recipient", lastHeardTimestamp = null)
             store.saveContact(contact)
             val message = MessageDTO(
                 radioId = original, contactID = contact.id, text = "queued before reconnect",
@@ -112,7 +112,7 @@ class ConnectionRuntimeRoomIntegrationTest : RepositoryTest() {
             val ghostRadio = RadioId(UUID.randomUUID()); val newKey = Bytes(ByteArray(32) { 9 })
             val ghost = DeviceDTO(radioId = ghostRadio, publicKey = newKey, nodeName = "Ghost", isActive = false)
             store.saveDevice(ghost)
-            val independent = ContactDTO(radioId = original.radioId, publicKey = Bytes(ByteArray(32) { 17 }), name = "Original partition")
+            val independent = ContactDTO(radioId = original.radioId, publicKey = Bytes(ByteArray(32) { 17 }), name = "Original partition", lastHeardTimestamp = null)
             store.saveContact(independent)
             val actual = store.reconcileGhostIdentity(original.id, newKey)
             assertEquals(ghostRadio, actual); assertEquals(ghostRadio, store.fetchDevice(original.id)!!.radioId)
