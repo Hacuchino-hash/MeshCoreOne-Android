@@ -40,7 +40,7 @@ Keep every switch off until separate human authorization after actual proof:
 | Native host | Real authenticated host callbacks, exact repository/base/profile/path isolation and restart/session reconciliation; fixture callbacks prove no activation |
 | Shared ledger | Durable shared all-write-path leases for every backend, uncertainty retention, no runner-local/per-worktree ledger substitute |
 | Usage/limits | Human-selected budgets/concurrency and complete fresh authenticated cloud/native usage; no guessed credits or launch-count meter |
-| Candidate CI | Ephemeral Windows/Linux runners, read-only tokens, `persist-credentials: false`, no dispatch/merge/signing secrets; actual positive test discovery/debug artifact |
+| Candidate CI | Ephemeral `ubuntu-24.04` Linux runner, read-only tokens, `persist-credentials: false`, no dispatch/merge/signing secrets; actual positive test discovery/debug artifact |
 | Reviewer/publisher | Trusted-base read/search-only profile/skills/policy, staged immutable evidence; separate authenticated check publisher, never candidate-script execution |
 | Reviews/human gates | Sole maintainer/local author cannot approve their own PR; require a real authorized alternate reviewer/publisher or separately human-approved protected attestation design |
 | Required checks/merge lane | Exact-head/current-base `android-ci`, `parity-review`, `gate-integrity`; PR/merge-group coverage, strict protection/enforce-admins and serialized no-bypass merge |

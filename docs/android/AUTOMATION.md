@@ -67,6 +67,10 @@ python .\tools\android-port\portmap.py
 ```
 
 Linux uses the equivalent platform path separators. `status/files/render/report` are read-only.
+This Python-only tooling runs natively on Windows; it has no JDK/Android SDK/Gradle dependency.
+`android-ci.yml` only verifies a Linux (`ubuntu-24.04`) build. Once the Android module has real
+Gradle builds to run, do that work from WSL (or another Linux environment) rather than native
+Windows, since native-Windows Gradle/AGP behavior is not covered by CI.
 Every mutating command defaults to dry-run: no network, ledger writes, backlog issues, workers or merge.
 Use global `--live` only after separately approved setup; missing capability is a nonzero `BLOCKED`,
 never a simulated successful launch. All 65 handoffs fit the 65,536-character issue-body bound.
@@ -288,8 +292,9 @@ including infrastructure changes. WP-003 must prove them before activation.
 
 ## Workflow trust and supervised handoff
 
-`android-bootstrap.yml` runs only the Python controller/traceability tests on ephemeral Windows/Linux
-PR/merge-group runners with read-only permissions and no persisted checkout credentials, caches,
+`android-bootstrap.yml` runs only the Python controller/traceability tests on an ephemeral
+`ubuntu-24.04` PR/merge-group runner (the prior Windows leg was removed; local Windows
+development is covered by WSL) with read-only permissions and no persisted checkout credentials, caches,
 dispatch/signing/merge secrets or Android build claims. It is **not** production `android-ci`.
 The four controller wrappers are manual-only, default-branch-only, pinned-action, read-only **dry-run**
 previews/audits. They have no schedule, cloud/local launches, required-gate publishing or merge authority.
