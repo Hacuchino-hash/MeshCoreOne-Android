@@ -17,10 +17,15 @@ class CollectorTests(unittest.TestCase):
         self.directory = Path(self.temporary.name)
         self.report_override = patch.object(COLLECTOR, "REPORTS", self.directory)
         self.root_override = patch.object(COLLECTOR, "ROOT", self.directory)
+        self.declarations_override = patch.object(
+            COLLECTOR, "module_test_identities",
+            return_value={("com.meshcoreone.android.core.data.repository.CollectorFixture", "fixture")})
         self.report_override.start()
         self.root_override.start()
+        self.declarations_override.start()
 
     def tearDown(self):
+        self.declarations_override.stop()
         self.root_override.stop()
         self.report_override.stop()
         self.temporary.cleanup()
@@ -121,7 +126,7 @@ class CollectorTests(unittest.TestCase):
             " @Test fun fixture() {}\n @Test fun requiredBoundary() {}\n}\n", encoding="utf8")
         self.write(self.suite())
         actual, _ = COLLECTOR.raw_suites()
-        with patch.object(COLLECTOR, "TESTS", self.directory):
+        with patch.object(COLLECTOR, "REPOSITORY_TESTS", self.directory):
             with self.assertRaisesRegex(ValueError, "Incomplete or stale"):
                 COLLECTOR.require_complete_native_cases(actual)
 
@@ -130,7 +135,7 @@ class CollectorTests(unittest.TestCase):
             "class CollectorFixture : RepositoryTest() {\n @Test fun renamed() {}\n}\n", encoding="utf8")
         self.write(self.suite())
         actual, _ = COLLECTOR.raw_suites()
-        with patch.object(COLLECTOR, "TESTS", self.directory):
+        with patch.object(COLLECTOR, "REPOSITORY_TESTS", self.directory):
             with self.assertRaisesRegex(ValueError, "unexpected="):
                 COLLECTOR.require_complete_native_cases(actual)
 
@@ -139,8 +144,53 @@ class CollectorTests(unittest.TestCase):
             "class CollectorFixture : RepositoryTest() {\n @Test fun fixture() {}\n}\n", encoding="utf8")
         self.write(self.suite())
         actual, _ = COLLECTOR.raw_suites()
-        with patch.object(COLLECTOR, "TESTS", self.directory):
+        with patch.object(COLLECTOR, "REPOSITORY_TESTS", self.directory):
             self.assertEqual(1, COLLECTOR.require_complete_native_cases(actual))
+
+    def test_legitimate_backup_addition_is_retained_without_repository_credit(self):
+        identity = ("com.meshcoreone.android.core.data.backup.BackupFixture", "actualBackupAssertion")
+        with patch.object(COLLECTOR, "module_test_identities", return_value={
+            ("com.meshcoreone.android.core.data.repository.CollectorFixture", "fixture"), identity,
+        }):
+            self.write(self.suite())
+            self.write(self.suite(body=f'<testcase classname="{identity[0]}" name="{identity[1]}"/>'), "TEST-backup.xml")
+            actual, suites = COLLECTOR.raw_suites()
+        (self.directory / "Tests.kt").write_text(
+            "class CollectorFixture : RepositoryTest() {\n @Test fun fixture() {}\n}\n", encoding="utf8")
+        with patch.object(COLLECTOR, "REPOSITORY_TESTS", self.directory):
+            self.assertEqual(1, COLLECTOR.require_complete_native_cases(actual))
+        self.assertEqual(2, len(actual))
+        self.assertEqual(2, len(suites))
+
+    def test_backup_failure_or_skip_still_fails_entire_module(self):
+        identity = ("com.meshcoreone.android.core.data.backup.BackupFixture", "actualBackupAssertion")
+        for outcome in ("failure", "error", "skipped"):
+            with self.subTest(outcome=outcome), patch.object(COLLECTOR, "module_test_identities", return_value={identity}):
+                self.write(self.suite(body=f'<testcase classname="{identity[0]}" name="{identity[1]}"><{outcome}/></testcase>'))
+                with self.assertRaisesRegex(ValueError, "Raw case failed/skipped"):
+                    COLLECTOR.raw_suites()
+
+    def test_declared_backup_addition_cannot_be_omitted(self):
+        identity = ("com.meshcoreone.android.core.data.backup.BackupFixture", "actualBackupAssertion")
+        self.write(self.suite())
+        with patch.object(COLLECTOR, "module_test_identities", return_value={
+            ("com.meshcoreone.android.core.data.repository.CollectorFixture", "fixture"), identity,
+        }):
+            with self.assertRaisesRegex(ValueError, "Incomplete or stale module"):
+                COLLECTOR.raw_suites()
+
+    def test_actual_module_source_resolves_package_and_methods(self):
+        source = self.directory / "BackupFixture.kt"
+        source.write_text(
+            "package com.meshcoreone.android.core.data.backup\n"
+            "class BackupFixture {\n @Test fun actualBackupAssertion() {}\n}\n", encoding="utf8")
+        self.declarations_override.stop()
+        try:
+            with patch.object(COLLECTOR, "TESTS", self.directory):
+                self.assertEqual({("com.meshcoreone.android.core.data.backup.BackupFixture", "actualBackupAssertion")},
+                                 COLLECTOR.module_test_identities())
+        finally:
+            self.declarations_override.start()
 
 
 if __name__ == "__main__":
