@@ -5,6 +5,11 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
 import org.gradle.process.CommandLineArgumentProvider
 
 plugins {
@@ -31,6 +36,17 @@ val converter = repository.resolve("tools").resolve("android-port").resolve("the
 val evidenceCollector = repository.resolve("docs").resolve("android").resolve("evidence")
     .resolve("WP-301").resolve("collect_evidence.py")
 val packagingInspector = evidenceCollector.parentFile.resolve("verify_packaging.py")
+val consumerLockInspector = evidenceCollector.parentFile.resolve("verify_consumer_locks.py")
+val nativeRetainer = evidenceCollector.parentFile.resolve("retain_native_junit.py")
+
+val retainThemeUnitEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Preserve complete produced raw XML before validation, including failure identities/stacks and input bindings."
+    workingDir(repository)
+    commandLine("python", nativeRetainer.absolutePath, "--junit",
+        layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
+        "--output", providers.gradleProperty("wp301EvidenceDirectory").getOrElse(""))
+}
 
 val themePlatformSdk37 = configurations.create("themePlatformSdk37") {
     isCanBeConsumed = false
@@ -50,12 +66,34 @@ class ThemePlatformSdkArguments(
     override fun asArguments(): Iterable<String> = listOf("-Drobolectric.dependency.dir=${directory.get().asFile.absolutePath}")
 }
 tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest") finalizedBy(retainThemeUnitEvidence)
     dependsOn(prepareThemePlatformSdks)
     jvmArgumentProviders.add(ThemePlatformSdkArguments(layout.buildDirectory.dir("theme-platform-sdks")))
     jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
     systemProperty("repositoryDirectory", repository.absolutePath)
     systemProperty("themeArtifactDirectory", layout.buildDirectory.dir("reports/wp301/ui").get().asFile.absolutePath)
     forkEvery = 1
+    testLogging.quiet {
+        events(TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+    val failureLogger = logger
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) = Unit
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) = Unit
+        override fun beforeTest(testDescriptor: TestDescriptor) = Unit
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                failureLogger.error("WP301_NATIVE_FAILURE|${testDescriptor.className}|${testDescriptor.name}")
+                result.exceptions.forEach { failure ->
+                    failureLogger.error("WP301 native failure stack", failure)
+                }
+            }
+        }
+    })
 }
 
 val verifyThemeConversion by tasks.registering(Exec::class) {
@@ -93,6 +131,16 @@ val verifyThemePackaging by tasks.registering(Exec::class) {
 }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyThemePackaging) }
 tasks.named("check") { dependsOn(verifyThemePackaging) }
+
+val verifyThemeConsumerLocks by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require exactly the admitted generated lock delta, preserving every old version and other configuration."
+    workingDir(repository)
+    commandLine("python", consumerLockInspector.absolutePath, "--check", "--self-test")
+    mustRunAfter("testDebugUnitTest")
+}
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyThemeConsumerLocks) }
+tasks.named("check") { dependsOn(verifyThemeConsumerLocks) }
 
 val resolveThemeDependencies by tasks.registering {
     group = "verification"

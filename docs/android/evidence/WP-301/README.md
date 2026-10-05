@@ -1,6 +1,6 @@
 # WP-301 evidence
 
-**Implementation candidate; current repairs await native verification.** The
+**Implementation candidate; current native suite failed.** The
 earlier bounded local execution discovered/passed **87 tests**, zero
 failures/errors/skips, and retained **39 native PNG renders**. Those captures
 include the historical scroll-state limitation described below; they are not
@@ -67,6 +67,11 @@ Current dependency additions still require actual resolution.
 | `:core:designsystem:verifyThemeTests --dependency-verification strict` | Passed after genuine host/render/listener fixes: **87 discovered/passed**, zero failures/errors/skips; all 58 original families accounted for, 39 actual native PNGs. |
 | `:core:designsystem:verifyThemeTests :core:designsystem:lintDebug --dependency-verification strict` | Passed; complete native suite confirmed, owned lint **0 Error, 0 Fatal, 3 Warning**. |
 | `:convention:test --dependency-verification strict` with `-BuildLogic` | Passed in an independently declared private cache; actual positive/reverse-cycle/forbidden graph fixtures executed. |
+| `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --self-test` | Passed: **8 reader regressions**; incomplete additions, changed versions, other configuration changes and malformed/zero records are rejected. |
+| `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --check --self-test` | Failed closed on actual unregenerated consumer locks, as required; reader tests passed but no generated-state success is claimed. |
+| `Invoke-MeshCoreNativeBuild -Owner WP-301 -Action { ... :core:designsystem:resolveAdmittedThemeConsumerGraphs --write-locks --dependency-verification strict }` | Gate blocked **before action/JVM** with `NATIVE_BUILD_CAPACITY`, virtual KiB **1,608,564** below **2,097,152**, physical KiB **8,272,312**. No lock generation occurred. |
+| `python .\docs\android\evidence\WP-301\retain_native_junit.py --self-test` | Passed: **10 reader regressions**; complete failure/malformed/zero/skipped XML is copied before validation and remains blocked, with no overwrite or repository-overlap fallback. |
+| `python .\android\core\designsystem\verification\generate_consumer_locks.py --self-test --workflow-check` | Passed: **8 helper regressions** plus actual existing workflow trust-boundary rules; only the newly approved auxiliary path is admitted, no generated state is claimed before execution. |
 
 These local Gradle tasks use `android\scaffold\invoke-gradle.ps1` with
 `-ConstrainedMemory -BuildHeap 512m -BuildMetaspace 512m -TestHeap 256m`,
@@ -85,16 +90,33 @@ consumer regeneration has not run**. The local APK packaging command failed
 to receive a daemon response under critically low OS commit/pagefile headroom.
 Only the specifically confirmed own idle/teardown daemon PID 4396 was stopped;
 the known private-cache PID scan then proved zero own JVMs and the slot was
-released to WP-202. No new local JVM runs are authorized until another receipt.
+released to WP-202. The coordinator then delivered a new exact targeted
+resolver grant after WP-202's explicit zero-JVM release. Its exclusive
+FileStream/capacity/known-port-JVM gate rejected the first attempt before any
+native command ran. No unwrapped Java, spin retry, manual lock records,
+memory-limit waiver or global OS change is used.
 
 The source-review fixes and meaningful screenshot preset correction are now
-written with five real regressions but remain pending fresh native execution.
-Static discovery now expects 92 native methods; this is not an executed count.
+written with five real regressions. Both hosts actually discovered 92 methods,
+but one failed in each host's run as recorded below; no current pass is claimed.
 Historical 87-pass/39-image evidence is preserved, not presented as current
-proof for those unexecuted repairs. `resolveAdmittedThemeConsumerGraphs` is
+proof for those repairs. `resolveAdmittedThemeConsumerGraphs` is
 the declared targeted writer; it requires explicit `--write-locks`, preserves
 old selected versions, and visits only the admitted runtime/lint configurations.
 No global XML/catalog/other-lock exception is granted.
+`verifyThemeConsumerLocks` checks actual generated files against immutable
+initial Git blobs and the exact admitted delta. It is a fail-closed root
+verification hook, not a generator or an admission/merge authority.
+
+After unchanged local capacity failures, the coordinator explicitly admitted
+one auxiliary ordinary candidate workflow at
+`.github\workflows\android-theme-dependency-generation.yml`, with its helper/tests
+in the owned module. A single pinned Ubuntu24.04 ephemeral runner/20min budget
+checks actual candidate/head/base/run/attempt/source/manifest/policy, invokes
+only the declared resolver with strict verification, rejects unknown writes or
+version/configuration deltas, and uploads exact generated locks as a data
+proposal. This neither replaces mandatory CI nor commits/pushes/merges anything.
+Actual generation and independent artifact readback are still required.
 
 ## Actual initial hosted failure
 
@@ -124,7 +146,8 @@ dispositions and all 20 primary production sources are accounted for.
 
 The module declares `verifyThemeConversion`, `verifyThemeTests`,
 `verifyThemeNotices`, `verifyThemePackaging`, `resolveThemeDependencies` and
-`inspectThemeConsumerGraphs` and `resolveAdmittedThemeConsumerGraphs`. Its real
+`inspectThemeConsumerGraphs`, `resolveAdmittedThemeConsumerGraphs` and
+`verifyThemeConsumerLocks`. Its real
 `testDebugUnitTest`/case collector is attached to the existing root
 `verifyScaffoldTests`; the generic current-head module JUnit collector retains
 the complete suite on both hosted operating systems.
@@ -164,6 +187,27 @@ Both then failed closed at `:resolveScaffoldDependencies` because the sixteen
 added DataStore/Okio/serialization components were absent from the ten
 consumer locks. That hosted module result does not validate the newer
 review/capture fixes, complete root graph, standalone stage or final lint.
+
+[Run 37317787426, attempt 1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37317787426)
+at `d149117e83cff8586288c223744b5f20c4112b66` compiled the repairs and actually
+discovered **92 tests, one failed on each host**. The original quiet logs and
+success-only root collector did not retain the failed identity/raw XML.
+Complete extracted failure bundles are [retained verbatim](hosted-repair-failure/run.json); they are not
+passing suite evidence. Owned error-level test diagnostics and an independent
+raw-JUnit finalizer now preserve produced bytes before any success validator.
+The finalizer requires an explicit bounded external `wp301EvidenceDirectory`;
+the minimal executor forwarding amendment is separately requested, not inferred.
+No source/contrast expectation is changed without the actual failure trace.
+
+That run inspected actual debug APKs before the failing suite: Linux
+**43,024,076 bytes**, SHA-256
+`d4b8afea01c8dc082a549de680933b943ec9b338b6c8ff639815230ca59122a6`;
+Windows **43,024,396 bytes**, SHA-256
+`c40a51ed80a3818ad2f0e02319c33f2a6e3c5f701f65d40b02eb2398accb3bb0`.
+Correct package/min31/target37/notices/source-map/fixture absence do not turn
+the failed 92-case suite, skipped final lint or incomplete root run into success.
+Capture scope is identity-avatar/message/status/theme/error content only;
+unseen category-avatar renders are not claimed.
 
 ## Deviations and acceptance
 
