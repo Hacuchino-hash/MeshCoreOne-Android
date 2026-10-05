@@ -283,7 +283,7 @@ class ThemeComposeTest {
                 scheme.value = if (frame.colorScheme == ColorScheme.DARK) AppColorSchemePreference.DARK else AppColorSchemePreference.LIGHT
                 high.value = frame.highContrast
             }
-            compose.onNodeWithTag("surface-text-button").assertIsDisplayed()
+            compose.onNodeWithTag("surface-text-button", useUnmergedTree = true).assertIsDisplayed()
             compose.runOnIdle {
                 assertTrue(WCAGContrast.contrastRatio(assertNotNull(textColor).toThemeColor(),
                     assertNotNull(surface).toThemeColor()) >= WCAGContrast.floor(frame.highContrast), frame.theme.id.rawValue)
