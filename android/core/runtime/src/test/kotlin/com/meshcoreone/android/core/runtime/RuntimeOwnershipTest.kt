@@ -530,5 +530,24 @@ class RuntimeOwnershipTest {
                 assertEquals(listOf(platform.target.deviceId, platform.target.deviceId), authFailures)
             }
         },
+        nativeCase("queued health rebuild from radio A cannot adopt the newer manual radio B revision") {
+            withFixture {
+                connect()
+                platform.state = platform.state.copy(connected = true)
+                manager.handleReconnectionFailure()
+                val field = manager.javaClass.getDeclaredField("operations").apply { isAccessible = true }
+                val mutex = assertIs<kotlinx.coroutines.sync.Mutex>(field.get(manager))
+                mutex.lock()
+                val health = backgroundScope.async { runCatching { manager.checkBLEConnectionHealth() } }; runCurrent()
+                val successor = target()
+                val manual = backgroundScope.async { manager.connect(successor) }; runCurrent()
+                mutex.unlock(); runCurrent()
+                assertIs<CancellationException>(health.await().exceptionOrNull()); manual.await()
+                assertEquals(successor.deviceId, manager.connectedDevice?.id)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(1, radios.first().closes); assertEquals(0, radios.last().closes)
+                assertEquals(1, radios.last().collectors)
+            }
+        },
     )
 }

@@ -379,14 +379,14 @@ class ConnectionManager(
                         if (isCurrent(owner)) handleConnectionLoss(owner, (state as? ConnectionState.Failed)?.error)
                     }
                 }
-                return link to session
+            }
+        }
+        return link to session
     }
 
     private suspend fun establish(owner: RadioGeneration, forceFullSync: Boolean, reconnecting: Boolean = false) {
-                val (link, session) = prepareLink(owner)
-                requireCurrent(owner)
-            }
-        }
+        val (link, session) = prepareLink(owner)
+        requireCurrent(owner)
         if (reconnecting) publishFor(owner, DeviceConnectionState.CONNECTED, token = null, issue = null)
         withRuntimeTimeout(10.seconds, "session.start", suspendingClock) {
             session.start(if (reconnecting) 1L else null, disconnectTransportOnFailure = false)
@@ -698,6 +698,7 @@ class ConnectionManager(
 
     suspend fun checkBLEConnectionHealth() {
         if (currentTransportType() == TransportType.WIFI || shouldDeferOpportunisticReconnect || !connectionIntent.wantsConnection) return
+        if (synchronized(lock) { pending?.isActive == true }) return
         val expectedRevision = synchronized(lock) { revision }
         val last = lastConnection.read()
         if (!wantsCurrent(expectedRevision)) return
@@ -1020,20 +1021,21 @@ class ConnectionManager(
                 return true
             }
 
-            private fun ensureRestorationRoute(target: ConnectionTarget, expectedRevision: Long): RadioGeneration {
-                val existing = synchronized(lock) { (active ?: retained)?.takeIf { it.target == target && it.revision == expectedRevision } }
-                if (existing != null) return existing
-                val owner = newGeneration(target, expectedRevision)
-                owner.restorationRoute = true
-                prepareLink(owner)
-                return owner
-            }
             reconnectionCoordinator.clearReconnectingDevice()
             publish(DeviceConnectionState.DISCONNECTED, token = null)
         }
         lastConnection.persistDisconnectDiagnostic("source=checkBLEConnectionHealth.otherAppConnected, intent=${intentSummary()}")
         if (health) { if (!isReconnectionWatchdogRunning) startReconnectionWatchdog(); return true }
         throw LinkFailure.DeviceConnectedToOtherApp()
+    }
+
+    private fun ensureRestorationRoute(target: ConnectionTarget, expectedRevision: Long): RadioGeneration {
+        val existing = synchronized(lock) { (active ?: retained)?.takeIf { it.target == target && it.revision == expectedRevision } }
+        if (existing != null) return existing
+        val owner = newGeneration(target, expectedRevision)
+        owner.restorationRoute = true
+        prepareLink(owner)
+        return owner
     }
 
     fun startReconnectionWatchdog() {
