@@ -61,7 +61,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.flow.BufferOverflow
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -107,7 +107,8 @@ class InlineImageDimensionsStore(private val file: File) {
     private var entries: Map<String, Entry> = loadEntries(file)
 
     private val aspectMirror = ConcurrentHashMap<String, Double>().apply {
-        entries.forEach { (url, entry) -> put(url, entry.aspect) }
+        // Qualified: inside apply, bare `entries` is this map's own entry set, not the store's entries.
+        this@InlineImageDimensionsStore.entries.forEach { (url, entry) -> put(url, entry.aspect) }
     }
 
     private val resolutionEvents = MutableSharedFlow<String>(

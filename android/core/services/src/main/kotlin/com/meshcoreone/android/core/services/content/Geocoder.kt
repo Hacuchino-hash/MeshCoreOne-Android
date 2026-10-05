@@ -1,7 +1,7 @@
 // PortedFrom: MC1/Services/Geocoder.swift@db14559b39d32322b06477c6ae676112f583db50
 // The Swift original is a thin `Sendable` protocol wrapping `CLGeocoder` so `RegionResolver`
 // can depend on a `GeocodeResult` value type instead of an un-constructible `CLPlacemark`.
-// Android's reverse-geocoding equivalent (`android.location.Geocoder`) is likewise a narrow
+// Android's reverse-geocoding equivalent (Android's `Geocoder`) is likewise a narrow
 // native-adapter role (deferred - see docs/android/deviations/WP-218.md); this file ports only
 // the pure role interface and the value type, exactly as the source does. There is no
 // orchestration logic to port here (unlike LocationService) - that stays entirely with the
@@ -21,9 +21,9 @@ data class GeocodeResult(
 )
 
 /**
- * Narrow producer-role port for the real Android reverse-geocoding API (`android.location.
- * Geocoder`). A future native adapter (`app/content`, deferred - see docs/android/deviations/
- * WP-218.md) implements this against a real `android.location.Geocoder`; this module only
+ * Narrow producer-role port for the real Android reverse-geocoding API (Android's
+ * `Geocoder`). A future native adapter (`app/content`, deferred - see docs/android/deviations/
+ * WP-218.md) implements this against a real Android `Geocoder`; this module only
  * depends on the shape of the port, exactly as the Swift `Geocoder` protocol does for
  * `CLGeocoder`.
  */

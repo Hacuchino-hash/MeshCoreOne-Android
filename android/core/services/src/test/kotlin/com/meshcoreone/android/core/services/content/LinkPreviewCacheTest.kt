@@ -16,6 +16,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import org.junit.jupiter.api.DisplayName
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -125,7 +126,9 @@ class LinkPreviewCacheTest {
     }
 
     @Test
-    fun `Concurrent fetches for the same URL coalesce; every caller receives the loaded result`() = runTest {
+    // JVM method names cannot contain ';' - the exact source case name is kept as the display name.
+    @DisplayName("Concurrent fetches for the same URL coalesce; every caller receives the loaded result")
+    fun `Concurrent fetches for the same URL coalesce, every caller receives the loaded result`() = runTest {
         val fetcher = FakeMetadataFetcher(title = "Coalesced")
         val dataStore = FakePersisting()
         val url = "https://example.com/coalesce"

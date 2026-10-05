@@ -1,7 +1,7 @@
 // PortedFrom: MC1/Services/InlineImageCache.swift@db14559b39d32322b06477c6ae676112f583db50
 // (the `UIImage(data:)` / `CGImageSourceCreateWithData` decode half) and
 // MC1/Services/ImageURLDetector.swift@db14559b39d32322b06477c6ae676112f583db50 (downsample half).
-// android.graphics.BitmapFactory is not a pure-JVM API, so core:services owns only this typed
+// Android's `BitmapFactory` is not a pure-JVM API, so core:services owns only this typed
 // contract; the real decode/downsample/allocation producer is a native adapter in
 // android/app/src/main/kotlin/.../app/content (see docs/android/deviations/WP-218.md). This role
 // supplements -- does not replace -- ImageHeaderDecoder's pure hand-parsed header dimensions:
@@ -13,7 +13,7 @@ package com.meshcoreone.android.core.services.content
 /**
  * Opaque handle to a platform-decoded bitmap. `core:services` never constructs or inspects one
  * directly -- it is produced and owned by the native [ImageDecoding] adapter (a real
- * `android.graphics.Bitmap`-backed implementation lives in `app/content`) -- but every consumer
+ * Android `Bitmap`-backed implementation lives in `app/content`) -- but every consumer
  * needs these three fields to drive cache eviction and layout without a native import leaking into
  * this module. Deliberately not `Any`: a typed handle keeps the contract checkable at compile time
  * and keeps ambiguous untyped payloads out of `core:services`.
