@@ -278,6 +278,24 @@ SHA-256 is
 This is failed build configuration evidence; no native test execution is
 claimed at that head.
 
+The following head `8433950416648f687030a1cfa0c50e60d728cd26` fixed the
+File namespace but exposed the actual AGP9 registration phase: early
+`tasks.named("testDebugUnitTest")` lookup ran before AGP registered that real
+variant test task. Linux scaffold run **37389858486 / attempt1** therefore
+failed configuration, not a nonexistent runner or skipped accepted suite.
+The data finalizer now attaches through `tasks.withType<Test>().configureEach`
+filtered to the exact `testDebugUnitTest` name, following the incumbent lazy
+test-configuration pattern. The actual verifier dependencies and raw-failure
+finalizer remain; no task is renamed/invented, no suite is dropped and no
+source/golden/native floor is lowered.
+The complete15803-byte failed artifact `scaffold-37389858486-1`,
+id11380642286, published digest
+`sha256:db0530253541e145273730dd5f5a59dee357853028905b2e079e9e25004d0d16`
+was retained before inspection. Its805-byte exact configuration-failure log
+SHA-256 is
+`49111739242d230c4976541e6146beee111a4b4b92d5e375039640aa331e9e13`.
+No native case executed in that failing configuration.
+
 Static declaration counts are not executed services-JVM counts; the limited
 actual Room consumer result above is recorded separately. The services module needs the
 incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the

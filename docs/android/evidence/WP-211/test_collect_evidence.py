@@ -165,7 +165,9 @@ class NativeHookTests(unittest.TestCase):
 
     def test_raw_room_completion_is_a_finalizer_and_does_not_assert_success(self):
         text = (reader.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text(encoding="utf-8")
-        self.assertIn('tasks.named("testDebugUnitTest") { finalizedBy(retainDeviceSettingsRoomEvidence) }', text)
+        self.assertIn('tasks.withType<Test>().configureEach {\n'
+                      '    if (name == "testDebugUnitTest") finalizedBy(retainDeviceSettingsRoomEvidence)\n}', text)
+        self.assertNotIn('tasks.named("testDebugUnitTest")', text)
         self.assertIn('mustRunAfter("testDebugUnitTest")', text)
         self.assertIn('"--retain-only"', text)
         self.assertIn('.resolve("room-completion-$deviceSettingsAttempt")', text)

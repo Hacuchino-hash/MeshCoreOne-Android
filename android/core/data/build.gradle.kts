@@ -107,7 +107,9 @@ val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
     })
 }
 
-tasks.named("testDebugUnitTest") { finalizedBy(retainDeviceSettingsRoomEvidence) }
+tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest") finalizedBy(retainDeviceSettingsRoomEvidence)
+}
 
 val verifyDeviceSettingsTests by tasks.registering(Exec::class) {
     group = "verification"
