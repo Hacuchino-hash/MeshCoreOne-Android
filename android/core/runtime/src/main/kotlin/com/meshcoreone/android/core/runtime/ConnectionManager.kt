@@ -562,6 +562,7 @@ class ConnectionManager(
     override suspend fun rebuildSession(deviceId: UUID) {
         val reentrant = currentCoroutineContext()[RuntimeOperation]?.owner === operationIdentity
         val expectedCoordinator = reconnectionCoordinator.reconnectGeneration
+        val expectedRevision = synchronized(lock) { revision }
         val old = synchronized(lock) { retained ?: active }
         val target = old?.target ?: platform.targetForDevice(deviceId) ?: throw ConnectionError.DeviceNotFound()
         synchronized(lock) {
@@ -570,13 +571,13 @@ class ConnectionManager(
         }
         try {
             withOperation(reentrant) {
-                if (!connectionIntent.wantsConnection || reconnectionCoordinator.reconnectGeneration != expectedCoordinator) {
+                if (!wantsCurrent(expectedRevision) || reconnectionCoordinator.reconnectGeneration != expectedCoordinator) {
                     throw CancellationException("Superseded session rebuild")
                 }
                 // WP-107's retained-link receipt is not a new physical generation: close it before reacquisition.
                 if (old != null) closeGeneration(old, disconnectPhysical = true)
                 synchronized(lock) { if (retained === old) retained = null; if (active === old) active = null }
-                val owner = newGeneration(target, synchronized(lock) { revision })
+                val owner = newGeneration(target, expectedRevision)
                 try {
                     establish(owner, (connectionIntent as? ConnectionIntent.WantsConnection)?.forceFullSync == true, reconnecting = true)
                     requireCurrent(owner)
@@ -602,6 +603,7 @@ class ConnectionManager(
     }
 
     override suspend fun handleReconnectionFailure() {
+        val expectedRevision = synchronized(lock) { revision }
         val owner = synchronized(lock) {
             if (connectionIntent.wantsConnection) rebuildFailures++
             (active ?: retained).also {
@@ -613,6 +615,13 @@ class ConnectionManager(
             }
         }
         val state = owner?.let { platform.state(it.target) }
+        if (synchronized(lock) { revision != expectedRevision || closed }) {
+            if (owner != null) {
+                val report = closeGeneration(owner, true)
+                if (!report.isComplete) reporter.report(RuntimeDiagnostic.Teardown(report))
+            }
+            return
+        }
         val preserve = connectionIntent.wantsConnection && state != null &&
             (state.connected || state.autoReconnecting) &&
             consecutiveRebuildFailures <= ConnectionRetryPolicy.MAX_REBUILD_FAILURES_PRESERVING_LINK
@@ -634,11 +643,15 @@ class ConnectionManager(
 
     suspend fun checkBLEConnectionHealth() {
         if (currentTransportType() == TransportType.WIFI || shouldDeferOpportunisticReconnect || !connectionIntent.wantsConnection) return
+        val expectedRevision = synchronized(lock) { revision }
         val last = lastConnection.read()
+        if (!wantsCurrent(expectedRevision)) return
         val deviceId = last.deviceId ?: return
         if (activeReconnectDeviceId == deviceId) return
         val target = platform.targetForDevice(deviceId) ?: throw ConnectionError.DeviceNotFound()
+        if (!wantsCurrent(expectedRevision)) return
         val state = platform.state(target)
+        if (!wantsCurrent(expectedRevision)) return
         if (state.connected) {
             if (state.autoReconnecting || state.connectedDeviceId != null && state.connectedDeviceId != deviceId) return
             val owner = synchronized(lock) { active }
@@ -658,20 +671,26 @@ class ConnectionManager(
         }
         if (state.autoReconnecting || state.bluetoothPoweredOff) return
         if (connectionState.isConnected) synchronized(lock) { active }?.let { handleConnectionLoss(it, null) }
+        if (!wantsCurrent(expectedRevision)) return
         if (tryAdoptOrReject(target, false, health = true)) return
+        if (!wantsCurrent(expectedRevision)) return
         connect(target)
     }
 
     suspend fun checkWiFiConnectionHealth() {
         if (synchronized(lock) { wifiReconnect?.isActive == true } || currentTransportType() == TransportType.BLUETOOTH) return
+        val expectedRevision = synchronized(lock) { revision }
         val owner = synchronized(lock) { active }
         if (owner?.link?.type == TransportType.WIFI && connectionState.isOperational && !owner.link!!.transport.isConnected()) {
+            if (!wantsCurrent(expectedRevision)) return
             handleConnectionLoss(owner, null)
             return
         }
         if (connectionState == DeviceConnectionState.DISCONNECTED && connectionIntent.wantsConnection) {
             val id = lastConnection.read().deviceId ?: return
+            if (!wantsCurrent(expectedRevision)) return
             val device = devices.fetchDevice(id) ?: return
+            if (!wantsCurrent(expectedRevision)) return
             val wifi = device.connectionMethods.filterIsInstance<ConnectionMethod.WiFi>().firstOrNull() ?: return
             connect(ConnectionTarget.WiFi(wifi.host, wifi.port))
         }
@@ -683,13 +702,17 @@ class ConnectionManager(
         stopReconnectionWatchdog()
     }
     suspend fun appDidBecomeActive() {
+        val expectedRevision = synchronized(lock) { revision }
         synchronized(lock) { foreground = true }
         platform.foreground(true)
         checkWiFiConnectionHealth()
         checkBLEConnectionHealth()
-        if (connectionIntent.wantsConnection && connectionState == DeviceConnectionState.DISCONNECTED &&
-            !shouldDeferOpportunisticReconnect && currentTransportType() != TransportType.WIFI &&
-            !isTransportAutoReconnecting()) startReconnectionWatchdog()
+        if (!wantsCurrent(expectedRevision) || connectionState != DeviceConnectionState.DISCONNECTED ||
+            shouldDeferOpportunisticReconnect || currentTransportType() == TransportType.WIFI) return
+        val autoReconnecting = isTransportAutoReconnecting()
+        if (wantsCurrent(expectedRevision) && connectionState == DeviceConnectionState.DISCONNECTED && !autoReconnecting) {
+            startReconnectionWatchdog()
+        }
     }
     fun setPairingActivity(pairingInProgress: Boolean, pairingFlowActive: Boolean) {
         synchronized(lock) { pairing = pairingInProgress; pairingFlow = pairingFlowActive }
@@ -869,7 +892,9 @@ class ConnectionManager(
         owner.operation?.cancel()
         val report = closeGeneration(owner, false, failure)
         if (!report.isComplete) reporter.report(RuntimeDiagnostic.Teardown(report))
+        if (!isRelevant(owner)) return
         lastConnection.persistDisconnectDiagnostic("source=handleConnectionLoss, stateBefore=${before.state.name.lowercase()}, error=${failure?.javaClass?.simpleName ?: "none"}, intent=${intentSummary()}")
+        if (!isRelevant(owner)) return
         if (failure != null && platform.classifyFailure(failure) is LinkFailure.AuthenticationFailed) {
             (owner.target as? ConnectionTarget.Bluetooth)?.deviceId?.let(::surfaceAuthenticationFailure)
         }
@@ -885,12 +910,15 @@ class ConnectionManager(
         if (manual != null && manual != id) return
         if (manual == id) synchronized(lock) { pendingTarget = null }
         reconnectionCoordinator.handleEnteringAutoReconnect(id)
+        if (!isRelevant(owner)) return
         lastConnection.persistDisconnectDiagnostic("source=bleStateMachine.autoReconnectingHandler, error=$details, intent=${intentSummary()}")
     }
 
     private suspend fun tryAdoptOrReject(target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false): Boolean {
+        val expectedRevision = synchronized(lock) { revision }
         val deviceId = (target as? ConnectionTarget.Bluetooth)?.deviceId ?: return false
         val state = platform.state(target)
+        if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded platform query")
         if (state.autoReconnecting) {
             if (state.connectedDeviceId != deviceId) return false
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
@@ -900,10 +928,14 @@ class ConnectionManager(
         if (!state.systemConnected) return false
         val ours = lastConnection.read().deviceId == deviceId ||
             synchronized(lock) { pairing } || platform.hasSystemPairingRegistry && platform.isRegistered(deviceId)
+        if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded system-link query")
         if (ours && state.phase == "idle") {
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
             reconnectionCoordinator.handleEnteringAutoReconnect(deviceId)
-            if (platform.adoptSystemLink(target)) {
+            if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded adoption preparation")
+            val adopted = platform.adoptSystemLink(target)
+            if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded adoption completion")
+            if (adopted) {
                 lastConnection.persistDisconnectDiagnostic("source=${if (health) "checkBLEConnectionHealth" else "connect(to:)"}.adoptSystemConnectedPeripheral, intent=${intentSummary()}")
                 return true
             }
@@ -1024,6 +1056,9 @@ class ConnectionManager(
     }
     private fun requireRevision(expected: Long) {
         synchronized(lock) { if (closed || revision != expected) throw CancellationException("Superseded connection request") }
+    }
+    private fun wantsCurrent(expected: Long): Boolean = synchronized(lock) {
+        !closed && revision == expected && connectionIntent.wantsConnection
     }
     private fun requireOpen() { synchronized(lock) { check(!closed && processJob.isActive) { "Connection runtime is closed" } } }
     private fun currentTransportType(): TransportType? = synchronized(lock) { (active ?: retained)?.link?.type }

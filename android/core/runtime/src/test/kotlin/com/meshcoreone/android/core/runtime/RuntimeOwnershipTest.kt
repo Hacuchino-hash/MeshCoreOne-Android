@@ -390,5 +390,33 @@ class RuntimeOwnershipTest {
                 assertEquals(manager.connectedDevice!!.radioId, clean!!.first)
             }
         },
+        nativeCase("foreground health query finishing after manual stop cannot recreate connection intent") {
+            withFixture {
+                connect(); manager.disconnect(RuntimeDisconnectReason.WIFI_RECONNECT_PREP)
+                val gate = CompletableDeferred<Unit>()
+                platform.onState = { gate.await() }
+                val health = backgroundScope.async { manager.checkBLEConnectionHealth() }; runCurrent()
+                manager.disconnect()
+                gate.complete(Unit); runCurrent(); health.await()
+                assertEquals(ConnectionIntent.UserDisconnected, manager.connectionIntent)
+                assertEquals(ConnectionIntent.UserDisconnected, last.restoredIntent())
+                assertEquals(1, radios.size); assertFalse(manager.isReconnectionWatchdogRunning)
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+            }
+        },
+        nativeCase("old rebuild-failure query cannot notify loss or tear down a ready successor") {
+            withFixture {
+                connect()
+                val gate = CompletableDeferred<Unit>(); var first = true
+                platform.onState = { if (first) { first = false; gate.await() } }
+                val failure = backgroundScope.async { manager.handleReconnectionFailure() }; runCurrent()
+                val successor = target(); manager.connect(successor)
+                gate.complete(Unit); runCurrent(); failure.await()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(successor.deviceId, manager.connectedDevice?.id)
+                assertEquals(0, lossCount); assertEquals(0, radios.last().closes)
+                assertEquals(1, radios.first().closes); assertEquals(0, manager.consecutiveRebuildFailures)
+            }
+        },
     )
 }

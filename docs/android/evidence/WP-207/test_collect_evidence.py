@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from collect_evidence import CASE, read_junit
+from collect_evidence import CASE, NATIVE_CASE, read_junit
 
 CLASS = "com.meshcoreone.android.core.runtime.RuntimeTest"
 GOOD = f'<testsuite tests="1" failures="0" errors="0" skipped="0"><testcase name="source::case()" classname="{CLASS}"/></testsuite>'
@@ -67,10 +67,22 @@ class RuntimeEvidenceReaderTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.read('<!DOCTYPE testsuite [<!ENTITY external SYSTEM "file:///private">]>' + GOOD)
 
+    def test_utf16_and_utf32_declarations_fail_before_xml_expansion(self):
+        text = '<!DOCTYPE testsuite [<!ENTITY internal "value">]>' + GOOD
+        for encoding in ("utf-16", "utf-32"):
+            with self.subTest(encoding=encoding), tempfile.TemporaryDirectory() as value:
+                directory = Path(value)
+                (directory / "TEST-runtime.xml").write_bytes(text.encode(encoding))
+                with self.assertRaises(ValueError):
+                    read_junit(directory, directory)
+
     def test_source_parameter_family_signature_is_not_lost(self):
         text = 'original("Suite", "family", "(_ testCase : RetryBudgetCase)") { assertions() }'
         self.assertEqual([("Suite", "family", "(_ testCase : RetryBudgetCase)")], CASE.findall(text))
         self.assertEqual([("Suite", "single", "")], CASE.findall('original("Suite", "single") {}'))
+
+    def test_native_regression_declared_identity_is_preserved(self):
+        self.assertEqual(["parent cancellation joins"], NATIVE_CASE.findall('nativeCase("parent cancellation joins") {}'))
 
 
 if __name__ == "__main__":

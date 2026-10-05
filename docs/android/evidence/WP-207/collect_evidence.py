@@ -13,6 +13,7 @@ MODULE = ROOT / "android" / "core" / "runtime"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 CASE = re.compile(r'original\("([^"]+)",\s*"([^"]+)"(?:,\s*"([^"]+)")?', re.MULTILINE)
+NATIVE_CASE = re.compile(r'nativeCase\("([^"]+)"', re.MULTILINE)
 
 
 def require(condition, message):
@@ -31,9 +32,14 @@ def read_junit(directory, record_root=ROOT):
     native = {}
     reports = []
     for path in files:
-        require(path.is_file() and not path.is_symlink(), "Linked/non-file JUnit is not evidence")
-        raw = path.read_bytes()
-        require(len(raw) <= 16 * 1_048_576 and b"<!DOCTYPE" not in raw and b"<!ENTITY" not in raw, "Unsafe/oversized JUnit input")
+        maximum = 16 * 1_048_576
+        require(path.is_file() and not path.is_symlink() and path.stat().st_size <= maximum,
+                "Linked/non-file/oversized JUnit is not evidence")
+        with path.open("rb") as stream:
+            raw = stream.read(maximum + 1)
+        declarations = raw.replace(b"\x00", b"").upper()
+        require(len(raw) <= maximum and b"<!DOCTYPE" not in declarations and b"<!ENTITY" not in declarations,
+                "Unsafe/oversized JUnit input")
         root = ET.fromstring(raw)
         nodes = root.findall("testcase")
         require(root.tag == "testsuite" and nodes, "Malformed/zero runtime JUnit")
@@ -77,6 +83,7 @@ def collect():
         actual = git("hash-object", str(ROOT.joinpath(*path.split("/"))))
         require(actual == entry["blob_sha"], "Frozen source input changed: " + path)
     declarations = {}
+    native_declarations = {}
     input_paths = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile"]
     for path in sorted((MODULE / "src").rglob("*.kt")):
         text = path.read_text(encoding="utf-8")
@@ -89,15 +96,22 @@ def collect():
             identity = f"{suite}::{name}{signature or '()'}"
             require(identity not in declarations, "Duplicate native original family: " + identity)
             declarations[identity] = path.relative_to(ROOT).as_posix()
+        for name in NATIVE_CASE.findall(text):
+            identity = "WP-207::" + name
+            require(identity not in native_declarations, "Duplicate native regression declaration")
+            native_declarations[identity] = path.relative_to(ROOT).as_posix()
     require(set(declarations) == set(source_cases), "Missing/extra original families: " +
             repr(sorted(set(source_cases) - set(declarations))) + " / " +
             repr(sorted(set(declarations) - set(source_cases))))
     native, reports = read_junit(MODULE / "build/test-results/test")
+    expected_cases = set(declarations) | set(native_declarations)
+    require(set(native) == expected_cases, "Missing/extra full runtime assertion execution: " +
+            repr(sorted(expected_cases - set(native))) + " / " + repr(sorted(set(native) - expected_cases)))
     for identity in source_cases:
         matches = [name for name in native if name == identity or name.startswith(identity + " ")]
         require(len(matches) == 1, "Original family did not actually execute exactly once: " + identity)
         source_cases[identity].update({"native_source": declarations[identity], "junit_case": matches[0]})
-    require(len(native) > 154, "Native lifecycle/cancellation regression assertions are mandatory")
+    require(len(native_declarations) >= 40, "Native lifecycle/cancellation regression assertions are mandatory")
     inputs = []
     for path in input_paths:
         require(path.is_file(), "Missing owned runtime lock/source input: " + str(path))
@@ -109,7 +123,8 @@ def collect():
         "head_sha": git("rev-parse", "HEAD"), "source_sha": SOURCE, "manifest_sha256": MANIFEST,
         "scope": "Full current pure-JVM runtime assertions; not Android hardware, complete graph or formal gate acceptance",
         "counts": {"discovered": len(native), "passed": len(native), "failed": 0, "errors": 0, "skipped": 0},
-        "original_families": source_cases, "input_blobs": inputs, "raw_junit": reports,
+        "original_families": source_cases, "native_regressions": native_declarations,
+        "input_blobs": inputs, "raw_junit": reports,
     }
 
 
