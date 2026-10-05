@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-05T15:09:30.724Z" hostname="BATTLEGEAR" time="0.003">
+  <properties/>
+  <testcase name="Has expected defaults, previews off, auto-resolve on()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.001"/>
+  <testcase name="Underlying source mutations are reflected through the wrapper()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.0"/>
+  <testcase name="Master off overrides channel auto-resolve too()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.001"/>
+  <testcase name="shouldAutoResolve for channel respects settings()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.0"/>
+  <testcase name="shouldAutoResolve for DM respects settings()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.0"/>
+  <testcase name="shouldShowPreview reflects global toggle()" classname="com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

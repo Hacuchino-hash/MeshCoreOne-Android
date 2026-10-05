@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-05T15:09:30.709Z" hostname="BATTLEGEAR" time="0.002">
+  <properties/>
+  <testcase name="decodeDimensions returns pixel dims for a valid PNG()" classname="com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest" time="0.001"/>
+  <testcase name="decodeDimensions returns null for empty data()" classname="com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest" time="0.0"/>
+  <testcase name="decodeDimensions returns null for non-image bytes()" classname="com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

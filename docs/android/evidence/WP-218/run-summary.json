@@ -1,6 +1,6 @@
 {
   "wp": "WP-218",
-  "scope": "bounded increment, now spanning two commits: (1) UrlSafetyChecker + MalwareDomainFilter/MalwareDomainParser, (2) ImageUrlClassifier + ImageHeaderDecoder",
+  "scope": "bounded increment, now spanning three commits: (1) UrlSafetyChecker + MalwareDomainFilter/MalwareDomainParser, (2) ImageUrlClassifier + ImageHeaderDecoder, (3) GeoCoordinate/isValidFix, LinkPreviewPreferences, ImageByteCost, FifoCostBoundedCache, BundledMalwareDomainSnapshot + urlhaus resource admission. Corrected denominator: approved WP-218 scope is 21 production + 12 test + 1 resource source files / 154 original declarations, not the earlier-estimated 15 files.",
   "pinned_source": "db14559b39d32322b06477c6ae676112f583db50",
   "merged_base": "e697823c8937eb5b12a40362ca2c5aae4c45f56a",
   "host": "local (single-host); no hosted/dual-host CI run performed for this increment",
@@ -51,8 +51,50 @@
     },
     {
       "command": "(none)",
-      "result": "NOT EXECUTED",
-      "note": "Per the explicit 'no further local JVM until registered resource-gate execution receipt' instruction, ImageUrlClassifierTest (17 cases) and ImageHeaderDecoderTest (3 cases) were written and manually traced against the ported Swift assertions but were never compiled or run. This is reported honestly rather than reusing the prior 42/0/0/0 result, which predates these files and does not cover them. Treat the second increment as unverified-by-execution until a gate-cleared run actually happens."
+      "result": "SUPERSEDED",
+      "note": "Per the explicit 'no further local JVM until registered resource-gate execution receipt' instruction, ImageUrlClassifierTest (19 cases) and ImageHeaderDecoderTest (3 cases) were written and manually traced against the ported Swift assertions but were not compiled or run at the time of the second commit. This gap is now closed by the real gated run recorded below."
+    },
+    {
+      "command": ".\\gradlew.bat :core:services:test (real gated execution via Invoke-MeshCoreNativeBuild -Owner 'WP-218')",
+      "result": "BUILD SUCCESSFUL",
+      "tests_discovered": 97,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "breakdown": {
+        "UrlSafetyCheckerTest": 34,
+        "MalwareDomainFilterTest": 5,
+        "MalwareDomainParserTest": 3,
+        "ImageUrlClassifierTest": 19,
+        "ImageHeaderDecoderTest": 3,
+        "GeoCoordinateTest": 9,
+        "LinkPreviewPreferencesTest": 6,
+        "ImageByteCostTest": 7,
+        "FifoCostBoundedCacheTest": 8,
+        "BundledMalwareDomainSnapshotTest": 3
+      },
+      "raw_junit_xml": [
+        "TEST-com.meshcoreone.android.core.services.content.UrlSafetyCheckerTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainFilterTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainParserTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageUrlClassifierTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.GeoCoordinateTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageByteCostTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.FifoCostBoundedCacheTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.BundledMalwareDomainSnapshotTest.xml"
+      ],
+      "toolchain_used": {
+        "java_home": "C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\toolchains\\temurin-21\\jdk-21.0.12.1+1",
+        "java_version_verified": "21.0.12.1",
+        "android_sdk_root": "C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\toolchains\\android-sdk",
+        "gradle_user_home": "own private cache under this session's files\\gradle-user-home (newly created this increment, required by check_environment.py's explicit-private-cache check)",
+        "android_user_home": "own private cache under this session's files\\android-user-home (newly created this increment)",
+        "gate_owner": "WP-218 (confirmed present in native-build-gate.ps1's ValidateSet)",
+        "gate_contention_history": "One prior attempt this WP returned NATIVE_BUILD_BUSY (confirmed genuinely busy via direct file-lock EBUSY check, not stale); no spin-poll was performed. The lock was free on the next single retry and this run proceeded."
+      },
+      "note": "First real, executed verification of the second AND third increments. Supersedes all prior 'manually traced only' disclosures for every file that exists as of this commit; no file's test status remains traced-only after this commit. No root lockfile or other module's build file changed as a side effect (only :core:services:test was invoked, not --write-locks); confirmed via git status/git diff --stat."
     }
   ],
   "source_test_mapping": {
@@ -61,27 +103,29 @@
     "MC1/Utilities/MalwareDomainFilter.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilter.kt + MalwareDomainParser.kt",
     "MC1Tests/Utilities/MalwareDomainFilterTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilterTest.kt",
     "MC1Services/Sources/MC1Services/Utilities/ImageURLClassifier.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageUrlClassifier.kt",
-    "MC1Tests/Services/ImageURLDetectorTests.swift (ImageURLClassifier-scoped cases only, 17 of 23)": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageUrlClassifierTest.kt",
+    "MC1Tests/Services/ImageURLDetectorTests.swift (ImageURLClassifier-scoped cases only, 19 of 23)": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageUrlClassifierTest.kt",
     "MC1/Services/ImageHeaderDecoder.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageHeaderDecoder.kt",
-    "MC1Tests/Services/ImageHeaderDecoderTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageHeaderDecoderTest.kt"
+    "MC1Tests/Services/ImageHeaderDecoderTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageHeaderDecoderTest.kt",
+    "MC1Services/Extensions/CLLocationCoordinate2D+ValidFix.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/GeoCoordinate.kt (no original Swift test file; 9 Kotlin cases independently authored)",
+    "MC1/Models/LinkPreviewPreferences.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/LinkPreviewPreferences.kt",
+    "MC1Tests/Models/LinkPreviewPreferencesTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/LinkPreviewPreferencesTest.kt",
+    "MC1/Utilities/ImageByteCost.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageByteCost.kt (no original Swift test file; 7 Kotlin cases independently authored)",
+    "Resources/urlhaus-filter-hosts-online.txt": "android/core/services/src/main/resources/content/urlhaus-filter-hosts-online.txt (byte-exact, git hash-object verified) + BundledMalwareDomainSnapshot.kt loader (new, no literal Swift equivalent)",
+    "(shared eviction policy of LinkPreviewCache/DecodedPreviewCache/InlineImageCache)": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/FifoCostBoundedCache.kt (new generic extraction, not a 1:1 port of any single file)"
   },
   "not_implemented_this_increment": [
     "MC1/Services/LinkPreviewService.swift (+Scrape)",
-    "MC1/Services/LinkPreviewCache.swift / LinkPreviewCaching.swift",
-    "MC1/Services/DecodedPreviewCache.swift",
+    "MC1/Services/LinkPreviewCache.swift / LinkPreviewCaching.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
+    "MC1/Services/DecodedPreviewCache.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
     "MC1/Services/RedirectSafetyDelegate.swift",
-    "MC1/Models/LinkPreviewPreferences.swift",
     "MC1/Services/ImageURLDetector.swift (UIKit/ImageIO-dependent decode/downsample/GIF-frame half only; its isGIFData/downsampledImage test cases remain unported)",
-    "MC1/Utilities/ImageByteCost.swift",
-    "MC1/Services/InlineImageCache.swift",
+    "MC1/Services/InlineImageCache.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
     "MC1/Services/InlineImagePrefetcher.swift",
-    "MC1Services/Services/InlineImageDimensionsStore.swift",
+    "MC1Services/Services/InlineImageDimensionsStore.swift (blocked on a JSON-codec dependency not yet admitted in core:services)",
     "MC1/Services/ElevationService.swift",
     "MC1/Services/Geocoder.swift",
     "MC1/Services/LocationService.swift",
-    "MC1/Services/RegionResolver.swift",
-    "MC1Services/Extensions/CLLocationCoordinate2D+ValidFix.swift",
-    "Resources/urlhaus-filter-hosts-online.txt"
+    "MC1/Services/RegionResolver.swift"
   ],
   "amendment_requested": "Split remaining WP-218 scope (link preview service/scrape/cache, image decode/cost/cache/prefetch, elevation/geocoder/location/region) into follow-on WP(s) with their own native-adapter proposals (HttpURLConnection-based bounded streaming HTTP; Android location/geocoder/bitmap-decode platform roles) and verification evidence. Also requests narrow admission of the two unleased build.gradle.kts/lockfile paths disclosed above, or direction to use a module-local-only lock mechanism instead."
 }
