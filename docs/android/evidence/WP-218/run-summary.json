@@ -95,6 +95,19 @@
         "gate_contention_history": "One prior attempt this WP returned NATIVE_BUILD_BUSY (confirmed genuinely busy via direct file-lock EBUSY check, not stale); no spin-poll was performed. The lock was free on the next single retry and this run proceeded."
       },
       "note": "First real, executed verification of the second AND third increments. Supersedes all prior 'manually traced only' disclosures for every file that exists as of this commit; no file's test status remains traced-only after this commit. No root lockfile or other module's build file changed as a side effect (only :core:services:test was invoked, not --write-locks); confirmed via git status/git diff --stat."
+    },
+    {
+      "command": ".\\gradlew.bat :core:services:test",
+      "context": "Post-merge re-verification against reconciled main tip 064f091c7f00d3e0cef33e087a31ebaa69a10ad6 (merge commit df602f42), per coordinator instruction to reconcile before final source/native proof.",
+      "result": "BUILD SUCCESSFUL",
+      "gradle_task_states": "compileKotlin/compileTestKotlin/testClasses/test all reported UP-TO-DATE (no core:services source, test source, resource, or dependency input changed by the WP-109 merge)",
+      "tests_discovered": 97,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "verification_method": "Re-read the ten TEST-*.xml files directly under android/core/services/build/test-results/test/ after the UP-TO-DATE build completed; confirmed identical 97/0/0/0 breakdown across the same ten classes as the prior real-execution entry above.",
+      "gate_contention_history": "First check after pushing the merge+adapter-proposal commits found the gate busy (another WP owner held it); not retried in a loop per no-spin-poll. A single later recheck found it free and this run proceeded.",
+      "note": "Confirms the merge with origin/main is behavior-equivalent for core:services: an up-to-date/cached result is the correct and expected Gradle outcome given zero changed inputs, not a gap in verification."
     }
   ],
   "source_test_mapping": {
