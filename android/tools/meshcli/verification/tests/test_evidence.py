@@ -54,8 +54,8 @@ class EvidenceTests(unittest.TestCase):
                         for scope, name in sorted(reader.required_cli_cases())],
         }
 
-    def retention_fixture(self, data):
-        directory = self.root.joinpath(*reader.MODULES["meshcli"][0].split("/"))
+    def retention_fixture(self, data, module="meshcli"):
+        directory = self.root.joinpath(*reader.MODULES[module][0].split("/"))
         directory.mkdir(parents=True, exist_ok=True)
         (directory / "TEST-fixture.xml").write_bytes(data)
         source = b"immutable input fixture\n"
@@ -119,6 +119,44 @@ class EvidenceTests(unittest.TestCase):
                 reader.retain(self.root, output)
         self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
 
+    def test_protocol_failure_retention_does_not_require_or_invent_cli_execution(self):
+        data = (b'<testsuite tests="1" failures="1" errors="0" skipped="0">'
+                b'<testcase classname="actual.Protocol" name="failed operation"><failure>complete protocol cause</failure></testcase>'
+                b'<system-out>protocol stdout</system-out><system-err>protocol stderr</system-err></testsuite>')
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "protocol-failure"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output, module="protocol")
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertIsNone(result["validation"]["counts"])
+        self.assertEqual(data, (output / "junit" / "protocol" / "TEST-fixture.xml").read_bytes())
+        self.assertEqual(["protocol"], [record["module"] for record in result["raw_reports"]])
+        self.assertFalse((output / "junit" / "meshcli").exists())
+        self.assertFalse(self.root.joinpath(*reader.MODULES["meshcli"][0].split("/")).exists())
+        self.assertFalse(result["physical_radio_verified"])
+
+    def test_protocol_retention_requires_the_full_original_floor_without_cli_reports(self):
+        native = self.native_floor_fixture()
+        nodes = "".join(f"<testcase classname={quoteattr(case['class'])} name={quoteattr(case['name'])}/>"
+                        for case in native["protocol"])
+        data = (f'<testsuite tests="4711" failures="0" errors="0" skipped="0">{nodes}</testsuite>').encode("utf-8")
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "protocol-pass"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output, module="protocol")
+        self.assertEqual("passed", result["validation"]["status"])
+        self.assertEqual(4711, result["validation"]["counts"]["passed"])
+        self.assertFalse((output / "junit" / "meshcli").exists())
+        self.assertFalse(self.root.joinpath(*reader.MODULES["meshcli"][0].split("/")).exists())
+
+    def test_missing_protocol_reports_are_explicit_failure_not_empty_success(self):
+        context = self.retention_fixture(b"<testsuite", "protocol")
+        self.root.joinpath(*reader.MODULES["protocol"][0].split("/"), "TEST-fixture.xml").unlink()
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "missing-protocol"
+        with patch.object(reader, "execution_inputs", return_value=context), self.assertRaises(PortError):
+            reader.retain(self.root, output, module="protocol")
+        self.assertFalse((output / "raw-retention.json").exists())
+
     def test_retention_never_normalizes_raw_xml_and_rejects_input_blob_substitution(self):
         self.report()
         self.file.write_bytes(self.file.read_bytes().replace(b"></", b">\r\n</"))
@@ -163,6 +201,64 @@ class EvidenceTests(unittest.TestCase):
         self.file.write_bytes('<!DOCTYPE testsuite [<!ENTITY x "secret">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="&x;"/></testsuite>'.encode("utf-16"))
         with self.assertRaises(PortError):
             reader.junit(self.reports, self.root, 1)
+
+    def test_utf16_and_utf32_declarations_are_rejected_before_any_xml_parser_or_counts(self):
+        text = '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="&x;"/></testsuite>'
+        for encoding in ("utf-8", "utf-16", "utf-16-le", "utf-16-be", "utf-32", "utf-32-le", "utf-32-be"):
+            with self.subTest(encoding=encoding):
+                self.file.write_bytes(text.encode(encoding))
+                with (
+                    patch.object(reader, "suite_counts") as counts,
+                    patch.object(reader, "read_xml") as parser,
+                    self.assertRaises(PortError),
+                ):
+                    reader.junit(self.reports, self.root, 1)
+                counts.assert_not_called()
+                parser.assert_not_called()
+
+    def test_safe_utf16_xml_keeps_actual_bytes_and_outcomes(self):
+        text = '<testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="safe"/><system-out>complete</system-out></testsuite>'
+        for encoding in ("utf-8", "utf-16", "utf-16-le", "utf-16-be"):
+            with self.subTest(encoding=encoding):
+                data = text.encode(encoding)
+                self.file.write_bytes(data)
+                cases, raw, counts = reader.junit(self.reports, self.root, 1)
+                self.assertEqual(data, raw[self.file.name])
+                self.assertEqual(1, counts["passed"])
+                self.assertEqual("safe", cases[0]["name"])
+                failure = text.replace('failures="0"', 'failures="1"').replace(
+                    '<testcase classname="x" name="safe"/>',
+                    '<testcase classname="x" name="safe"><failure>actual failure</failure></testcase>',
+                )
+                self.file.write_bytes(failure.encode(encoding))
+                with self.assertRaises(PortError):
+                    reader.junit(self.reports, self.root, 1)
+
+    def test_per_file_size_is_rejected_before_parsing_even_below_total_set_limit(self):
+        self.file.write_bytes(b" " * (8 * 1024 * 1024 + 1))
+        with (
+            patch.object(reader, "suite_counts") as counts,
+            patch.object(reader, "read_xml") as parser,
+            self.assertRaises(PortError),
+        ):
+            reader.junit(self.reports, self.root, 1)
+        counts.assert_not_called()
+        parser.assert_not_called()
+
+    def test_unsafe_protocol_retention_preserves_bytes_but_never_parses_or_passes(self):
+        data = '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite/>'.encode("utf-32")
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "unsafe-protocol"
+        with (
+            patch.object(reader, "execution_inputs", return_value=context),
+            patch.object(reader, "suite_counts") as counts,
+            patch.object(reader, "read_xml") as parser,
+        ):
+            result = reader.retain(self.root, output, module="protocol")
+        counts.assert_not_called()
+        parser.assert_not_called()
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertEqual(data, (output / "junit" / "protocol" / "TEST-fixture.xml").read_bytes())
 
     def test_reduced_nonzero_discovery_does_not_satisfy_floor(self):
         self.report()

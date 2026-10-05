@@ -116,8 +116,17 @@ task, and a dependency of `verifyProtocolParity`. It preserves complete raw
 XML (including failed/skipped/malformed reports and all log nodes) and the same
 immutable input blobs in the explicit evidence directory with the `-raw`
 suffix before validating. Invalid, missing, zero or reduced discovery remains
-nonzero with a blocked manifest, never a success-shaped snapshot. Raw retention
-is diagnostic data, not full parity or hardware acceptance.
+nonzero, never a success-shaped snapshot. Produced invalid reports have a
+blocked manifest; missing reports are an explicit BLOCKED error with no
+invented raw cases.
+
+`retainProtocolEvidence` independently finalizes the actual protocol `test`
+task into the `-protocol-raw` sibling. It has no CLI or success-verifier
+dependency, so a protocol failure cannot prevent its own XML/cause/input
+retention. The same per-file and encoded-declaration guards run before any
+XML/count parser. Actual failed cases also log their exact identities and
+exceptions at error level under quiet CI. Neither raw finalizer constitutes
+full parity or hardware acceptance.
 
 An explicit `meshCliEvidenceDirectory`/`meshCliInvocationFile` forwarding seam
 binds normal CI output to the actual executor's repository/base/head/run/attempt.
@@ -126,7 +135,8 @@ ignored build directory, not a fabricated hosted run. Protected CI forwarding
 is provided for normal verify/protocol stages by the separately authorized
 serialized amendment, using the existing actual executor identity and no
 additional environment/credential forwarding. Existing always-upload retains
-the complete `wp109` and `wp109-raw` directories; no workflow change is needed.
+the complete `wp109`, `wp109-raw` and `wp109-protocol-raw` directories; no
+workflow change is needed.
 
 The app/tool remains under the repository's GPLv3 terms. Linked MeshCore
 protocol and BouncyCastle retain their MIT notices; Kotlin/coroutine/Gradle

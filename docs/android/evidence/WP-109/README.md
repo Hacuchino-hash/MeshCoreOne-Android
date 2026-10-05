@@ -1,6 +1,34 @@
 # WP-109 protocol sweep and executable TCP meshcli
 
-**Implemented and executed code candidate, ready for coordinator review.**
+**Implemented candidate; latest root protocol failure remains under repair.**
+The later persistent-documentation head
+`b124814bcd05544498eb0dcd804a5604c0785d3e` failed root
+37266347244/attempt1 on Linux with4,711 actual protocol cases/one failure;
+Windows passed and the aggregate failed. Its independently retained Linux
+artifact11326921016 had zero XML files because CLI execution never began.
+No failure identity is invented and a separate green protocol run does not
+waive this outcome. The prior complete results below are explicitly historical.
+
+The owned module now independently finalizes the actual protocol test into
+`wp109-protocol-raw`, without depending on CLI execution or the success
+verifier, and observes exact failed case identities/causes at error level.
+The encoded DOCTYPE/ENTITY and8MiB per-file checks precede all XML/count
+parsing. All28 owned regressions pass, including failed protocol capture with
+no CLI reports, full4,711 protocol identity retention, missing reports,
+UTF16/32 pre-parser rejection, safe UTF16 outcomes and unchanged unsafe raw bytes.
+This is failure observability, not a claimed repair of the unidentified case.
+Fresh actual execution must identify and resolve any concrete lifetime failure.
+
+Coordinator-directed current-base reconciliation is now exact
+`e697823c8937eb5b12a40362ca2c5aae4c45f56a`, including the already guarded
+DataStore131/BLE295/data154 software suites. Frozen source/manifest/policy
+and the4,708 baseline/486 originals/87 CLI floor remain unchanged.
+The separately authorized WP301 verify-only producer was published as the
+isolated two-file CODE commit81f6777b3bbd7a41824b2e8b12eacc4d9ff276e8;
+those shared paths are now frozen for the approved immutable carry.
+
+## Historical complete software proof
+
 The reconciled code head `c6fc6309548d7b01d9edf5b905cdefc9e6f49c6d`
 passes normal Windows/Linux protocol and complete root CI against actual main
 `e303e8795ab4e7cc45e02d791e6a2829085c2288`. All four uploaded bundles were
@@ -85,7 +113,7 @@ strict tasks, cache flags, stage/outcome/schema behavior and workflows are
 unchanged. The generic root collector still excludes tools; the separate full
 CLI bundles are required and now actually retained by existing always-upload.
 
-## Complete current software evidence
+## Complete historical c6fc software evidence
 
 Normal protocol [37257471897/attempt1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37257471897)
 and root [37257471866/attempt1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37257471866)
@@ -203,8 +231,9 @@ coordinator amendments, not blanket ownership exceptions.
 ## Acceptance and remaining boundaries
 
 `WP-109-behavior`, `WP-109-boundaries`, `WP-109-source-test-parity`: code and
-actual complete software evidence are delivered for coordinator independent
-review/guarded merge. File traceability is not protected source acceptance.
+historical complete software evidence exist, but the latest failed root result
+and current-base reconciliation require fresh actual repair/proof before the
+coordinator handoff/guarded merge. File traceability is not protected source acceptance.
 See [native adaptations](../../deviations/WP-109.md) and
 [operator instructions](../../../../android/tools/meshcli/README.md).
 

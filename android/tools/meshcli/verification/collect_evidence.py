@@ -161,13 +161,16 @@ def raw_junit(directory, boundary):
 def junit(directory, boundary, minimum):
     raw = raw_junit(directory, boundary)
     reports = [directory / name for name in raw]
-    counts = suite_counts(directory, minimum)
-    cases = []
     for path in reports:
         data = raw[path.name]
+        if len(data) > 8 * 1024 * 1024:
+            raise PortError("Oversized mandatory raw XML")
         declarations = data.replace(b"\0", b"").upper()
         if b"<!DOCTYPE" in declarations or b"<!ENTITY" in declarations:
             raise PortError("Unsafe declarations in mandatory raw XML")
+    counts = suite_counts(directory, minimum)
+    cases = []
+    for path in reports:
         doc = read_xml(path)
         cases.extend({"class": c.attrib["classname"], "name": c.attrib["name"], "outcome": "passed"}
                      for c in doc.findall("testcase"))
@@ -421,24 +424,30 @@ def preserve_raw(output, inputs, raw_inputs, reports):
     return raw_records
 
 
-def retain(repo, output, invocation=None):
+def retain(repo, output, invocation=None, module="meshcli"):
+    if module not in MODULES:
+        raise PortError("Unknown mandatory raw-retention module")
     output = new_destination(repo, output)
     head, _, run, inputs, raw_inputs = execution_inputs(repo, invocation)
-    directory = repo.joinpath(*MODULES["meshcli"][0].split("/"))
-    reports = {"meshcli": raw_junit(directory, repo)}
+    directory = repo.joinpath(*MODULES[module][0].split("/"))
+    reports = {module: raw_junit(directory, repo)}
     records = preserve_raw(output, inputs, raw_inputs, reports)
     try:
-        cases, retained, counts = junit(output / "junit" / "meshcli", output, MODULES["meshcli"][1])
-        if retained != reports["meshcli"]:
-            raise PortError("Retained CLI raw reports changed")
-        actual = {(case["class"], case["name"]) for case in cases}
-        if not required_cli_cases() <= actual:
-            raise PortError("Retained CLI assertion/parameter rows are incomplete")
+        cases, retained, counts = junit(output / "junit" / module, output, MODULES[module][1])
+        if retained != reports[module]:
+            raise PortError("Retained module raw reports changed")
+        if module == "protocol":
+            validate_protocol_floor(repo, cases)
+        else:
+            actual = {(case["class"], case["name"]) for case in cases}
+            if not required_cli_cases() <= actual:
+                raise PortError("Retained CLI assertion/parameter rows are incomplete")
         validation = {"status": "passed", "counts": counts, "error": None}
     except PortError as failure:
         validation = {"status": "blocked", "counts": None, "error": str(failure)}
     result = {
-        "schema_version": 1, "scope": "complete actual CLI raw retention; not full parity or hardware acceptance",
+        "schema_version": 1,
+        "scope": f"complete actual {'CLI' if module == 'meshcli' else 'protocol'} raw retention; not full parity or hardware acceptance",
         "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
         "policy_revision": POLICY, "invocation": run, "inputs": inputs, "raw_reports": records,
         "validation": validation, "physical_radio_verified": False,
@@ -539,7 +548,7 @@ def validate_bundle(output, repo, head):
     return value
 
 
-def validate_native_floor(repo, native):
+def validate_protocol_floor(repo, cases):
     baseline_path = repo / "docs/android/evidence/WP-109/baseline-native.json"
     if baseline_digest(baseline_path.read_bytes()) != BASELINE_SHA256:
         raise PortError("Independently captured baseline bytes changed")
@@ -548,12 +557,16 @@ def validate_native_floor(repo, native):
     if baseline["schema_version"] != 1 or len(baseline["cases"]) != 4708 or baseline["suite_count"] != 57:
         raise PortError("Frozen protocol baseline identity floor changed")
     expected = {(c["class"], c["name"]) for c in baseline["cases"]}
-    actual = {(c["class"], c["name"]) for c in native["protocol"]}
+    actual = {(c["class"], c["name"]) for c in cases}
     if len(expected) != 4708 or not expected <= actual:
         raise PortError("Removed/replaced baseline protocol identities")
     tcp_expected = {(NATIVE_PREFIX + "parity.TcpOwnershipParityTest", method + "()") for method in TCP_CASES}
     if not tcp_expected <= actual:
         raise PortError("New real-TCP ownership/quarantine/cancellation assertions are mandatory")
+
+
+def validate_native_floor(repo, native):
+    validate_protocol_floor(repo, native["protocol"])
     cli_expected = required_cli_cases()
     cli_actual = {(c["class"], c["name"]) for c in native["meshcli"]}
     if not cli_expected <= cli_actual:
@@ -589,6 +602,7 @@ def main(argv=None):
     parser.add_argument("--invocation", type=Path)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--head")
+    parser.add_argument("--module", choices=tuple(MODULES), default="meshcli")
     args = parser.parse_args(argv)
     try:
         if args.command == "self-test":
@@ -603,7 +617,7 @@ def main(argv=None):
             if args.output is None or not args.output.is_absolute():
                 raise PortError("Explicit absolute evidence output required")
             if args.command == "retain":
-                value = retain(ROOT, args.output, args.invocation)
+                value = retain(ROOT, args.output, args.invocation, args.module)
                 print(json.dumps({"scope": value["scope"], "validation": value["validation"],
                                   "complete_raw_reports": len(value["raw_reports"])}, indent=2))
                 return 0 if value["validation"]["status"] == "passed" else 2

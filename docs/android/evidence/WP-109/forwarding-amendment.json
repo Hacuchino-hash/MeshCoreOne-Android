@@ -61,5 +61,34 @@
     ],
     "own_remote_lease_before_reconciliation": "23fdd1fea3dbe514e6910990bf12fc1318fc6cd0",
     "scope": "Reconcile only this owning PR22 branch after exact fixture fix; source/policy/case baseline stays frozen, local JVM lane remains separately held"
+  },
+  "current_base_reconciliation": {
+    "authority": "Coordinator-directed actual main reconciliation after guarded WP-204 and WP-202 merges",
+    "actual_main": "e697823c8937eb5b12a40362ca2c5aae4c45f56a",
+    "verified_parents": [
+      "2cf00464950e1fb9aae0dd913402eb3e12dc0044",
+      "7d76858c17e607af1a7f96ff6a42392de1b58f85"
+    ],
+    "initial_clean_head_history_unchanged": true,
+    "source_and_assertion_floors_unchanged": true
+  },
+  "wp301_producer_amendment": {
+    "authority": "Coordinator-issued exact addition under the exclusive ci.py lease; no concurrent WP-301 writer",
+    "normal_two_file_commit": "81f6777b3bbd7a41824b2e8b12eacc4d9ff276e8",
+    "parent": "b124814bcd05544498eb0dcd804a5604c0785d3e",
+    "ci_blob": "b926d112f8fa0e2af212a09c92420709cf7b4185",
+    "test_blob": "308bc651c79456bc190e426990ca1c808fbc0c67",
+    "stage": "verify only",
+    "property": "wp301EvidenceDirectory=<actual output>/wp301-native",
+    "shared_paths_frozen_after_publication": true,
+    "environment_workflow_task_cache_outcome_schema_unchanged": true
+  },
+  "exclusive_native_execution": {
+    "authority": "Coordinator replaced manual hold with tested private cross-process exclusive gate",
+    "gate": "C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\native-build-gate.ps1",
+    "owner": "WP-109",
+    "requirements": "One approved bounded declared command in the same PowerShell invocation, own private inputs/caches, no unwrapped Java, busy/capacity means no execution",
+    "original_slot_history_unchanged": true,
+    "physical_radio_execution_authorized": false
   }
 }

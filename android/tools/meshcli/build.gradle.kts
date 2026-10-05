@@ -29,6 +29,39 @@ application {
 val repository = rootProject.projectDir.parentFile
 val collector = layout.projectDirectory.file("verification/collect_evidence.py").asFile
 
+fun Test.observeActualFailures(module: String) {
+    val testLogger = logger
+    addTestListener(object : org.gradle.api.tasks.testing.TestListener {
+        override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+        override fun afterSuite(suite: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) = Unit
+        override fun beforeTest(test: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+        override fun afterTest(test: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) {
+            if (result.resultType == org.gradle.api.tasks.testing.TestResult.ResultType.FAILURE) {
+                testLogger.error("Actual $module test failed: ${test.className} :: ${test.name}")
+                result.exceptions.forEach { testLogger.error(it.stackTraceToString()) }
+            }
+        }
+    })
+}
+
+val retainProtocolEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain actual protocol raw XML and immutable inputs independently of CLI execution."
+    notCompatibleWithConfigurationCache("Retains current actual raw reports with an explicit immutable invocation")
+    workingDir(repository)
+    mustRunAfter(":core:protocol:test")
+    doFirst {
+        val destination = providers.gradleProperty("meshCliEvidenceDirectory").orNull
+            ?: layout.buildDirectory.dir("reports/wp109").get().asFile.absolutePath
+        val invocation = providers.gradleProperty("meshCliInvocationFile").orNull
+        val arguments = mutableListOf(
+            "python", collector.absolutePath, "retain", "--module", "protocol", "--output", "$destination-protocol-raw",
+        )
+        if (invocation != null) arguments += listOf("--invocation", invocation)
+        commandLine(arguments)
+    }
+}
+
 val retainMeshCliEvidence by tasks.registering(Exec::class) {
     group = "verification"
     description = "Retain complete CLI raw XML and immutable input blobs, even when a real test fails."
@@ -49,17 +82,7 @@ tasks.named<Test>("test") {
     finalizedBy(retainMeshCliEvidence)
     systemProperty("meshcli.runtimeClasspath", sourceSets.main.get().runtimeClasspath.asPath)
     systemProperty("meshcli.repository", repository.absolutePath)
-    addTestListener(object : org.gradle.api.tasks.testing.TestListener {
-        override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
-        override fun afterSuite(suite: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) = Unit
-        override fun beforeTest(test: org.gradle.api.tasks.testing.TestDescriptor) = Unit
-        override fun afterTest(test: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) {
-            if (result.resultType == org.gradle.api.tasks.testing.TestResult.ResultType.FAILURE) {
-                logger.error("Actual meshcli test failed: ${test.className} :: ${test.name}")
-                result.exceptions.forEach { logger.error(it.stackTraceToString()) }
-            }
-        }
-    })
+    observeActualFailures("meshcli")
 }
 
 distributions {
@@ -84,7 +107,7 @@ val verifyMeshCliCollector by tasks.registering(Exec::class) {
 val verifyProtocolParity by tasks.registering(Exec::class) {
     group = "verification"
     description = "Require complete original MeshCore families, all baseline identities and actual executable CLI tests."
-    dependsOn(":core:protocol:test", "test", retainMeshCliEvidence, verifyMeshCliCollector)
+    dependsOn(":core:protocol:test", "test", retainProtocolEvidence, retainMeshCliEvidence, verifyMeshCliCollector)
     notCompatibleWithConfigurationCache("Binds current Git inputs and complete executed JUnit to an explicit invocation")
     workingDir(repository)
     doFirst {
@@ -100,5 +123,8 @@ val verifyProtocolParity by tasks.registering(Exec::class) {
 tasks.named("check") { dependsOn(verifyProtocolParity) }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyProtocolParity) }
 gradle.projectsEvaluated {
-    rootProject.project(":core:protocol").tasks.named("test") { finalizedBy(verifyProtocolParity) }
+    rootProject.project(":core:protocol").tasks.named<Test>("test") {
+        finalizedBy(retainProtocolEvidence, verifyProtocolParity)
+        observeActualFailures("protocol")
+    }
 }
