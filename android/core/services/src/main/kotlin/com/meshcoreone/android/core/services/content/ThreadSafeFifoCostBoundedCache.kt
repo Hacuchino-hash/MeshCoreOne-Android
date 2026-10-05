@@ -32,6 +32,10 @@ class ThreadSafeFifoCostBoundedCache<K, V>(
     /** Stores [value] under [key] and runs the FIFO eviction sweep, all under the lock. */
     fun put(key: K, value: V) = lock.withLock { cache.put(key, value) }
 
+    /** Inserts [value] under [key] only if absent, without reordering an existing entry; see
+     * [FifoCostBoundedCache.putIfAbsent]. Returns `true` when [key] was newly inserted. */
+    fun putIfAbsent(key: K, value: V): Boolean = lock.withLock { cache.putIfAbsent(key, value) }
+
     /** Empties the cache, e.g. in response to a memory-pressure signal from a native adapter. */
     fun clear() = lock.withLock { cache.clear() }
 

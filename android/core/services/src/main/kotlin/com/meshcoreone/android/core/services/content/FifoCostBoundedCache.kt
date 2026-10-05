@@ -67,6 +67,22 @@ class FifoCostBoundedCache<K, V>(
         evictIfNeeded()
     }
 
+    /**
+     * Inserts [value] under [key] only if [key] is not already present, without reordering an
+     * existing entry. Mirrors `InlineImageCache.servesPageMirror`'s `Set<String>.insert(_:)`
+     * contract exactly: re-marking an already-present key is a silent no-op (no reorder, no cost
+     * update), unlike [put]'s always-replace-and-reorder semantics used by `decodedMirror`/
+     * `DecodedPreviewCache`. Returns `true` when [key] was newly inserted.
+     */
+    fun putIfAbsent(key: K, value: V): Boolean {
+        if (entries.containsKey(key)) return false
+        entries[key] = value
+        insertionOrder.addLast(key)
+        totalCostBytes += costOf(value)
+        evictIfNeeded()
+        return true
+    }
+
     /** Empties the cache, e.g. in response to a memory-pressure signal from a native adapter. */
     fun clear() {
         entries.clear()

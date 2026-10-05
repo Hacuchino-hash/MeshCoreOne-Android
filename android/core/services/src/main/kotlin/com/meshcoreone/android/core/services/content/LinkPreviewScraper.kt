@@ -44,7 +44,13 @@ sealed interface HttpFetchAttempt {
  * module only depends on the shape of the port.
  */
 interface BoundedHttpFetching {
-    suspend fun fetch(url: String, timeoutMs: Long): HttpFetchAttempt
+    /**
+     * [rangeHeader], when non-null, is sent as the HTTP `Range` request header exactly as the
+     * Swift original's `probeImageDimensions`'s `bytes=0-65535` header does for a dimensions-only
+     * probe GET; `null` means an ordinary unranged request (the existing scrape/image-fetch
+     * call sites).
+     */
+    suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String? = null): HttpFetchAttempt
 }
 
 /** `og:image` / `og:title` HTML scrape fallback, and the scraped-image bounded fetch. */

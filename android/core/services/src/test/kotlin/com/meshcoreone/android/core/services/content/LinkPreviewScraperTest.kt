@@ -19,7 +19,7 @@ import kotlin.test.assertNull
 class LinkPreviewScraperTest {
     private fun fetcherReturning(attempt: HttpFetchAttempt): BoundedHttpFetching =
         object : BoundedHttpFetching {
-            override suspend fun fetch(url: String, timeoutMs: Long): HttpFetchAttempt = attempt
+            override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt = attempt
         }
 
     private fun startedWith(
@@ -58,7 +58,7 @@ class LinkPreviewScraperTest {
     fun `loadImageData rejects an unsafe url before any fetch`() = runTest {
         var fetchCalled = false
         val fetching = object : BoundedHttpFetching {
-            override suspend fun fetch(url: String, timeoutMs: Long): HttpFetchAttempt {
+            override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt {
                 fetchCalled = true
                 return startedWith(mimeType = "image/jpeg", body = byteArrayOf(1, 2, 3))
             }
