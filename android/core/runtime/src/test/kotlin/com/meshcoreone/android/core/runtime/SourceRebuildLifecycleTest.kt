@@ -67,7 +67,7 @@ class SourceRebuildLifecycleTest {
                 connect(); manager.teardownSessionForReconnect()
                 val foreign = MeshCoreSession(radios.single(), coroutineContext = backgroundScope.coroutineContext)
                 val failure = assertFailsWith<MeshCoreException.ConnectionLost> { foreign.start() }
-                assertIs<SessionCorrelationException.RetainedTransport>(failure.cause)
+                requiredCause<SessionCorrelationException.RetainedTransport>(failure)
                 assertEquals(1, radios.single().frames.count { it[0].toInt() == 1 })
                 assertEquals(0, radios.single().closes); assertEquals(0, radios.single().collectors)
             }

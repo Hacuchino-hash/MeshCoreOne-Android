@@ -195,7 +195,7 @@ class RuntimeOwnershipTest {
                 assertFailsWith<ConnectionError.ForeignPhysicalOwner> { b.manager.connect(b.platform.target) }
                 assertEquals(0, shared.closes); assertEquals(1, shared.collectors); assertEquals(1, shared.maximumCollectors)
                 b.manager.close(); assertEquals(0, shared.closes)
-            } finally { b.close(); a.close() }
+            } finally { b.manager.close(); a.close() }
             assertEquals(1, shared.closes)
         },
         nativeCase("foreign raw session admission failure does not disconnect its owner") {
@@ -203,7 +203,7 @@ class RuntimeOwnershipTest {
                 connect()
                 val competitor = MeshCoreSession(radios.single(), coroutineContext = backgroundScope.coroutineContext)
                 val failure = assertFailsWith<MeshCoreException.ConnectionLost> { competitor.start() }
-                assertIs<SessionCorrelationException.ConcurrentTransportOwner>(failure.cause)
+                requiredCause<SessionCorrelationException.ConcurrentTransportOwner>(failure)
                 assertFailsWith<MeshCoreException.ConnectionLost> { competitor.stop() }
                 assertEquals(0, radios.single().closes); assertEquals(1, radios.single().collectors)
             }
@@ -606,7 +606,7 @@ class RuntimeOwnershipTest {
             try {
                 foreign.start()
                 val error = assertFailsWith<MeshCoreException.ConnectionLost> { failed.manager.connect(failed.platform.target) }
-                assertIs<SessionCorrelationException.ConcurrentTransportOwner>(error.cause)
+                requiredCause<SessionCorrelationException.ConcurrentTransportOwner>(error)
                 assertEquals(0, shared.closes); assertEquals(1, shared.collectors)
                 failed.manager.close(); foreign.stop()
                 fresh.connect(); assertEquals(1, shared.collectors); assertEquals(DeviceConnectionState.READY, fresh.manager.connectionState)

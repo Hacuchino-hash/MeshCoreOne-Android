@@ -346,3 +346,13 @@ internal suspend fun TestScope.withFixture(assertions: suspend RuntimeFixture.()
     val fixture = RuntimeFixture(this)
     try { fixture.assertions() } finally { fixture.close() }
 }
+
+internal inline fun <reified T : Throwable> requiredCause(failure: Throwable): T {
+    var current: Throwable? = failure
+    val seen = mutableSetOf<Throwable>()
+    while (current != null && seen.add(current)) {
+        if (current is T) return current
+        current = current.cause
+    }
+    throw AssertionError("Expected retained typed cause ${T::class.java.name}", failure)
+}

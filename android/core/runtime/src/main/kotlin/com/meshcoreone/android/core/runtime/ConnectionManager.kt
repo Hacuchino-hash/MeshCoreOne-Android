@@ -316,7 +316,9 @@ class ConnectionManager(
         catch (cancelled: CancellationException) {
             withContext(NonCancellable) { work.cancelAndJoin() }
             synchronized(lock) {
-                if (pending === work && active == null) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                if (pending === work && active == null && retained == null) {
+                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                }
             }
             throw cancelled
         } catch (failure: Exception) {
