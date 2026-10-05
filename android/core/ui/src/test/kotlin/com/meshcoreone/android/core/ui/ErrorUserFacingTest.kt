@@ -6,6 +6,10 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
@@ -127,17 +131,21 @@ class ErrorUserFacingTest : SourceCaseProof() {
     @Test fun syncCopyPolicy() = prove {
         assertEquals(resources.getString(L.errorSyncCoordinatorAlreadySyncing), copy("SyncCoordinatorError", "alreadySyncing"))
     }
-    @ProducerBindingPending("WP-211")
     @OriginalCase("ErrorUserFacingMessageTests::device service error dispatches to concrete mapping()")
-    @Test fun deviceCopyPolicy() = prove {
+    @Test fun deviceConcreteDispatch() = prove {
+        val cause = IllegalStateException("synthetic write cause")
+        val failure = DeviceServiceException(DeviceServiceError.PersistenceFailed("write rejected"), cause)
         assertEquals(L.errorDeviceServicePersistenceFailed(resources, "write rejected"),
-            ErrorCopy.devicePersistenceFailed("write rejected").resolve(resources))
+            message(failure))
+        assertSame(cause, mapper.present(failure).originalFailure.cause)
     }
-    @ProducerBindingPending("WP-211")
     @OriginalCase("ErrorUserFacingMessageTests::settings service error dispatches to concrete mapping()")
-    @Test fun settingsCopyPolicy() = prove {
+    @Test fun settingsConcreteDispatch() = prove {
+        val fault = SettingsServiceError.VerificationFailed("915.5", "868.0")
+        val failure = SettingsServiceException(fault)
         assertEquals(L.errorSettingsVerificationFailed(resources, "915.5", "868.0"),
-            ErrorCopy.settingsVerificationFailed("915.5", "868.0").resolve(resources))
+            message(failure))
+        assertEquals("915.5", fault.expected); assertEquals("868.0", fault.actual)
     }
     @ProducerBindingPending("WP-204-native-equivalence")
     @OriginalCase("ErrorUserFacingMessageTests::keychain error dispatches to concrete mapping()")
@@ -160,15 +168,17 @@ class ErrorUserFacingTest : SourceCaseProof() {
         assertFalse("StoreServiceError" in ErrorCopy.sourceFamilies)
         assertFalse(ErrorCopy.staticCopies.keys.any { it.sourceType == "StoreServiceError" })
     }
-    @ProducerBindingPending("WP-211")
     @OriginalCase("ErrorUserFacingMessageTests::device GPS verification failed picks boolean variant key()")
-    @Test fun gpsBooleanPolicy() = prove {
-        assertEquals(resources.getString(L.errorSettingsGpsNotSavedExpectedOn), ErrorCopy.gpsVerificationFailed(true).resolve(resources))
-        assertEquals(resources.getString(L.errorSettingsGpsNotSavedExpectedOff), ErrorCopy.gpsVerificationFailed(false).resolve(resources))
+    @Test fun gpsConcreteBooleanVariants() = prove {
+        val expectedOn = SettingsServiceError.DeviceGPSVerificationFailed(true, false)
+        val expectedOff = SettingsServiceError.DeviceGPSVerificationFailed(false, true)
+        assertEquals(resources.getString(L.errorSettingsGpsNotSavedExpectedOn), message(SettingsServiceException(expectedOn)))
+        assertEquals(resources.getString(L.errorSettingsGpsNotSavedExpectedOff), message(SettingsServiceException(expectedOff)))
+        assertFalse(expectedOn.actualEnabled); assertTrue(expectedOff.actualEnabled)
     }
     @OriginalCase("ErrorUserFacingMessageTests::unmapped error falls back to localized description()")
     @Test fun unmapped() = prove { assertEquals("Something went wrong", message(IllegalStateException("Something went wrong"))) }
-    @ProducerBindingPending("WP-208-209-210-211")
+    @ProducerBindingPending("WP-208-209-210")
     @OriginalCase("ErrorUserFacingMessageTests::session error delegates to central mesh core mapping()")
     @Test fun allNineDelegatedSessionPolicyCases() = prove {
         val errors = listOf(MeshCoreException.Timeout(), MeshCoreException.NotConnected(), MeshCoreException.SessionNotStarted(),
@@ -177,7 +187,10 @@ class ErrorUserFacingTest : SourceCaseProof() {
         val expected = listOf(L.errorMeshCoreTimeout, L.errorMeshCoreNotConnected, L.errorMeshCoreSessionNotStarted,
             L.errorMeshCoreBluetoothPoweredOff, L.errorMeshCoreFeatureDisabled, L.errorMeshCoreTimeout,
             L.errorMeshCoreNotConnected, L.errorMeshCoreSessionNotStarted, L.errorMeshCoreTimeout)
-        for ((index, error) in errors.withIndex()) assertEquals(resources.getString(expected[index]), message(error))
+        for ((index, error) in errors.withIndex()) {
+            val failure = if (index == errors.lastIndex) SettingsServiceException(SettingsServiceError.SessionError(error)) else error
+            assertEquals(resources.getString(expected[index]), message(failure))
+        }
     }
     @ProducerBindingPending("WP-208")
     @OriginalCase("ErrorUserFacingMessageTests::persist failed recurses into underlying error()")

@@ -4,6 +4,10 @@ package com.meshcoreone.android.core.ui
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.datastore.StorageOperation
 import com.meshcoreone.android.core.datastore.StorageProblem
@@ -137,5 +141,38 @@ class SharedPolicyBoundaryTest {
         }
         assertTrue(mapper.message(AppBackupException(AppBackupError.UnsupportedVersion(Long.MAX_VALUE, 1)))
             .resolve(resources).contains(Long.MAX_VALUE.toString()))
+    }
+
+    @Test fun allEightFrozenDeviceSettingsCasesDispatchAndOnlySourceEligibleFaultsRecommendRetry() {
+        val mapper = UiErrorMapper(reporter = UiErrorReporter {})
+        val deviceFailures = listOf(
+            DeviceServiceException(DeviceServiceError.DeviceNotFound),
+            DeviceServiceException(DeviceServiceError.PersistenceFailed("native synthetic reason")),
+        )
+        val settings = listOf(
+            SettingsServiceError.NotConnected, SettingsServiceError.SendFailed,
+            SettingsServiceError.InvalidResponse, SettingsServiceError.SessionError(MeshCoreException.Timeout()),
+            SettingsServiceError.VerificationFailed("expected", "actual"),
+            SettingsServiceError.DeviceGPSVerificationFailed(true, false),
+        )
+        for (failure in deviceFailures) {
+            assertSame(failure, mapper.present(failure).originalFailure)
+            assertTrue(mapper.message(failure).resolve(resources).isNotEmpty())
+            assertEquals(UiRecovery.INSPECT_FAILURE, mapper.present(failure).content.recovery)
+        }
+        for ((index, fault) in settings.withIndex()) {
+            val failure = SettingsServiceException(fault)
+            assertSame(failure, mapper.present(failure).originalFailure)
+            assertTrue(mapper.message(failure).resolve(resources).isNotEmpty())
+            assertEquals(index in setOf(0, 1, 3), failure.isRetryable)
+            assertEquals(if (failure.isRetryable) UiRecovery.RETRY else UiRecovery.INSPECT_FAILURE,
+                mapper.present(failure).content.recovery)
+        }
+        val noRetry = SettingsServiceException(SettingsServiceError.SessionError(MeshCoreException.FeatureDisabled()))
+        assertFalse(noRetry.isRetryable)
+        assertEquals(UiRecovery.INSPECT_FAILURE, mapper.present(noRetry).content.recovery)
+        val wrappedCancellation = SettingsServiceException(SettingsServiceError.SessionError(
+            MeshCoreException.ConnectionLost(CancellationException("synthetic cancelled operation"))))
+        assertFailsWith<CancellationException> { mapper.message(wrappedCancellation) }
     }
 }

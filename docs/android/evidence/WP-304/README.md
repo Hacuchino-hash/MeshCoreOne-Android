@@ -105,8 +105,20 @@ The own clean branch was further reconciled by explicit authority at
 `7e2835bad2c03dfb5a088063655f9fc4dbafd00f`. Original824/d8f/3c06 and failed94e
 history remain intact. Runtime connection/timeout errors now exist in their
 concrete runtime module; neutral UI projection remains a producer boundary,
-not authorization for a UI-to-runtime edge. The WP-211 frozen neutral fault
-producer will be supplied separately; no peer/uncommitted file is copied here.
+not authorization for a UI-to-runtime edge.
+
+The WP-211 neutral Device/Settings fault file was subsequently supplied by an
+exact serialized carry-only receipt: reviewed producer
+`98f64d2582e16e2e49c8c4fe79d5b7a239b970dd`, 3,183-byte one-file patch SHA256
+`9a0b5e5e601406cf9455873562bc3e242b1f89d3d3b4f42d8a3f4c1ecdbf4bb7`.
+The absent destination was populated byte-exactly and verified as Git blob
+`b2a6b84a3846c016184e06772da4800700e3e8af`. It is frozen read-only here.
+No producer implementation/tests or peer/uncommitted source was carried.
+The actual2+6 fault cases now bind to the UI mapper and original tests, including
+cause retention, central session delegation, expected/actual/GPS booleans and
+source-only retry advice. Five original copy-only binding markers were removed;
+the other producer blockers remain. A separate native boundary method increases
+native declarations to166, not an execution count.
 
 The actual declared module resolver is
 `:core:ui:resolveSharedUiDependencies --write-locks --dependency-verification strict --no-build-cache`.
@@ -116,7 +128,31 @@ before failure. It runs only through the now-admitted exact scoped Linux proposa
 no hand-edited records/rootwide unlock or metadata weakening.
 The following actual declared verifier is
 `:core:ui:verifySharedUiTests --dependency-verification strict --no-build-cache`.
-Neither invocation has occurred here.
+The resolver did execute on approved Linux attempt3, but its data proposal
+failed the snapshot guard; the native verifier has not executed.
+
+[`generation-attempt3-failure.json`](generation-attempt3-failure.json) preserves
+the authentic failure and independent full artifact/log hashes. All3,306 prior
+inputs were unchanged; the sole added snapshot key was the198-byte ignored
+`android/settings-gradle.lockfile`. It was not an OWNER_LOCK or porcelain bug.
+The coordinator admitted only this auxiliary unlinked bounded UTF8 bookkeeping
+file, validated against the existing `ScaffoldSchema` rule: comments plus
+`empty=incomingCatalogForLibs0`. The helper now retains raw bytes before
+validation, rejects remote/unknown/duplicate entries and compares all other
+inputs strictly. This file is never committed.
+
+The same coherent helper repair shares one bounded configuration-name grammar
+across lock/roster/graph readers, accepting actual `kotlin-extension` and
+`unified-test-platform-gradle-work-action` names without omitting either
+configuration or artifact.27 generator regressions and16 source-reader
+regressions pass;130/158 original accounting is unchanged. Attempt3 remains
+failed. A diagnostic readback reached a later strict metadata blocker for seven
+actual unit-compile coordinates; no metadata/version exception or hand-edited
+lock was introduced. The historical roster also lacked lazy `androidApis`;
+the repaired reader explicitly rejects loss of this original seed configuration
+rather than allowing a generated proposal that still cannot compile resources.
+Fresh Linux proposal data and independent parent resolution/persistence review
+are still required before native tests or PNG evidence can be claimed.
 
 The ROOT lock stays at blob`566089f945f40442b8c0980aabee409c1de2c6da`,
 canonical-LF47,512 bytes/SHA256

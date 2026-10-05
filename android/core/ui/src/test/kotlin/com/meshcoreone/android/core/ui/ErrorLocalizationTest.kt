@@ -6,6 +6,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.protocol.model.ErrorCode
@@ -82,17 +84,23 @@ class ErrorLocalizationTest : SourceCaseProof() {
         assertEquals("The operation timed out. Please try again.", MeshCoreException.Timeout().sourceEnglishDescription())
         assertEquals(resources.getString(L.errorMeshCoreTimeout), mapper.message(MeshCoreException.Timeout()).resolve(resources))
     }
-    @ProducerBindingPending("WP-211")
     @OriginalCase("ErrorLocalizationTests::SettingsServiceError.sessionError passes through without prefix()")
-    @Test fun settingsDelegationPolicy() = prove {
-        val description = MeshCoreException.NotConnected().sourceEnglishDescription()
-        assertEquals("Not connected to device.", description); assertFalse(description.contains("Session error:"))
+    @Test fun settingsConcreteDelegation() = prove {
+        val underlying = MeshCoreException.NotConnected()
+        val failure = SettingsServiceException(SettingsServiceError.SessionError(underlying))
+        assertSame(underlying, failure.cause)
+        val description = mapper.message(failure).resolve(resources)
+        assertEquals(mapper.message(underlying).resolve(resources), description)
+        assertFalse(description.contains("Session error:"))
     }
-    @ProducerBindingPending("WP-211")
     @OriginalCase("ErrorLocalizationTests::SettingsServiceError.deviceGPSVerificationFailed is human-readable()")
-    @Test fun gpsDescriptionPolicy() = prove {
-        val copy = ErrorCopy.gpsVerificationFailed(false).resolve(resources)
+    @Test fun gpsConcreteDescription() = prove {
+        val fault = SettingsServiceError.DeviceGPSVerificationFailed(false, true)
+        val failure = SettingsServiceException(fault)
+        assertEquals("Device GPS setting was not saved. Expected 'Off' but device reports 'On'.", failure.localizedMessage)
+        val copy = mapper.message(failure).resolve(resources)
         assertEquals(resources.getString(L.errorSettingsGpsNotSavedExpectedOff), copy)
+        assertFalse(fault.expectedEnabled); assertTrue(fault.actualEnabled)
         assertTrue(copy.isNotEmpty()); assertFalse(copy.contains("SettingsServiceError"))
     }
     @ProducerBindingPending("WP-210")

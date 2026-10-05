@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from pathlib import Path
+import tempfile
 import unittest
 
 from dependency_proposal import (
-    BRANCH, OWNER_LOCK, ROOT_LOCK, VM, command, parse_lock, parse_graph, validate_budget,
+    BRANCH, OWNER_LOCK, ROOT_LOCK, SETTINGS_BOOKKEEPING, CONFIGURATION_NAME, VM, command, parse_lock, parse_graph, validate_budget,
     validate_command, validate_delta, validate_identity, validate_workflow, validate_writes, ROOT, WORKFLOW,
+    validate_settings_bookkeeping, retain_settings_bookkeeping,
 )
 from controller.errors import PortError
 
@@ -22,6 +25,11 @@ GRAPH = (
     ":core:ui\tdebugUnitTestRuntimeClasspath\tselected\tproject :core:ui\n"
     ":core:ui\tdebugUnitTestRuntimeClasspath\tselected\tg:new:2\n"
 )
+BOOKKEEPING = b"# Gradle local-file catalog bookkeeping\nempty=incomingCatalogForLibs0\n"
+
+
+def settings_entry(raw):
+    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(), "git_blob": None}
 
 
 def metadata(*coordinates):
@@ -115,6 +123,37 @@ class DependencyProposalTests(unittest.TestCase):
         self.assertEqual(3, value["configuration_count"])
         self.assertEqual(2, value["selected_component_rows"])
 
+    def test_actual_gradle_hyphenated_names_are_retained_in_lock_roster_and_graph(self):
+        names = "kotlin-extension,unified-test-platform-gradle-work-action"
+        generated = GENERATED + "g:framework:3=" + names + "\n"
+        configs = CONFIGS + names.replace(",", "\n") + "\n"
+        graph = GRAPH + "".join(":core:ui\t" + name + "\tselected\tg:framework:3\n" for name in names.split(","))
+        self.assertEqual(set(names.split(",")), set(parse_lock(generated)) - set(parse_lock(GENERATED)))
+        result = validate_delta(SEED, None, generated, graph, configs, metadata("g:old:1", "g:new:2", "g:framework:3"))
+        self.assertEqual(5, result["configuration_count"])
+        self.assertEqual(4, result["selected_component_rows"])
+
+    def test_standard_underscore_name_uses_the_same_bounded_grammar(self):
+        generated = GENERATED + "g:framework:3=test_fixture\n"
+        graph = GRAPH + ":core:ui\ttest_fixture\tselected\tg:framework:3\n"
+        result = validate_delta(SEED, None, generated, graph, CONFIGS + "test_fixture\n",
+            metadata("g:old:1", "g:new:2", "g:framework:3"))
+        self.assertEqual(4, result["configuration_count"])
+
+    def test_unsafe_blank_excessive_and_duplicate_configuration_names_fail(self):
+        for name in ("bad:name", "bad/name", "bad\\name", "bad,name", "bad=name", "",
+                "bad name", "bad\tname", "a" * 129, "bad\nname", "bad\rname"):
+            with self.subTest(name=name):
+                self.assertIsNone(CONFIGURATION_NAME.fullmatch(name))
+                if "," not in name:
+                    with self.assertRaises(PortError):
+                        parse_lock(GENERATED + "g:framework:3=" + name + "\n")
+            with self.subTest(roster=name), self.assertRaises(PortError):
+                validate_delta(SEED, None, GENERATED, GRAPH, CONFIGS + name + "\n",
+                    metadata("g:old:1", "g:new:2"))
+        with self.assertRaises(PortError):
+            validate_delta(SEED, None, GENERATED, GRAPH, CONFIGS + "debugRuntimeClasspath\n", metadata("g:old:1", "g:new:2"))
+
     def test_unknown_version_missing_metadata_and_changed_incumbent_fail(self):
         for generated, graph, verified in (
             (GENERATED.replace("g:old:1", "g:old:9"), GRAPH.replace("g:old:1", "g:old:9"), metadata("g:old:9", "g:new:2")),
@@ -147,10 +186,80 @@ class DependencyProposalTests(unittest.TestCase):
             validate_delta(SEED, GENERATED, GENERATED.replace("g:new:2=debugUnitTestRuntimeClasspath\n", ""),
                 GRAPH, CONFIGS, metadata("g:old:1", "g:new:2"))
 
+    def test_late_sdk_seed_configuration_cannot_disappear_from_executed_roster_and_lock(self):
+        with self.assertRaises(PortError):
+            validate_delta(SEED, None, GENERATED.replace("empty=androidApis\n", ""),
+                "\n".join(line for line in GRAPH.splitlines() if "\tandroidApis\t" not in line) + "\n",
+                CONFIGS.replace("androidApis\n", ""), metadata("g:old:1", "g:new:2"))
+
     def test_only_local_ui_lock_change_is_admitted(self):
         before = {ROOT_LOCK: {"sha256": "a"}}
         validate_writes(before, before.copy(), ["?? " + OWNER_LOCK])
         self.assertEqual("android/core/ui/gradle.lockfile", OWNER_LOCK)
+
+    def test_new_validated_ignored_settings_bookkeeping_and_only_owned_untracked_lock_are_admitted(self):
+        before = {ROOT_LOCK: {"sha256": "unchanged"}}
+        after = before | {SETTINGS_BOOKKEEPING: settings_entry(BOOKKEEPING)}
+        validate_writes(before, after, ["?? " + OWNER_LOCK], None, BOOKKEEPING)
+        self.assertEqual({ROOT_LOCK: {"sha256": "unchanged"}}, before)
+
+    def test_existing_unchanged_bookkeeping_and_owned_tracked_lock_change_are_admitted(self):
+        before = {ROOT_LOCK: {"sha256": "unchanged"}, SETTINGS_BOOKKEEPING: settings_entry(BOOKKEEPING)}
+        validate_writes(before, before.copy(), [" M " + OWNER_LOCK], BOOKKEEPING, BOOKKEEPING)
+
+    def test_bookkeeping_unknown_remote_duplicate_empty_non_utf8_or_excessive_content_fails(self):
+        for raw in (b"", b"# no record\n", b"empty=other\n", b"g:remote:1=incomingCatalogForLibs0\n",
+                BOOKKEEPING + b"empty=incomingCatalogForLibs0\n", BOOKKEEPING + b"g:new:1=other\n",
+                BOOKKEEPING + b"\0", b"\xff", b"#" * 4097):
+            with self.subTest(raw=raw[:80]), self.assertRaises((PortError, UnicodeError)):
+                validate_settings_bookkeeping(raw)
+
+    def test_bookkeeping_removal_changed_root_source_and_untracked_addition_fail(self):
+        before = {ROOT_LOCK: {"sha256": "a"}, "MC1/source.swift": {"sha256": "source"},
+            SETTINGS_BOOKKEEPING: settings_entry(BOOKKEEPING)}
+        changes = ["?? " + OWNER_LOCK]
+        for after in (
+            {key: value for key, value in before.items() if key != SETTINGS_BOOKKEEPING},
+            before | {ROOT_LOCK: {"sha256": "b"}},
+            before | {"MC1/source.swift": {"sha256": "changed"}},
+            before | {"android/settings-extra.lockfile": {"sha256": "unknown"}},
+            {key: value for key, value in before.items() if key != ROOT_LOCK},
+        ):
+            raw = BOOKKEEPING if SETTINGS_BOOKKEEPING in after else None
+            with self.assertRaises(PortError):
+                validate_writes(before, after, changes, BOOKKEEPING, raw)
+
+    def test_bookkeeping_requires_raw_matching_size_hash_and_untracked_identity(self):
+        base = {ROOT_LOCK: {"sha256": "a"}}
+        for entry in (
+            settings_entry(BOOKKEEPING) | {"sha256": "bad"},
+            settings_entry(BOOKKEEPING) | {"bytes": 1},
+            settings_entry(BOOKKEEPING) | {"git_blob": "a" * 40},
+        ):
+            with self.assertRaises(PortError):
+                validate_writes(base, base | {SETTINGS_BOOKKEEPING: entry}, ["?? " + OWNER_LOCK], None, BOOKKEEPING)
+        with self.assertRaises(PortError):
+            validate_writes(base, base | {SETTINGS_BOOKKEEPING: settings_entry(BOOKKEEPING)}, ["?? " + OWNER_LOCK])
+
+    def test_bookkeeping_bytes_are_retained_before_rejecting_invalid_entries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "android").mkdir()
+            output = root / "proposal"
+            output.mkdir()
+            raw = b"g:remote:1=incomingCatalogForLibs0\n"
+            (root / SETTINGS_BOOKKEEPING).write_bytes(raw)
+            preserved = retain_settings_bookkeeping(root, output, "after")
+            self.assertEqual(raw, (output / "settings-bookkeeping-after.lockfile").read_bytes())
+            with self.assertRaises(PortError):
+                validate_settings_bookkeeping(preserved)
+
+    def test_renamed_quoted_unsafe_or_space_paths_are_not_silently_normalized(self):
+        base = {ROOT_LOCK: {"sha256": "a"}}
+        for line in ("R  " + ROOT_LOCK + " -> " + OWNER_LOCK, '?? "' + OWNER_LOCK + '"',
+            "?? " + OWNER_LOCK + " other", "?? ../" + OWNER_LOCK, "?? " + SETTINGS_BOOKKEEPING):
+            with self.subTest(line=line), self.assertRaises(PortError):
+                validate_writes(base, base, [line])
 
     def test_root_shared_unknown_tracked_and_untracked_writes_fail_without_restore(self):
         before = {ROOT_LOCK: {"sha256": "a"}}

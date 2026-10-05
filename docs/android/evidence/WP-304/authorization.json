@@ -82,6 +82,29 @@
     "persistence": "No worker auto-persistence. Parent independently verifies official ZIP and configuration deltas before a byte-exact persistence grant.",
     "root_or_other_lock_changes_authorized": false
   },
+  "empty_settings_bookkeeping_amendment": {
+    "authority": "Parent final-corrected attempt3 diagnosis explicitly admitted this one auxiliary generated bookkeeping path.",
+    "path": "android/settings-gradle.lockfile",
+    "scope": "Unlinked bounded UTF8 with only comments and exact empty=incomingCatalogForLibs0, matching trusted ScaffoldSchema policy. Raw bytes and hashes retained before validation; never committed.",
+    "historical_bytes": 198,
+    "historical_sha256": "e58bb2ed80db9f829601a658d7c33b9802eb7d2191c31e79c28e01f14c225926",
+    "other_inputs": "Every other before/after snapshot entry remains byte-identical; OWNER_LOCK exclusion and exact porcelain guard remain unchanged.",
+    "configuration_grammar": "Only bounded ASCII Gradle names with hyphen/underscore added; real roster/graph/lock/seed/version/metadata checks remain mandatory."
+  },
+  "frozen_device_settings_carry": {
+    "authority": "Parent serialized carry-only one-file grant after producer removed the path from live writes.",
+    "producer_work_package": "WP-211",
+    "producer_head": "98f64d2582e16e2e49c8c4fe79d5b7a239b970dd",
+    "producer_base": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
+    "producer_freeze_message_utc": "2026-10-05T23:22:32Z",
+    "path": "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt",
+    "destination_was_absent": true,
+    "patch_bytes": 3183,
+    "patch_sha256": "9a0b5e5e601406cf9455873562bc3e242b1f89d3d3b4f42d8a3f4c1ecdbf4bb7",
+    "verified_git_blob": "b2a6b84a3846c016184e06772da4800700e3e8af",
+    "scope": "Byte-exact 2+6 neutral fault definitions only. No type edits, producer test or whole-WP carry, services/data/UI edges, fake failures or native parity claim.",
+    "freeze": "Read-only after this exact carry; subsequent type changes require a separate actual-bug receipt."
+  },
   "second_main_reconciliation": {
     "authority": "Parent explicitly requested only the own branch reconcile with actual origin/main before final proof.",
     "actual_base_sha": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",

@@ -7,6 +7,10 @@ import android.util.Log
 import com.meshcoreone.android.core.contracts.domain.ConnectionIssue
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.l10n.R
@@ -99,6 +103,18 @@ class UiErrorMapper(
             }
             is WiFiTransportException -> wifiError(error.error)
             is PersistenceStoreException -> persistenceError(error.error)
+            is DeviceServiceException -> when (val fault = error.error) {
+                DeviceServiceError.DeviceNotFound -> ErrorCopy.static("DeviceServiceError", "deviceNotFound")
+                is DeviceServiceError.PersistenceFailed -> ErrorCopy.devicePersistenceFailed(fault.reason)
+            }
+            is SettingsServiceException -> when (val fault = error.error) {
+                SettingsServiceError.NotConnected -> ErrorCopy.static("SettingsServiceError", "notConnected")
+                SettingsServiceError.SendFailed -> ErrorCopy.static("SettingsServiceError", "sendFailed")
+                SettingsServiceError.InvalidResponse -> ErrorCopy.static("SettingsServiceError", "invalidResponse")
+                is SettingsServiceError.SessionError -> message(fault.error, visited)
+                is SettingsServiceError.VerificationFailed -> ErrorCopy.settingsVerificationFailed(fault.expected, fault.actual)
+                is SettingsServiceError.DeviceGPSVerificationFailed -> ErrorCopy.gpsVerificationFailed(fault.expectedEnabled)
+            }
             is AppBackupException -> backupError(error.error, visited)
             is KeyGenerationFailure -> when (error) {
                 is KeyGenerationFailure.MaxAttemptsExceeded -> ErrorCopy.static("KeyGenerationError", "maxAttemptsExceeded")
@@ -188,6 +204,7 @@ class UiErrorMapper(
     }
 
     private fun recovery(error: Throwable): UiRecovery = when (error) {
+        is SettingsServiceException -> if (error.isRetryable) UiRecovery.RETRY else UiRecovery.INSPECT_FAILURE
         is MeshCoreException.NotConnected -> UiRecovery.CONNECT
         is MeshCoreException.BluetoothPoweredOff -> UiRecovery.ENABLE_BLUETOOTH
         is MeshCoreException.BluetoothUnauthorized -> UiRecovery.GRANT_BLUETOOTH

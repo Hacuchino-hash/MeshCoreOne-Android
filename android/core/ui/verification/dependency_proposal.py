@@ -38,6 +38,8 @@ OWNER_LOCK = "android/core/ui/gradle.lockfile"
 ROOT_LOCK = "android/gradle/dependency-locks/core-ui.lockfile"
 ROOT_LOCK_BLOB = "566089f945f40442b8c0980aabee409c1de2c6da"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
+SETTINGS_BOOKKEEPING = "android/settings-gradle.lockfile"
+CONFIGURATION_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,127}")
 WORKFLOW = ".github/workflows/android-shared-ui-dependency-generation.yml"
 TASK = ":core:ui:resolveSharedUiDependencies"
 GRAPH = "android/core/ui/build/reports/wp304/dependency-graphs.tsv"
@@ -47,6 +49,7 @@ REQUIRED_INPUTS = {
     WORKFLOW, "android/core/ui/verification/dependency_proposal.py",
     "android/core/ui/verification/test_dependency_proposal.py",
     "android/core/ui/build.gradle.kts", ROOT_LOCK,
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt",
     "docs/android/evidence/WP-304/collect_evidence.py",
     "docs/android/evidence/WP-304/retain_raw.py",
     "docs/android/evidence/WP-304/source_inventory.py",
@@ -56,6 +59,7 @@ REQUIRED_INPUTS = {
     "android/gradle/libs.versions.toml", "android/gradle/verification-metadata.xml",
     "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/BuildConventions.kt",
     "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/ModuleGraph.kt",
+    "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/ScaffoldSchema.kt",
     "tools/android-port/controller/toolchain-pins.json", "tools/android-port/controller/provision.py",
     "tools/android-port/controller/ci.py", "tools/android-port/controller/ci_environment.py",
     "tools/android-port/controller/runtime_inputs.py",
@@ -105,7 +109,7 @@ def parse_lock(text):
         require(coordinate == "empty" or re.fullmatch(r"[\w.-]+:[\w.-]+:[\w.+-]+", coordinate), "malformed coordinate")
         require(coordinate not in rows, "duplicate lock coordinate")
         names = values.split(",")
-        require(names and len(names) == len(set(names)) and all(re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", value) for value in names),
+        require(names and len(names) == len(set(names)) and all(CONFIGURATION_NAME.fullmatch(value) for value in names),
             "malformed/duplicate configuration")
         rows[coordinate] = set(names)
         for name in names:
@@ -140,7 +144,8 @@ def parse_graph(text, expected):
     configurations = {}
     for line in lines[1:]:
         parts = line.split("\t")
-        require(len(parts) == 4 and parts[0] == ":core:ui" and parts[1] in expected, "foreign module/configuration")
+        require(len(parts) == 4 and parts[0] == ":core:ui" and CONFIGURATION_NAME.fullmatch(parts[1])
+            and parts[1] in expected, "foreign module/configuration")
         require(parts[2] == "selected" and parts[3], "unresolved/failed graph is not a generated proposal")
         configuration = configurations.setdefault(parts[1], set())
         require(parts[3] not in configuration, "duplicate selected component")
@@ -153,12 +158,13 @@ def parse_graph(text, expected):
 def validate_delta(seed_text, prior_text, generated_text, graph_text, config_text, verification):
     expected = config_text.splitlines()
     require(expected and len(expected) == len(set(expected))
-        and all(re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", name) for name in expected), "missing/zero/malformed configuration roster")
+        and all(CONFIGURATION_NAME.fullmatch(name) for name in expected), "missing/zero/malformed configuration roster")
     seed = parse_lock(seed_text)
     before = parse_lock(prior_text) if prior_text is not None else {}
     after = parse_lock(generated_text)
     graph = parse_graph(graph_text, expected)
     require(set(after) == set(expected) | set(before), "lock contains an unexecuted configuration or omitted prior state")
+    require(set(seed) <= set(after), "original seed configurations missing: " + ", ".join(sorted(set(seed) - set(after))))
     admitted = admitted_coordinates(verification)
     seed_versions = {}
     for values in seed.values():
@@ -169,7 +175,7 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
         require(name in after and values <= after[name], "removed prior owned component/configuration")
     delta = []
     for name, values in after.items():
-        require(values <= admitted, "unadmitted coordinate/version")
+        require(values <= admitted, "unadmitted coordinate/version in " + name + ": " + ", ".join(sorted(values - admitted)))
         if name in graph:
             require(values == graph[name], "generated lock and actual selected graph differ")
         else:
@@ -268,8 +274,43 @@ def snapshot():
     return before
 
 
-def validate_writes(before, after, changes):
-    require(before == after, "unowned tracked/root/shared input changed")
+def validate_settings_bookkeeping(raw):
+    if raw is None:
+        return
+    require(0 < len(raw) <= 4096, "empty/excessive settings bookkeeping")
+    text = raw.decode("utf8")
+    require("\x00" not in text, "invalid settings bookkeeping text")
+    entries = [line.strip() for line in text.splitlines() if line.strip() and not line.strip().startswith("#")]
+    require(entries == ["empty=incomingCatalogForLibs0"], "settings catalog has remote/unknown/duplicate entries")
+
+
+def retain_settings_bookkeeping(repository, output, phase):
+    require(phase in {"before", "after"}, "unknown bookkeeping phase")
+    source = repository / SETTINGS_BOOKKEEPING
+    if not source.exists():
+        require(not source.is_symlink(), "linked missing settings bookkeeping")
+        return None
+    require(source.is_file() and not source.is_symlink() and not any(parent.is_symlink() for parent in source.parents),
+        "linked/invalid settings bookkeeping")
+    with source.open("rb") as stream:
+        raw = stream.read(4097)
+    require(len(raw) <= 4096, "excessive settings bookkeeping")
+    (output / ("settings-bookkeeping-" + phase + ".lockfile")).write_bytes(raw)
+    return raw
+
+
+def validate_writes(before, after, changes, settings_before=None, settings_after=None):
+    for inputs, raw in ((before, settings_before), (after, settings_after)):
+        entry = inputs.get(SETTINGS_BOOKKEEPING)
+        require((entry is not None) == (raw is not None), "missing raw settings bookkeeping binding")
+        validate_settings_bookkeeping(raw)
+        if entry is not None:
+            require(entry["bytes"] == len(raw) and entry["sha256"] == sha(raw) and entry["git_blob"] is None,
+                "settings bookkeeping bytes differ or became tracked")
+    require(SETTINGS_BOOKKEEPING not in before or SETTINGS_BOOKKEEPING in after, "settings bookkeeping removed")
+    require({key: value for key, value in before.items() if key != SETTINGS_BOOKKEEPING}
+        == {key: value for key, value in after.items() if key != SETTINGS_BOOKKEEPING},
+        "unowned tracked/root/shared input changed")
     require(all(line[3:] == OWNER_LOCK and line[:2] in {"??", " M", "M "} for line in changes), "unknown/untracked candidate write")
 
 
@@ -304,6 +345,8 @@ def run(root):
         verify_committed_inputs(ROOT)
         verify_wrapper()
         before = snapshot()
+        settings_before = retain_settings_bookkeeping(ROOT, output, "before")
+        validate_writes(before, before, [], settings_before, settings_before)
         seed = ROOT / ROOT_LOCK
         require(git(ROOT, "rev-parse", "HEAD:" + ROOT_LOCK).decode().strip() == ROOT_LOCK_BLOB
             and sha(seed.read_bytes().replace(b"\r\n", b"\n")) == ROOT_LOCK_SHA, "frozen ROOT UI seed changed")
@@ -338,13 +381,20 @@ def run(root):
             path = ROOT / relative
             if path.is_file() and not path.is_symlink():
                 shutil.copyfile(path, output / name)
+        settings_after = retain_settings_bookkeeping(ROOT, output, "after")
         record["inputs_after"] = snapshot()
         record["changed_paths"] = git(ROOT, "status", "--porcelain=v1", "--untracked-files=all").decode().splitlines()
         record["artifacts"] = {path.name: {"bytes": path.stat().st_size, "sha256": file_sha256(path)}
             for path in output.iterdir() if path.is_file()}
         record["result"] = "raw-produced-unvalidated"
+        record["settings_bookkeeping"] = {
+            "path": SETTINGS_BOOKKEEPING,
+            "before": before.get(SETTINGS_BOOKKEEPING),
+            "after": record["inputs_after"].get(SETTINGS_BOOKKEEPING),
+            "scope": "Only absent or comments plus empty=incomingCatalogForLibs0; raw bytes retained, never committed.",
+        }
         write_json(output / "raw-generation.json", record)
-        validate_writes(before, record["inputs_after"], record["changed_paths"])
+        validate_writes(before, record["inputs_after"], record["changed_paths"], settings_before, settings_after)
         require(failure is None, "actual resolver failed: " + str(failure))
         require(all((output / name).is_file() for name in ("gradle.lockfile", "dependency-graphs.tsv", "resolution-configurations.txt")),
             "missing actual generated output")

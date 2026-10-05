@@ -12,6 +12,8 @@ PIN = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
+FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt"
+FROZEN_FAULT_BLOB = "b2a6b84a3846c016184e06772da4800700e3e8af"
 FAMILY_SCENARIOS = {
     "MC1ServicesTests": 2, "ErrorLocalizationTests": 30,
     "BatteryInfoDisplayTests": 18, "BatteryPercentageCalculationTests": 6,
@@ -73,6 +75,9 @@ def inventory():
         require(git("hash-object", "--", str(current)).decode().strip() == row["blob_sha"], "Assigned checkout drift")
     lock = ROOT / "android" / "gradle" / "dependency-locks" / "core-ui.lockfile"
     require(hashlib.sha256(lock.read_bytes().replace(b"\r\n", b"\n")).hexdigest() == ROOT_LOCK_SHA, "Unleased ROOT UI lock changed")
+    fault = ROOT.joinpath(*FROZEN_FAULT_PATH.split("/"))
+    require(fault.is_file() and git("hash-object", "--", str(fault)).decode().strip() == FROZEN_FAULT_BLOB,
+        "Frozen producer Device/Settings fault carry missing or changed")
     catalog = unique_json(ROOT / "docs" / "android" / "test-cases.json")
     require(catalog["source_sha"] == PIN, "Original case pin drift")
     owned_paths = {row["path"] for row in inputs}
@@ -109,4 +114,10 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+    fault = ROOT.joinpath(*FROZEN_FAULT_PATH.split("/"))
+    raw = fault.read_bytes()
+    result[FROZEN_FAULT_PATH] = {
+        "working_blob": git("hash-object", "--", str(fault)).decode().strip(),
+        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+    }
     return result
