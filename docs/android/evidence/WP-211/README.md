@@ -47,6 +47,13 @@ Services build script/root services lock remain exclusive to WP-218. No app,
 DAO, schema, production store, preferences, container, shared workflow,
 manifest, catalog, golden, policy or global tool installation is writable.
 
+After accepting the eight-file producer freeze, the coordinator narrowed the
+live device-prefix lease to the **22 exact remaining existing paths/docs/data
+entries**. The eight files in `producer-freeze.json` are now read/carry-only,
+not part of this worker's live writer scope. Primary Swift source ownership
+stays WP-211. Subsequent hook/collector repairs use only the existing admitted
+data/evidence files; a new file requires an exact coordinator amendment.
+
 ## Declared verification contract
 
 The early producer's read-only static command is:
@@ -148,7 +155,7 @@ produced these outcomes:
 
 | Command | Actual result |
 | --- | --- |
-| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 23 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 24 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
 | `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 88 native JVM declarations and 12 real Room declarations; `native_execution=false` |
 | `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, ten county keys, all 28 regular/three repeat preset fields/order/availability/priorities/hash sizes, and 2+6 fault declarations; `native_tests_run=false` |
 | `git --no-pager diff --check` | Passed for the authored changes |
@@ -295,6 +302,14 @@ was retained before inspection. Its805-byte exact configuration-failure log
 SHA-256 is
 `49111739242d230c4976541e6146beee111a4b4b92d5e375039640aa331e9e13`.
 No native case executed in that failing configuration.
+
+Raw-retention now writes the complete compiled-input map, source blobs and
+freeze data **before** parsing or validating the execution identity, and
+records changed checkout blobs honestly rather than rejecting them before
+retention. A malformed/stale invocation or stale compiled input still fails
+the strict validation; it cannot prevent the raw failure artifacts/current
+input identities from being preserved. The synthetic malformed-invocation
+regression proves that ordering without claiming native test execution.
 
 Static declaration counts are not executed services-JVM counts; the limited
 actual Room consumer result above is recorded separately. The services module needs the

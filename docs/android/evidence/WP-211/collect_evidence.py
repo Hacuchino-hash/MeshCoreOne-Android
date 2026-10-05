@@ -205,9 +205,11 @@ def inputs():
     for path in [*MAIN.glob("*.kt"), *TEST.glob("*.kt"), ROOT / ROOM_PATH, *readers]:
         relative = path.relative_to(ROOT).as_posix()
         expected = git("rev-parse", "HEAD:" + relative)
-        require(git("hash-object", str(path)) == expected, "Uncommitted/stale owned compiled or reader input: " + relative)
         if relative not in result:
-            result[relative] = {"git_blob": expected, "checkout_blob": expected, "sha256": sha256(path.read_bytes())}
+            result[relative] = {
+                "git_blob": expected, "checkout_blob": git("hash-object", str(path)),
+                "sha256": sha256(path.read_bytes()),
+            }
     return result
 
 
@@ -268,8 +270,6 @@ def retain(output, invocation_file=None):
     persist()
     if invocation_file is not None:
         shutil.copyfile(invocation_file, output / "actual-invocation.json")
-    metadata["execution"] = invocation(invocation_file)
-    persist()
     metadata["input_blobs"] = inputs()
     metadata["producer_freeze"] = load_json(OUT / "producer-freeze.json")
     primary = load_json(ROOT / "docs" / "android" / "port-manifest.json")["inventory"]
@@ -278,6 +278,8 @@ def retain(output, invocation_file=None):
          "checkout_blob": git("hash-object", str(ROOT.joinpath(*item["path"].split("/"))))}
         for item in primary if item["primary_owner"] == "WP-211"
     ]
+    persist()
+    metadata["execution"] = invocation(invocation_file)
     persist()
     return metadata
 

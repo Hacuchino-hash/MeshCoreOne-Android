@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 import collect_evidence as reader
 import verify_producers as producers
+from controller.errors import PortError
 
 
 class JUnitReaderTests(unittest.TestCase):
@@ -110,6 +111,34 @@ class JUnitReaderTests(unittest.TestCase):
         self.assertEqual(reader.LEASE, metadata["lease"])
         self.assertEqual(1, len(metadata["raw_junit"]))
         self.assertTrue(metadata["missing_directories"])
+
+    def test_malformed_execution_identity_cannot_prevent_raw_reports_and_input_maps_being_retained(self):
+        source = self.root / "repo"
+        owned = source / "owned"
+        owned.mkdir(parents=True)
+        (owned / "producer-freeze.json").write_text('{"scope":"synthetic reader fixture"}')
+        manifest = source / "docs" / "android" / "port-manifest.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text('{"inventory":[]}')
+        reports = source / "android" / "core" / "services" / "build" / "test-results" / "test"
+        reports.mkdir(parents=True)
+        raw = b'<testsuite tests="0" failures="1" errors="0" skipped="0"></testsuite>'
+        (reports / "TEST-failed.xml").write_bytes(raw)
+        invocation = self.root / "malformed-invocation.json"
+        invocation.write_text("{malformed")
+        input_map = {"owned.kt": {"git_blob": "a" * 40, "checkout_blob": "b" * 40, "sha256": "c" * 64}}
+        output = self.root / "retained"
+        with patch.object(reader, "ROOT", source), patch.object(reader, "OUT", owned), \
+                patch.object(reader, "git", return_value="a" * 40), \
+                patch.object(reader, "inputs", return_value=input_map):
+            with self.assertRaisesRegex(PortError, "Malformed JSON"):
+                reader.retain(output, invocation)
+        self.assertEqual(raw, (output / "junit" / "services" / "TEST-failed.xml").read_bytes())
+        self.assertEqual(invocation.read_bytes(), (output / "actual-invocation.json").read_bytes())
+        metadata = json.loads((output / "retention.json").read_text())
+        self.assertEqual(input_map, metadata["input_blobs"])
+        self.assertEqual([], metadata["primary_inputs"])
+        self.assertNotIn("execution", metadata)
 
 
 class IdentityReaderTests(unittest.TestCase):
