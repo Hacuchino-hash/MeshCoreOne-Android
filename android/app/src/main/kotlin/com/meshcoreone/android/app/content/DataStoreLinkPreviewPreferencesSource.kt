@@ -1,7 +1,12 @@
-// AndroidOnly: WP-218 Real process-owned DataStore producer for LinkPreviewPreferencesSource.
-// Native adaptation: core:services/content.LinkPreviewPreferencesSource is a pure-JVM port role;
-// this implements it against the real AppStorageKey.linkPreviews* keys already defined in
-// core:datastore (shared with the rest of the app - no second DataStore/PreferenceStore here).
+// PortedFrom: MC1/Models/LinkPreviewPreferences.swift@db14559b39d32322b06477c6ae676112f583db50
+// Native adaptation (many-to-many port): core:services/content.LinkPreviewPreferencesSource is
+// the pure-JVM port role; this file is the real process-owned DataStore producer against the
+// real AppStorageKey.linkPreviews* keys already defined in core:datastore (shared with the rest
+// of the app - no second DataStore/PreferenceStore here). This header names the actual
+// production Swift source this file's producer behavior derives from; it does NOT claim this
+// file carries any of WP-218's 154 original test-assertion credit -- that credit is claimed by
+// core:services' own LinkPreviewPreferences port and its tests (pure-JVM, run against a fake
+// LinkPreviewPreferencesSource), which this adapter supplements rather than duplicates.
 // Mirrors the established cross-module producer pattern used by core:designsystem's
 // ThemeService: a suspend `create()` factory that performs one real initial DataStore read,
 // then an UNDISPATCHED observation coroutine in the caller's process-owned scope keeps the

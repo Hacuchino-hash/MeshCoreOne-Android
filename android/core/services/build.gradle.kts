@@ -19,15 +19,26 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
 
-// WP-218 PROPOSED scoped lock-regeneration task: resolves only core:services' own resolvable
-// configurations (compile/runtime/test classpaths), so `./gradlew :core:services:
-// resolveContentDependencies --write-locks` regenerates only this module's own
-// core-services.lockfile -- never a root-wide `--write-locks` and never another module's lock.
+// WP-218 PROPOSED scoped lock-regeneration task: resolves ONLY the four classpaths the
+// coordinator's narrow admission names -- compileClasspath/runtimeClasspath/
+// testCompileClasspath/testRuntimeClasspath -- never every `isCanBeResolved` configuration this
+// plugin exposes (that set also includes e.g. `*ScriptKotlinCompilerPluginClasspath`/lint/
+// buildscript-adjacent configurations the coordinator's admission does not cover), and never a
+// root-wide `--write-locks`/another module's lock.
 tasks.register("resolveContentDependencies") {
     group = "verification"
-    description = "WP-218: resolves core:services' own classpaths so the kotlinx-serialization-json " +
-        "1.7.3 addition can be locked via --write-locks scoped to this module only."
+    description = "WP-218: resolves exactly core:services' compileClasspath/runtimeClasspath/" +
+        "testCompileClasspath/testRuntimeClasspath so the kotlinx-serialization-json 1.7.3 " +
+        "addition can be locked via --write-locks scoped to this module only."
+    val admittedConfigurationNames = setOf(
+        "compileClasspath",
+        "runtimeClasspath",
+        "testCompileClasspath",
+        "testRuntimeClasspath",
+    )
     doLast {
-        configurations.matching { it.isCanBeResolved }.forEach { it.resolve() }
+        configurations
+            .matching { it.isCanBeResolved && it.name in admittedConfigurationNames }
+            .forEach { it.resolve() }
     }
 }
