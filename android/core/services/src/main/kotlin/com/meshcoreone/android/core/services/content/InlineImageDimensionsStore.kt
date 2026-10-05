@@ -1,10 +1,13 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/InlineImageDimensionsStore.swift@db14559b39d32322b06477c6ae676112f583db50
 // NOTE on test ownership: the frozen source's test file for this type,
 // MC1Services/Tests/MC1ServicesTests/InlineImageDimensionsStoreTests.swift, is assigned by
-// port-manifest.json to WP-213, not WP-218. This port does not claim/port those 9 Swift
-// assertions as WP-218's 154-declaration credit; InlineImageDimensionsStoreTest.kt is an
-// independently-authored suite covering this Kotlin port's own contract (see
-// docs/android/deviations/WP-218.md for the disclosure).
+// port-manifest.json to WP-213 as primary owner, not WP-218. Per explicit coordinator correction,
+// that primary-ownership assignment does NOT excuse WP-218 from porting the actual consumer
+// behavior its own production file must satisfy: InlineImageDimensionsStoreTest.kt below ports
+// the source file's 9 original cases directly (not an independent re-derivation), each disclosed
+// as a cross-consumer WP-218 binding rather than claimed WP-218 154-declaration credit -- the
+// same cross-reference pattern already used for the `GeodesicDistance`/RFCalculator slice (see
+// docs/android/deviations/WP-218.md).
 //
 // The source is an `actor` whose designated initializer takes an explicit `fileURL`; production
 // callers use a zero-arg initializer that resolves the app's Application Support directory via
@@ -17,14 +20,19 @@
 //
 // Persistence format: the source round-trips `[String: Entry]` through `JSONEncoder`/
 // `JSONDecoder` with NO explicit `dateEncodingStrategy`, so `Entry.fetchedAt: Date` serializes via
-// `Codable`'s default (`timeIntervalSinceReferenceDate`, i.e. seconds since 2001-01-01, NOT Unix
-// epoch). This file is explicitly documented in the source as process-owned, disposable,
-// non-versioned, and NOT part of any backup envelope or cross-platform exchange (unlike the
-// envelope-versioned backup codecs elsewhere in the port) -- so byte-for-byte interop with a
-// Swift-written file is never required. This port instead encodes `fetchedAt` as Unix epoch
-// seconds (`java.time.Instant`), which is internally consistent (what this store writes, only
-// this store ever reads) and avoids importing an NSDate-reference-date convention with no other
-// use in this codebase. This deviation is disclosed in docs/android/deviations/WP-218.md.
+// `Codable`'s default (`timeIntervalSinceReferenceDate`, i.e. seconds since 2001-01-01T00:00:00Z,
+// NOT Unix epoch). Per explicit coordinator correction, a cache-format change is NOT an
+// automatically-approved "no observable behavior change" deviation (unlike this same file's
+// backup-envelope-adjacent codecs, which have a hard Unix-seconds contract for a different
+// reason), so this port preserves the source's literal on-disk numeric encoding: `fetchedAt` is
+// still tracked internally as Unix epoch seconds (`java.time.Instant`, the natural pure-JVM
+// representation), but is translated to/from `timeIntervalSinceReferenceDate` seconds at the
+// JSON boundary via [NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS] -- the well-known, documented
+// `kCFAbsoluteTimeIntervalSince1970` constant (978,307,200 seconds between the Unix epoch and the
+// 2001-01-01 reference date) -- so a byte-for-byte-matching Swift-written file round-trips
+// correctly and a Kotlin-written file is byte-compatible with the source format, even though this
+// file remains process-owned/disposable/non-versioned/non-backed-up and cross-platform interop
+// was never the requirement being solved here.
 //
 // The source's all-or-nothing `try? JSONDecoder().decode(...)` recovery (ANY decode failure --
 // missing file, corrupt bytes, a single malformed entry -- starts the whole actor empty, never a
@@ -71,6 +79,15 @@ import kotlinx.serialization.json.long
 /** Newest-N multicast buffer depth, matching the source `EventBroadcaster`'s fixed 64-event
  * per-subscriber backpressure window. */
 private const val RESOLUTION_STREAM_BUFFER_DEPTH = 64
+
+/**
+ * Seconds between the Unix epoch (1970-01-01T00:00:00Z) and Swift's `Date`
+ * `timeIntervalSinceReferenceDate` epoch (2001-01-01T00:00:00Z) -- the documented
+ * `kCFAbsoluteTimeIntervalSince1970` constant. Used to translate [Instant.epochSecond] to/from
+ * the exact on-disk numeric encoding `Codable`'s default `Date` strategy produces, so this file's
+ * JSON format matches the source byte-for-byte rather than silently changing on-disk meaning.
+ */
+private const val NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS = 978_307_200L
 
 /**
  * Process-owned, disposable (non-versioned, non-backed-up) persistent store mapping an image
@@ -134,7 +151,12 @@ class InlineImageDimensionsStore(private val file: File) {
                     url,
                     buildJsonObject {
                         put("aspect", JsonPrimitive(entry.aspect))
-                        put("fetchedAt", JsonPrimitive(entry.fetchedAtEpochSecond))
+                        put(
+                            "fetchedAt",
+                            JsonPrimitive(
+                                entry.fetchedAtEpochSecond - NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS,
+                            ),
+                        )
                     },
                 )
             }
@@ -182,7 +204,8 @@ class InlineImageDimensionsStore(private val file: File) {
                     val entryObject = value.jsonObject
                     Entry(
                         aspect = entryObject.getValue("aspect").jsonPrimitive.double,
-                        fetchedAtEpochSecond = entryObject.getValue("fetchedAt").jsonPrimitive.long,
+                        fetchedAtEpochSecond = entryObject.getValue("fetchedAt").jsonPrimitive.long +
+                            NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS,
                     )
                 }
             } catch (_: IOException) {

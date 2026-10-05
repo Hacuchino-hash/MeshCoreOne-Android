@@ -1,12 +1,15 @@
-// NOT a port of MC1Services/Tests/MC1ServicesTests/InlineImageDimensionsStoreTests.swift:
-// port-manifest.json assigns that test file's ownership to WP-213 (InlineImageDimensionsStore
-// production is WP-218's; its original Swift test file is not). This suite is independently
-// authored against InlineImageDimensionsStore.kt's own contract and does not claim the source
-// file's 9 original assertions as WP-218's 154-declaration credit. It exercises the same
-// user-observable behaviors (save/aspect round-trip, non-positive-size rejection, corrupt/
-// missing-file recovery, multi-key independence, multicast resolution events, cross-instance
-// persistence) because that behavior is what InlineImageDimensionsStore.kt actually implements,
-// not because the original assertions are being replayed.
+// PortedFrom: MC1Services/Tests/MC1ServicesTests/InlineImageDimensionsStoreTests.swift@db14559b39d32322b06477c6ae676112f583db50
+// Primary file ownership stays WP-213 per port-manifest.json (InlineImageDimensionsStore
+// *production* is WP-218's; its original Swift test file is WP-213's). Per explicit coordinator
+// correction, that split does NOT mean WP-218 gets to independently re-derive similar coverage
+// and move on -- each of the source's 9 original cases is ported below as a disclosed
+// cross-consumer binding (see the `PortedFrom-case` comment above each matching test), not
+// claimed as WP-218's own 154-declaration credit. Three additional cases
+// (negative-width/negative-height rejection, single-malformed-entry-rejects-whole-parse) are
+// disclosed WP-218 additions strengthening coverage of behavior the source already specifies
+// (the `size.width > 0`/`size.height > 0` guard covers negative values identically to zero; the
+// source's `try? JSONDecoder().decode(...)` is all-or-nothing by construction) but are not
+// present as distinct `@Test` cases in the frozen source file.
 package com.meshcoreone.android.core.services.content
 
 import java.io.File
@@ -36,6 +39,7 @@ class InlineImageDimensionsStoreTest {
         createdDirs.forEach { it.deleteRecursively() }
     }
 
+    // PortedFrom-case: "save then aspect(for:) returns the expected ratio"
     @Test
     fun `save then aspect returns the expected ratio`() = runTest {
         val file = tempFile()
@@ -46,6 +50,7 @@ class InlineImageDimensionsStoreTest {
         assertEquals(2.0, store.aspect("https://example.com/a.png"))
     }
 
+    // PortedFrom-case: "save with zero width is rejected silently"
     @Test
     fun `save with zero width is rejected silently`() = runTest {
         val file = tempFile()
@@ -56,6 +61,7 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/zero-width.png"))
     }
 
+    // PortedFrom-case: "save with zero height is rejected silently"
     @Test
     fun `save with zero height is rejected silently`() = runTest {
         val file = tempFile()
@@ -66,6 +72,9 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/zero-height.png"))
     }
 
+    // WP-218 addition (not a distinct source case): the source's `size.width > 0` guard already
+    // rejects negative width identically to zero width; this exercises that same guard clause at
+    // a different input to close an obvious boundary gap the source's own suite left untested.
     @Test
     fun `save with negative width is rejected silently`() = runTest {
         val file = tempFile()
@@ -76,6 +85,7 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/negative-width.png"))
     }
 
+    // WP-218 addition (not a distinct source case): see negative-width rationale above.
     @Test
     fun `save with negative height is rejected silently`() = runTest {
         val file = tempFile()
@@ -86,6 +96,7 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/negative-height.png"))
     }
 
+    // PortedFrom-case: "init recovers from a corrupt file by starting empty"
     @Test
     fun `init recovers from a corrupt file by starting empty`() {
         val file = tempFile()
@@ -97,6 +108,11 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/anything.png"))
     }
 
+    // WP-218 addition (not a distinct source case): the source's `try? JSONDecoder().decode(...)`
+    // is all-or-nothing by construction (any decode failure, including a single malformed key's
+    // value, throws and the whole `try?` becomes `nil`); this exercises that same all-or-nothing
+    // contract at a more targeted failure mode (one well-formed-JSON-but-wrong-typed field) than
+    // the source's own "not json" case, which only proves top-level parse failure.
     @Test
     fun `init recovers from a single malformed entry by starting entirely empty`() {
         val file = tempFile()
@@ -113,6 +129,7 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/a.png"))
     }
 
+    // PortedFrom-case: "init on non-existent file yields empty store"
     @Test
     fun `init on non-existent file yields empty store`() {
         val file = tempFile()
@@ -122,6 +139,7 @@ class InlineImageDimensionsStoreTest {
         assertNull(store.aspect("https://example.com/unknown.png"))
     }
 
+    // PortedFrom-case: "two saves are both readable via aspect(for:)"
     @Test
     fun `two saves are both readable via aspect`() = runTest {
         val file = tempFile()
@@ -134,6 +152,7 @@ class InlineImageDimensionsStoreTest {
         assertEquals(0.25, store.aspect("https://example.com/b.png"))
     }
 
+    // PortedFrom-case: "resolutionUpdates emits the URL on save"
     @Test
     fun `resolutionUpdates emits the URL on save`() = runTest {
         val file = tempFile()
@@ -149,6 +168,7 @@ class InlineImageDimensionsStoreTest {
         assertEquals("https://example.com/stream.png", received.await())
     }
 
+    // PortedFrom-case: "resolutionUpdates delivers every event to every concurrent subscriber"
     @Test
     fun `resolutionUpdates delivers every event to every concurrent subscriber`() = runTest {
         val file = tempFile()
@@ -169,6 +189,7 @@ class InlineImageDimensionsStoreTest {
         assertEquals(expected, subscriberTwo.await())
     }
 
+    // PortedFrom-case: "round-trip: recreated store reads previously persisted aspect"
     @Test
     fun `round-trip recreated store reads previously persisted aspect`() = runTest {
         val file = tempFile()

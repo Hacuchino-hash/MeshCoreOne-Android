@@ -12,10 +12,12 @@
 // the native adapter.
 //
 // `fetchElevations`' per-sample `distanceFromAMeters` further depends on `RFCalculator.distance`,
-// which the port-manifest assigns to WP-212 (RF/*, not yet merged) - not WP-218's concern. Rather
-// than hand-duplicating great-circle distance math here (which would conflict with RFCalculator
-// once it lands), that one calculation is injected as [distanceMeters], mirroring how
-// [LocationProducing]/[Geocoder] defer to not-yet-existing platform/cross-WP roles.
+// whose *primary file* the port-manifest assigns to WP-212 (RF/*, not yet merged). The one
+// reusable calculation it needs (`RFCalculator.distance(from:to:)`'s Haversine formula) is now
+// ported as `rf.GeodesicDistance.metersBetween` - a narrow, explicitly admitted WP-218
+// prerequisite (see that file's own header), not a hand-duplicated/conflicting re-derivation.
+// [distanceMeters] now defaults to it, while remaining overridable (e.g. by a test fake) exactly
+// like [LocationProducing]/[Geocoder] remain injectable roles.
 //
 // The source's own per-sample result struct, `ElevationSample`, is likewise NOT this file's to
 // port: it is a shared RF-module type at `MC1Services/Sources/MC1Services/RF/ElevationSample.swift`,
@@ -24,6 +26,7 @@
 // under a borrowed name; unifying the two is WP-212's/an integration WP's concern.
 package com.meshcoreone.android.core.services.content
 
+import com.meshcoreone.android.core.services.rf.GeodesicDistance
 import kotlinx.coroutines.delay
 
 /** Mirrors the Swift `ElevationServiceError` enum's cases and payloads exactly; message
@@ -92,7 +95,7 @@ interface ElevationFetching {
  */
 class ElevationService(
     private val fetching: ElevationFetching,
-    private val distanceMeters: (GeoCoordinate, GeoCoordinate) -> Double,
+    private val distanceMeters: (GeoCoordinate, GeoCoordinate) -> Double = GeodesicDistance::metersBetween,
 ) {
     /** Fetch elevation for a single coordinate. */
     suspend fun fetchElevation(coordinate: GeoCoordinate): Double {
