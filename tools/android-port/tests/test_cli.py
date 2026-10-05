@@ -300,6 +300,54 @@ class ProvenanceTests(unittest.TestCase):
                 with self.subTest(content=content), self.assertRaises(PortError):
                     port_map(self.temporary_manifest(directory))
 
+    def test_wp218_fixed_native_adapter_test_allowance_is_closed_and_case_sensitive(self):
+        base = Path("android/app/src/test/kotlin/com/meshcoreone/android/app/content")
+        fixed_names = (
+            "AndroidGeocoderAdapterTest.kt",
+            "BitmapImageDecoderTest.kt",
+            "DataStoreLinkPreviewPreferencesSourceTest.kt",
+            "LocationManagerLocationProducingTest.kt",
+        )
+        for name in fixed_names:
+            with tempfile.TemporaryDirectory() as directory, self.subTest(name=name):
+                file = Path(directory) / base / name
+                file.parent.mkdir(parents=True)
+                file.write_text("// AndroidOnly: WP-218 admitted native-adapter test\n", encoding="utf-8")
+                results = port_map(self.temporary_manifest(directory))
+                self.assertEqual(results[0]["android_only"], ["WP-218"])
+
+        invalid_cases = {
+            "fifth_sibling_test_not_in_fixed_set": (base / "ElevationServiceAdapterTest.kt", "WP-218"),
+            "wrong_owner_wp": (base / "AndroidGeocoderAdapterTest.kt", "WP-217"),
+            "unrelated_directory": (
+                Path("android/app/src/test/kotlin/com/meshcoreone/android/app/other/AndroidGeocoderAdapterTest.kt"),
+                "WP-218",
+            ),
+            "exact_case_mismatch": (base / "androidgeocoderadaptertest.kt", "WP-218"),
+            "main_not_test_path": (
+                Path("android/app/src/main/kotlin/com/meshcoreone/android/app/content/AndroidGeocoderAdapterTest.kt"),
+                "WP-218",
+            ),
+        }
+        for label, (relative, wp_id) in invalid_cases.items():
+            with tempfile.TemporaryDirectory() as directory, self.subTest(label=label):
+                file = Path(directory) / relative
+                file.parent.mkdir(parents=True)
+                file.write_text(f"// AndroidOnly: {wp_id} not an admitted fixed path\n", encoding="utf-8")
+                with self.assertRaises(PortError):
+                    port_map(self.temporary_manifest(directory))
+
+        with tempfile.TemporaryDirectory() as directory:
+            file = Path(directory) / base / fixed_names[0]
+            file.parent.mkdir(parents=True)
+            for content in (
+                "// AndroidOnly: WP-218 \n",
+                f"// PortedFrom: MC1Services/Utilities/ImageURLClassifier.swift@{REFERENCE_SHA}\n// AndroidOnly: WP-218 conflicting disposition\n",
+            ):
+                file.write_text(content, encoding="utf-8")
+                with self.subTest(content=content), self.assertRaises(PortError):
+                    port_map(self.temporary_manifest(directory))
+
     def test_generated_provenance_requires_existing_generator_and_known_pinned_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

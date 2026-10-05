@@ -1,4 +1,5 @@
-// No original Swift test file exists for `Geocoder` (independently authored). Covers the
+// PortedFrom: MC1/Services/Geocoder.swift@db14559b39d32322b06477c6ae676112f583db50
+// No dedicated Swift test file exists for `Geocoder` (independently authored). Covers the
 // `GeocodeResult` value-equality semantics the source relies on via Swift's `Equatable`
 // conformance, and that a fake `Geocoder` role honors the suspend/cancel contract shape.
 package com.meshcoreone.android.core.services.content

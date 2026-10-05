@@ -1,7 +1,8 @@
-// New Kotlin-only test coverage: ImageDecoding/DecodedImageHandle/ImageDecodeOutcome are a new
-// typed contract introduced this increment (no corresponding original Swift type existed as a
-// protocol -- the Swift source called UIImage(data:) directly). These cases exercise the sealed
-// outcome's exhaustiveness and a fake adapter's contract shape rather than any native decode.
+// AndroidOnly: WP-218 new Kotlin-only test coverage: ImageDecoding/DecodedImageHandle/
+// ImageDecodeOutcome are a new typed contract introduced this increment (no corresponding
+// original Swift type existed as a protocol -- the Swift source called UIImage(data:)
+// directly). These cases exercise the sealed outcome's exhaustiveness and a fake adapter's
+// contract shape rather than any native decode.
 package com.meshcoreone.android.core.services.content
 
 import kotlinx.coroutines.test.runTest
