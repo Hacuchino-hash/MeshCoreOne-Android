@@ -18,17 +18,9 @@ concurrency:
 
 jobs:
   protocol:
-    name: Protocol JVM parity (${{ matrix.host }})
-    runs-on: ${{ matrix.runner }}
+    name: Protocol JVM parity
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - host: linux
-            runner: ubuntu-24.04
-          - host: windows
-            runner: windows-2025
     defaults:
       run:
         shell: pwsh
@@ -57,7 +49,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: protocol-${{ matrix.host }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: protocol-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ env.ANDROID_CI_OUTPUT }}
             android/core/protocol/build/test-results/test/

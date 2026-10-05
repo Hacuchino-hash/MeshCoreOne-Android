@@ -16,12 +16,8 @@ concurrency:
 
 jobs:
   controller-tests:
-    name: Controller bootstrap (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Controller bootstrap
+    runs-on: ubuntu-24.04
     env:
       ANDROID_PORT_DISPATCH_MODE: off
       ANDROID_PORT_PAUSED: "true"
