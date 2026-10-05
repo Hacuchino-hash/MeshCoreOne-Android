@@ -179,11 +179,20 @@ class CliTests(unittest.TestCase):
                 "reason": "Fixes a genuine task-ordering race; test-only.",
             }],
         }
+        # The dirty-tree check reads the real checkout, so carry every other committed amendment
+        # (at its approved blob) instead of assuming this fixture is the repository's only one.
+        committed = json.loads((REPO / "docs/android/reference-amendments.json").read_text(encoding="utf-8"))
+        others = [entry for entry in committed["entries"] if entry["path"] != path]
+        amendments["entries"] += others
+        for entry in others:
+            expected[entry["path"]] = entry["original_blob_sha"]
         approved_current = copy.deepcopy(expected)
         approved_current[path] = "9ff64d684a9ea56cdcfebabe0288c7b8b2141e4f"
+        for entry in others:
+            approved_current[entry["path"]] = entry["approved_blob_sha"]
         with patch("controller.model.tree", side_effect=[expected, approved_current]):
             validate_manifest(original.data, original.exclusions, REPO, amendments=amendments)
-        unapproved_current = copy.deepcopy(expected)
+        unapproved_current = copy.deepcopy(approved_current)
         unapproved_current[path] = "1" * 40
         with patch("controller.model.tree", side_effect=[expected, unapproved_current]):
             with self.assertRaisesRegex(PortError, "reference advanced/changed"):
