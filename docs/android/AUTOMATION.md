@@ -67,6 +67,10 @@ python .\tools\android-port\portmap.py
 ```
 
 Linux uses the equivalent platform path separators. `status/files/render/report` are read-only.
+This Python-only tooling runs natively on Windows; it has no JDK/Android SDK/Gradle dependency.
+`android-ci.yml` only verifies a Linux (`ubuntu-24.04`) build. Once the Android module has real
+Gradle builds to run, do that work from WSL (or another Linux environment) rather than native
+Windows, since native-Windows Gradle/AGP behavior is not covered by CI.
 Every mutating command defaults to dry-run: no network, ledger writes, backlog issues, workers or merge.
 Use global `--live` only after separately approved setup; missing capability is a nonzero `BLOCKED`,
 never a simulated successful launch. All 65 handoffs fit the 65,536-character issue-body bound.
