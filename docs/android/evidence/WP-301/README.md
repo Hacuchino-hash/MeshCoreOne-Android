@@ -1,6 +1,6 @@
 # WP-301 evidence
 
-**Implementation candidate; native execution is not yet established.** The
+**Implementation candidate; native verification has failed, not passed.** The
 separate local Java-slot receipt is pending. No device, hardware, signing,
 formal licensing/gate, iOS/UIKit, complete-app or merged-WP acceptance is claimed.
 
@@ -38,6 +38,13 @@ until actual strict per-module/configuration graph evidence and an exact
 coordinator amendment admit their deltas. No new agents or owning worktrees
 were launched.
 
+The first real both-host attempt reached resource parsing and rejected absent
+strict state in the newly declared owned local lock. [Lock seed](lock-seed.json)
+records the byte-identical migration of the initial vetted, Gradle-generated
+`core-designsystem.lockfile` into the owned module. It adds no speculative new
+component/configuration/version record and does not rewrite the shared file.
+Current dependency additions still require actual resolution.
+
 ## Executed read-only and Python commands
 
 | Exact command | Actual result |
@@ -51,6 +58,24 @@ were launched.
 | `python .\docs\android\evidence\WP-301\collect_evidence.py --inventory --self-test` | Passed: **8 evidence-reader tests**, 58 source families, 55 mapped and three explicitly removed billing-only families; static inventory, not native execution. |
 | `python .\docs\android\evidence\WP-301\verify_packaging.py --normalize --self-test` | Passed: **4 notice-reader tests** and exact bytes/hashes of all four new frozen notices; APK inspection not yet run. |
 | `git --no-pager diff --check` | Passed after the inventory/reader repair. |
+
+## Actual initial hosted failure
+
+[Run 37284231819, attempt 1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37284231819)
+is bound to base `2cf00464950e1fb9aae0dd913402eb3e12dc0044` and head
+`bc2f107d43a118b38f68e53635b4083e0c7a3977`. Both Linux and Windows provisioned
+the exact publisher-pinned JDK/SDK archives, passed independent readiness and
+the real Python stage, then failed at
+`:core:designsystem:parseDebugLocalResources`: `androidApis` is strict-locked
+but the new module-local file has no lock state. This is not a passing
+native build/test or consumer dependency-delta report.
+
+[Immutable failure record](hosted-initial/run.json) retains all 13 Linux and
+14 Windows extracted artifact files verbatim under deterministic gzip, with
+original file size/SHA-256, run/attempt/head/base and reported archive identities.
+Full Gradle failure logs are preserved, not replaced by a summary. Independent
+standalone, APK, lint and alignment steps were skipped after the failure;
+the fail-closed aggregator failed too. These are explicit incomplete results.
 
 The converter source map is
 `android\core\designsystem\src\main\assets\theme-source-map.json`. The separate
