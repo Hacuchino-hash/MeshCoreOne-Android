@@ -79,6 +79,19 @@ linux11318355919
 SHA256`751d538775a733cbe638f140fb7092c937d54f0a5990a999a8b3084873a46f10`.
 This is prior software proof, not the current87-row/full-input/raw acceptance
 or any physical/API/firmware certification.
+The owned module now declares `retainMeshCliEvidence` as the actual CLI test's
+always-run finalizer and a normal verification dependency. It retains every
+raw XML/log byte and the complete immutable input blobs into the explicit
+`meshCliEvidenceDirectory` with a `-raw` suffix, including failed, zero and
+malformed reports. Validation errors produce a blocked manifest and nonzero
+exit; missing reports remain an explicit failure. This closes the owned
+failed-test retention path without expanding shared file authority. Existing
+collector copying is reused, with exact input blob and copied-byte checks.
+New reader regressions cover successful87-row retention, complete failed log
+nodes, malformed/zero/UTF16-entity raw preservation, stale destinations and blob
+substitution. The serialized shared forwarding properties remain required
+before either successful or failed bundles enter actual ANDROID_CI_OUTPUT.
+This new hook still requires fresh actual hosted execution.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless

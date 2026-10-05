@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+from xml.sax.saxutils import quoteattr
 
 FILE = Path(__file__).resolve().parents[1] / "collect_evidence.py"
 spec = importlib.util.spec_from_file_location("wp109_evidence", FILE)
@@ -53,6 +54,17 @@ class EvidenceTests(unittest.TestCase):
                         for scope, name in sorted(reader.required_cli_cases())],
         }
 
+    def retention_fixture(self, data):
+        directory = self.root.joinpath(*reader.MODULES["meshcli"][0].split("/"))
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "TEST-fixture.xml").write_bytes(data)
+        source = b"immutable input fixture\n"
+        return (
+            "a" * 40, None,
+            {"scope": reader.LOCAL_SCOPE, "head_sha": "a" * 40, "host": "windows"},
+            {"fixture.py": reader.blob(source)}, {"fixture.py": source},
+        )
+
     def test_complete_raw_case_and_log_bytes_survive(self):
         self.report()
         cases, raw, counts = reader.junit(self.reports, self.root, 1)
@@ -60,6 +72,61 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(self.file.read_bytes(), raw[self.file.name])
         self.assertIn(b"complete log", raw[self.file.name])
         self.assertEqual(1, counts["passed"])
+
+    def test_retention_preserves_complete_failed_raw_and_inputs_without_success(self):
+        data = (b'<testsuite tests="1" failures="1" errors="0" skipped="0">'
+                b'<testcase classname="fixture" name="failed"><failure>complete failure</failure></testcase>'
+                b'<system-out>complete stdout</system-out><system-err>complete stderr</system-err></testsuite>')
+        context = self.retention_fixture(data)
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "raw-fixture"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output)
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertIsNone(result["validation"]["counts"])
+        self.assertIsNotNone(result["validation"]["error"])
+        self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+        identity = context[3]["fixture.py"]
+        self.assertEqual(context[4]["fixture.py"], (output / "input-blobs" / identity).read_bytes())
+        self.assertFalse(result["physical_radio_verified"])
+        self.assertEqual(result, json.loads((output / "raw-retention.json").read_bytes()))
+
+    def test_retention_preserves_malformed_and_zero_raw_but_stays_blocked(self):
+        for index, data in enumerate((
+            b"<testsuite",
+            b'<testsuite tests="0" failures="0" errors="0" skipped="0"/>',
+            '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="fixture" name="&x;"/></testsuite>'.encode("utf-16"),
+        )):
+            with self.subTest(index=index):
+                context = self.retention_fixture(data)
+                output = self.root / "android" / "tools" / "meshcli" / "build" / f"invalid-{index}"
+                with patch.object(reader, "execution_inputs", return_value=context):
+                    result = reader.retain(self.root, output)
+                self.assertEqual("blocked", result["validation"]["status"])
+                self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+
+    def test_retention_requires_every_actual_cli_identity_and_a_new_destination(self):
+        cases = reader.required_cli_cases()
+        nodes = "".join(f"<testcase classname={quoteattr(scope)} name={quoteattr(name)}/>"
+                        for scope, name in sorted(cases))
+        data = (f'<testsuite tests="87" failures="0" errors="0" skipped="0">{nodes}</testsuite>').encode("utf-8")
+        context = self.retention_fixture(data)
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "passed-fixture"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output)
+            self.assertEqual("passed", result["validation"]["status"])
+            self.assertEqual(87, result["validation"]["counts"]["passed"])
+            with self.assertRaises(PortError):
+                reader.retain(self.root, output)
+        self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+
+    def test_retention_never_normalizes_raw_xml_and_rejects_input_blob_substitution(self):
+        self.report()
+        self.file.write_bytes(self.file.read_bytes().replace(b"></", b">\r\n</"))
+        raw = reader.raw_junit(self.reports, self.root)
+        self.assertEqual(self.file.read_bytes(), raw[self.file.name])
+        output = self.root / "wrong-input"
+        with self.assertRaises(PortError):
+            reader.preserve_raw(output, {"fixture.py": "a" * 40}, {"fixture.py": b"wrong"}, {"meshcli": raw})
 
     def test_missing_zero_failed_skipped_and_inconsistent_reports_reject(self):
         with self.assertRaises(PortError):

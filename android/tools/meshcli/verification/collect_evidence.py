@@ -148,19 +148,27 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=True) + "\n", encoding="utf-8", newline="\n")
 
 
-def junit(directory, boundary, minimum):
+def raw_junit(directory, boundary):
     reports = safe_reports(directory, boundary)
     if len(reports) > 256 or sum(p.stat().st_size for p in reports) > 32 * 1024 * 1024:
         raise PortError("Oversized complete JUnit set")
+    raw = {path.name: path.read_bytes() for path in reports}
+    if any(path.read_bytes() != raw[path.name] for path in reports):
+        raise PortError("Raw JUnit changed during retention")
+    return raw
+
+
+def junit(directory, boundary, minimum):
+    raw = raw_junit(directory, boundary)
+    reports = [directory / name for name in raw]
     counts = suite_counts(directory, minimum)
-    cases, raw = [], {}
+    cases = []
     for path in reports:
-        data = path.read_bytes()
+        data = raw[path.name]
         declarations = data.replace(b"\0", b"").upper()
         if b"<!DOCTYPE" in declarations or b"<!ENTITY" in declarations:
             raise PortError("Unsafe declarations in mandatory raw XML")
         doc = read_xml(path)
-        raw[path.name] = data
         cases.extend({"class": c.attrib["classname"], "name": c.attrib["name"], "outcome": "passed"}
                      for c in doc.findall("testcase"))
     if sum(len(read_xml(path).findall("testcase")) for path in reports) != counts["discovered"]:
@@ -351,7 +359,9 @@ def required_inputs(entries, manifest):
     return required
 
 
-def collect(repo, output, invocation=None):
+def new_destination(repo, output):
+    if not output.is_absolute():
+        raise PortError("Explicit absolute evidence output required")
     output = output.resolve()
     if output == repo.resolve() or repo.resolve().is_relative_to(output):
         raise PortError("Evidence destination cannot overwrite repository inputs")
@@ -361,6 +371,10 @@ def collect(repo, output, invocation=None):
         raise PortError("In-tree evidence belongs only in the owned ignored build directory")
     if output.exists():
         raise PortError("Evidence destination must be new; stale raw results cannot be reused")
+    return output
+
+
+def execution_inputs(repo, invocation):
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     manifest = load_manifest(repo)
     if manifest.sha256 != MANIFEST or policy_revision(manifest, load_json(repo / "docs/android/automation-policy.json")) != POLICY:
@@ -376,13 +390,10 @@ def collect(repo, output, invocation=None):
     if any(git(repo, "ls-files", "--others", "-z", "--", *native_roots).split(b"\0")):
         raise PortError("Uncommitted compiled native source inputs")
     inputs, raw_inputs = checked_checkout(repo, head, required)
-    native, reports, counts = {}, {}, {}
-    for module, (relative, minimum) in MODULES.items():
-        native[module], reports[module], counts[module] = junit(repo.joinpath(*relative.split("/")), repo, minimum)
-    validate_native_floor(repo, native)
-    originals = original_accounting(repo, load_json(repo / "docs/android/test-cases.json"),
-                                    load_json(repo / "docs/android/evidence/WP-004/inventory-details.json"),
-                                    manifest, native["protocol"])
+    return head, manifest, run, inputs, raw_inputs
+
+
+def preserve_raw(output, inputs, raw_inputs, reports):
     output.mkdir(parents=True)
     raw_records = []
     for module, files in reports.items():
@@ -395,14 +406,65 @@ def collect(repo, output, invocation=None):
                 raise PortError("Complete raw JUnit copy changed")
             raw_records.append({"module": module, "path": file.relative_to(output).as_posix(),
                                 "size": len(data), "sha256": sha(data)})
-        junit(destination, output, MODULES[module][1])
     blobs = output / "input-blobs"
     blobs.mkdir()
     for path, data in raw_inputs.items():
+        if blob(data) != inputs[path]:
+            raise PortError("Raw input differs from its immutable blob")
         file = blobs / inputs[path]
         if file.exists() and file.read_bytes() != data:
             raise PortError("Immutable blob collision")
         file.write_bytes(data)
+        if blob(file.read_bytes()) != inputs[path]:
+            raise PortError("Retained input blob changed")
+    return raw_records
+
+
+def retain(repo, output, invocation=None):
+    output = new_destination(repo, output)
+    head, _, run, inputs, raw_inputs = execution_inputs(repo, invocation)
+    directory = repo.joinpath(*MODULES["meshcli"][0].split("/"))
+    reports = {"meshcli": raw_junit(directory, repo)}
+    records = preserve_raw(output, inputs, raw_inputs, reports)
+    try:
+        cases, retained, counts = junit(output / "junit" / "meshcli", output, MODULES["meshcli"][1])
+        if retained != reports["meshcli"]:
+            raise PortError("Retained CLI raw reports changed")
+        actual = {(case["class"], case["name"]) for case in cases}
+        if not required_cli_cases() <= actual:
+            raise PortError("Retained CLI assertion/parameter rows are incomplete")
+        validation = {"status": "passed", "counts": counts, "error": None}
+    except PortError as failure:
+        validation = {"status": "blocked", "counts": None, "error": str(failure)}
+    result = {
+        "schema_version": 1, "scope": "complete actual CLI raw retention; not full parity or hardware acceptance",
+        "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
+        "policy_revision": POLICY, "invocation": run, "inputs": inputs, "raw_reports": records,
+        "validation": validation, "physical_radio_verified": False,
+    }
+    write_json(output / "raw-retention.json", result)
+    if load_json(output / "raw-retention.json") != result:
+        raise PortError("Retained raw manifest changed")
+    for record in records:
+        file = output.joinpath(*record["path"].split("/"))
+        if linked(file) or file.stat().st_size != record["size"] or sha(file.read_bytes()) != record["sha256"]:
+            raise PortError("Retained raw report size/digest changed")
+    return result
+
+
+def collect(repo, output, invocation=None):
+    output = new_destination(repo, output)
+    head, manifest, run, inputs, raw_inputs = execution_inputs(repo, invocation)
+    native, reports, counts = {}, {}, {}
+    for module, (relative, minimum) in MODULES.items():
+        native[module], reports[module], counts[module] = junit(repo.joinpath(*relative.split("/")), repo, minimum)
+    validate_native_floor(repo, native)
+    originals = original_accounting(repo, load_json(repo / "docs/android/test-cases.json"),
+                                    load_json(repo / "docs/android/evidence/WP-004/inventory-details.json"),
+                                    manifest, native["protocol"])
+    raw_records = preserve_raw(output, inputs, raw_inputs, reports)
+    for module in reports:
+        junit(output / "junit" / module, output, MODULES[module][1])
     result = {
         "schema_version": 1, "scope": EVIDENCE_SCOPE,
         "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
@@ -521,7 +583,7 @@ def baseline(directory):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("collect", "validate", "baseline", "self-test"))
+    parser.add_argument("command", choices=("collect", "retain", "validate", "baseline", "self-test"))
     parser.add_argument("--output", type=Path)
     parser.add_argument("--invocation", type=Path)
     parser.add_argument("--baseline", type=Path)
@@ -536,9 +598,14 @@ def main(argv=None):
             if args.baseline is None:
                 raise PortError("An explicit verified complete baseline directory is required")
             result = baseline(args.baseline)
-        elif args.command == "collect":
+        elif args.command in ("collect", "retain"):
             if args.output is None or not args.output.is_absolute():
                 raise PortError("Explicit absolute evidence output required")
+            if args.command == "retain":
+                value = retain(ROOT, args.output, args.invocation)
+                print(json.dumps({"scope": value["scope"], "validation": value["validation"],
+                                  "complete_raw_reports": len(value["raw_reports"])}, indent=2))
+                return 0 if value["validation"]["status"] == "passed" else 2
             value = collect(ROOT, args.output, args.invocation)
             result = {"scope": value["scope"], "counts": value["counts"], "original_declarations": value["original_declarations"]}
         else:

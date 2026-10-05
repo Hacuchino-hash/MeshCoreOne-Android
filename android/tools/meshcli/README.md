@@ -111,6 +111,14 @@ new native cases. Missing, reduced, skipped, malformed, changed or stale proof f
 The generic root `core|feature|platform` collector does not count `tools`;
 the separate full CLI bundle is mandatory for coordinator replay.
 
+`retainMeshCliEvidence` is an always-run finalizer of the actual CLI `test`
+task, and a dependency of `verifyProtocolParity`. It preserves complete raw
+XML (including failed/skipped/malformed reports and all log nodes) and the same
+immutable input blobs in the explicit evidence directory with the `-raw`
+suffix before validating. Invalid, missing, zero or reduced discovery remains
+nonzero with a blocked manifest, never a success-shaped snapshot. Raw retention
+is diagnostic data, not full parity or hardware acceptance.
+
 An explicit `meshCliEvidenceDirectory`/`meshCliInvocationFile` forwarding seam
 binds normal CI output to the actual executor's repository/base/head/run/attempt.
 Without forwarding, output is local unprivileged evidence in this module's
