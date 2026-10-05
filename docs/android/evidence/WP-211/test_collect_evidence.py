@@ -170,7 +170,9 @@ class NativeHookTests(unittest.TestCase):
         self.assertIn('"--retain-only"', text)
         self.assertIn('.resolve("room-completion-$deviceSettingsAttempt")', text)
         self.assertIn('.resolve("full-$deviceSettingsAttempt")', text)
-        self.assertIn('deviceSettingsInvocation.map { java.io.File(it).parentFile.resolve("wp211-native")', text)
+        self.assertIn('deviceSettingsInvocation.map { File(it).parentFile.resolve("wp211-native")', text)
+        self.assertIn("import java.io.File", text)
+        self.assertNotIn("java.io.File(", text)
 
     def test_standalone_linux_executor_forwards_exact_actual_invocation_and_private_retention_path(self):
         text = (reader.OUT / "run_linux_verification.py").read_text(encoding="utf-8")

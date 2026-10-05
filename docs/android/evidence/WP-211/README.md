@@ -262,6 +262,22 @@ was likewise retained; compiler log SHA-256
 These results do not roll forward to later hook edits: they are exact
 historical98f64 Room evidence and a still-failing services compile.
 
+The native-retention hook head
+`dbe77fe8aacc33b8a780074ff7b0262a5e747439` exposed a real Kotlin-DSL
+configuration issue in Linux run **37389443110 / attempt1**: Gradle's generated
+`java` accessor shadows the package qualifier in `java.io.File(...)`.
+The admitted data hook now imports `java.io.File` and uses `File(...)`;
+the regression guard checks that the shadowed invocation cannot return.
+No frozen producer or unleased services build/lock path changed.
+The complete failed artifact `wp203-producer-37389443110-1`, id11380641448,
+size3044 bytes, published digest
+`sha256:27d9c0b731c19d706dca6e22d0df48afe4af3b9de02bdbe202174ff4a8998a68`
+was retained before inspection; its7582-byte exact script compiler log
+SHA-256 is
+`c79b743ab34e311a8210b74f8f345fe28510f37ca38c121fd457f13c86afb941`.
+This is failed build configuration evidence; no native test execution is
+claimed at that head.
+
 Static declaration counts are not executed services-JVM counts; the limited
 actual Room consumer result above is recorded separately. The services module needs the
 incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the

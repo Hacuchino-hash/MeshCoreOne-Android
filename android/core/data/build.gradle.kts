@@ -1,4 +1,5 @@
 // AndroidOnly: WP-202 Admitted Room repository dependencies and complete native assertion hook.
+import java.io.File
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 
 plugins {
@@ -89,7 +90,7 @@ val deviceSettingsReader = repository.resolve("docs").resolve("android").resolve
     .resolve("WP-211").resolve("collect_evidence.py")
 val deviceSettingsInvocation = providers.gradleProperty("meshCliInvocationFile")
 val deviceSettingsEvidenceRoot = providers.gradleProperty("wp211EvidenceDirectory").orElse(
-    deviceSettingsInvocation.map { java.io.File(it).parentFile.resolve("wp211-native").absolutePath },
+    deviceSettingsInvocation.map { File(it).parentFile.resolve("wp211-native").absolutePath },
 ).orElse(repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-211")
     .resolve("retained").absolutePath)
 val deviceSettingsAttempt = System.currentTimeMillis().toString()
@@ -101,7 +102,7 @@ val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine(buildList {
         addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--retain-only", "--output",
-            java.io.File(deviceSettingsEvidenceRoot.get()).resolve("room-completion-$deviceSettingsAttempt").absolutePath))
+            File(deviceSettingsEvidenceRoot.get()).resolve("room-completion-$deviceSettingsAttempt").absolutePath))
         deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
     })
 }
@@ -115,7 +116,7 @@ val verifyDeviceSettingsTests by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine(buildList {
         addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--output",
-            java.io.File(deviceSettingsEvidenceRoot.get()).resolve("full-$deviceSettingsAttempt").absolutePath))
+            File(deviceSettingsEvidenceRoot.get()).resolve("full-$deviceSettingsAttempt").absolutePath))
         deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
     })
 }
