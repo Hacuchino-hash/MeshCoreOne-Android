@@ -1,13 +1,28 @@
 {
   "wp": "WP-218",
-  "scope": "bounded increment: UrlSafetyChecker + MalwareDomainFilter/MalwareDomainParser only",
+  "scope": "bounded increment, now spanning two commits: (1) UrlSafetyChecker + MalwareDomainFilter/MalwareDomainParser, (2) ImageUrlClassifier + ImageHeaderDecoder",
   "pinned_source": "db14559b39d32322b06477c6ae676112f583db50",
   "merged_base": "e697823c8937eb5b12a40362ca2c5aae4c45f56a",
   "host": "local (single-host); no hosted/dual-host CI run performed for this increment",
   "toolchain": {
     "jdk": "Temurin 21.0.12+1 (temporary, downloaded for local verification only, not committed, removed after use)",
     "gradle_wrapper": "9.8.0",
-    "kotlin": "as pinned by gradle/libs.versions.toml (unchanged)"
+    "kotlin": "as pinned by gradle/libs.versions.toml (unchanged)",
+    "provenance_gap": "Publisher download URL, SHA-256 and byte count for the Temurin archive were not captured at download time; the archive no longer exists on disk (deleted after first-increment verification), so they cannot be recomputed retroactively. This session has no access to the other session's C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\toolchains\\environment.json to compare against an approved pin."
+  },
+  "git_identity_readback": {
+    "local_branch": "cbattlegear-safe-content-and-location",
+    "upstream_tracking": "origin/cbattlegear-bookish-funicular",
+    "first_commit_sha": "f3d9644b51cf9bb7e1ff2b64c2f66c5b99c64c4c",
+    "note": "Local/app branch alias was renamed via the app's rename_branch tool (not raw git); the remote branch backing PR #25 was never renamed, so GitHub's head_ref for PR #25 correctly still reports cbattlegear-bookish-funicular. This is expected app-managed rename-delivery state, not drift or a duplicate PR."
+  },
+  "unleased_paths_disclosure": {
+    "paths_outside_declared_write_paths": [
+      "android/core/services/build.gradle.kts",
+      "android/gradle/dependency-locks/core-services.lockfile"
+    ],
+    "reason": "Adding kotlinx-coroutines-core/kotlinx-coroutines-test to core:services required declaring the dependency in its own build.gradle.kts and regenerating its own strict dependency lock file; both coordinates were already admitted elsewhere in the lock graph at 1.10.2, this only extends their use into core:services' classpaths.",
+    "status": "disclosed for coordinator narrow-admission review; not reverted (changes preserved per instruction); no further local Gradle/JDK execution performed since this was requested"
   },
   "commands": [
     {
@@ -31,14 +46,24 @@
         "TEST-com.meshcoreone.android.core.services.content.UrlSafetyCheckerTest.xml",
         "TEST-com.meshcoreone.android.core.services.content.MalwareDomainFilterTest.xml",
         "TEST-com.meshcoreone.android.core.services.content.MalwareDomainParserTest.xml"
-      ]
+      ],
+      "covers_second_increment": false
+    },
+    {
+      "command": "(none)",
+      "result": "NOT EXECUTED",
+      "note": "Per the explicit 'no further local JVM until registered resource-gate execution receipt' instruction, ImageUrlClassifierTest (17 cases) and ImageHeaderDecoderTest (3 cases) were written and manually traced against the ported Swift assertions but were never compiled or run. This is reported honestly rather than reusing the prior 42/0/0/0 result, which predates these files and does not cover them. Treat the second increment as unverified-by-execution until a gate-cleared run actually happens."
     }
   ],
   "source_test_mapping": {
     "MC1/Utilities/URLSafetyChecker.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/UrlSafetyChecker.kt",
     "MC1Tests/Utilities/URLSafetyCheckerTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/UrlSafetyCheckerTest.kt",
     "MC1/Utilities/MalwareDomainFilter.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilter.kt + MalwareDomainParser.kt",
-    "MC1Tests/Utilities/MalwareDomainFilterTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilterTest.kt"
+    "MC1Tests/Utilities/MalwareDomainFilterTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilterTest.kt",
+    "MC1Services/Sources/MC1Services/Utilities/ImageURLClassifier.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageUrlClassifier.kt",
+    "MC1Tests/Services/ImageURLDetectorTests.swift (ImageURLClassifier-scoped cases only, 17 of 23)": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageUrlClassifierTest.kt",
+    "MC1/Services/ImageHeaderDecoder.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageHeaderDecoder.kt",
+    "MC1Tests/Services/ImageHeaderDecoderTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/ImageHeaderDecoderTest.kt"
   },
   "not_implemented_this_increment": [
     "MC1/Services/LinkPreviewService.swift (+Scrape)",
@@ -46,9 +71,7 @@
     "MC1/Services/DecodedPreviewCache.swift",
     "MC1/Services/RedirectSafetyDelegate.swift",
     "MC1/Models/LinkPreviewPreferences.swift",
-    "MC1/Services/ImageHeaderDecoder.swift",
-    "MC1/Services/ImageURLDetector.swift",
-    "MC1Services/Utilities/ImageURLClassifier.swift",
+    "MC1/Services/ImageURLDetector.swift (UIKit/ImageIO-dependent decode/downsample/GIF-frame half only; its isGIFData/downsampledImage test cases remain unported)",
     "MC1/Utilities/ImageByteCost.swift",
     "MC1/Services/InlineImageCache.swift",
     "MC1/Services/InlineImagePrefetcher.swift",
@@ -60,5 +83,6 @@
     "MC1Services/Extensions/CLLocationCoordinate2D+ValidFix.swift",
     "Resources/urlhaus-filter-hosts-online.txt"
   ],
-  "amendment_requested": "Split remaining WP-218 scope (link preview service/scrape/cache, image header/cost/cache/prefetch, elevation/geocoder/location/region) into follow-on WP(s) with their own native-adapter proposals (HttpURLConnection-based bounded streaming HTTP; Android location/geocoder platform roles) and verification evidence."
+  "amendment_requested": "Split remaining WP-218 scope (link preview service/scrape/cache, image decode/cost/cache/prefetch, elevation/geocoder/location/region) into follow-on WP(s) with their own native-adapter proposals (HttpURLConnection-based bounded streaming HTTP; Android location/geocoder/bitmap-decode platform roles) and verification evidence. Also requests narrow admission of the two unleased build.gradle.kts/lockfile paths disclosed above, or direction to use a module-local-only lock mechanism instead."
 }
+
