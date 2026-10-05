@@ -222,6 +222,7 @@ internal class TestServices(val inputs: RuntimeServiceInputs) : RuntimeServices 
     var beforeSync: suspend () -> Unit = {}
     var closeFailure: Exception? = null
     var beforeHydrate: suspend () -> Unit = {}
+    var beforeTeardown: suspend () -> Unit = {}
     private val events = EventBroadcaster<MeshEvent>()
     var subscription: ConnectionSubscription? = null
     var callbacksCleared = false
@@ -249,6 +250,7 @@ internal class TestServices(val inputs: RuntimeServiceInputs) : RuntimeServices 
     override suspend fun ensureListeners() { calls += "ensureListeners"; assertEquals(1, monitoringStarts) }
     override suspend fun tearDown(): TeardownReport {
         calls += "teardown"; teardowns++
+        beforeTeardown()
         subscription?.close()
         ownedJobs.forEach { it.cancelAndJoin() }
         callbacksCleared = true

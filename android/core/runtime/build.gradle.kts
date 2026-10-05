@@ -77,6 +77,14 @@ val printRuntimeFailureDiagnostics by tasks.registering(Exec::class) {
     description = "Print bounded actual raw module failures after verification; never change its result."
     workingDir(repository)
     commandLine("python", "-B", layout.projectDirectory.file("verification/print_failures.py").asFile.absolutePath)
+    providers.gradleProperty("wp207EvidenceDirectory").orNull?.let { args("--output", it) }
+}
+
+gradle.projectsEvaluated {
+    for (path in listOf(":core:data", ":core:datastore")) {
+        rootProject.project(path).tasks.named("testDebugUnitTest") { finalizedBy(printRuntimeFailureDiagnostics) }
+    }
+    tasks.named("test") { finalizedBy(printRuntimeFailureDiagnostics) }
 }
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyConnectionRuntimeTests) }

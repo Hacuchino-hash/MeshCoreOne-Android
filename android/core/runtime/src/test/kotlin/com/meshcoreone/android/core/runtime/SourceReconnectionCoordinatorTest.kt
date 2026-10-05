@@ -295,5 +295,18 @@ class SourceReconnectionCoordinatorTest {
                 assertEquals(0, d.notifications)
             }
         },
+        nativeCase("a suspended older timeout query cannot clear the restarted same-cycle UI window") {
+            withCoordinator(timeout = 1.seconds) { c, d ->
+                val id = UUID.randomUUID(); val gate = CompletableDeferred<Unit>()
+                d.queryHook = { gate.await() }
+                c.handleEnteringAutoReconnect(id); runCurrent(); advanceTimeBy(1000); runCurrent()
+                c.restartTimeout(id)
+                gate.complete(Unit); runCurrent()
+                assertEquals(DeviceConnectionState.CONNECTING, d.connectionState); assertEquals(0, d.notifications)
+                advanceTimeBy(999); runCurrent(); assertEquals(DeviceConnectionState.CONNECTING, d.connectionState)
+                advanceTimeBy(1); runCurrent(); assertEquals(DeviceConnectionState.DISCONNECTED, d.connectionState)
+                assertEquals(1, d.notifications)
+            }
+        },
     )
 }

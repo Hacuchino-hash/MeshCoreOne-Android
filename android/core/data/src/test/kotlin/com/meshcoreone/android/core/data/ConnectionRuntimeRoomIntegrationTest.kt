@@ -1,7 +1,7 @@
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/ConnectRadioIDResolutionTests.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Connection/ConnectionManager+Lifecycle.swift@db14559b39d32322b06477c6ae676112f583db50
 // Native adaptation: test-only factory over actual merged Room roles and a real JVM session.
-package com.meshcoreone.android.core.data
+package com.meshcoreone.android.core.data.runtime
 
 import com.meshcoreone.android.core.contracts.domain.*
 import com.meshcoreone.android.core.data.repository.RepositoryTest

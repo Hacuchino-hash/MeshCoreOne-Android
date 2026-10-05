@@ -16,7 +16,7 @@ from controller.module_junit import safe_reports
 
 EXPECTED = {
     "data": (
-        "com.meshcoreone.android.core.data.ConnectionRuntimeRoomIntegrationTest",
+        "com.meshcoreone.android.core.data.runtime.ConnectionRuntimeRoomIntegrationTest",
         {
             "changedEndpointPreservesRestoredPartitionAndRealContactMessagePendingTriple",
             "processStartupGloballyResetsStaleSessionsIncludingOrphanRadioWithoutTouchingPermissionsOrNativeSortDates",

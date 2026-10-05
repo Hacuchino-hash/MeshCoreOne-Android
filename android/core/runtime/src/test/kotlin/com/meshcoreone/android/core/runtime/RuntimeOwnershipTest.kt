@@ -551,5 +551,68 @@ class RuntimeOwnershipTest {
                 assertEquals(1, radios.last().collectors)
             }
         },
+        nativeCase("superseding a never-executed connect still drains its independent detached-owner stop receipt") {
+            withFixture {
+                connect()
+                val field = manager.javaClass.getDeclaredField("operations").apply { isAccessible = true }
+                val mutex = assertIs<kotlinx.coroutines.sync.Mutex>(field.get(manager))
+                mutex.lock()
+                val b = backgroundScope.async { runCatching { manager.connect(target()) } }; runCurrent()
+                val cTarget = target()
+                val c = backgroundScope.async { manager.connect(cTarget) }; runCurrent()
+                mutex.unlock(); runCurrent(); c.await()
+                assertIs<CancellationException>(b.await().exceptionOrNull())
+                assertEquals(cTarget.deviceId, manager.connectedDevice?.id)
+                assertEquals(2, radios.size); assertEquals(1, radios.first().closes)
+                assertEquals(0, radios.first().collectors); assertEquals(1, services.first().teardowns)
+                assertEquals(1, radios.last().collectors)
+            }
+        },
+        nativeCase("health query before atomic claim cannot borrow a completed successor's authority") {
+            withFixture {
+                connect(); platform.state = platform.state.copy(connected = true)
+                manager.handleReconnectionFailure()
+                val gate = CompletableDeferred<Unit>(); var first = true
+                platform.onState = { if (first) { first = false; gate.await() } }
+                val health = backgroundScope.async { manager.checkBLEConnectionHealth() }; runCurrent()
+                val successor = target(); manager.connect(successor)
+                gate.complete(Unit); runCurrent(); health.await()
+                assertEquals(successor.deviceId, manager.connectedDevice?.id)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(0, radios.last().closes); assertEquals(1, radios.last().collectors)
+                assertEquals(2, services.size)
+            }
+        },
+        nativeCase("process close drains detached disconnect receipts before cancelling the cleanup owner") {
+            withFixture {
+                connect()
+                val gate = CompletableDeferred<Unit>(); services.first().beforeTeardown = { gate.await() }
+                val disconnect = backgroundScope.async { manager.disconnect() }; runCurrent()
+                val close = backgroundScope.async { manager.close() }; runCurrent()
+                assertFalse(close.isCompleted); assertFalse(disconnect.isCompleted); assertEquals(0, radios.first().closes)
+                gate.complete(Unit); runCurrent()
+                assertTrue(disconnect.await().isComplete); assertTrue(close.await().isComplete)
+                assertEquals(1, radios.first().closes); assertEquals(0, radios.first().collectors)
+                assertTrue(services.first().ownedJobs.all(Job::isCompleted))
+            }
+        },
+        nativeCase("proven foreign protocol admission refusal releases only the tentative runtime reservation") {
+            val shared = TestRadio()
+            val foreign = MeshCoreSession(shared,
+                com.meshcoreone.android.core.protocol.config.SessionConfiguration(defaultTimeout = 1.0, clientIdentifier = "MCore"),
+                coroutineContext = backgroundScope.coroutineContext)
+            val failed = RuntimeFixture(this); val fresh = RuntimeFixture(this)
+            failed.createRadio = { shared }; fresh.createRadio = { shared }
+            try {
+                foreign.start()
+                val error = assertFailsWith<MeshCoreException.ConnectionLost> { failed.manager.connect(failed.platform.target) }
+                assertIs<SessionCorrelationException.ConcurrentTransportOwner>(error.cause)
+                assertEquals(0, shared.closes); assertEquals(1, shared.collectors)
+                failed.manager.close(); foreign.stop()
+                fresh.connect(); assertEquals(1, shared.collectors); assertEquals(DeviceConnectionState.READY, fresh.manager.connectionState)
+            } finally {
+                foreign.stop(); fresh.close(); failed.close()
+            }
+        },
     )
 }

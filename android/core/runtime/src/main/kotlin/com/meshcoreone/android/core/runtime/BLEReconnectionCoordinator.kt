@@ -51,6 +51,7 @@ class BLEReconnectionCoordinator(
     private var generation = 0L
     private var rebuilding: Long? = null
     private var timeout: Job? = null
+    private var timerRevision = 0L
     private val ownedTimers = mutableSetOf<Job>()
     val reconnectingDeviceId: UUID? get() = synchronized(lock) { cycle?.deviceId }
     val reconnectGeneration: Long get() = synchronized(lock) { generation }
@@ -149,7 +150,7 @@ class BLEReconnectionCoordinator(
     }
 
     fun cancelTimeout() {
-        synchronized(lock) { timeout.also { timeout = null } }?.cancel()
+        synchronized(lock) { timerRevision++; timeout.also { timeout = null } }?.cancel()
     }
 
     fun clearReconnectingDevice() {
@@ -170,11 +171,12 @@ class BLEReconnectionCoordinator(
 
     private fun armTimeout(claim: Cycle) {
         cancelTimeout()
+        val expectedTimer = synchronized(lock) { timerRevision }
         val task = scope.launch(start = CoroutineStart.LAZY) {
             clock.sleep(uiTimeout)
             val firingJob = kotlinx.coroutines.currentCoroutineContext()[Job]
             synchronized(lock) { if (timeout === firingJob) timeout = null }
-            handleUITimeout(claim)
+            handleUITimeout(claim, expectedTimer)
         }
         synchronized(lock) {
             if (cycle !== claim) { task.cancel(); return }
@@ -185,10 +187,12 @@ class BLEReconnectionCoordinator(
         task.start()
     }
 
-    private suspend fun handleUITimeout(claim: Cycle) {
+    private suspend fun handleUITimeout(claim: Cycle, expectedTimer: Long) {
+        if (synchronized(lock) { timerRevision != expectedTimer }) return
         if (!owns(claim) || delegate.connectionState != DeviceConnectionState.CONNECTING) return
         val elapsed = clock.elapsed - claim.started
         val autoReconnecting = delegate.isTransportAutoReconnecting()
+        if (synchronized(lock) { timerRevision != expectedTimer }) return
         if (!owns(claim) || delegate.connectionState != DeviceConnectionState.CONNECTING || rebuildInFlight) return
         if (autoReconnecting && elapsed < maximumWindow) {
             armTimeout(claim)

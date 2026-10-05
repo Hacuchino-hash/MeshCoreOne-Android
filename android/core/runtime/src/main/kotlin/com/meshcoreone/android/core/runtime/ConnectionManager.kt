@@ -239,14 +239,17 @@ class ConnectionManager(
             val claimedRevision = revision
             val previous = pending
             val oldOwners = detachOwnersLocked(DeviceConnectionState.CONNECTING, ConnectionIntent.WantsConnection(forceFullSync))
-            val oldStop = precedingStop
+            val predecessor = precedingStop
+            val oldStop = cleanupScope.async(start = CoroutineStart.LAZY) {
+                predecessor?.await()
+                closeCaptured(oldOwners, disconnectPhysical = true)
+            }.also { precedingStop = it; it.start() }
             val task = processScope.async(context = RuntimeOperation(operationIdentity), start = CoroutineStart.LAZY) {
                 withOperation(reentrant) {
                     requireRevision(claimedRevision)
                     oldStop?.await()
                     requireRevision(claimedRevision)
                     if (!reentrant) previous?.let { withContext(NonCancellable) { it.cancelAndJoin() } }
-                    closeCaptured(oldOwners, disconnectPhysical = true)
                     requireRevision(claimedRevision)
                     reconnectionCoordinator.clearReconnectingDevice()
                     stopReconnectionWatchdog(initiatingJob)
@@ -278,6 +281,10 @@ class ConnectionManager(
                             throw cancelled
                         } catch (failure: Exception) {
                             if (isRetained(owner)) throw CancellationException("Connection transferred to reconnect").apply { initCause(failure) }
+                            if (hasCause<SessionCorrelationException.ConcurrentTransportOwner>(failure) && !owner.sawConnected && owner.ownsPhysical) {
+                                owner.link?.let { PhysicalOwnership.release(it.transport, owner.physicalOwner) }
+                                owner.ownsPhysical = false
+                            }
                             lastFailure = failure
                             if (!isRetained(owner)) closeGeneration(owner, true, failure)
                             requireRevision(claimedRevision)
@@ -620,7 +627,19 @@ class ConnectionManager(
         val expectedRevision = synchronized(lock) { revision }
         val old = synchronized(lock) { retained ?: active }
         val target = old?.target ?: platform.targetForDevice(deviceId) ?: throw ConnectionError.DeviceNotFound()
+        rebuildClaimed(deviceId, target, old, expectedRevision, expectedCoordinator, reentrant)
+    }
+
+    private suspend fun rebuildClaimed(
+        deviceId: UUID,
+        target: ConnectionTarget,
+        old: RadioGeneration?,
+        expectedRevision: Long,
+        expectedCoordinator: Long,
+        reentrant: Boolean,
+    ) {
         synchronized(lock) {
+            if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded rebuild claim")
             if (rebuildDevice != null && rebuildDevice != deviceId) throw CancellationException("Superseded session rebuild")
             rebuildDevice = deviceId
         }
@@ -715,9 +734,14 @@ class ConnectionManager(
                 if (connectionState.isOperational) owner.services!!.services.ensureListeners()
                 return
             }
-            val claimed = synchronized(lock) { if (rebuildDevice == null) { rebuildDevice = deviceId; true } else false }
-            if (!claimed) return
-            try { rebuildSession(deviceId) }
+            val claim = synchronized(lock) {
+                if (!wantsCurrent(expectedRevision) || pending?.isActive == true || rebuildDevice != null) null
+                else {
+                    rebuildDevice = deviceId
+                    (retained ?: active) to reconnectionCoordinator.reconnectGeneration
+                }
+            } ?: return
+            try { rebuildClaimed(deviceId, target, claim.first, expectedRevision, claim.second, reentrant = false) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (failure: Exception) {
                 reporter.report(RuntimeDiagnostic.Failure("health.rebuild", failure))
@@ -835,7 +859,10 @@ class ConnectionManager(
             stopHeartbeat()
             val work = synchronized(lock) { pending.also { pending = null; pendingTarget = null } }
             if (work !== except) work?.cancelAndJoin()
-            val report = stopCurrent(true)
+            val preceding = synchronized(lock) { precedingStop }
+            val precedingReport = preceding?.await()
+            val currentReport = stopCurrent(true)
+            val report = TeardownReport(((precedingReport?.issues ?: emptyList()) + currentReport.issues).snapshot())
             publish(DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null)
             transitions.finish(cause)
             processJob.cancel()
@@ -864,6 +891,12 @@ class ConnectionManager(
         owner: RadioGeneration, disconnectPhysical: Boolean, primary: Throwable? = null,
     ): TeardownReport {
         synchronized(lock) {
+            if (primary != null && hasCause<SessionCorrelationException.ConcurrentTransportOwner>(primary) &&
+                !owner.sawConnected && owner.ownsPhysical
+            ) {
+                owner.link?.let { PhysicalOwnership.release(it.transport, owner.physicalOwner) }
+                owner.ownsPhysical = false
+            }
             owner.logicalEnded = true
             if (disconnectPhysical) owner.physicalEnding = true
             if (active === owner && disconnectPhysical) {
