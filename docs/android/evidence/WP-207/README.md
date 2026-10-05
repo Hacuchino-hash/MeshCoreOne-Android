@@ -80,6 +80,7 @@ Successful owned hooks additionally retain `runtime-assertions.json` and
 | Hosted owned dependency DATA proposal, run `37329549317` attempt 1 | Exact module-local lock independently admitted; see `lock-admission.json`. This ran no tests |
 | Hosted raw runtime runs before final source repairs | 218/213/5 failed, then 218/217/1 failed; zero errors/skips. All faulty assertions/production paths were repaired in this same PR, never disabled |
 | Hosted full Linux scaffold, run `37349456919` attempt 1 at `10936dea54feb0d7797a111a05739555a106a80f`, base `d8f9b842581496baa382be1fe54dc866354b8150` | Composite verification, standalone assertions, APK assembly, lint, APK inspection and aggregate all passed. Raw runtime 224, data 369 and DataStore 137 all passed without failures/errors/skips |
+| Hosted corrective Linux scaffold, run `37352588958` attempt 1 at `d09fc4c107d290047913171377e48bf67cec287e` | Failed before native/JVM test execution: Gradle's `java` extension shadowed the new fully-qualified `java.io.File` output path. Repaired with an explicit `File` import; no tests or acceptance claimed from this run |
 
 The successful `10936dea` snapshot is **historical**, not acceptance for later
 source edits: independent review subsequently identified coupled shared-attempt

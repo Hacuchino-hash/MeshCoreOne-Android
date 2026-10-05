@@ -1,4 +1,5 @@
 // AndroidOnly: WP-207 Pure-JVM runtime, owned dependency lock and complete source-family assertion hook.
+import java.io.File
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 
 plugins { id("mesh.jvm.library") }
@@ -53,7 +54,7 @@ val verifyConnectionRuntimeTests by tasks.registering(Exec::class) {
     commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-207").resolve("collect_evidence.py").absolutePath)
     providers.gradleProperty("wp207EvidenceDirectory").orNull?.let {
-        args("--output", java.io.File(it, "runtime-assertions.json").absolutePath)
+        args("--output", File(it, "runtime-assertions.json").absolutePath)
     }
 }
 
@@ -65,7 +66,7 @@ val verifyRuntimeNativeIntegrationTests by tasks.registering(Exec::class) {
     commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-207").resolve("collect_native_evidence.py").absolutePath)
     providers.gradleProperty("wp207EvidenceDirectory").orNull?.let {
-        args("--output", java.io.File(it, "native-assertions.json").absolutePath)
+        args("--output", File(it, "native-assertions.json").absolutePath)
     }
 }
 
