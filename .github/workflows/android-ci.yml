@@ -18,17 +18,9 @@ concurrency:
 
 jobs:
   build:
-    name: Android scaffold (${{ matrix.host }})
-    runs-on: ${{ matrix.runner }}
+    name: Android scaffold
+    runs-on: ubuntu-24.04
     timeout-minutes: 55
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - host: linux
-            runner: ubuntu-24.04
-          - host: windows
-            runner: windows-2025
     defaults:
       run:
         shell: pwsh
@@ -77,7 +69,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: scaffold-${{ matrix.host }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: scaffold-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.ANDROID_CI_OUTPUT }}
           if-no-files-found: error
           retention-days: 7
@@ -99,12 +91,12 @@ jobs:
         with:
           python-version: "3.12.4"
           architecture: x64
-      - name: Read this run's two untrusted build bundles as data
+      - name: Read this run's untrusted build bundle as data
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          pattern: scaffold-*-${{ github.run_id }}-${{ github.run_attempt }}
+          pattern: scaffold-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/scaffold-results
-      - name: Fail closed on job outcomes, missing hosts, discovery or stale/artifact evidence
+      - name: Fail closed on job outcomes, discovery or stale/artifact evidence
         if: ${{ always() }}
         env:
           CI_NEEDS: ${{ toJSON(needs) }}

@@ -38,14 +38,14 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha", steps[0]["with"]["ref"])
         self.assertNotIn("secrets.", text)
 
-    def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_both_hosts(self):
+    def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_linux(self):
         from controller.ci import TASKS
 
         workflow, text = self.read("android-protocol.yml")
         job = workflow["jobs"]["protocol"]
         self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
-        self.assertEqual({entry["host"] for entry in job["strategy"]["matrix"]["include"]},
-                         {"linux", "windows"})
+        self.assertEqual(job["runs-on"], "ubuntu-24.04")
+        self.assertNotIn("strategy", job)
         self.assertIn("merge_group", workflow["on"])
         self.assertNotIn("paths", workflow["on"]["pull_request"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
@@ -63,7 +63,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_required_ci_no_path_filters_and_merge_group_are_enforced(self):
         original, text = self.read("android-ci.yml")
-        for kind in ("path", "branch", "merge", "gate", "needs", "host", "skip-stage"):
+        for kind in ("path", "branch", "merge", "gate", "needs", "host", "strategy", "skip-stage"):
             value = copy.deepcopy(original)
             if kind in ("path", "branch"):
                 value["on"]["pull_request"]["paths" if kind == "path" else "branches"] = ["android/**"]
@@ -74,7 +74,9 @@ class WorkflowTests(unittest.TestCase):
             elif kind == "needs":
                 value["jobs"]["android-ci"]["needs"] = []
             elif kind == "host":
-                value["jobs"]["build"]["strategy"]["matrix"]["include"].pop()
+                value["jobs"]["build"]["runs-on"] = "windows-2025"
+            elif kind == "strategy":
+                value["jobs"]["build"]["strategy"] = {"matrix": {"host": ["linux", "windows"]}}
             else:
                 value["jobs"]["build"]["steps"][7]["if"] = "false"
             with self.subTest(kind=kind), self.assertRaises(PortError):
