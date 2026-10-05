@@ -121,10 +121,13 @@ val resolveSharedUiDependencies by tasks.registering {
     doLast {
         val output = layout.buildDirectory.file("reports/wp304/dependency-graphs.tsv").get().asFile
         output.parentFile.mkdirs()
+        val ownedConfigurations = configurations.filter { it.isCanBeResolved }.sortedBy { it.name }
+        layout.buildDirectory.file("reports/wp304/resolution-configurations.txt").get().asFile
+            .writeText(ownedConfigurations.joinToString("\n", postfix = "\n") { it.name })
         var failed = false
         output.printWriter().use { writer ->
             writer.println("module\tconfiguration\tkind\tcomponent")
-            configurations.filter { it.isCanBeResolved }.sortedBy { it.name }.forEach { configuration ->
+            ownedConfigurations.forEach { configuration ->
                 val graph = configuration.incoming.resolutionResult
                 graph.allComponents.sortedBy { it.id.displayName }.forEach {
                     writer.println("${project.path}\t${configuration.name}\tselected\t${it.id.displayName}")

@@ -65,6 +65,33 @@
   "module_local_lock": "Allowed only after actual separately authorized scoped Linux generation; no handwritten records or silent incumbent version changes.",
   "producer_seams_authorized": false,
   "native_execution_authorized": false,
+  "linux_dependency_proposal_amendment": {
+    "received_at": "2026-10-05T14:23:19.109-05:00",
+    "workflow_path": ".github/workflows/android-shared-ui-dependency-generation.yml",
+    "command": ":core:ui:resolveSharedUiDependencies --write-locks --dependency-verification strict --no-build-cache",
+    "write_target": "android/core/ui/gradle.lockfile",
+    "runner": "ubuntu-24.04",
+    "job_minutes": 20,
+    "build_heap_mib": 512,
+    "build_metaspace_mib": 512,
+    "workers": 1,
+    "compiler_execution": "in-process",
+    "permissions": "contents:read; no persisted checkout credentials/cache/secrets/dispatch/merge/publisher",
+    "identity": "Only ordinary PR33, actual authorized actor, exact current head/base/source/manifest/policy/run/attempt",
+    "evidence": "Full actual before/after/config/version/input blobs/graphs/raw logs/proposal bytes and hashes retained before validation, including failure",
+    "persistence": "No worker auto-persistence. Parent independently verifies official ZIP and configuration deltas before a byte-exact persistence grant.",
+    "root_or_other_lock_changes_authorized": false
+  },
+  "second_main_reconciliation": {
+    "authority": "Parent explicitly requested only the own branch reconcile with actual origin/main before final proof.",
+    "actual_base_sha": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
+    "integration_sha": "d11721d66128d800cea2be2c84b39a1ac035e1b3",
+    "integration_parents": [
+      "94e30a196ed593b7073fdeab7b89bf874d0f1795",
+      "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
+    ],
+    "scope": "Landed runtime/TCP fixture/README successors; pinned source, policy, catalog and ROOT UI seed unchanged."
+  },
   "execution_boundary": "No Windows JVM/Gradle, WSL installs, shared-cache bootstrap or global setup. Exact scoped Linux generation/testing requires a separate grant.",
   "scope": "Authorship receipt and readiness only; not source parity, native execution, gate acceptance, merge authority, fleet activation or whole-app completion."
 }

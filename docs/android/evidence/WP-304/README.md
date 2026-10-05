@@ -88,12 +88,32 @@ acceptance inspection.
 
 ## Linux resolution/execution proposal, not a command already run
 
+The coordinator explicitly admitted the owned resolver and one bounded workflow
+on2026-10-05T14:23:19.109-05:00. The exact
+`android-shared-ui-dependency-generation.yml` candidate job uses one Ubuntu24.04
+host/20minutes, pinned actions/Python, read-only token, false checkout credential
+persistence, no cache/secrets/privileged duty and512MiB heap/metaspace/one worker.
+[`dependency_proposal.py`](../../../../android/core/ui/verification/dependency_proposal.py)
+checks identity/source/policy/command/caps/current committed inputs, retains raw
+produced data before validation and compares exact owned configuration/version/
+graph/lock state. Every tracked input and non-build lock is snapshotted; any
+unowned/root/unknown write blocks without restoration. The16 adversarial
+generator tests passed in Python only. There is no auto-persistence or gate.
+
+The own clean branch was further reconciled by explicit authority at
+`d11721d66128d800cea2be2c84b39a1ac035e1b3` onto verified main
+`7e2835bad2c03dfb5a088063655f9fc4dbafd00f`. Original824/d8f/3c06 and failed94e
+history remain intact. Runtime connection/timeout errors now exist in their
+concrete runtime module; neutral UI projection remains a producer boundary,
+not authorization for a UI-to-runtime edge. The WP-211 frozen neutral fault
+producer will be supplied separately; no peer/uncommitted file is copied here.
+
 The actual declared module resolver is
 `:core:ui:resolveSharedUiDependencies --write-locks --dependency-verification strict --no-build-cache`.
 It resolves only owned UI configurations into the module-local lock, forces all
 frozen incumbent versions and preserves complete selected/unresolved graphs
-before failure. It must run only after the coordinator grants the exact scoped
-Linux operation; no hand-edited records/rootwide unlock or metadata weakening.
+before failure. It runs only through the now-admitted exact scoped Linux proposal;
+no hand-edited records/rootwide unlock or metadata weakening.
 The following actual declared verifier is
 `:core:ui:verifySharedUiTests --dependency-verification strict --no-build-cache`.
 Neither invocation has occurred here.
