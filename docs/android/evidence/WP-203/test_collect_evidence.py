@@ -99,6 +99,18 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(COLLECTOR.digest(raw), reports[0]["sha256"])
         self.assertEqual(len(raw), reports[0]["size"])
 
+    def test_effective_base_is_not_silently_replaced_by_initial_baseline(self):
+        with patch.object(COLLECTOR, "git", side_effect=[b"a" * 40 + b"\n", b"b" * 40 + b"\n"]):
+            base, head = COLLECTOR.committed_revisions()
+        self.assertEqual("b" * 40, base)
+        self.assertEqual("a" * 40, head)
+        self.assertNotEqual(COLLECTOR.BASE, base)
+
+    def test_missing_or_short_effective_revisions_fail(self):
+        with patch.object(COLLECTOR, "git", side_effect=[b"a" * 40 + b"\n", b"short\n"]):
+            with self.assertRaisesRegex(ValueError, "Non-immutable"):
+                COLLECTOR.committed_revisions()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -35,7 +35,7 @@ not a successful runner result.
 | `python .\tools\android-port\extract_vectors.py --check` | Independent immutable vector drift | Passed: 49 immutable vectors |
 | `python .\docs\android\evidence\WP-203\collect_evidence.py --inventory-only` | Original case/native declaration binding | 171/171 original bindings, 194 native declarations; not execution |
 | `python -m unittest discover -s .\docs\android\evidence\WP-202 -p test_collect_evidence.py -q` | Frozen producer collector guards | 19 passed, zero failures/errors/skips |
-| `python -m unittest discover -s .\docs\android\evidence\WP-203 -p test_collect_evidence.py -q` | Raw backup evidence guard negatives | 9 passed, zero failures/errors/skips; synthetic inputs not native proof |
+| `python -m unittest discover -s .\docs\android\evidence\WP-203 -p test_collect_evidence.py -q` | Raw backup evidence guard negatives | 11 passed, zero failures/errors/skips; includes initial-versus-effective immutable base guards; synthetic inputs not native proof |
 | `python -m unittest discover -s .\tools\android-port\oracle\tests -p test_wp203_*.py -q` | Cross-direction artifact/source/XML guard negatives | 20 passed, zero failures/errors/skips; not Swift execution |
 | `python .\tools\android-port\controller\workflows.py` | Declared workflow trust-boundary assertions | Passed; no live publisher/gate claim |
 | `python .\tools\android-port\controller\verification_config.py --check` | Unchanged semantic manifest/overlay policy | Passed; feature acceptance remains unconfigured in canonical manifest |
@@ -68,14 +68,25 @@ module XML, 171 original bindings, input blobs and measured export hashes.
 
 ## Real cross-direction boundary
 
-The three-job admitted candidate workflow must execute an actual Room
-Kotlin export, frozen macOS Swift decoder and **SwiftData restore/export**,
-then actual Room restore of that Swift output. Until those commands and
-same-head/run/attempt/data hashes exist and pass, bidirectional acceptance
-is **BLOCKED**. Windows source staging, candidate round trips and the
-existing actual WP-004 fixture do not substitute for this new execution.
-Only data, XML, logs and source provenance are uploaded, not executable
-artifacts, credentials or user content.
+The three-job admitted candidate workflow has genuinely executed an actual
+Room Kotlin export, frozen macOS Swift decoder and **SwiftData restore/export**,
+then actual Room restore of that Swift output. Run37334739229/attempt1 on
+`69173e343346c5d0d557a8a027344ee498ca66f2`, base064f091c, passed all three
+jobs with complete same-head/base/source/run/attempt XML/input/data hashes.
+Both native stages discovered/passed all 348 methods, including 194 backup
+methods and 171 original bindings. The actual frozen source XCTest passed
+one mandatory case with real XML and independent framework unskipped trace.
+Both restores inserted twelve records, preserved semantic fields/identity,
+restored preferences and inserted zero on re-import. All three downloaded
+bundles were independently reparsed, not accepted from a green badge.
+
+This completed cross-direction proof is historical after the actual
+Linux-only foundation integration. Final-head ordinary root/protocol/APK,
+fresh oracle and independent review still need to bind to current main.
+Windows source staging, candidate-only round trips and the existing WP-004
+fixture never substituted for real execution. Only controlled data, XML,
+logs and source provenance are uploaded, not executable artifacts,
+credentials or user content.
 
 Actual new pipeline commands are
 `python tools/android-port/oracle/wp203_ci.py producer --state <private
@@ -114,3 +125,15 @@ lock delta is retained as mechanical data and **blocks** exact-head native
 acceptance until committed; no generated working-tree state is falsely
 bound to an unchanged candidate. Missing/zero/skipped or stale-hash data
 stages cannot progress through the dependent jobs.
+
+## Effective build-host direction
+
+The maintainer explicitly replaced the Windows/Linux requirement with Linux
+CI and WSL local development. The actual PR27 merge
+`05a6b0f830de9f803f04674f6275073dfabfd9b1` was independently verified before
+integration into this owning branch. No WSL installation/global configuration
+occurred, and no new local Windows JVM retries are required. Earlier Windows
+results/refusals remain historical records, not new Linux evidence. Actual
+macOS SwiftData interoperability and physical/API31-37, HIL, licensing and
+signing gates are not waived. Initiale697, the exact9f3 producer and later
+real-base histories remain preserved.

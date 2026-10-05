@@ -130,15 +130,21 @@ def suites(expected):
     return cases, reports, len(module_cases)
 
 
+def committed_revisions():
+    head = git("rev-parse", "HEAD").decode().strip()
+    base = git("merge-base", "HEAD", "origin/main").decode().strip()
+    if not all(re.fullmatch("[0-9a-f]{40}", value) for value in (base, head)):
+        raise ValueError("Non-immutable candidate base/HEAD")
+    return base, head
+
+
 def collect():
     owned, originals = inventory()
     bindings, expected, inputs = declarations()
     if set(bindings) != {case["id"] for case in originals}:
         raise ValueError("Missing/unknown original backup dispositions: " + repr(sorted({case["id"] for case in originals} - set(bindings))))
     executed, reports, module_count = suites(expected)
-    head = git("rev-parse", "HEAD").decode().strip()
-    if not re.fullmatch("[0-9a-f]{40}", head):
-        raise ValueError("Non-immutable candidate HEAD")
+    base, head = committed_revisions()
     for case in originals:
         binding = bindings[case["id"]]
         case.update(binding)
@@ -148,7 +154,7 @@ def collect():
                   "docs/android/evidence/WP-202").decode().strip()
     return {
         "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-203",
-        "base_sha": BASE, "head_sha": head, "source_sha": SOURCE,
+        "initial_base_sha": BASE, "base_sha": base, "head_sha": head, "source_sha": SOURCE,
         "scope": "actual native backup assertions only; cross-direction oracle and formal acceptance are separate",
         "binding_state": "working-tree-not-exact-head" if changed else "exact-committed-head",
         "primary_inputs": owned, "original_cases": originals, "test_inputs": inputs,

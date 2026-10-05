@@ -339,17 +339,17 @@ def aggregate(needs: dict, directory: Path, binding: Binding, run_id: int, run_a
     if set(needs) != {"build"} or needs["build"].get("result") != "success":
         raise PortError("Required build job failed, cancelled, skipped or absent")
     paths = sorted(directory.rglob("ci-result.json"))
-    if len(paths) != 2:
-        raise PortError("Both Windows and Linux immutable CI result artifacts are mandatory")
+    if len(paths) != 1:
+        raise PortError("Exactly one Linux immutable CI result artifact is mandatory")
     results = {}
     for path in paths:
         value = load_json(path)
         host = value.get("host")
-        if host not in ("windows", "linux") or host in results:
+        if host != "linux" or host in results:
             raise PortError("Missing/duplicate required execution host")
         results[host] = validate_result(value, path.parent, binding, run_id, run_attempt, host)
-    if set(results) != {"windows", "linux"}:
-        raise PortError("Both native execution hosts are required")
+    if set(results) != {"linux"}:
+        raise PortError("The Linux execution host is required")
     return {
         "result": "success", "binding": __import__("dataclasses").asdict(binding),
         "run_id": run_id, "run_attempt": run_attempt,

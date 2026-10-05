@@ -50,7 +50,7 @@ class EvidenceTests(unittest.TestCase):
         from dataclasses import asdict
 
         binding = self.binding()
-        for host in ("windows", "linux"):
+        for host in ("linux",):
             root = directory / host
             root.mkdir()
             suites = {name: discovery(minimum) for name, (_, minimum) in SUITES.items()}
@@ -111,12 +111,12 @@ class EvidenceTests(unittest.TestCase):
         with patch("controller.module_junit.module_sources", return_value=self.module_inputs()):
             return aggregate(needs or {"build": {"result": "success"}}, directory, binding, 71, 2)
 
-    def test_both_exact_native_host_shapes_and_complete_hashes_are_required(self):
+    def test_exact_native_host_shape_and_complete_hashes_are_required(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             binding = self.fixture(directory)
             result = self.aggregate(directory, binding)
-            self.assertEqual(set(result["hosts"]), {"linux", "windows"})
+            self.assertEqual(set(result["hosts"]), {"linux"})
             self.assertEqual(result["hosts"]["linux"]["kotlin_assertions"], 47)
             self.assertEqual(result["hosts"]["linux"]["module_unit_assertions"], 3)
 
@@ -168,7 +168,7 @@ class EvidenceTests(unittest.TestCase):
             directory = Path(temporary)
             binding = self.fixture(directory)
             (directory / "linux" / "ci-result.json").unlink()
-            with self.assertRaisesRegex(PortError, "Both Windows and Linux"):
+            with self.assertRaisesRegex(PortError, "Exactly one Linux"):
                 self.aggregate(directory, binding)
 
     def test_warmed_or_missing_root_and_standalone_cache_proofs_fail(self):

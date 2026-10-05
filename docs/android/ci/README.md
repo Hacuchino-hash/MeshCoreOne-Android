@@ -9,13 +9,15 @@ for absent integrations. They do not publish `parity-review` or `gate-integrity`
 
 `android-ci.yml` runs for every pull request, including dependent drafts, plus
 merge groups, `main` pushes and manual validation. There is no required-check
-workflow path/branch filter. Both `ubuntu-24.04` x64 and `windows-2025` x64 are
-mandatory. Module-selection optimization is intentionally deferred: skipping a
-host, suite, lint target or evidence artifact is not success.
+workflow path/branch filter. `ubuntu-24.04` x64 is the sole mandatory host; the
+prior `windows-2025` leg was removed (no shipped Windows build, local Windows
+development is covered by WSL instead). Module-selection optimization is
+intentionally deferred: skipping the host, a suite, lint target or evidence
+artifact is not success.
 
 The always-running `android-ci` job checks the build outcome and downloads only
-this run/attempt's two build bundles. It verifies repository, exact base/head,
-source, candidate manifest/policy, run/attempt, both hosts, actual discovery
+this run/attempt's build bundle. It verifies repository, exact base/head,
+source, candidate manifest/policy, run/attempt, the host, actual discovery
 contracts, fresh-cache proofs and every artifact's size/SHA-256. Failure,
 cancellation, a skipped required job, a missing bundle or stale/tampered evidence
 fails. Cancellation of an entire obsolete workflow is not evidence for a new head.
