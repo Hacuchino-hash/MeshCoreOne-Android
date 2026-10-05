@@ -48,6 +48,13 @@ class ConnectionManager(
     private class RuntimeOperation(val owner: Any) : AbstractCoroutineContextElement(Key) {
         companion object Key : CoroutineContext.Key<RuntimeOperation>
     }
+    private data class Submission(
+        val work: Deferred<Unit>,
+        val previous: Deferred<Unit>?,
+        val revision: Long,
+        val isNew: Boolean,
+        val stop: Deferred<TeardownReport>?,
+    )
     internal class RadioGeneration(
         val number: Long,
         val target: ConnectionTarget,
@@ -232,9 +239,11 @@ class ConnectionManager(
             }
         }
         if (connectedDevice?.id == deviceId && connectionState.isOperational) return
-        val (work, previous) = synchronized(lock) {
+        val submission = synchronized(lock) {
             val duplicate = pending
-            if (duplicate?.isActive == true && pendingTarget == normalized) return@synchronized duplicate to null
+            if (duplicate != null && !duplicate.isCompleted && !duplicate.isCancelled && pendingTarget == normalized) {
+                return@synchronized Submission(duplicate, null, revision, false, null)
+            }
             revision = Math.incrementExact(revision)
             val claimedRevision = revision
             val previous = pending
@@ -310,14 +319,19 @@ class ConnectionManager(
             }
             pending = task
             pendingTarget = normalized
-            task to previous
+            Submission(task, previous, claimedRevision, true, oldStop)
         }
-        if (!reentrant) previous?.cancel()
-        reporter.report(RuntimeDiagnostic.OperationSubmitted(synchronized(lock) { revision }))
-        work.start()
-        try { work.await() }
+        val work = submission.work
+        try {
+            if (submission.isNew) {
+                if (!reentrant) submission.previous?.cancel()
+                reporter.report(RuntimeDiagnostic.OperationSubmitted(submission.revision))
+            }
+            work.start()
+            work.await()
+        }
         catch (cancelled: CancellationException) {
-            withContext(NonCancellable) { work.cancelAndJoin() }
+            finishFailedSubmission(submission, cancelled)
             synchronized(lock) {
                 if (pending === work && active == null && retained == null) {
                     publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
@@ -325,12 +339,27 @@ class ConnectionManager(
             }
             throw cancelled
         } catch (failure: Exception) {
+            finishFailedSubmission(submission, failure)
             synchronized(lock) {
                 if (pending === work) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, issueFor(failure, LifecycleStage.CONNECT))
             }
             throw failure
         } finally {
             synchronized(lock) { if (pending === work) { pending = null; pendingTarget = null } }
+        }
+    }
+
+    private suspend fun finishFailedSubmission(submission: Submission, primary: Throwable) {
+        withContext(NonCancellable) {
+            submission.work.cancelAndJoin()
+            try {
+                val stopped = submission.stop?.await()
+                if (stopped != null && !stopped.isComplete) {
+                    stopped.issues.forEach { if (it.cause !== primary) primary.addSuppressed(it.cause) }
+                    reporter.report(RuntimeDiagnostic.Teardown(stopped))
+                }
+            }
+            catch (cleanup: Exception) { if (cleanup !== primary) primary.addSuppressed(cleanup) }
         }
     }
 

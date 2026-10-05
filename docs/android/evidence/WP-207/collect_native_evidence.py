@@ -23,7 +23,7 @@ EXPECTED = {
             "actualProcessStoreSurvivesTwoPhysicalGenerationsAndRuntimeClose",
             "ghostReconciliationExecutesTheActualRepositoryAlgorithmWithoutRekeyingUnrelatedPartitions",
         },
-        158,
+        369,
     ),
     "datastore": (
         "com.meshcoreone.android.core.datastore.ConnectionRuntimePreferenceIntegrationTest",

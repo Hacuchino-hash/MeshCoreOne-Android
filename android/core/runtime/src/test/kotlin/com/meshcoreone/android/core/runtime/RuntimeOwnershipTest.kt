@@ -625,17 +625,18 @@ class RuntimeOwnershipTest {
                     check(release.await(5, java.util.concurrent.TimeUnit.SECONDS))
                 }
                 val successor = target()
-                val manual = CoroutineScope(Dispatchers.Default).async { manager.connect(successor) }
+                val manual = backgroundScope.async(Dispatchers.Default) { manager.connect(successor) }
                 try {
                     assertTrue(accepted.await(5, java.util.concurrent.TimeUnit.SECONDS))
                     val before = radios.size
                     manager.checkBLEConnectionHealth()
                     assertEquals(before, radios.size)
-                } finally { release.countDown() }
-                runCurrent(); manual.await()
-                assertEquals(successor.deviceId, manager.connectedDevice?.id)
-                assertEquals(2, radios.size); assertEquals(1, radios.first().closes)
-                assertEquals(1, radios.last().collectors)
+                    release.countDown()
+                    runCurrent(); manual.await()
+                    assertEquals(successor.deviceId, manager.connectedDevice?.id)
+                    assertEquals(2, radios.size); assertEquals(1, radios.first().closes)
+                    assertEquals(1, radios.last().collectors)
+                } finally { release.countDown(); manual.cancelAndJoin() }
             }
         },
         nativeCase("inherited typed teardown failure survives later switches and remains visible at process close") {
@@ -670,6 +671,54 @@ class RuntimeOwnershipTest {
                 foreign.stop(disconnectTransport = true)
                 fresh.connect(); assertEquals(1, shared.collectors); assertEquals(DeviceConnectionState.READY, fresh.manager.connectionState)
             } finally { foreign.stop(); fresh.close(); failed.close() }
+        },
+        nativeCase("throwing submission diagnostic drains its new stop receipt and releases the accepted slot for recovery") {
+            withFixture {
+                connect()
+                val failure = ConnectionError.InitializationFailed("diagnostic observer")
+                onSubmission = { throw failure }
+                assertSame(failure, assertFailsWith<ConnectionError.InitializationFailed> { manager.connect(target()) })
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+                assertEquals(1, radios.first().closes); assertEquals(0, radios.first().collectors)
+                assertEquals(1, services.first().teardowns); assertNull(manager.activeConnectionAttemptDeviceId)
+                onSubmission = {}
+                manager.checkBLEConnectionHealth()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(2, radios.size); assertEquals(1, radios.last().collectors)
+            }
+        },
+        nativeCase("equivalent callers coalesce an accepted lazy submission before its first reporter returns") {
+            withFixture {
+                val accepted = java.util.concurrent.CountDownLatch(1)
+                val release = java.util.concurrent.CountDownLatch(1)
+                onSubmission = { accepted.countDown(); check(release.await(5, java.util.concurrent.TimeUnit.SECONDS)) }
+                val first = backgroundScope.async(Dispatchers.Default) { manager.connect(platform.target) }
+                try {
+                    assertTrue(accepted.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                    manager.connect(platform.target)
+                    assertEquals(1, services.size); assertEquals(1, services.single().monitoringStarts)
+                    release.countDown(); first.await()
+                    assertEquals(1, diagnostics.filterIsInstance<RuntimeDiagnostic.OperationSubmitted>().size)
+                    assertEquals(1, radios.size); assertEquals(1, radios.single().maximumCollectors)
+                } finally { release.countDown(); first.cancelAndJoin() }
+            }
+        },
+        nativeCase("guarded diagnostic reentry starts the same submitted operation without duplicate generation or event") {
+            val fixture = RuntimeFixture(this, dispatcher = UnconfinedTestDispatcher(testScheduler))
+            try {
+                var entered = false
+                fixture.onSubmission = {
+                    if (!entered) {
+                        entered = true
+                        runBlocking { fixture.manager.connect(fixture.platform.target) }
+                    }
+                }
+                fixture.manager.connect(fixture.platform.target)
+                assertEquals(DeviceConnectionState.READY, fixture.manager.connectionState)
+                assertEquals(1, fixture.radios.size); assertEquals(1, fixture.services.size)
+                assertEquals(1, fixture.diagnostics.filterIsInstance<RuntimeDiagnostic.OperationSubmitted>().size)
+                assertEquals(1, fixture.radios.single().maximumCollectors)
+            } finally { fixture.close() }
         },
     )
 }
