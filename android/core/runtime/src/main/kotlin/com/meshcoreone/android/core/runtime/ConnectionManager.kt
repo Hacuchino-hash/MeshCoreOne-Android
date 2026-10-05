@@ -627,10 +627,14 @@ class ConnectionManager(
         stopWiFiReconnection()
         stopHeartbeat()
         cleanup.start()
+        // Swift persists the explicit-disconnect intent before teardown. Writing it only after teardown let a
+        // process death mid-teardown auto-reconnect on next launch. The write runs beside teardown in the
+        // cleanup scope, so caller cancellation cannot skip it, and a storage failure still surfaces afterwards.
+        val intentWrite = if (reason.clearsIntent) cleanupScope.async {
+            lastConnection.persistIntent(ConnectionIntent.UserDisconnected) { synchronized(lock) { revision == expectedRevision } }
+        } else null
         val report = withContext(NonCancellable) { cleanup.await() }
-        if (reason.clearsIntent) lastConnection.persistIntent(ConnectionIntent.UserDisconnected) {
-            synchronized(lock) { revision == expectedRevision }
-        }
+        intentWrite?.await()
         lastConnection.persistDisconnectDiagnostic(
             "source=disconnect(reason), reason=${reason.rawValue}, transport=${transportName(before)}, " +
                 "initialState=${before.state.name.lowercase()}, finalState=disconnected, intent=${intentSummary()}",
