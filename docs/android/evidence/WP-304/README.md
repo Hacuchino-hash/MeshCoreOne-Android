@@ -10,6 +10,15 @@ base was `d8f9b842581496baa382be1fe54dc866354b8150`. The dedicated original
 managed branch is retained because the app rename tool is unavailable and the
 coordinator explicitly permits that fallback.
 
+The coherent authored batch is
+`769b38f1008dd2aa493bee56ad9e432a97e83a0d` (parent d8f), with the required
+Copilot App co-author trailer. Parent explicitly authorized reconciliation with
+the actual CI-only PR29 merge `3c06d97e11cea96827c3349e78d1a5db7a8d5ad0`.
+The clean owning branch integration commit
+`1e0ce7549174e3da181b1d304ae74890a79e534c` has parents769b and3c06; no peer or
+main checkout, source pin, policy, schema, catalog or ROOT UI lock changed.
+These are provenance receipts, not native execution evidence.
+
 Pinned source `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`; semantic manifest
 `78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746`,
@@ -28,6 +37,10 @@ verified, not inferred from issue closure or session state.
 | `python tools\android-port\controller\validate.py` | Passed on824 and d8f; complete1,866 inputs and immutable graph |
 | `python tools\android-port\portmap.py` before authorship | Passed traceability only, not feature acceptance |
 | `python docs\android\evidence\WP-304\collect_evidence.py --static --self-test` | Passed15 reader regressions and all130 declarations/158 scenarios;151 native methods at that checkpoint; **not executed native tests** |
+| Same declared static/self-test on committed/reconciled candidate | Passed16 reader regressions,130/158 and165 declared native methods; **no JVM/native execution** |
+| `python docs\android\evidence\WP-304\generate_source_map.py --write`, then check mode | Passed exact88-input/130-family/158-scenario owned map; no shared catalog changes |
+| `python docs\android\evidence\WP-301\verify_consumer_locks.py --check` | Passed immutable10-consumer/80-configuration/16-addition historical delta |
+| Independent complete changed-path lease inspection | All55 changed paths matched the original three subtrees plus exact shared three-file amendment; zero unleased paths |
 | `git diff --check` | Passed at authored checkpoints |
 
 The declaration count grows as native flow/API evidence is authored; it is not
@@ -48,6 +61,11 @@ dimensions/hashes. Required states are compact light, expanded dark/high-
 contrast, resize,200% CJK/RTL, failure/retry, native dialog, persisted-tip display
 and crop. The rendered components are real Material/Compose, not theme-picker
 screenshots or manufactured device evidence.
+
+`ProducerBindingPending` receipts are emitted separately from native and
+native-adaptation receipts. The reader preserves the exact unresolved source
+case/owner list in `producer_binding_blockers`; copy-policy assertion success
+cannot silently become a concrete service-dispatch parity claim.
 
 [`retain_raw.py`](retain_raw.py), finalized before success validation, preserves
 verbatim produced XML, failures/stacks and current input hashes independently.

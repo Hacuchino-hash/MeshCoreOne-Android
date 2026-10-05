@@ -17,6 +17,19 @@
     "b9037e352fab65309b358b1d2f2e6b3e3ed1b636"
   ],
   "current_base_sha": "d8f9b842581496baa382be1fe54dc866354b8150",
+  "later_integration": {
+    "authority": "Parent explicitly authorized committing the coherent UI batch then reconciling only the own branch with actual origin/main.",
+    "base_sha": "3c06d97e11cea96827c3349e78d1a5db7a8d5ad0",
+    "base_pr": 29,
+    "base_merged_at": "2026-10-05T18:09:26Z",
+    "owned_batch_sha": "769b38f1008dd2aa493bee56ad9e432a97e83a0d",
+    "integration_sha": "1e0ce7549174e3da181b1d304ae74890a79e534c",
+    "integration_parents": [
+      "769b38f1008dd2aa493bee56ad9e432a97e83a0d",
+      "3c06d97e11cea96827c3349e78d1a5db7a8d5ad0"
+    ],
+    "scope": "Verified CI-only main advance; pinned source, manifest/policy, UI APIs and ROOT UI lock unchanged."
+  },
   "current_base_parents": [
     "824df06bfa91d2d7d39237a894b10ab06b8c039d",
     "3a03d24dc7d268d96dee86c85ce8e6dd055053d2"
