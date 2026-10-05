@@ -176,4 +176,26 @@ class ThemeResourceTest {
         assertEquals(5, SignalColorRole.entries.map { resources().getString(it.labelResource) }.toSet().size)
         assertEquals(listOf(1.0, 0.75, 0.5, 0.25, 0.0), SignalColorRole.entries.map { it.barLevel })
     }
+    @Test fun outgoingIdentityRunsUseOutgoingForegroundAndIncomingRunsRetainSourceIdentity() {
+        val runs = SnapshotList.of(ThemeTextRun(0, 6, ThemeTextRole.IDENTITY, "Alice"))
+        for (frame in effectiveFrames()) {
+            val palette = frame.textColors()
+            val outgoing = buildThemedText("@Alice", true, runs, palette)
+            val incoming = buildThemedText("@Alice", false, runs, palette)
+            assertEquals(0, outgoing.spanStyles.last().start)
+            assertEquals(6, outgoing.spanStyles.last().end)
+            assertEquals(palette.outgoing.toComposeColor(), outgoing.spanStyles.last().item.color)
+            assertTrue(WCAGContrast.contrastRatio(outgoing.spanStyles.last().item.color.toThemeColor(),
+                frame.accent.toComposeColor().toThemeColor()) >= 4.5, frame.theme.id.rawValue)
+            assertEquals(frame.identityColor("Alice").toComposeColor(), incoming.spanStyles.last().item.color)
+            val emoji = "\uD83D\uDC69\u200d\uD83D\uDCBB @Alice"
+            val start = emoji.indexOf('@')
+            val indexed = buildThemedText(emoji, true, SnapshotList.of(
+                ThemeTextRun(start, emoji.length, ThemeTextRole.IDENTITY, "Alice"),
+            ), palette)
+            assertEquals(start, indexed.spanStyles.last().start)
+            assertEquals(emoji.length, indexed.spanStyles.last().end)
+            assertEquals(palette.outgoing.toComposeColor(), indexed.spanStyles.last().item.color)
+        }
+    }
 }

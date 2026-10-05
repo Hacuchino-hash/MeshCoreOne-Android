@@ -113,4 +113,29 @@ class ThemeContrastTest {
         assertFailsWith<IllegalArgumentException> { ThemeColor(Double.NaN, 0.0, 0.0) }
         assertFailsWith<IllegalArgumentException> { accessibleForeground(ThemeColor.BLACK, ThemeColor(0.5, 0.5, 0.5), 21.0) }
     }
+    @Test fun materialPrimaryTextClearsCanvasCardAndAllExportedSurfaceTiers() {
+        assertFailsWith<IllegalArgumentException> {
+            accessibleForegroundOnSurfaces(ThemeColor.BLACK, emptyList(), 4.5)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            accessibleForegroundOnSurfaces(ThemeColor.BLACK, listOf(ThemeColor.WHITE.copy(alpha = 0.5)), 4.5)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            accessibleForegroundOnSurfaces(ThemeColor.BLACK, listOf(ThemeColor.WHITE, ThemeColor.BLACK), 4.5)
+        }
+        val marine = assertNotNull(ThemeRegistry.theme("marine")).resolve(ColorScheme.DARK, false)
+        assertEquals(ThemeColor(0.055, 0.086, 0.125), marine.canvas)
+        assertEquals(ThemeColor(0.102, 0.137, 0.188), marine.card)
+        for (frame in effectiveFrames()) {
+            val native = MaterialRoles.from(frame).toMaterialColorScheme(frame.colorScheme == ColorScheme.DARK)
+            for (background in listOf(native.background, native.surface, native.surfaceVariant,
+                native.surfaceContainerLow, native.surfaceContainer, native.surfaceContainerHigh,
+                native.surfaceContainerHighest)) {
+                assertTrue(WCAGContrast.contrastRatio(native.primary.toThemeColor(), background.toThemeColor()) >= WCAGContrast.floor(frame.highContrast),
+                    "${frame.theme.id.rawValue}:${frame.colorScheme}:${frame.highContrast}")
+            }
+            assertTrue(WCAGContrast.contrastRatio(native.onPrimary.toThemeColor(), native.primary.toThemeColor()) >= 4.5)
+            assertEquals(frame.theme.accentColor.resolve(frame.colorScheme, frame.highContrast), frame.accent)
+        }
+    }
 }

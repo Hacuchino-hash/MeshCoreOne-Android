@@ -40,7 +40,7 @@ fun buildThemedText(
         val color = when (run.role) {
             ThemeTextRole.BODY -> base
             ThemeTextRole.HASHTAG -> if (isOutgoing) colors.outgoing else colors.hashtag
-            ThemeTextRole.IDENTITY -> colors.identity(requireNotNull(run.identityName))
+            ThemeTextRole.IDENTITY -> if (isOutgoing) colors.outgoing else colors.identity(requireNotNull(run.identityName))
         }
         builder.addStyle(SpanStyle(color = color.toComposeColor()), run.start, run.end)
         previousEnd = run.end

@@ -149,3 +149,45 @@ val inspectThemeConsumerGraphs by tasks.registering {
         if (failed) throw GradleException("Strict consumer graphs are BLOCKED; actual missing-lock evidence retained in ${output.name}")
     }
 }
+
+val resolveAdmittedThemeConsumerGraphs by tasks.registering {
+    group = "verification"
+    description = "Regenerate only the ten coordinator-admitted runtime/lint configurations, preserving every old version."
+    notCompatibleWithConfigurationCache("Resolves precisely the admitted consumer configuration model")
+    doLast {
+        check(gradle.startParameter.isWriteDependencyLocks) { "Admitted regeneration requires explicit --write-locks" }
+        val modules = listOf(":core:ui", ":core:maps", ":feature:onboarding", ":feature:chats", ":feature:nodes",
+            ":feature:remotenodes", ":feature:map", ":feature:tools", ":feature:settings", ":platform:widgets")
+        val names = listOf("debugRuntimeClasspath", "releaseRuntimeClasspath", "debugUnitTestRuntimeClasspath",
+            "debugAndroidTestRuntimeClasspath", "debugLintChecksClasspath", "releaseLintChecksClasspath",
+            "debugUnitTestLintChecksClasspath", "debugAndroidTestLintChecksClasspath")
+        val output = layout.buildDirectory.file("reports/wp301/admitted-consumer-graphs.tsv").get().asFile
+        output.parentFile.mkdirs()
+        output.printWriter().use { writer ->
+            writer.println("module\tconfiguration\tcomponent")
+            for (module in modules) {
+                val lock = rootProject.projectDir.resolve("gradle").resolve("dependency-locks")
+                    .resolve(module.removePrefix(":").replace(":", "-") + ".lockfile")
+                val old = lock.readLines().filter { it.isNotBlank() && !it.startsWith("#") }.map {
+                    val parts = it.split("=", limit = 2)
+                    check(parts.size == 2) { "Malformed admitted existing lock" }
+                    parts[0] to parts[1].split(",").toSet()
+                }
+                for (name in names) {
+                    val configuration = rootProject.project(module).configurations.getByName(name)
+                    old.filter { it.first != "empty" && name in it.second }.forEach {
+                        configuration.resolutionStrategy.force(it.first)
+                    }
+                    val result = configuration.incoming.resolutionResult
+                    val unresolved = result.allDependencies.filterIsInstance<UnresolvedDependencyResult>()
+                    if (unresolved.isNotEmpty()) throw GradleException(
+                        "Admitted consumer unresolved: $module:$name", unresolved.first().failure,
+                    )
+                    result.allComponents.sortedBy { it.id.displayName }.forEach {
+                        writer.println("$module\t$name\t${it.id.displayName}")
+                    }
+                }
+            }
+        }
+    }
+}

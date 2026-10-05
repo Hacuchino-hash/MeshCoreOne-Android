@@ -176,7 +176,8 @@ fun ThemeFoundationContent(
             Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.testTag("preview-heading"), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MeshBrandMark(Modifier.size(49.dp))
                 Text(stringResource(AppSettingsStrings.appearanceTitle), style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.semantics { heading() })

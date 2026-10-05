@@ -76,6 +76,7 @@ class ThemeComposeTest {
 
     @Before fun attachRealNativeHost() {
         controller = Robolectric.buildActivity(ComponentActivity::class.java).setup().visible()
+        controller.get().actionBar?.hide()
     }
     @After fun disposeHost() {
         controller.pause().stop().destroy()
@@ -140,13 +141,20 @@ class ThemeComposeTest {
         val selected = mutableStateOf(ThemeRegistry.default)
         var remembered = -1
         val long = sample.copy(incomingText = "\u4e2d\u6587\u6d88\u606f ".repeat(20) + "\u05e9\u05dc\u05d5\u05dd ".repeat(20))
+        val preview = mutableStateOf(long)
+        val showError = mutableStateOf(false)
         content {
             CompositionLocalProvider(LocalDensity provides Density(1f, 2f), LocalLayoutDirection provides LayoutDirection.Rtl) {
                 Box(Modifier.width(width.value).height(900.dp)) {
                     MeshCoreTheme(selected.value, highContrast = true, motionScale = 0f) {
                         val detail = remember { mutableIntStateOf(37) }
                         SideEffect { remembered = detail.intValue }
-                        ThemeFoundationContent(long, { selected.value = assertNotNull(ThemeRegistry.theme(it)) })
+                        androidx.compose.foundation.layout.Column {
+                            if (showError.value) ThemeFailureContent(
+                                ThemeServiceState.Failed(ThemeServiceFailure(ThemeProblem.UnknownThemeID("preview")), null),
+                            ) {}
+                            ThemeFoundationContent(preview.value, { selected.value = assertNotNull(ThemeRegistry.theme(it)) })
+                        }
                     }
                 }
             }
@@ -164,6 +172,10 @@ class ThemeComposeTest {
         compose.runOnIdle { assertEquals(37, remembered) }
         compose.runOnIdle { selected.value = ThemeRegistry.default }
         compose.runOnIdle { assertEquals(37, remembered) }
+        compose.runOnIdle { preview.value = sample; showError.value = true }
+        compose.onNodeWithTag("theme-error").assertIsDisplayed()
+        compose.onNodeWithText(controller.get().getString(com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings.commonTryAgain))
+            .assertIsDisplayed().assertHeightIsAtLeast(49.dp)
         capture("font200-rtl-cjk-expanded")
     }
     @Test fun realPreferenceConsumerChangesTheMaterialHostWithoutRecreatingContent() = runBlocking<Unit> {
@@ -247,7 +259,42 @@ class ThemeComposeTest {
         compose.runOnIdle { assertTrue(contrast); assertEquals(0f, scale) }
     }
 
+    @Test fun actualSurfaceTextButtonUsesLegibleNativePrimaryAcrossEveryEffectiveFrame() {
+        val selected = mutableStateOf(ThemeRegistry.default)
+        val scheme = mutableStateOf(AppColorSchemePreference.LIGHT)
+        val high = mutableStateOf(false)
+        var textColor: androidx.compose.ui.graphics.Color? = null
+        var surface: androidx.compose.ui.graphics.Color? = null
+        content {
+            MeshCoreTheme(selected.value, scheme.value, highContrast = high.value, motionScale = 0f) {
+                val background = MaterialTheme.colorScheme.surface
+                androidx.compose.material3.Surface(color = background) {
+                    androidx.compose.material3.TextButton(onClick = {}) {
+                        val foreground = androidx.compose.material3.LocalContentColor.current
+                        SideEffect { textColor = foreground; surface = background }
+                        Text(themeName(LocalAppTheme.current), Modifier.testTag("surface-text-button"))
+                    }
+                }
+            }
+        }
+        for (frame in effectiveFrames()) {
+            compose.runOnIdle {
+                selected.value = frame.theme
+                scheme.value = if (frame.colorScheme == ColorScheme.DARK) AppColorSchemePreference.DARK else AppColorSchemePreference.LIGHT
+                high.value = frame.highContrast
+            }
+            compose.onNodeWithTag("surface-text-button").assertIsDisplayed()
+            compose.runOnIdle {
+                assertTrue(WCAGContrast.contrastRatio(assertNotNull(textColor).toThemeColor(),
+                    assertNotNull(surface).toThemeColor()) >= WCAGContrast.floor(frame.highContrast), frame.theme.id.rawValue)
+            }
+        }
+    }
+
     private fun capture(id: String) {
+        compose.onNodeWithTag("preview-heading").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("incoming-sample").assertIsDisplayed()
+        compose.onNodeWithTag("outgoing-sample").assertIsDisplayed()
         compose.waitForIdle()
         val bitmap = compose.runOnUiThread {
             val view = controller.get().window.decorView

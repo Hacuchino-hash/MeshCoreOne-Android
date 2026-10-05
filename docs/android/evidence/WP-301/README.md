@@ -1,10 +1,12 @@
 # WP-301 evidence
 
-**Implementation candidate; owned native verification now passes.** The
-coordinator delivered the separate 512MiB local Java receipt. Actual module
-verification discovers/passes **87 tests**, zero failures/errors/skips, and
-retains **39 native PNG renders**. Root consumer lock admission and complete
-current-head Windows/Linux/root/APK evidence are still pending. No device, hardware, signing,
+**Implementation candidate; current repairs await native verification.** The
+earlier bounded local execution discovered/passed **87 tests**, zero
+failures/errors/skips, and retained **39 native PNG renders**. Those captures
+include the historical scroll-state limitation described below; they are not
+current proof for the review repairs. Exact consumer lock admission is active,
+but regeneration and complete current-head Windows/Linux/root/APK evidence
+remain pending. No device, hardware, signing,
 formal licensing/gate, iOS/UIKit, complete-app or merged-WP acceptance is claimed.
 
 Repository: `cbattlegear/MeshCoreOne-Android`; owner `design-system-engineer`;
@@ -35,11 +37,10 @@ directory and the WP deviation document. The separately granted graph files
 only add the actual preference consumer edge, preserve every old guard, add real
 Gradle fixtures and describe the process lifetime.
 
-No app/feature/UI/manifest/localization/catalog/controller/workflow/global lock/
-checksum policy was changed. Proposed transitive consumer locks remain unowned
-until actual strict per-module/configuration graph evidence and an exact
-coordinator amendment admit their deltas. No new agents or owning worktrees
-were launched.
+No app/feature/UI/manifest/localization/catalog/controller/workflow/checksum
+policy was changed. The exact ten-consumer lock amendment is recorded in the
+receipt; all other shared lock paths remain unowned. No new agents or owning
+worktrees were launched.
 
 The first real both-host attempt reached resource parsing and rejected absent
 strict state in the newly declared owned local lock. [Lock seed](lock-seed.json)
@@ -78,7 +79,22 @@ pre-repair commit; final current-head hosted proof remains mandatory.
 [Exact consumer amendment request](dependency-amendment-request.json) and
 [verbatim graph](consumer-dependency-graphs.tsv) identify only sixteen added
 DataStore1.2.1/Okio3.9.1/serialization-json1.7.3 components, all already admitted
-in the existing checksum XML. No global lock or metadata change is implied.
+in the existing checksum XML. The coordinator independently admitted exactly
+these ten paths/eight configurations each/sixteen additions, but **actual targeted
+consumer regeneration has not run**. The local APK packaging command failed
+to receive a daemon response under critically low OS commit/pagefile headroom.
+Only the specifically confirmed own idle/teardown daemon PID 4396 was stopped;
+the known private-cache PID scan then proved zero own JVMs and the slot was
+released to WP-202. No new local JVM runs are authorized until another receipt.
+
+The source-review fixes and meaningful screenshot preset correction are now
+written with five real regressions but remain pending fresh native execution.
+Static discovery now expects 92 native methods; this is not an executed count.
+Historical 87-pass/39-image evidence is preserved, not presented as current
+proof for those unexecuted repairs. `resolveAdmittedThemeConsumerGraphs` is
+the declared targeted writer; it requires explicit `--write-locks`, preserves
+old selected versions, and visits only the admitted runtime/lint configurations.
+No global XML/catalog/other-lock exception is granted.
 
 ## Actual initial hosted failure
 
@@ -108,7 +124,7 @@ dispositions and all 20 primary production sources are accounted for.
 
 The module declares `verifyThemeConversion`, `verifyThemeTests`,
 `verifyThemeNotices`, `verifyThemePackaging`, `resolveThemeDependencies` and
-`inspectThemeConsumerGraphs`. Its real
+`inspectThemeConsumerGraphs` and `resolveAdmittedThemeConsumerGraphs`. Its real
 `testDebugUnitTest`/case collector is attached to the existing root
 `verifyScaffoldTests`; the generic current-head module JUnit collector retains
 the complete suite on both hosted operating systems.
@@ -139,6 +155,15 @@ lint reports and passing hosted run/attempt identities remain **pending**.
 The first real hosted repair also compiled production code and inspected a
 Linux debug APK, but unit preparation failed on unrecorded new locked
 dependencies; that is compile-only evidence, not native test success.
+
+[Run 37311053309, attempt 1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37311053309)
+at `386d318b541b1bedf0d7d4136bcde2bfc76db6b5` actually ran the older module
+suite on both hosts: each reported 87 discovered/passed, zero
+failures/errors/skips, all 58 source dispositions and 39 native captures.
+Both then failed closed at `:resolveScaffoldDependencies` because the sixteen
+added DataStore/Okio/serialization components were absent from the ten
+consumer locks. That hosted module result does not validate the newer
+review/capture fixes, complete root graph, standalone stage or final lint.
 
 ## Deviations and acceptance
 

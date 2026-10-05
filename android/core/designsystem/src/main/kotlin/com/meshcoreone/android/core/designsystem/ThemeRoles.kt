@@ -56,7 +56,7 @@ data class MaterialRoles(
     companion object {
         fun from(frame: ThemeFrame): MaterialRoles {
             val floor = WCAGContrast.floor(frame.highContrast)
-            val primary = accessibleForeground(frame.accent, frame.canvas, floor)
+            val primary = accessibleForegroundOnSurfaces(frame.accent, listOf(frame.canvas, frame.card, frame.incomingBubble), floor)
             val primaryContainer = frame.canvas.mix(frame.accent, if (frame.highContrast) 0.10 else 0.15)
             val secondaryContainer = frame.card
             val secondary = accessibleForeground(frame.hashtag, frame.canvas, floor)
@@ -114,19 +114,22 @@ fun readableGlyph(preferred: ThemeColor, background: ThemeColor): ThemeColor {
     ) ThemeColor.WHITE else ThemeColor.BLACK
 }
 
-fun accessibleForeground(preferred: ThemeColor, background: ThemeColor, floor: Double): ThemeColor {
-    require(floor.isFinite() && floor in 1.0..21.0 && background.alpha == 1.0)
-    if (WCAGContrast.contrastRatio(preferred, background) >= floor + 0.05) return preferred
-    val target = readableGlyph(ThemeColor.TRANSPARENT, background)
-    require(WCAGContrast.contrastRatio(target, background) >= floor) {
-        "The requested contrast is physically unreachable on this surface"
-    }
-    val desired = minOf(floor + 0.05, WCAGContrast.contrastRatio(target, background))
+fun accessibleForeground(preferred: ThemeColor, background: ThemeColor, floor: Double): ThemeColor =
+    accessibleForegroundOnSurfaces(preferred, listOf(background), floor)
+
+fun accessibleForegroundOnSurfaces(preferred: ThemeColor, backgrounds: List<ThemeColor>, floor: Double): ThemeColor {
+    require(backgrounds.isNotEmpty() && backgrounds.all { it.alpha == 1.0 })
+    require(floor.isFinite() && floor in 1.0..21.0)
+    fun minimumRatio(color: ThemeColor): Double = backgrounds.minOf { WCAGContrast.contrastRatio(color, it) }
+    if (minimumRatio(preferred) >= floor + 0.05) return preferred
+    val target = if (minimumRatio(ThemeColor.WHITE) >= minimumRatio(ThemeColor.BLACK)) ThemeColor.WHITE else ThemeColor.BLACK
+    require(minimumRatio(target) >= floor) { "The requested contrast is unreachable across these surfaces" }
+    val desired = minOf(floor + 0.05, minimumRatio(target))
     var low = 0.0
     var high = 1.0
     repeat(32) {
-        val middle = (low + high) / 2
-        if (WCAGContrast.contrastRatio(preferred.mix(target, middle), background) < desired) low = middle else high = middle
+        val mid = (low + high) / 2
+        if (minimumRatio(preferred.mix(target, mid)) < desired) low = mid else high = mid
     }
     return preferred.mix(target, high)
 }

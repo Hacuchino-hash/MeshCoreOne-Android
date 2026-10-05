@@ -14,14 +14,18 @@ import com.meshcoreone.android.core.datastore.StorageIssueReporter
 import com.meshcoreone.android.core.datastore.StorageProblem
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.test.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -365,6 +369,61 @@ class ThemeServiceTest {
             s.setCurrent(ThemeId.EMBER)
             s.setCurrent(ThemeId.DEFAULT)
             assertNull(ready(s).themeReversion)
+        }
+    }
+    @Test fun queuedAnnouncementClaimIsTerminalFalseWhenCloseWinsTheMutexRace() = runBlocking<Unit> {
+        harness { h, s ->
+            s.setCurrent(ThemeId.MARINE)
+            h.store.preferences.set(AppearanceStorageKey.selectedThemeID, "future")
+            s.refreshFromPreferences()
+            val version = assertNotNull(ready(s).themeReversion)
+            val entered = CountDownLatch(1)
+            val release = CountDownLatch(1)
+            coroutineScope {
+                val transaction = async(Dispatchers.IO) {
+                    h.store.preferences.update {
+                        entered.countDown()
+                        check(release.await(10, TimeUnit.SECONDS)) { "Test transaction release timed out" }
+                    }
+                }
+                try {
+                    assertTrue(entered.await(10, TimeUnit.SECONDS))
+                    val setter = async(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+                        assertFailsWith<ThemeServiceFailure> { s.setColorSchemePreference(AppColorSchemePreference.DARK) }
+                    }
+                    val claim = async(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) { s.claimThemeReversion(version) }
+                    val close = async(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) { s.close() }
+                    release.countDown()
+                    transaction.await()
+                    assertEquals(ThemeProblem.OwnerClosed, setter.await().problem)
+                    assertFalse(claim.await())
+                    close.await()
+                    assertIs<ThemeServiceState.Closed>(s.state.value)
+                    assertFalse(s.claimThemeReversion(version))
+                    assertTrue(h.themeFailures.all { it.problem == ThemeProblem.OwnerClosed })
+                } finally { release.countDown() }
+            }
+        }
+    }
+    @Test fun cancelledAnnouncementCallerStillThrowsBeforeTheClosedOwnerShortcut() = runBlocking<Unit> {
+        harness { _, s ->
+            s.close()
+            var cancellationObserved = false
+            coroutineScope {
+                val caller = async(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+                    currentCoroutineContext().cancel()
+                    try {
+                        s.claimThemeReversion(1L)
+                        fail("A cancelled caller must not receive a terminal success value")
+                    } catch (cancelled: CancellationException) {
+                        cancellationObserved = true
+                        throw cancelled
+                    }
+                }
+                assertFailsWith<CancellationException> { caller.await() }
+            }
+            assertTrue(cancellationObserved)
+            assertFalse(s.claimThemeReversion(1L))
         }
     }
 }

@@ -209,13 +209,17 @@ class ThemeService private constructor(
         }
     }
 
-    suspend fun claimThemeReversion(version: Long): Boolean = operation.withLock {
-        requireOpen()
-        if (pendingReversion != version) return@withLock false
-        pendingReversion = null
-        val current = mutableState.value
-        if (current is ThemeServiceState.Ready) mutableState.value = current.copy(themeReversion = null)
-        true
+    suspend fun claimThemeReversion(version: Long): Boolean {
+        currentCoroutineContext().ensureActive()
+        return operation.withLock {
+            // Closing is an expected terminal announcement outcome, not a failed preference operation.
+            if (closed.get() || !lifetime.isActive) return@withLock false
+            if (pendingReversion != version) return@withLock false
+            pendingReversion = null
+            val current = mutableState.value
+            if (current is ThemeServiceState.Ready) mutableState.value = current.copy(themeReversion = null)
+            true
+        }
     }
 
     suspend fun close() {

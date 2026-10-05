@@ -27,7 +27,8 @@
     "Copy exact pinned Appearance.Accessibility.ThemeReverted translations into module-owned generated resources with a typed accessor for unknown restored theme IDs; no entitlement/refund behavior or shared localization edits.",
     "Preserve source palette components and document the System high-contrast white-outgoing contrast exception while fitting native Material foreground roles to actual WCAG thresholds."
   ],
-  "local_jvm_authorized": true,
+  "local_jvm_authorized": false,
+  "local_jvm_status": "Earlier bounded receipt used for historical native execution; slot released with zero own JVMs after command67 capacity failure. Coordinator assigned priority to WP-202; new explicit receipt required.",
   "local_jvm_limits": {
     "maximum_workers": 1,
     "compiler_execution": "in-process",
@@ -38,7 +39,7 @@
     "test_heap_mib": 256
   },
   "shared_graph_authorized": true,
-  "shared_consumer_locks_authorized": false,
+  "shared_consumer_locks_authorized": true,
   "amendments": [
     {
       "authority": "Same coordinator, same lease, delivered to active native session",
@@ -48,6 +49,28 @@
         "docs/android/architecture/modules.md"
       ],
       "scope": "Add only designsystem -> datastore, real positive/reverse-cycle/forbidden Gradle fixtures, and its true process-lifetime description. Preserve every existing graph guard."
+    },
+    {
+      "authority": "Coordinator independently read immutable 386d318b request, all initial blobs and actual 12704-row graph",
+      "paths": [
+        "android/gradle/dependency-locks/core-ui.lockfile",
+        "android/gradle/dependency-locks/core-maps.lockfile",
+        "android/gradle/dependency-locks/feature-onboarding.lockfile",
+        "android/gradle/dependency-locks/feature-chats.lockfile",
+        "android/gradle/dependency-locks/feature-nodes.lockfile",
+        "android/gradle/dependency-locks/feature-remotenodes.lockfile",
+        "android/gradle/dependency-locks/feature-map.lockfile",
+        "android/gradle/dependency-locks/feature-tools.lockfile",
+        "android/gradle/dependency-locks/feature-settings.lockfile",
+        "android/gradle/dependency-locks/platform-widgets.lockfile"
+      ],
+      "scope": "Only eight runtime/lint configurations each and sixteen already-vetted additions. Preserve all existing coordinates/versions and every other configuration. No metadata/catalog/other lock admission.",
+      "configurations": [
+        "debugRuntimeClasspath", "releaseRuntimeClasspath",
+        "debugUnitTestRuntimeClasspath", "debugAndroidTestRuntimeClasspath",
+        "debugLintChecksClasspath", "releaseLintChecksClasspath",
+        "debugUnitTestLintChecksClasspath", "debugAndroidTestLintChecksClasspath"
+      ]
     }
   ],
   "scope": "Coordinator-bound write-only receipt, not source parity, a JVM-slot grant, formal gate approval, hardware evidence, fleet activation or merge authority."
