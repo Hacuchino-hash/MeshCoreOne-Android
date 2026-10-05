@@ -76,7 +76,12 @@ fun ThemeSelectionSwatch(theme: Theme, isSelected: Boolean, onSelect: () -> Unit
     Card(
         onClick = onSelect, enabled = !isSelected,
         shape = RoundedCornerShape(ThemeCardMetrics.CORNER_RADIUS.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContainerColor = MaterialTheme.colorScheme.surface,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface,
+        ),
         modifier = modifier.then(if (isSelected) Modifier.border(
             BorderStroke(ThemeCardMetrics.SELECTION_STROKE_WIDTH.dp, MaterialTheme.colorScheme.primary),
             RoundedCornerShape(ThemeCardMetrics.CORNER_RADIUS.dp),

@@ -27,7 +27,16 @@
     "Copy exact pinned Appearance.Accessibility.ThemeReverted translations into module-owned generated resources with a typed accessor for unknown restored theme IDs; no entitlement/refund behavior or shared localization edits.",
     "Preserve source palette components and document the System high-contrast white-outgoing contrast exception while fitting native Material foreground roles to actual WCAG thresholds."
   ],
-  "local_jvm_authorized": false,
+  "local_jvm_authorized": true,
+  "local_jvm_limits": {
+    "maximum_workers": 1,
+    "compiler_execution": "in-process",
+    "gc": "SerialGC",
+    "active_processors": 2,
+    "build_heap_mib": 512,
+    "build_metaspace_mib": 512,
+    "test_heap_mib": 256
+  },
   "shared_graph_authorized": true,
   "shared_consumer_locks_authorized": false,
   "amendments": [

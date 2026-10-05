@@ -1,7 +1,10 @@
 # WP-301 evidence
 
-**Implementation candidate; native verification has failed, not passed.** The
-separate local Java-slot receipt is pending. No device, hardware, signing,
+**Implementation candidate; owned native verification now passes.** The
+coordinator delivered the separate 512MiB local Java receipt. Actual module
+verification discovers/passes **87 tests**, zero failures/errors/skips, and
+retains **39 native PNG renders**. Root consumer lock admission and complete
+current-head Windows/Linux/root/APK evidence are still pending. No device, hardware, signing,
 formal licensing/gate, iOS/UIKit, complete-app or merged-WP acceptance is claimed.
 
 Repository: `cbattlegear/MeshCoreOne-Android`; owner `design-system-engineer`;
@@ -58,6 +61,24 @@ Current dependency additions still require actual resolution.
 | `python .\docs\android\evidence\WP-301\collect_evidence.py --inventory --self-test` | Passed: **8 evidence-reader tests**, 58 source families, 55 mapped and three explicitly removed billing-only families; static inventory, not native execution. |
 | `python .\docs\android\evidence\WP-301\verify_packaging.py --normalize --self-test` | Passed: **4 notice-reader tests** and exact bytes/hashes of all four new frozen notices; APK inspection not yet run. |
 | `git --no-pager diff --check` | Passed after the inventory/reader repair. |
+| `:core:designsystem:resolveThemeDependencies --write-locks --dependency-verification strict` | Passed through the documented constrained launcher; actual owned module-local lock and 1,575 module/configuration/component rows generated, shared records unchanged. |
+| `:core:designsystem:inspectThemeConsumerGraphs --dependency-verification strict` | Failed closed as expected on unadmitted shared constraints; actual ten modules/80 configurations/12,704 selected/failure rows retained. Not a passing graph. |
+| `:core:designsystem:verifyThemeTests --dependency-verification strict` | Passed after genuine host/render/listener fixes: **87 discovered/passed**, zero failures/errors/skips; all 58 original families accounted for, 39 actual native PNGs. |
+| `:core:designsystem:verifyThemeTests :core:designsystem:lintDebug --dependency-verification strict` | Passed; complete native suite confirmed, owned lint **0 Error, 0 Fatal, 3 Warning**. |
+| `:convention:test --dependency-verification strict` with `-BuildLogic` | Passed in an independently declared private cache; actual positive/reverse-cycle/forbidden graph fixtures executed. |
+
+These local Gradle tasks use `android\scaffold\invoke-gradle.ps1` with
+`-ConstrainedMemory -BuildHeap 512m -BuildMetaspace 512m -TestHeap 256m`,
+one worker, in-process Kotlin, SerialGC, two CPUs and explicit private
+user/project/Android caches. [Complete local native evidence](local-native/result.json)
+contains actual raw JUnit gzip records, counters, PNGs, native inputs and owned
+lint. Its execution distinguishes working-tree repairs from the observed
+pre-repair commit; final current-head hosted proof remains mandatory.
+
+[Exact consumer amendment request](dependency-amendment-request.json) and
+[verbatim graph](consumer-dependency-graphs.tsv) identify only sixteen added
+DataStore1.2.1/Okio3.9.1/serialization-json1.7.3 components, all already admitted
+in the existing checksum XML. No global lock or metadata change is implied.
 
 ## Actual initial hosted failure
 
@@ -113,11 +134,11 @@ without a controller/workflow amendment. The reader validates and reconstructs
 those bytes into the module's owned report directory; no expected golden is
 created or updated.
 
-Native commands, current-head raw JUnit, PNGs, root verification, APK/notice/
-alignment inspection, all lint reports and hosted run/attempt identities remain
-**not run/pending** until their actual execution. This document will record
-their exact results rather than treating declared tasks or static mappings as
-success.
+Complete current-head root verification, final APK/alignment inspection, all
+lint reports and passing hosted run/attempt identities remain **pending**.
+The first real hosted repair also compiled production code and inspected a
+Linux debug APK, but unit preparation failed on unrecorded new locked
+dependencies; that is compile-only evidence, not native test success.
 
 ## Deviations and acceptance
 

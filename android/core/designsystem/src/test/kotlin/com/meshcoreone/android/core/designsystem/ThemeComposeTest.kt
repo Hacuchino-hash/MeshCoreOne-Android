@@ -3,6 +3,7 @@
 package com.meshcoreone.android.core.designsystem
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -33,7 +33,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsAtLeast
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -82,7 +81,7 @@ class ThemeComposeTest {
         controller.pause().stop().destroy()
     }
     private fun content(block: @Composable () -> Unit) {
-        controller.get().setContent(block)
+        controller.get().setContent(content = block)
     }
 
     @OriginalCase("AppThemeEnvironmentTests::the default appTheme environment value is Theme.default()")
@@ -249,7 +248,12 @@ class ThemeComposeTest {
     }
 
     private fun capture(id: String) {
-        val bitmap = compose.onNodeWithTag("theme-foundation-preview").captureToImage().asAndroidBitmap()
+        compose.waitForIdle()
+        val bitmap = compose.runOnUiThread {
+            val view = controller.get().window.decorView
+            assertTrue(view.width > 0 && view.height > 0)
+            Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888).also { view.draw(Canvas(it)) }
+        }
         assertTrue(bitmap.width > 0 && bitmap.height > 0)
         val pixels = IntArray(bitmap.width * bitmap.height)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)

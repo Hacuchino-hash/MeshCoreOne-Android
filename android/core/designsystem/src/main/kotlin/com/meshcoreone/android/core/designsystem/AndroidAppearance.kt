@@ -17,6 +17,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import java.util.concurrent.atomic.AtomicBoolean
+
+@RequiresApi(34)
+internal class PlatformContrastObservation(context: Context, onChange: (Float) -> Unit) : AutoCloseable {
+    private val manager = requireNotNull(context.getSystemService(UiModeManager::class.java))
+    private val disposed = AtomicBoolean(false)
+    private val listener = UiModeManager.ContrastChangeListener { value ->
+        if (!disposed.get()) onChange(value)
+    }
+    init {
+        manager.addContrastChangeListener(context.mainExecutor, listener)
+    }
+    override fun close() {
+        if (disposed.compareAndSet(false, true)) manager.removeContrastChangeListener(listener)
+    }
+}
 
 @Composable
 fun rememberHighContrast(): Boolean {
@@ -30,13 +46,8 @@ private fun rememberContrastApi34(context: Context): Boolean {
     val manager = remember(context) { requireNotNull(context.getSystemService(UiModeManager::class.java)) }
     var contrast by remember(manager) { mutableFloatStateOf(manager.contrast) }
     DisposableEffect(manager) {
-        var disposed = false
-        val listener = UiModeManager.ContrastChangeListener { value -> if (!disposed) contrast = value }
-        manager.addContrastChangeListener(context.mainExecutor, listener)
-        onDispose {
-            disposed = true
-            manager.removeContrastChangeListener(listener)
-        }
+        val observation = PlatformContrastObservation(context) { contrast = it }
+        onDispose { observation.close() }
     }
     return contrast > 0
 }
