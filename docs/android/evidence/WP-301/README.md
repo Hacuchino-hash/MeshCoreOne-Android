@@ -81,8 +81,8 @@ close isolation, stable composition across theme changes, 49dp targets,
 API31 and the already-admitted SDK37 Robolectric coordinate are declared; neither
 is physical-device evidence.
 
-Native preview captures are required for every theme in standard/high contrast
-plus expanded 200% CJK/RTL. Complete PNG bytes, dimensions and SHA-256 are retained
+Native preview captures are required for all 38 effective theme/light-dark/contrast
+combinations plus expanded 200% CJK/RTL (39 captures). Complete PNG bytes, dimensions and SHA-256 are retained
 in raw JUnit `system-out`, so the existing bundle transports actual evidence
 without a controller/workflow amendment. The reader validates and reconstructs
 those bytes into the module's owned report directory; no expected golden is

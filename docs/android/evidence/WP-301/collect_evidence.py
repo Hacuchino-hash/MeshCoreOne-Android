@@ -198,8 +198,9 @@ def junit_evidence(directory, expected_methods, mapped, expected_parameters):
         if mapping["native_test"] not in observed:
             fail("mapped original family did not actually execute")
     expected_renders = {
-        "theme-" + theme + "-" + contrast for theme in
+        "theme-" + theme + "-" + scheme + "-" + contrast for theme in
         ("default", "ember", "fern", "marine", "olive", "lavender", "sakura", "solarized", "nord", "catppuccin")
+        for scheme in (("dark",) if theme == "ember" else ("light", "dark"))
         for contrast in ("standard", "hc")
     } | {"font200-rtl-cjk-expanded"}
     if set(renders) != expected_renders:

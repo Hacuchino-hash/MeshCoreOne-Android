@@ -114,15 +114,19 @@ class ThemeComposeTest {
         }
         for (theme in ThemeRegistry.allThemes) {
             compose.runOnIdle { selected.value = theme }
-            for (contrast in listOf(false, true)) {
-                compose.runOnIdle { high.value = contrast }
+            val schemes = ColorScheme.entries.filter { theme.preferredColorScheme == null || theme.preferredColorScheme == it }
+            for (scheme in schemes) for (contrast in listOf(false, true)) {
+                compose.runOnIdle {
+                    high.value = contrast
+                    preference.value = if (scheme == ColorScheme.DARK) AppColorSchemePreference.DARK else AppColorSchemePreference.LIGHT
+                }
                 val tokens = compose.runOnIdle { assertNotNull(observed) }
                 assertEquals(theme.id, tokens.frame.theme.id)
-                assertEquals(theme.preferredColorScheme ?: ColorScheme.LIGHT, tokens.frame.colorScheme)
+                assertEquals(scheme, tokens.frame.colorScheme)
                 assertEquals(contrast, tokens.frame.highContrast)
                 compose.onNodeWithTag("theme:${theme.id.rawValue}").performScrollTo()
                     .assertIsSelected().assertIsNotEnabled().assertHeightIsAtLeast(49.dp).assertWidthIsAtLeast(49.dp)
-                capture("theme-${theme.id.rawValue}-${if (contrast) "hc" else "standard"}")
+                capture("theme-${theme.id.rawValue}-${scheme.name.lowercase()}-${if (contrast) "hc" else "standard"}")
             }
         }
         compose.runOnIdle { selected.value = ThemeRegistry.default }
