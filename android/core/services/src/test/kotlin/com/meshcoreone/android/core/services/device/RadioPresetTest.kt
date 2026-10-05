@@ -360,8 +360,8 @@ class RadioPresetTest {
             assertEquals(RadioRegion.EUROPE, RadioRegion.regionsForLocale(Locale.forLanguageTag("sk-SK")).first())
             assertEquals(RadioRegion.ASIA, RadioRegion.regionsForLocale(Locale.forLanguageTag("vi-VN")).first())
             assertEquals(RadioRegion.SOUTH_AMERICA, RadioRegion.regionsForLocale(Locale.forLanguageTag("pt-BR")).first())
-            assertEquals(RadioRegion.entries, RadioRegion.regionsForLocale(Locale.ROOT))
-            assertEquals(RadioRegion.entries, RadioRegion.regionsForLocale(Locale.forLanguageTag("ja-JP")))
+            assertEquals(RadioRegion.entries.toList(), RadioRegion.regionsForLocale(Locale.ROOT).toList())
+            assertEquals(RadioRegion.entries.toList(), RadioRegion.regionsForLocale(Locale.forLanguageTag("ja-JP")).toList())
             assertEquals(RadioRegion.NORTH_AMERICA, RadioPresets.presetsForLocale(Locale.US).first().region)
         },
         nativeCase("unknown active catalog IDs never fabricate a preset and traveler IDs occur once") {

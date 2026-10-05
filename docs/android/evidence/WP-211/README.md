@@ -191,7 +191,38 @@ The original early producer checkpoint remains
 `83347ede94cb1af5854d8d306caced49695eb335`. RegionalAreas/fault declaration
 behavior is unchanged by the traceability-comment repair.
 
-These are not executed Kotlin/JUnit counts. The services module needs the
+At repaired head `06d63f1f3d61f5dd5e67130cefa75f6b68e602cd`, actual Linux
+consumer run **37384873522 / attempt1** passed the real data producer tasks
+`:core:data:verifyBackupTests :core:data:verifyPersistenceRepositoryTests
+validateModuleGraph`. Its full381 data cases passed without failure/error/skip.
+The raw **DeviceSettingsRoomTest** suite contains exactly **12/12 passed**,
+including all seven KnownRegion originals and the five real device/settings
+consumers. Its2452-byte XML SHA-256 is
+`00cfe57dbbaf00c0fb7a750b65e0f5e4f1024084dbcdc5fa9328f99108d96f97`.
+Artifact `wp203-producer-37384873522-1`, id11377966119, size88134 bytes,
+published digest
+`sha256:a955f9efb10877534bc69e08449cfce4bad656d980b8af063081dfd77dae83b7`
+was retained with complete raw XML, actual source/input/run bindings and Linux
+readiness before inspection. This is limited **Room consumer evidence**;
+it is not the213 JVM-expanded original device cases,88 JVM regressions,
+full WP-211 acceptance, or a new WP-203/Swift/device/license claim.
+
+The matching scaffold run **37384873542 / attempt1** passed source preflight,
+traceability and actual pinned Linux readiness, then failed
+`:core:services:compileTestKotlin` on the still-unprovided
+`kotlinx.coroutines.test` dependency. Its full compiler log also identified
+two independent EnumEntries/SnapshotList assertion-inference errors; those
+assertions now compare explicit lists. No services JVM tests were discovered
+or claimed passed. The complete75403-byte failed artifact
+`scaffold-37384873542-1`, id11377611522, published digest
+`sha256:2ecc80c9386b451dfef08480dc606ffdaaf8ae0436fa9db959c7e4cacb7e2a45`
+was retained, including294277-byte compiler log SHA-256
+`24a0b97bdbac2ef3b012f80781e215c1b90c17bcd4d313d19e497234d9986ba2`.
+The services build/strict-lock handoff remains exclusively WP-218; no
+dependency bypass, borrowed unmerged producer or hand-written lock is used.
+
+Static declaration counts are not executed services-JVM counts; the limited
+actual Room consumer result above is recorded separately. The services module needs the
 incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the
 **WP-218-owned** services build producer and its real scoped lock graph.
 Neither that file nor the root services lock has been edited here.
@@ -212,8 +243,8 @@ SDK provisioning or configuration change has been performed there.
 Required CI is the actual sole Linux host, not a native Windows Gradle run.
 
 Implementation/native execution and immutable artifact identities will be
-recorded here as they actually occur. No passed counts or gate approval are
-asserted by this initial record.
+recorded here as they actually occur. No passing services-JVM cases or formal
+gate approval are asserted by this record.
 
 ## Provenance and consumer handoffs
 

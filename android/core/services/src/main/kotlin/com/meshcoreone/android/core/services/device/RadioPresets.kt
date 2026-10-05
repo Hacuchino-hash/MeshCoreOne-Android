@@ -118,6 +118,7 @@ object RadioPresets {
         RadioPreset("vn", "Vietnam (Deprecated)", RadioRegion.ASIA, 920.250, 250.0, 11u, 5u, countries("VN")),
     ).snapshot()
 
+    // Repeat-mode consumers apply only frequency; the source's BW/SF/CR fields are inert.
     val repeatPresets: SnapshotList<RadioPreset> = listOf(
         RadioPreset(
             "repeat-433", "433 MHz", RadioRegion.EUROPE, 433.000, 62.5, 9u, 8u,
