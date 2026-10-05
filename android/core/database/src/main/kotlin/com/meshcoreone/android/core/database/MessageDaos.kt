@@ -88,6 +88,7 @@ interface MessageDao : RowWriter<MessageEntity> {
 
 @Dao
 interface MessageRepeatDao : RowWriter<MessageRepeatEntity> {
+    @Query("SELECT * FROM message_repeats") suspend fun backupAll(): List<MessageRepeatEntity>
     @Query("SELECT * FROM message_repeats WHERE radioId = :radioId AND messageID = :messageID ORDER BY receivedAt_seconds, receivedAt_nanos")
     suspend fun forMessage(radioId: UUID, messageID: UUID): List<MessageRepeatEntity>
     @Query("SELECT EXISTS(SELECT 1 FROM message_repeats WHERE radioId = :radioId AND rxLogEntryID = :rxID)")
@@ -99,6 +100,7 @@ interface MessageRepeatDao : RowWriter<MessageRepeatEntity> {
 
 @Dao
 interface ReactionDao : RowWriter<ReactionEntity> {
+    @Query("SELECT * FROM reactions") suspend fun backupAll(): List<ReactionEntity>
     @Query("SELECT * FROM reactions WHERE radioId = :radioId AND messageID = :messageID ORDER BY receivedAt_seconds DESC, receivedAt_nanos DESC LIMIT :limit")
     suspend fun forMessage(radioId: UUID, messageID: UUID, limit: Long): List<ReactionEntity>
     @Query("SELECT EXISTS(SELECT 1 FROM reactions WHERE radioId = :radioId AND messageID = :messageID AND senderName = :name AND emoji = :emoji)")

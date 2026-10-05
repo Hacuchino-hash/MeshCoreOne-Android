@@ -60,6 +60,14 @@ class RoomPersistenceStore private constructor(
 
     suspend fun close() { context.close() }
 
+    internal suspend fun <T> withBackupSnapshot(block: suspend (MeshCoreDatabase, Clock) -> T): T =
+        context.read("fetchBackupExportSnapshot") { block(database, clock) }
+
+    internal suspend fun <T> withBackupRestore(
+        afterCommit: () -> Unit = {},
+        block: suspend (MeshCoreDatabase, Clock) -> T,
+    ): T = context.restoreBackup(afterCommit) { block(database, clock) }
+
     fun observeContacts(radioId: RadioId): Flow<SnapshotList<ContactDTO>> =
         context.observe("observeContacts", context.database.contacts().observe(radioId.value)) {
             it.map { row -> row.toDTO() }.snapshot()

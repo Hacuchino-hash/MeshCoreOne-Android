@@ -11,6 +11,7 @@ import java.util.UUID
 
 @Dao
 interface SavedTracePathDao : RowWriter<SavedTracePathEntity> {
+    @Query("SELECT * FROM saved_trace_paths") suspend fun backupAll(): List<SavedTracePathEntity>
     @Query("SELECT * FROM saved_trace_paths WHERE radioId = :radioId ORDER BY createdDate_seconds DESC, createdDate_nanos DESC")
     suspend fun forRadio(radioId: UUID): List<SavedTracePathEntity>
     @Query("SELECT * FROM saved_trace_paths WHERE radioId = :radioId AND id = :id")
@@ -22,6 +23,7 @@ interface SavedTracePathDao : RowWriter<SavedTracePathEntity> {
 
 @Dao
 interface TracePathRunDao : RowWriter<TracePathRunEntity> {
+    @Query("SELECT * FROM trace_path_runs") suspend fun backupAll(): List<TracePathRunEntity>
     @Query("SELECT * FROM trace_path_runs WHERE radioId = :radioId AND savedPathID = :pathID ORDER BY date_seconds, date_nanos")
     suspend fun forPath(radioId: UUID, pathID: UUID): List<TracePathRunEntity>
     @Query("SELECT * FROM trace_path_runs WHERE radioId = :radioId AND id = :id")
@@ -72,6 +74,7 @@ interface LinkPreviewDao : RowWriter<LinkPreviewEntity> {
 
 @Dao
 interface NodeSnapshotDao : RowWriter<NodeStatusSnapshotEntity> {
+    @Query("SELECT * FROM node_status_snapshots") suspend fun backupAll(): List<NodeStatusSnapshotEntity>
     @Query("SELECT * FROM node_status_snapshots WHERE nodePublicKey = :key ORDER BY timestamp_seconds DESC, timestamp_nanos DESC LIMIT 1")
     suspend fun latest(key: Bytes): NodeStatusSnapshotEntity?
     @Query("SELECT * FROM node_status_snapshots WHERE nodePublicKey = :key ORDER BY timestamp_seconds, timestamp_nanos")

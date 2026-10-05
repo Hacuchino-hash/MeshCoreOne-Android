@@ -36,6 +36,7 @@ interface DeviceDao : RowWriter<DeviceEntity> {
 
 @Dao
 interface ContactDao : RowWriter<ContactEntity> {
+    @Query("SELECT * FROM contacts") suspend fun backupAll(): List<ContactEntity>
     @Query("SELECT * FROM contacts WHERE radioId = :radioId ORDER BY name")
     suspend fun forRadio(radioId: UUID): List<ContactEntity>
     @Query("SELECT * FROM contacts WHERE radioId = :radioId ORDER BY name")
@@ -60,6 +61,7 @@ interface ContactDao : RowWriter<ContactEntity> {
 
 @Dao
 interface ChannelDao : RowWriter<ChannelEntity> {
+    @Query("SELECT * FROM channels") suspend fun backupAll(): List<ChannelEntity>
     @Query("SELECT * FROM channels WHERE radioId = :radioId ORDER BY `index`") suspend fun forRadio(radioId: UUID): List<ChannelEntity>
     @Query("SELECT * FROM channels WHERE radioId = :radioId ORDER BY `index`") fun observe(radioId: UUID): Flow<List<ChannelEntity>>
     @Query("SELECT * FROM channels WHERE radioId = :radioId AND id = :id") suspend fun byId(radioId: UUID, id: UUID): ChannelEntity?
@@ -72,6 +74,7 @@ interface ChannelDao : RowWriter<ChannelEntity> {
 
 @Dao
 interface DiscoveredNodeDao : RowWriter<DiscoveredNodeEntity> {
+    @Query("SELECT * FROM discovered_nodes") suspend fun backupAll(): List<DiscoveredNodeEntity>
     @Query("SELECT * FROM discovered_nodes WHERE radioId = :radioId") suspend fun forRadio(radioId: UUID): List<DiscoveredNodeEntity>
     @Query("SELECT * FROM discovered_nodes WHERE radioId = :radioId AND id = :id") suspend fun byId(radioId: UUID, id: UUID): DiscoveredNodeEntity?
     @Query("SELECT * FROM discovered_nodes WHERE radioId = :radioId AND publicKey = :publicKey")
@@ -85,6 +88,7 @@ interface DiscoveredNodeDao : RowWriter<DiscoveredNodeEntity> {
 
 @Dao
 interface BlockedChannelSenderDao : RowWriter<BlockedChannelSenderEntity> {
+    @Query("SELECT * FROM blocked_channel_senders") suspend fun backupAll(): List<BlockedChannelSenderEntity>
     @Query("SELECT * FROM blocked_channel_senders WHERE radioId = :radioId ORDER BY dateBlocked_seconds DESC, dateBlocked_nanos DESC")
     suspend fun forRadio(radioId: UUID): List<BlockedChannelSenderEntity>
     @Query("SELECT * FROM blocked_channel_senders WHERE radioId = :radioId AND name = :name")

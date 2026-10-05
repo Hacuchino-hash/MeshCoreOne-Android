@@ -13,11 +13,17 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(libs.androidx.room.runtime)
     implementation(libs.kotlinx.coroutines.core)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(project(":core:runtime"))
 }
 dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("wp203.interop.output", layout.buildDirectory.dir("reports/wp203/interop").get().asFile.absolutePath)
+    providers.gradleProperty("wp203InteropInputDir").orNull?.let { systemProperty("wp203.interop.input", it) }
 }
 
 val repository = rootProject.projectDir.parentFile
@@ -65,3 +71,15 @@ val verifyPersistenceRepositoryTests by tasks.registering(Exec::class) {
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyPersistenceRepositoryTests) }
 tasks.named("check") { dependsOn(verifyPersistenceRepositoryTests) }
+
+val verifyBackupTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require all WP-203 source families and nonzero, unskipped real codec/Room backup assertions."
+    dependsOn("testDebugUnitTest")
+    workingDir(repository)
+    commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
+        .resolve("WP-203").resolve("collect_evidence.py").absolutePath)
+}
+
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }
+tasks.named("check") { dependsOn(verifyBackupTests) }
