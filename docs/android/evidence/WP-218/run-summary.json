@@ -1,0 +1,64 @@
+{
+  "wp": "WP-218",
+  "scope": "bounded increment: UrlSafetyChecker + MalwareDomainFilter/MalwareDomainParser only",
+  "pinned_source": "db14559b39d32322b06477c6ae676112f583db50",
+  "merged_base": "e697823c8937eb5b12a40362ca2c5aae4c45f56a",
+  "host": "local (single-host); no hosted/dual-host CI run performed for this increment",
+  "toolchain": {
+    "jdk": "Temurin 21.0.12+1 (temporary, downloaded for local verification only, not committed, removed after use)",
+    "gradle_wrapper": "9.8.0",
+    "kotlin": "as pinned by gradle/libs.versions.toml (unchanged)"
+  },
+  "commands": [
+    {
+      "command": ".\\gradlew.bat :core:services:dependencies --write-locks",
+      "result": "BUILD SUCCESSFUL",
+      "note": "Regenerated the owned module-local core-services.lockfile only, to admit already-present kotlinx-coroutines-core/kotlinx-coroutines-test 1.10.2 into core:services' own compile/test classpaths. Gradle's whole-build lock persistence also rewrote every other project's lock files as a side effect; all of those were reverted (git checkout) before commit, including core-services-buildscript.lockfile which had no real content delta. Only android/gradle/dependency-locks/core-services.lockfile is part of this change."
+    },
+    {
+      "command": ".\\gradlew.bat :core:services:test",
+      "result": "BUILD SUCCESSFUL",
+      "tests_discovered": 42,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "breakdown": {
+        "UrlSafetyCheckerTest": 34,
+        "MalwareDomainFilterTest": 5,
+        "MalwareDomainParserTest": 3
+      },
+      "raw_junit_xml": [
+        "TEST-com.meshcoreone.android.core.services.content.UrlSafetyCheckerTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainFilterTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainParserTest.xml"
+      ]
+    }
+  ],
+  "source_test_mapping": {
+    "MC1/Utilities/URLSafetyChecker.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/UrlSafetyChecker.kt",
+    "MC1Tests/Utilities/URLSafetyCheckerTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/UrlSafetyCheckerTest.kt",
+    "MC1/Utilities/MalwareDomainFilter.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilter.kt + MalwareDomainParser.kt",
+    "MC1Tests/Utilities/MalwareDomainFilterTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/MalwareDomainFilterTest.kt"
+  },
+  "not_implemented_this_increment": [
+    "MC1/Services/LinkPreviewService.swift (+Scrape)",
+    "MC1/Services/LinkPreviewCache.swift / LinkPreviewCaching.swift",
+    "MC1/Services/DecodedPreviewCache.swift",
+    "MC1/Services/RedirectSafetyDelegate.swift",
+    "MC1/Models/LinkPreviewPreferences.swift",
+    "MC1/Services/ImageHeaderDecoder.swift",
+    "MC1/Services/ImageURLDetector.swift",
+    "MC1Services/Utilities/ImageURLClassifier.swift",
+    "MC1/Utilities/ImageByteCost.swift",
+    "MC1/Services/InlineImageCache.swift",
+    "MC1/Services/InlineImagePrefetcher.swift",
+    "MC1Services/Services/InlineImageDimensionsStore.swift",
+    "MC1/Services/ElevationService.swift",
+    "MC1/Services/Geocoder.swift",
+    "MC1/Services/LocationService.swift",
+    "MC1/Services/RegionResolver.swift",
+    "MC1Services/Extensions/CLLocationCoordinate2D+ValidFix.swift",
+    "Resources/urlhaus-filter-hosts-online.txt"
+  ],
+  "amendment_requested": "Split remaining WP-218 scope (link preview service/scrape/cache, image header/cost/cache/prefetch, elevation/geocoder/location/region) into follow-on WP(s) with their own native-adapter proposals (HttpURLConnection-based bounded streaming HTTP; Android location/geocoder platform roles) and verification evidence."
+}
