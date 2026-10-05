@@ -17,6 +17,7 @@ import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -334,10 +335,10 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
 internal fun original(
     suite: String, name: String, signature: String = "()",
     assertions: suspend TestScope.() -> Unit,
-): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature") { runTest { assertions() } }
+): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature") { runTest(timeout = 10.seconds) { assertions() } }
 
 internal fun nativeCase(name: String, assertions: suspend TestScope.() -> Unit): DynamicTest =
-    DynamicTest.dynamicTest("WP-207::$name") { runTest { assertions() } }
+    DynamicTest.dynamicTest("WP-207::$name") { runTest(timeout = 10.seconds) { assertions() } }
 
 internal suspend fun TestScope.withFixture(assertions: suspend RuntimeFixture.() -> Unit) {
     val fixture = RuntimeFixture(this)
