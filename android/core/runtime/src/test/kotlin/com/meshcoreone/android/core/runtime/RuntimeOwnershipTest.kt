@@ -204,7 +204,7 @@ class RuntimeOwnershipTest {
                 val competitor = MeshCoreSession(radios.single(), coroutineContext = backgroundScope.coroutineContext)
                 val failure = assertFailsWith<MeshCoreException.ConnectionLost> { competitor.start() }
                 requiredCause<SessionCorrelationException.ConcurrentTransportOwner>(failure)
-                assertFailsWith<MeshCoreException.ConnectionLost> { competitor.stop() }
+                competitor.stop()
                 assertEquals(0, radios.single().closes); assertEquals(1, radios.single().collectors)
             }
         },
