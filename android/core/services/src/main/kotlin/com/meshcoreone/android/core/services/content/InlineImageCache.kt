@@ -93,7 +93,7 @@ class CachedDecodedImage(
  */
 class InlineImageCache(
     private val httpFetching: BoundedHttpFetching,
-) {
+) : InlineImageDimensionProbing {
     private val stateMutex = Mutex()
     private val failedUrls = mutableSetOf<String>()
     private val inFlightUrls = mutableSetOf<String>()
@@ -189,7 +189,7 @@ class InlineImageCache(
      * [InlineImageDimensionsStore] on success. Failures never touch the negative cache or the
      * in-flight set - this is a side query, not a [fetchImageData] call.
      */
-    suspend fun probeImageDimensions(url: String): Pair<Int, Int>? {
+    override suspend fun probeImageDimensions(url: String): Pair<Int, Int>? {
         if (!UrlSafetyChecker.isSafe(url)) return null
 
         return fetchSemaphore.withPermit {

@@ -9,6 +9,16 @@
 // each parsed from their own public, openly documented container/bitstream header layout - no
 // ImageIO/BitmapFactory call, no bundled/ported decoder code. Rarer formats (BMP, TIFF, HEIC) are
 // out of scope for this slice; see WP-218 deviations doc.
+//
+// PortedFrom: MC1/Services/ImageURLDetector.swift@db14559b39d32322b06477c6ae676112f583db50
+// (`isGIFData` only -- the file's one pure, platform-independent piece). `ImageURLDetector`'s
+// other members (`downsampledImage`, `decodeGIFImage`) are UIKit/ImageIO-based animated-decode
+// logic with no pure-JVM equivalent; they map onto this module's already-defined native-adapter
+// role (`ImageDecoding.kt`, which already cross-references `ImageURLDetector` in its own header)
+// rather than belonging here. [isGifData] below is the narrower 4-byte `GIF8` magic-number sniff
+// the source exposes as a standalone public function (distinct from [decodeGif]'s fuller 6-byte
+// `GIF87a`/`GIF89a` signature check, which parses actual dimensions and would reject a
+// hypothetical future GIF variant whose magic differs only in its version suffix).
 package com.meshcoreone.android.core.services.content
 
 /**
@@ -35,6 +45,19 @@ object ImageHeaderDecoder {
      */
     fun decodeDimensions(data: ByteArray): Pair<Int, Int>? =
         decodePng(data) ?: decodeGif(data) ?: decodeJpeg(data) ?: decodeWebp(data)
+
+    /**
+     * Returns `true` if [data] begins with the GIF magic bytes (`GIF8`). PortedFrom
+     * `ImageURLDetector.isGIFData` -- see this file's header for why it lives here rather than a
+     * dedicated file.
+     */
+    fun isGifData(data: ByteArray): Boolean {
+        if (data.size < 4) return false
+        return data[0] == 0x47.toByte() && // G
+            data[1] == 0x49.toByte() && // I
+            data[2] == 0x46.toByte() && // F
+            data[3] == 0x38.toByte() // 8
+    }
 
     private fun decodePng(data: ByteArray): Pair<Int, Int>? {
         // Signature (8) + IHDR length (4) + "IHDR" (4) + width (4) + height (4).

@@ -8,6 +8,10 @@
 // independently authored - there is no corresponding original Swift test - built from each
 // format's public container/bitstream header layout (same technique as the PNG case: raw
 // signature/segment bytes, no real encoder/decoder library involved).
+//
+// PortedFrom: MC1Tests/Services/ImageURLDetectorTests.swift@db14559b39d32322b06477c6ae676112f583db50
+// (the 5 "GIF Magic Byte Detection" cases only -- see `ImageHeaderDecoder.isGifData`'s own
+// header comment for why this file owns that function's port).
 package com.meshcoreone.android.core.services.content
 
 import kotlin.test.Test
@@ -259,5 +263,39 @@ class ImageHeaderDecoderTest {
         bytes.addAll(ByteArray(10).toList())
         val dims = ImageHeaderDecoder.decodeDimensions(bytes.toByteArray())
         assertNull(dims)
+    }
+
+    // PortedFrom-case: "Detects GIF87a magic bytes" (MC1Tests/Services/ImageURLDetectorTests.swift)
+    @Test
+    fun `isGifData detects GIF87a magic bytes`() {
+        val data = byteArrayOf(0x47, 0x49, 0x46, 0x38, 0x37, 0x61)
+        assertEquals(true, ImageHeaderDecoder.isGifData(data))
+    }
+
+    // PortedFrom-case: "Detects GIF89a magic bytes"
+    @Test
+    fun `isGifData detects GIF89a magic bytes`() {
+        val data = byteArrayOf(0x47, 0x49, 0x46, 0x38, 0x39, 0x61)
+        assertEquals(true, ImageHeaderDecoder.isGifData(data))
+    }
+
+    // PortedFrom-case: "Rejects non-GIF data"
+    @Test
+    fun `isGifData rejects non-GIF data`() {
+        val pngData = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
+        assertEquals(false, ImageHeaderDecoder.isGifData(pngData))
+    }
+
+    // PortedFrom-case: "Rejects data shorter than 4 bytes"
+    @Test
+    fun `isGifData rejects data shorter than 4 bytes`() {
+        val data = byteArrayOf(0x47, 0x49, 0x46)
+        assertEquals(false, ImageHeaderDecoder.isGifData(data))
+    }
+
+    // PortedFrom-case: "Rejects empty data"
+    @Test
+    fun `isGifData rejects empty data`() {
+        assertEquals(false, ImageHeaderDecoder.isGifData(ByteArray(0)))
     }
 }
