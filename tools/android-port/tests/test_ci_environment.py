@@ -106,6 +106,16 @@ class EnvironmentTests(unittest.TestCase):
                 self.assertIn("-PscaffoldTestHeap=256m", arguments)
                 self.assertTrue(any(arg.startswith("-PscaffoldTestJvmArgs=") for arg in arguments))
 
+    def test_runtime_failure_evidence_forwarding_is_exact_verify_only_on_each_executor(self):
+        identity = self.forwarding_identity()
+        for host in ("linux", "windows"):
+            for stage in ("verify", "protocol", "standalone", "assemble", "lint", "prepare"):
+                with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
+                    output, _, arguments, _ = self.captured_stage(Path(temporary), host, stage, identity)
+                    forwarded = [arg for arg in arguments if arg.startswith("-Pwp207")]
+                    expected = ["-Pwp207EvidenceDirectory=" + str(output / "wp207-native")] if stage == "verify" else []
+                    self.assertEqual(expected, forwarded)
+
     def test_meshcli_real_executor_identity_preserves_event_head_base_run_attempt_and_host(self):
         from controller.ci import meshcli_evidence_options
         from controller.ci_environment import write_json

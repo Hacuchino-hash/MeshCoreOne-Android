@@ -188,6 +188,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
     options.extend(evidence_options)
     if stage == "verify":
         options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
+        options.append("-Pwp207EvidenceDirectory=" + str(output / "wp207-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
     command = [str(wrapper), "-p", str(project), *TASKS[stage], *options]
     if state["host"] == "windows":
