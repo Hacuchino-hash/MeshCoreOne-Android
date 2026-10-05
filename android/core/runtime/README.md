@@ -22,6 +22,17 @@ Declared verification tasks are `test`, `resolveRuntimeDependencies`,
 `verifyScaffoldTests`; no shared root task or production graph edge is added.
 The dependency proposal runner invokes only `resolveRuntimeDependencies`.
 
+Equivalent callers observe one submitted attempt; only its authoritative
+revision owner may cancel it or clear its pending slot. A late diagnostic
+failure remains visible to that caller without invalidating a successfully
+completed shared generation. Cleanup always joins the owned operation and
+retains original and suppressed failures.
+
+With the existing CI's `wp207EvidenceDirectory` property, the hooks retain
+the complete source-family/native assertion maps and raw XML/input bindings
+in the external job artifact. Historical evidence never becomes current-head
+acceptance merely because the file names or test counts are unchanged.
+
 See [WP-207 evidence](../../../docs/android/evidence/WP-207/README.md) and
 [native adaptations](../../../docs/android/deviations/WP-207.md) for exact
 source revisions, original-family accounting and execution limits.

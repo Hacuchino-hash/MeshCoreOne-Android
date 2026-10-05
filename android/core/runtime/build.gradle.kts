@@ -52,6 +52,9 @@ val verifyConnectionRuntimeTests by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-207").resolve("collect_evidence.py").absolutePath)
+    providers.gradleProperty("wp207EvidenceDirectory").orNull?.let {
+        args("--output", java.io.File(it, "runtime-assertions.json").absolutePath)
+    }
 }
 
 val verifyRuntimeNativeIntegrationTests by tasks.registering(Exec::class) {
@@ -61,6 +64,9 @@ val verifyRuntimeNativeIntegrationTests by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-207").resolve("collect_native_evidence.py").absolutePath)
+    providers.gradleProperty("wp207EvidenceDirectory").orNull?.let {
+        args("--output", java.io.File(it, "native-assertions.json").absolutePath)
+    }
 }
 
 val verifyRuntimeEvidenceReaders by tasks.registering(Exec::class) {

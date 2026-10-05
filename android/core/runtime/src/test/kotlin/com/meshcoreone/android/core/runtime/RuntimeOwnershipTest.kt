@@ -93,6 +93,35 @@ class RuntimeOwnershipTest {
                 assertEquals(1, services.size); assertEquals(1, services.single().monitoringStarts); assertEquals(1, radios.single().maximumCollectors)
             }
         },
+        nativeCase("cancelled coalesced observer cannot cancel the authoritative handshake or clear its pending slot") {
+            withFixture {
+                val gate = CompletableDeferred<Unit>()
+                createRadio = { TestRadio().also { radio ->
+                    radio.beforeSend = { frame -> if (frame[0].toInt() == 1) gate.await() }
+                } }
+                val owner = backgroundScope.async { manager.connect(platform.target) }
+                runCurrent()
+                val observer = backgroundScope.async { manager.connect(platform.target) }
+                try {
+                    runCurrent()
+                    observer.cancelAndJoin()
+                    assertTrue(observer.isCancelled); assertTrue(owner.isActive)
+                    assertEquals(platform.target.deviceId, manager.activeConnectionAttemptDeviceId)
+                    assertEquals(DeviceConnectionState.CONNECTING, manager.connectionState)
+                    assertEquals(1, radios.size); assertEquals(0, radios.single().closes)
+                    assertEquals(1, radios.single().collectors); assertTrue(services.isEmpty())
+                    gate.complete(Unit); runCurrent(); owner.await()
+                    assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                    assertEquals(services.single().token, manager.snapshot.value.token)
+                    assertEquals(1, services.single().monitoringStarts); assertEquals(0, services.single().teardowns)
+                    assertEquals(1, radios.single().maximumCollectors); assertEquals(0, radios.single().closes)
+                    assertNull(manager.activeConnectionAttemptDeviceId)
+                } finally {
+                    gate.complete(Unit)
+                    withContext(NonCancellable) { observer.cancelAndJoin(); owner.cancelAndJoin() }
+                }
+            }
+        },
         nativeCase("different-target connect invalidates old handshake before acquiring a replacement") {
             withFixture {
                 val gate = CompletableDeferred<Unit>(); createRadio = { TestRadio().also { it.beforeSend = { frame -> if (frame[0].toInt() == 1) gate.await() } } }
@@ -636,7 +665,7 @@ class RuntimeOwnershipTest {
                     assertEquals(successor.deviceId, manager.connectedDevice?.id)
                     assertEquals(2, radios.size); assertEquals(1, radios.first().closes)
                     assertEquals(1, radios.last().collectors)
-                } finally { release.countDown(); manual.cancelAndJoin() }
+                } finally { release.countDown(); withContext(NonCancellable) { manual.cancelAndJoin() } }
             }
         },
         nativeCase("inherited typed teardown failure survives later switches and remains visible at process close") {
@@ -700,7 +729,56 @@ class RuntimeOwnershipTest {
                     release.countDown(); first.await()
                     assertEquals(1, diagnostics.filterIsInstance<RuntimeDiagnostic.OperationSubmitted>().size)
                     assertEquals(1, radios.size); assertEquals(1, radios.single().maximumCollectors)
-                } finally { release.countDown(); first.cancelAndJoin() }
+                } finally { release.countDown(); withContext(NonCancellable) { first.cancelAndJoin() } }
+            }
+        },
+        nativeCase("late owner reporter failure preserves the ready generation completed by its paused coalescer") {
+            withFixture {
+                val accepted = java.util.concurrent.CountDownLatch(1)
+                val release = java.util.concurrent.CountDownLatch(1)
+                val failure = ConnectionError.InitializationFailed("late submission diagnostic")
+                onSubmission = {
+                    accepted.countDown()
+                    check(release.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                    throw failure
+                }
+                val continuations = ArrayDeque<Runnable>()
+                val paused = object : CoroutineDispatcher() {
+                    override fun dispatch(context: kotlin.coroutines.CoroutineContext, block: Runnable) {
+                        continuations.addLast(block)
+                    }
+                }
+                val owner = backgroundScope.async(Dispatchers.Default) { runCatching { manager.connect(platform.target) } }
+                var coalescer: Deferred<Unit>? = null
+                try {
+                    assertTrue(accepted.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                    val observer = backgroundScope.async(paused) { manager.connect(platform.target) }
+                    coalescer = observer
+                    continuations.removeFirst().run()
+                    runCurrent()
+                    assertEquals(1, continuations.size); assertFalse(observer.isCompleted)
+                    assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                    val ready = manager.snapshot.value
+                    assertEquals(services.single().token, ready.token)
+                    assertEquals(platform.target.deviceId, manager.activeConnectionAttemptDeviceId)
+                    release.countDown()
+                    assertSame(failure, owner.await().exceptionOrNull())
+                    assertEquals(ready, manager.snapshot.value)
+                    assertEquals(0, services.single().teardowns); assertEquals(0, radios.single().closes)
+                    assertEquals(1, radios.single().collectors); assertNull(manager.activeConnectionAttemptDeviceId)
+                    continuations.removeFirst().run(); observer.await()
+                    assertEquals(1, radios.size); assertEquals(1, services.size)
+                    assertEquals(1, services.single().monitoringStarts)
+                    assertEquals(1, diagnostics.filterIsInstance<RuntimeDiagnostic.OperationSubmitted>().size)
+                } finally {
+                    release.countDown()
+                    withContext(NonCancellable) {
+                        owner.cancelAndJoin()
+                        coalescer?.cancel()
+                        while (continuations.isNotEmpty()) continuations.removeFirst().run()
+                        coalescer?.join()
+                    }
+                }
             }
         },
         nativeCase("guarded diagnostic reentry starts the same submitted operation without duplicate generation or event") {

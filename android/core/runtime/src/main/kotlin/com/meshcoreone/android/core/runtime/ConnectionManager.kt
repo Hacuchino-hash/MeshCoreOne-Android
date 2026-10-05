@@ -52,7 +52,7 @@ class ConnectionManager(
         val work: Deferred<Unit>,
         val previous: Deferred<Unit>?,
         val revision: Long,
-        val isNew: Boolean,
+        val ownsAttempt: Boolean,
         val stop: Deferred<TeardownReport>?,
     )
     internal class RadioGeneration(
@@ -323,7 +323,7 @@ class ConnectionManager(
         }
         val work = submission.work
         try {
-            if (submission.isNew) {
+            if (submission.ownsAttempt) {
                 if (!reentrant) submission.previous?.cancel()
                 reporter.report(RuntimeDiagnostic.OperationSubmitted(submission.revision))
             }
@@ -332,27 +332,37 @@ class ConnectionManager(
         }
         catch (cancelled: CancellationException) {
             finishFailedSubmission(submission, cancelled)
-            synchronized(lock) {
-                if (pending === work && active == null && retained == null) {
-                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
-                }
-            }
             throw cancelled
         } catch (failure: Exception) {
             finishFailedSubmission(submission, failure)
-            synchronized(lock) {
-                if (pending === work) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, issueFor(failure, LifecycleStage.CONNECT))
-            }
             throw failure
         } finally {
-            synchronized(lock) { if (pending === work) { pending = null; pendingTarget = null } }
+            synchronized(lock) { if (ownsSubmissionLocked(submission)) { pending = null; pendingTarget = null } }
         }
     }
 
+    private fun ownsSubmissionLocked(submission: Submission): Boolean =
+        submission.ownsAttempt && !closed && revision == submission.revision && pending === submission.work
+
     private suspend fun finishFailedSubmission(submission: Submission, primary: Throwable) {
+        if (!submission.ownsAttempt) return
         withContext(NonCancellable) {
-            submission.work.cancelAndJoin()
+            val cancelledByOwner = synchronized(lock) {
+                if (!ownsSubmissionLocked(submission)) false
+                else { submission.work.cancel(); true }
+            }
+            if (!cancelledByOwner) return@withContext
+            submission.work.join()
             try {
+                val abortedOwner = synchronized(lock) {
+                    if (ownsSubmissionLocked(submission) && submission.work.isCancelled) {
+                        active?.takeIf { it.revision == submission.revision && it.operation === submission.work }
+                    } else null
+                }
+                if (abortedOwner != null) {
+                    val report = closeGeneration(abortedOwner, true, primary)
+                    if (!report.isComplete) reporter.report(RuntimeDiagnostic.Teardown(report))
+                }
                 val stopped = submission.stop?.await()
                 if (stopped != null && !stopped.isComplete) {
                     stopped.issues.forEach { if (it.cause !== primary) primary.addSuppressed(it.cause) }
@@ -360,6 +370,14 @@ class ConnectionManager(
                 }
             }
             catch (cleanup: Exception) { if (cleanup !== primary) primary.addSuppressed(cleanup) }
+            synchronized(lock) {
+                // A late reporter failure cannot invalidate a successfully completed shared attempt.
+                if (ownsSubmissionLocked(submission) && submission.work.isCancelled && active == null && retained == null) {
+                    val issue = if (primary is CancellationException) values.value.issue
+                        else issueFor(primary, LifecycleStage.CONNECT)
+                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, issue)
+                }
+            }
         }
     }
 
