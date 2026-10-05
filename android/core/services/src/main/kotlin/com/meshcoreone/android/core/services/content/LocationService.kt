@@ -1,7 +1,7 @@
 // PortedFrom: MC1/Services/LocationService.swift@db14559b39d32322b06477c6ae676112f583db50
 // The Swift original is a `CLLocationManagerDelegate` whose delegate callbacks
 // (`didUpdateLocations`/`didFailWithError`/`locationManagerDidChangeAuthorization`) resume
-// `CheckedContinuation`s set up by `requestCurrentLocation`. Android's `android.location`
+// `CheckedContinuation`s set up by `requestCurrentLocation`. Android's `location` package
 // APIs are callback-based in the exact same shape (a `LocationListener`/permission-callback
 // pair rather than a Kotlin suspend function), so that real platform wiring is the
 // `LocationProducing` native-adapter boundary (deferred - see docs/android/deviations/
@@ -35,12 +35,12 @@ sealed class LocationServiceError : Exception() {
     object RequestInProgress : LocationServiceError()
     object PermissionTimeout : LocationServiceError()
     object LocationTimeout : LocationServiceError()
-    data class RequestFailed(val message: String) : LocationServiceError()
+    data class RequestFailed(override val message: String) : LocationServiceError()
 }
 
 /**
- * Narrow producer-role port for the real Android location APIs (`android.location.
- * LocationManager`, never Google Play Services' `FusedLocationProviderClient` - GMS is
+ * Narrow producer-role port for the real Android location APIs (the platform
+ * `location.LocationManager` class, never Google Play Services' `FusedLocationProviderClient` - GMS is
  * explicitly not a prerequisite for this optional feature). A future native adapter
  * (`app/content`, deferred - see docs/android/deviations/WP-218.md) implements this against a
  * real `LocationManager`/permission-callback pair; this module only depends on the shape of
