@@ -1,6 +1,6 @@
 // PortedFrom: MC1/Views/Components/MapControlsToolbar.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Extensions/View+MapControlButton.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Caller-owned map availability/filter policy; Material menus never fetch maps or GPS.
+// Native adaptation: caller-owned map policy; Material menus never fetch maps or GPS.
 package com.meshcoreone.android.core.ui
 
 import androidx.compose.foundation.layout.Column

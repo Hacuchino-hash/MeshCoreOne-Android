@@ -1,5 +1,5 @@
 // PortedFrom: MC1/Views/Components/SwipeActionsContainer.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Swiping reveals native actions; an explicit accessible menu remains available and destructive actions never auto-execute.
+// Native adaptation: swiping reveals an accessible native menu; destructive actions never auto-execute.
 package com.meshcoreone.android.core.ui
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures

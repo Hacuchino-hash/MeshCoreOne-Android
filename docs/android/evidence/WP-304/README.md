@@ -41,11 +41,23 @@ verified, not inferred from issue closure or session state.
 | `python docs\android\evidence\WP-304\generate_source_map.py --write`, then check mode | Passed exact88-input/130-family/158-scenario owned map; no shared catalog changes |
 | `python docs\android\evidence\WP-301\verify_consumer_locks.py --check` | Passed immutable10-consumer/80-configuration/16-addition historical delta |
 | Independent complete changed-path lease inspection | All55 changed paths matched the original three subtrees plus exact shared three-file amendment; zero unleased paths |
+| Ordinary Linux scaffold run37358730009 attempt1/head723e1 | Failed before provisioning/JVM: ten owned files mixed PortedFrom and AndroidOnly dispositions; complete official artifact/log ZIPs retained before repair validation |
+| Actual repository `port_map(load_manifest(...))` after owned header repair | Passed450 current native paths/43 UI paths; original source headers retained, no validator/policy weakening |
 | `git diff --check` | Passed at authored checkpoints |
 
 The declaration count grows as native flow/API evidence is authored; it is not
 an executed suite count. No iOS, physical radio, Android device/TalkBack,
 license/signing, Linux Gradle or native PNG pass is claimed by these results.
+
+The initial Linux failure is recorded in
+[`hosted-initial-failure.json`](hosted-initial-failure.json). The official687-byte
+artifact ZIP matches digest
+`a044352e2583857bb06e974df6c9c0ac46d22ffd341dda05f2f3fa9ebf34c9af`;
+the complete32,875-byte workflow-log ZIP has SHA256
+`b52d30c220a52241eaaf0df203cd0618f37f85e549359b38030de7f737ab7fdd`.
+All ZIP CRCs and exact official run/head/attempt metadata were checked.
+The repair changes only native-adaptation comment prefixes in ten owned files.
+No native suite existed at this failing stage; none was manufactured.
 
 ## Declared output contract
 

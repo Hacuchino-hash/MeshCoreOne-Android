@@ -1,5 +1,5 @@
 // PortedFrom: MC1/Extensions/Errors/Error+UserFacingMessage.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Actual neutral/protocol/store faults; producer adapters are explicit injected roles, never class-name guesses.
+// Native adaptation: actual neutral/protocol/store faults and injected typed adapters, never class-name guesses.
 package com.meshcoreone.android.core.ui
 
 import android.content.res.Resources

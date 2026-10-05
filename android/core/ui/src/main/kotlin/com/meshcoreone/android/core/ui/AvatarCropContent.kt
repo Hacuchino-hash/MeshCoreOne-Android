@@ -1,5 +1,5 @@
 // PortedFrom: MC1/Views/Components/AvatarCropView.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Native adaptive dialog, EXIF-normalized caller image, touch and non-gesture crop controls.
+// Native adaptation: adaptive dialog, EXIF-normalized caller image and accessible crop controls.
 package com.meshcoreone.android.core.ui
 
 import android.graphics.Bitmap

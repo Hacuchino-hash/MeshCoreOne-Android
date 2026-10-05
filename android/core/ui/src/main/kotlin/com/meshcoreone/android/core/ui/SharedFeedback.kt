@@ -5,7 +5,7 @@
 // PortedFrom: MC1/Views/Components/SectionReloadButton.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Views/Components/SelectedRowHighlight.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Extensions/View+LiquidGlass.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Material surfaces and consume-once system/cutout/IME insets replace Apple chrome.
+// Native adaptation: Material surfaces and consume-once system/cutout/IME insets replace Apple chrome.
 package com.meshcoreone.android.core.ui
 
 import androidx.compose.foundation.background

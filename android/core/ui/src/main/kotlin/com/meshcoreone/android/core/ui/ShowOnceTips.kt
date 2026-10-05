@@ -1,6 +1,6 @@
 // PortedFrom: MC1/Tips/DeviceMenuTip.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Tips/LiveActivityTip.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Real atomic process-owned DataStore claims; no notification permission or Live Update eligibility claim.
+// Native adaptation: atomic process-owned DataStore claims; no permission or Live Update eligibility claim.
 package com.meshcoreone.android.core.ui
 
 import com.meshcoreone.android.core.datastore.PreferenceKey

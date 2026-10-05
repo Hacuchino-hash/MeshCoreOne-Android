@@ -1,6 +1,6 @@
 // PortedFrom: MC1/Views/Components/ContactAvatar.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Views/Components/NodeAvatar.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 ICU grapheme/emoji rendering, explicitly injected bounded decode cache and original native bitmap geometry.
+// Native adaptation: ICU graphemes, explicitly injected bounded decoding and original native geometry.
 package com.meshcoreone.android.core.ui
 
 import android.graphics.Bitmap
