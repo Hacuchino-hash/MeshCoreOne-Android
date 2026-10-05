@@ -13,13 +13,14 @@ ROOT = Path(__file__).resolve().parents[4]
 OUT = Path(__file__).resolve().parent
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 INITIAL_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
-BASE = "3da3a73b8481c49d035486924a813b331bf184d0"
+BASE = "2cf00464950e1fb9aae0dd913402eb3e12dc0044"
 TESTS = ROOT / "android" / "core" / "data" / "src" / "test" / "kotlin"
 REPORTS = ROOT / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
 PREFIX = "com.meshcoreone.android.core.data.repository."
 DECLARATION = re.compile(r"(?P<annotations>(?:\s*@(?:Test\b|OriginalCase\([^\n]*\))\s*)+)\s*fun\s+(?P<method>\w+)\s*\(")
 ORIGINAL = re.compile(r'@OriginalCase\("([^"\n]+)"(?:,\s*"([^"\n]+)")?\)')
 REVIEWED_MIGRATIONS = "coordinator-reviewed-native-equivalent-Apple-historical-only-exclusion-execution-pending"
+MAX_JUNIT_BYTES = 8 * 1024 * 1024
 
 
 def git(*args):
@@ -123,15 +124,25 @@ def migration_dispositions(originals):
     return proposed
 
 
+def bounded_junit_bytes(path):
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_JUNIT_BYTES:
+        raise ValueError("Unsafe or oversized JUnit: " + path.name)
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_JUNIT_BYTES + 1)
+    # Declaration tokens remain ASCII after removing UTF-16/32 interleaving zero bytes.
+    declaration_bytes = raw.replace(b"\x00", b"").upper()
+    if len(raw) > MAX_JUNIT_BYTES or b"<!DOCTYPE" in declaration_bytes or b"<!ENTITY" in declaration_bytes:
+        raise ValueError("Unsafe or oversized JUnit: " + path.name)
+    return raw
+
+
 def raw_suites():
     files = sorted(REPORTS.glob("TEST-*.xml"))
     if not files:
         raise ValueError("Missing actual native testDebugUnitTest XML")
     cases, suites = {}, []
     for path in files:
-        raw = path.read_bytes()
-        if path.is_symlink() or len(raw) > 8 * 1024 * 1024 or b"<!DOCTYPE" in raw.upper() or b"<!ENTITY" in raw.upper():
-            raise ValueError("Unsafe or oversized JUnit: " + path.name)
+        raw = bounded_junit_bytes(path)
         root = ET.fromstring(raw)
         nodes = root.findall("testcase")
         if root.tag != "testsuite" or not nodes:

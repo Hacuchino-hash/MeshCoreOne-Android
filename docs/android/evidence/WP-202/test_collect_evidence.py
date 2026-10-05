@@ -77,6 +77,33 @@ class CollectorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsafe"):
             COLLECTOR.raw_suites()
 
+    def test_utf16_declarations_are_rejected_before_any_xml_parser_call(self):
+        self.reject_encoded_declarations(("utf-16", "utf-16-le", "utf-16-be"))
+
+    def test_utf32_declarations_are_rejected_before_any_xml_parser_call(self):
+        self.reject_encoded_declarations(("utf-32", "utf-32-le", "utf-32-be"))
+
+    def reject_encoded_declarations(self, encodings):
+        for encoding in encodings:
+            for declaration in ('<!DOCTYPE testsuite [<!ENTITY x "fixture">]>', '<!ENTITY x "fixture">'):
+                with self.subTest(encoding=encoding, declaration=declaration):
+                    path = self.directory / "TEST-collector.xml"
+                    path.write_bytes((declaration + self.suite()).encode(encoding))
+                    with patch.object(COLLECTOR.ET, "fromstring") as parse:
+                        with self.assertRaisesRegex(ValueError, "Unsafe"):
+                            COLLECTOR.raw_suites()
+                        parse.assert_not_called()
+
+    def test_oversized_xml_is_rejected_before_reading_or_parsing(self):
+        self.write(self.suite())
+        with patch.object(COLLECTOR, "MAX_JUNIT_BYTES", 8), \
+                patch.object(Path, "open") as opened, \
+                patch.object(COLLECTOR.ET, "fromstring") as parse:
+            with self.assertRaisesRegex(ValueError, "oversized"):
+                COLLECTOR.raw_suites()
+            opened.assert_not_called()
+            parse.assert_not_called()
+
     def test_valid_xml_retains_exact_case_identity_and_raw_digest(self):
         content = self.suite()
         self.write(content)
