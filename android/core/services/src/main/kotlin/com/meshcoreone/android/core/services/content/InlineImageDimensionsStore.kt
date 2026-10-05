@@ -106,9 +106,13 @@ class InlineImageDimensionsStore(private val file: File) {
     private val mutex = Mutex()
     private var entries: Map<String, Entry> = loadEntries(file)
 
-    private val aspectMirror = ConcurrentHashMap<String, Double>().apply {
-        entries.forEach { (url, entry) -> put(url, entry.aspect) }
-    }
+    // NOTE: deliberately NOT `ConcurrentHashMap<String, Double>().apply { entries.forEach { ... } }`
+    // -- inside `apply`'s implicit receiver scope, the unqualified `entries` would resolve to the
+    // `java.util.Map` extension property on the `ConcurrentHashMap` receiver itself (shadowing the
+    // outer `entries: Map<String, Entry>` property above), so `entry` would be a `Map.Entry<String,
+    // Double>` and `.aspect` would not resolve -- a genuine compile error, not cascading noise from
+    // an unrelated import. Constructing directly from the already-mapped values avoids the shadow.
+    private val aspectMirror = ConcurrentHashMap<String, Double>(entries.mapValues { it.value.aspect })
 
     private val resolutionEvents = MutableSharedFlow<String>(
         replay = 0,
