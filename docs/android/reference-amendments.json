@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "entries": [
+    {
+      "path": "MeshCore/Tests/MeshCoreTests/Session/MeshCoreSessionCommandCorrelationTests.swift",
+      "original_blob_sha": "714887f7ab5dae5c1ef9324502c8dc44b2b736ff",
+      "approved_blob_sha": "9ff64d684a9ea56cdcfebabe0288c7b8b2141e4f",
+      "adr": "docs/android/adr/003-frozen-swift-pin-exception-flaky-correlation-test.md",
+      "reason": "Fixes a genuine unstructured-Task ordering race in 'binary request errors release the serializer for following requests' (the only recurring SPM Package Tests flake in this repo's CI history). Test-only: the second request now starts only after the first visibly claims the serializer, with exact-frame assertions added. No production Swift source changed."
+    }
+  ]
+}

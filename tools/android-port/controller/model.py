@@ -165,11 +165,20 @@ class Manifest:
         }
 
 
-def validate_manifest(data: dict, exclusions: dict, repo: Path, verify_checkout=True) -> Manifest:
+def validate_manifest(
+    data: dict, exclusions: dict, repo: Path, verify_checkout=True, amendments: dict | None = None
+) -> Manifest:
     directory = repo / "docs" / "android"
+    if amendments is None:
+        amendments = {"schema_version": 1, "reference_sha": REFERENCE_SHA, "entries": []}
     check_schema(data, load_json(directory / "port-manifest.schema.json"))
     check_schema(exclusions, load_json(directory / "not-ported.schema.json"))
-    if data["reference"]["commit"] != REFERENCE_SHA or exclusions["reference_sha"] != REFERENCE_SHA:
+    check_schema(amendments, load_json(directory / "reference-amendments.schema.json"))
+    if (
+        data["reference"]["commit"] != REFERENCE_SHA
+        or exclusions["reference_sha"] != REFERENCE_SHA
+        or amendments["reference_sha"] != REFERENCE_SHA
+    ):
         raise PortError("Reference pin changed; a reviewed upstream-sync amendment is required")
     validate_dag(data["work_packages"])
     approved = plan_rows((directory / "PORTING_PLAN.md").read_text(encoding="utf-8"))
@@ -283,6 +292,15 @@ def validate_manifest(data: dict, exclusions: dict, repo: Path, verify_checkout=
     expected_skills = {"android-port-wp", "swift-to-kotlin", "compose-from-swiftui"}
     if {p.parent.name for p in skills.glob("*/SKILL.md")} != expected_skills:
         raise PortError("Expected exactly the three approved installed skills")
+    amendment_blobs = {}
+    for entry in amendments["entries"]:
+        if "/Tests/" not in entry["path"]:
+            raise PortError(f"Reference amendment must be a test-only path: {entry['path']}")
+        if expected.get(entry["path"]) != entry["original_blob_sha"]:
+            raise PortError(f"Reference amendment baseline drift: {entry['path']}")
+        if not (repo / entry["adr"]).is_file():
+            raise PortError(f"Reference amendment missing its ADR: {entry['path']}")
+        amendment_blobs[entry["path"]] = entry["approved_blob_sha"]
     if verify_checkout:
         head = git(repo, "rev-parse", "HEAD").decode().strip()
         current = tree(repo, head)
@@ -290,11 +308,15 @@ def validate_manifest(data: dict, exclusions: dict, repo: Path, verify_checkout=
         changed = sorted(
             p for p in expected.keys() | current.keys()
             if readonly(p) and current.get(p) != expected.get(p)
+            and current.get(p) != amendment_blobs.get(p)
         )
         if changed:
             raise PortError(f"Swift reference advanced/changed; do not move the pin: {changed}")
         roots = [p.rstrip("/") for p in REFERENCE_ROOTS] + ["LICENSE"]
-        dirty = git(repo, "diff", "--name-only", REFERENCE_SHA, "--", *roots).decode().splitlines()
+        dirty = [
+            p for p in git(repo, "diff", "--name-only", REFERENCE_SHA, "--", *roots).decode().splitlines()
+            if p not in amendment_blobs
+        ]
         unknown = git(repo, "ls-files", "--others", "--exclude-standard", "--", *roots).decode().splitlines()
         if dirty or unknown:
             raise PortError(f"Read-only source drift or unknown source: {sorted(set(dirty + unknown))}")
@@ -308,4 +330,5 @@ def load_manifest(repo: Path, verify_checkout=True) -> Manifest:
         load_json(directory / "not-ported.json"),
         repo,
         verify_checkout=verify_checkout,
+        amendments=load_json(directory / "reference-amendments.json"),
     )
