@@ -61,7 +61,7 @@ older WP-000 workflow. That workflow now installs the same hash-verified
 requirements before running assertions, checks out the actual head and uses the
 declared Python version. The failed run is not represented as successful.
 
-`android-protocol.yml` executes `:core:protocol:test` on Windows and Linux through
-the isolated CI executor. Its protocol stage reparses actual JUnit reports and
-requires at least 84 successful, unskipped cases. Existing scaffold-suite counts
-are not substituted for this new library evidence.
+`android-independent-checks.yml`'s `protocol` job executes `:core:protocol:test`
+on Linux through the isolated CI executor. Its protocol stage reparses actual
+JUnit reports and requires at least 84 successful, unskipped cases. Existing
+scaffold-suite counts are not substituted for this new library evidence.

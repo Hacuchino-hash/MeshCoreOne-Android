@@ -41,7 +41,7 @@ class WorkflowTests(unittest.TestCase):
     def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_linux(self):
         from controller.ci import TASKS
 
-        workflow, text = self.read("android-protocol.yml")
+        workflow, text = self.read("android-independent-checks.yml")
         job = workflow["jobs"]["protocol"]
         self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
         self.assertEqual(job["runs-on"], "ubuntu-24.04")

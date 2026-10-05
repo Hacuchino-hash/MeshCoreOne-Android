@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from unittest.mock import patch
 
 from controller.errors import PortError
@@ -119,6 +119,50 @@ class ModuleJUnitTests(unittest.TestCase):
                 raw = self.output / report["path"]
                 source = self.repo / "android" / module / "build" / "test-results"
                 self.assertEqual(raw.read_bytes(), next(source.rglob(raw.name)).read_bytes())
+
+    def test_report_order_is_case_sensitive_even_for_windows_path_enumeration(self):
+        names = [
+            "TEST-SourceReconnectLifecycleTest.xml",
+            "TEST-SourceReconnectPolicyTest.xml",
+            "TEST-SourceReconnectionCoordinatorTest.xml",
+        ]
+        windows_paths = [PureWindowsPath(r"C:\evidence") / name for name in reversed(names)]
+        self.assertNotEqual(names, [path.name for path in sorted(windows_paths)])
+        directory = self.root / "reports"
+        directory.mkdir()
+        with (
+            patch.object(Path, "glob", return_value=iter(windows_paths)),
+            patch("controller.module_junit.linked", return_value=False),
+            patch.object(PureWindowsPath, "is_file", return_value=True, create=True) as file_guard,
+        ):
+            reports = safe_reports(directory, self.root)
+        self.assertEqual(names, [path.name for path in reports])
+        self.assertEqual(len(windows_paths), file_guard.call_count)
+        self.assertEqual(set(windows_paths), set(reports))
+
+    def test_mixed_case_raw_report_order_keeps_exact_bytes_and_strict_replay(self):
+        names = [
+            "TEST-SourceReconnectLifecycleTest.xml",
+            "TEST-SourceReconnectPolicyTest.xml",
+            "TEST-SourceReconnectionCoordinatorTest.xml",
+        ]
+        directory = self.repo / "android" / "core" / "model" / "build" / "test-results" / "test"
+        for index, name in enumerate(reversed(names)):
+            path = directory / name
+            junit_report(path, 1)
+            node = ET.fromstring(path.read_bytes())
+            node.find("testcase").set("classname", f"fixture.ordered{index}")
+            path.write_bytes(ET.tostring(node))
+        value = self.positive()
+        records = value["core/model"]["reports"]
+        self.assertEqual(sorted(names + ["TEST-fixture.xml"]), [Path(item["path"]).name for item in records])
+        self.assertEqual(6, value["core/model"]["counts"]["passed"])
+        self.assertEqual(value, validate_module_tests(value, self.output, self.repo, self.head))
+        for record in records:
+            self.assertEqual((self.output / record["path"]).read_bytes(), (directory / Path(record["path"]).name).read_bytes())
+        value["core/model"]["reports"].reverse()
+        with self.assertRaisesRegex(PortError, "differs"):
+            validate_module_tests(value, self.output, self.repo, self.head)
 
     def test_missing_active_runner_does_not_return_empty_success(self):
         (self.repo / "android" / "core" / "database" / "build" / "test-results" / "testDebugUnitTest" / "TEST-fixture.xml").unlink()

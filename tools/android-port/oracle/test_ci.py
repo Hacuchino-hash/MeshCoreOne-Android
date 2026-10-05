@@ -118,7 +118,7 @@ class HelperDiscoveryTests(unittest.TestCase):
 class FoundationWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.text = (REPO / ".github" / "workflows" / "android-parity-foundation.yml").read_text(encoding="utf-8")
+        cls.text = (REPO / ".github" / "workflows" / "android-independent-checks.yml").read_text(encoding="utf-8")
         cls.workflow = parse_yaml(cls.text)
 
     def test_pinned_read_only_ephemeral_candidate_boundaries(self):

@@ -10,6 +10,8 @@ import com.meshcoreone.android.core.protocol.session.MeshCoreSession
 import com.meshcoreone.android.core.protocol.session.SessionClock
 import com.meshcoreone.android.core.protocol.session.SessionCorrelationException
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransport
+import java.io.FilterOutputStream
+import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -17,6 +19,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -52,9 +55,34 @@ private class OwnershipClock : SessionClock {
     }
 }
 
-private class OwnershipSocket : Socket() {
+/**
+ * Counts socket writes whose IO task has fully returned. The peer can read a frame before the
+ * client's write call returns; a request deadline that fires inside that window cancels an
+ * in-progress write, which correctly tears the link down instead of producing a request timeout.
+ * By the time a task finishes here, its waiting send coroutine has already been scheduled to resume.
+ */
+private class WriteTrackingIo(private val delegate: CoroutineDispatcher = Dispatchers.IO) : CoroutineDispatcher() {
+    private val wroteInTask = ThreadLocal.withInitial { false }
+    val completedWrites = AtomicInteger()
+    fun markWrite() = wroteInTask.set(true)
+    override fun dispatch(context: CoroutineContext, block: Runnable) = delegate.dispatch(context, Runnable {
+        wroteInTask.set(false)
+        try {
+            block.run()
+        } finally {
+            if (wroteInTask.get()) completedWrites.incrementAndGet()
+            wroteInTask.set(false)
+        }
+    })
+}
+
+private class OwnershipSocket(private val io: WriteTrackingIo? = null) : Socket() {
     val closes = AtomicInteger()
     override fun close() { closes.incrementAndGet(); super.close() }
+    override fun getOutputStream(): OutputStream = object : FilterOutputStream(super.getOutputStream()) {
+        override fun write(b: ByteArray, off: Int, len: Int) = out.write(b, off, len)
+        override fun flush() { out.flush(); io?.markWrite() }
+    }
 }
 
 private class OwnershipPeer : AutoCloseable {
@@ -110,18 +138,23 @@ class TcpOwnershipParityTest {
         supervisorScope {
             OwnershipPeer().use { peer ->
                 val sockets = mutableListOf<OwnershipSocket>()
-                val transport = WiFiTransport(socketFactory = { OwnershipSocket().also { sockets += it } })
+                val io = WriteTrackingIo()
+                val transport = WiFiTransport(ioDispatcher = io, socketFactory = { OwnershipSocket(io).also { sockets += it } })
                 transport.setConnectionInfo("127.0.0.1", peer.port)
                 val clock = OwnershipClock()
                 val first = session(transport, this, clock)
                 try {
                     handshake(first, peer)
+                    val writesBeforeRequest = io.completedWrites.get()
                     val request = async {
                         first.sendAndWait(PacketBuilder.getBattery(), timeout = 0.05) {
                             (it as? MeshEvent.Battery)?.info
                         }
                     }
                     assertEquals(Bytes.of(20), peer.read())
+                    // Expire the deadline only once the request is fully written, so this proves the
+                    // unanswered-reply timeout rather than the cancelled-write teardown path.
+                    while (io.completedWrites.get() == writesBeforeRequest) yield()
                     while (clock.registered.receive() != 50.milliseconds) Unit
                     clock.advance(50.milliseconds)
                     assertFailsWith<MeshCoreException.Timeout> { request.await() }

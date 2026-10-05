@@ -38,7 +38,7 @@
     "android/core/database/src/main/kotlin/com/meshcoreone/android/core/database/DiagnosticDaos.kt",
     "docs/android/evidence/WP-202/collect_evidence.py",
     "docs/android/evidence/WP-202/test_collect_evidence.py",
-    ".github/workflows/android-backup-compatibility.yml",
+    ".github/workflows/android-independent-checks.yml",
     "tools/android-port/oracle/wp203_ci.py",
     "tools/android-port/oracle/wp203_interop.py",
     "tools/android-port/oracle/tests/test_wp203_ci.py",

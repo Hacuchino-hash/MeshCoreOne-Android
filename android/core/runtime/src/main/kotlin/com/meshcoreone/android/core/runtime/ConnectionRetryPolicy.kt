@@ -1,0 +1,50 @@
+// PortedFrom: MC1Services/Sources/MC1Services/Connection/ConnectionManager.swift@db14559b39d32322b06477c6ae676112f583db50
+// PortedFrom: MC1Services/Sources/MC1Services/Connection/ConnectionManager+BLE.swift@db14559b39d32322b06477c6ae676112f583db50
+// PortedFrom: MC1Services/Sources/MC1Services/Connection/ConnectionManager+WiFi.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.runtime
+
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+
+class ConnectionCircuitBreaker(private val clock: RuntimeClock) {
+    sealed interface State {
+        data object Closed : State
+        data class Open(val since: Duration) : State
+        data object HalfOpen : State
+    }
+    var state: State = State.Closed
+        private set
+    fun allows(force: Boolean): Boolean {
+        if (force) return true
+        val current = state
+        if (current is State.Open) {
+            if (clock.elapsed - current.since < 30.seconds) return false
+            state = State.HalfOpen
+        }
+        return true
+    }
+    fun recordFailure() { if (state !is State.Open) state = State.Open(clock.elapsed) }
+    fun recordSuccess() { state = State.Closed }
+}
+
+object ConnectionRetryPolicy {
+    fun connectAttempts(forceReconnect: Boolean, hasSystemPairingRegistry: Boolean): Int =
+        if (forceReconnect && !hasSystemPairingRegistry) 2 else 4
+
+    fun connectDelay(attempt: Int, jitter: Double): Duration {
+        require(attempt in 1..4 && jitter.isFinite() && jitter in 0.0..0.1)
+        return (300L shl (attempt - 1)).milliseconds * (1 + jitter)
+    }
+    fun watchdogDelay(attempt: Int): Duration {
+        require(attempt >= 1)
+        return when (attempt) { 1 -> 30.seconds; 2 -> 60.seconds; else -> 120.seconds }
+    }
+    fun wifiDelay(attempt: Int): Duration {
+        require(attempt >= 1)
+        return when (attempt) { 1 -> 500.milliseconds; 2 -> 1.seconds; 3 -> 2.seconds; else -> 4.seconds }
+    }
+    val WIFI_RECONNECT_WINDOW = 30.seconds
+    val WIFI_RECONNECT_COOLDOWN = 35.seconds
+    const val MAX_REBUILD_FAILURES_PRESERVING_LINK = 3
+}
