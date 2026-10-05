@@ -12,6 +12,7 @@ import com.meshcoreone.android.core.services.content.LocationServiceError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -29,7 +30,7 @@ class LocationManagerLocationProducingTest {
         shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
         val adapter = LocationManagerLocationProducing(context)
 
-        val deferred = kotlinx.coroutines.async { adapter.requestLocation() }
+        val deferred = async { adapter.requestLocation() }
         val fix = Location(LocationManager.FUSED_PROVIDER).apply {
             latitude = 37.7749
             longitude = -122.4194
