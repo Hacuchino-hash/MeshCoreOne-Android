@@ -1,0 +1,49 @@
+name: Android theme dependency proposal
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-theme-dependency-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    name: WP-301 generated lock proposal
+    if: ${{ github.event.pull_request.number == 24 && startsWith(github.event.pull_request.title, '[WP-301]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Read-only exact candidate checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12.4"
+          architecture: x64
+      - name: Install checksum-pinned workflow parser
+        run: >-
+          python -m pip install --disable-pip-version-check --require-hashes
+          --no-deps --only-binary=:all: -r tools/android-port/controller/requirements-ci.txt --quiet
+      - name: Validate exact auxiliary boundary and positive helper discovery
+        run: python android/core/designsystem/verification/generate_consumer_locks.py --self-test --workflow-check
+      - name: Generate only the admitted ten consumer locks as data
+        run: >-
+          python android/core/designsystem/verification/generate_consumer_locks.py
+          --run --root "${{ runner.temp }}/wp301-generation"
+      - name: Retain generated-byte proposal and immutable failure evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wp301-lock-proposal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/wp301-generation/proposal
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false

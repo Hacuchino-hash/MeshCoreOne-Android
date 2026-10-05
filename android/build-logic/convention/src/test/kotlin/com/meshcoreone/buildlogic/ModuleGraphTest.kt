@@ -47,6 +47,34 @@ class ModuleGraphTest {
     }
 
     @Test
+    fun `theme consumer can observe the process-owned preference store`() {
+        val modules = fixture(":core:designsystem", ":core:datastore", ":core:model", ":core:l10n", ":core:contracts")
+        modules.getValue(":core:designsystem").edge(":core:model")
+        modules.getValue(":core:designsystem").edge(":core:l10n")
+        modules.getValue(":core:designsystem").edge(":core:datastore")
+        modules.getValue(":core:datastore").edge(":core:model")
+        modules.getValue(":core:datastore").edge(":core:contracts")
+        assertEquals(emptyList(), violations(modules))
+    }
+
+    @Test
+    fun `preference store cannot depend back on theme consumer or form a cycle`() {
+        val modules = fixture(":core:designsystem", ":core:datastore")
+        modules.getValue(":core:designsystem").edge(":core:datastore")
+        modules.getValue(":core:datastore").edge(":core:designsystem")
+        val result = violations(modules)
+        assertTrue(result.any { it.startsWith("Unlisted production edge") && it.contains(":core:datastore -> :core:designsystem") })
+        assertTrue(result.any { it.startsWith("Dependency cycle") })
+    }
+
+    @Test
+    fun `theme adapter does not authorize direct concrete preference edges in features`() {
+        val modules = fixture(":feature:settings", ":core:datastore")
+        modules.getValue(":feature:settings").edge(":core:datastore")
+        assertTrue(violations(modules).any { it.startsWith("Unlisted production edge") })
+    }
+
+    @Test
     fun `actual feature dependency is rejected`() {
         val modules = fixture(":feature:chats", ":feature:nodes")
         modules.getValue(":feature:chats").edge(":feature:nodes")
