@@ -1,0 +1,408 @@
+"""AndroidOnly: WP-109 Actual raw-reader regressions; source floors and malformed evidence fail closed."""
+
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+import unittest
+from unittest.mock import patch
+from xml.sax.saxutils import quoteattr
+
+FILE = Path(__file__).resolve().parents[1] / "collect_evidence.py"
+spec = importlib.util.spec_from_file_location("wp109_evidence", FILE)
+reader = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(reader)
+PortError = reader.PortError
+
+
+class EvidenceTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.reports = self.root / "reports"
+        self.reports.mkdir()
+        self.file = self.reports / "TEST-example.xml"
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def report(self, case='<testcase classname="example.Test" name="actual()"/>', counts='tests="1" failures="0" errors="0" skipped="0"'):
+        self.file.write_text(f'<testsuite {counts}>{case}<system-out>complete log</system-out></testsuite>', encoding="utf-8")
+
+    def commit_input(self, name, data):
+        subprocess.run(["git", "init", "--quiet", str(self.root)], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.root), "config", "core.autocrlf", "false"], check=True, capture_output=True)
+        source = self.root / name
+        source.write_bytes(data)
+        subprocess.run(["git", "-C", str(self.root), "add", name], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                        "commit", "--quiet", "-m", "fixture"], check=True, capture_output=True)
+        return subprocess.check_output(["git", "-C", str(self.root), "rev-parse", "HEAD"]).decode().strip()
+
+    def native_floor_fixture(self):
+        retained = (reader.EVIDENCE / "baseline-native.json").read_bytes().replace(b"\r\n", b"\n")
+        baseline = self.root / "docs" / "android" / "evidence" / "WP-109" / "baseline-native.json"
+        baseline.parent.mkdir(parents=True, exist_ok=True)
+        baseline.write_bytes(retained)
+        return {
+            "protocol": json.loads(retained)["cases"] + [
+                {"class": reader.NATIVE_PREFIX + "parity.TcpOwnershipParityTest", "name": method + "()", "outcome": "passed"}
+                for method in reader.TCP_CASES
+            ],
+            "meshcli": [{"class": scope, "name": name, "outcome": "passed"}
+                        for scope, name in sorted(reader.required_cli_cases())],
+        }
+
+    def retention_fixture(self, data, module="meshcli"):
+        directory = self.root.joinpath(*reader.MODULES[module][0].split("/"))
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "TEST-fixture.xml").write_bytes(data)
+        source = b"immutable input fixture\n"
+        return (
+            "a" * 40, None,
+            {"scope": reader.LOCAL_SCOPE, "head_sha": "a" * 40, "host": "windows"},
+            {"fixture.py": reader.blob(source)}, {"fixture.py": source},
+        )
+
+    def test_complete_raw_case_and_log_bytes_survive(self):
+        self.report()
+        cases, raw, counts = reader.junit(self.reports, self.root, 1)
+        self.assertEqual([{"class": "example.Test", "name": "actual()", "outcome": "passed"}], cases)
+        self.assertEqual(self.file.read_bytes(), raw[self.file.name])
+        self.assertIn(b"complete log", raw[self.file.name])
+        self.assertEqual(1, counts["passed"])
+
+    def test_retention_preserves_complete_failed_raw_and_inputs_without_success(self):
+        data = (b'<testsuite tests="1" failures="1" errors="0" skipped="0">'
+                b'<testcase classname="fixture" name="failed"><failure>complete failure</failure></testcase>'
+                b'<system-out>complete stdout</system-out><system-err>complete stderr</system-err></testsuite>')
+        context = self.retention_fixture(data)
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "raw-fixture"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output)
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertIsNone(result["validation"]["counts"])
+        self.assertIsNotNone(result["validation"]["error"])
+        self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+        identity = context[3]["fixture.py"]
+        self.assertEqual(context[4]["fixture.py"], (output / "input-blobs" / identity).read_bytes())
+        self.assertFalse(result["physical_radio_verified"])
+        self.assertEqual(result, json.loads((output / "raw-retention.json").read_bytes()))
+
+    def test_retention_preserves_malformed_and_zero_raw_but_stays_blocked(self):
+        for index, data in enumerate((
+            b"<testsuite",
+            b'<testsuite tests="0" failures="0" errors="0" skipped="0"/>',
+            '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="fixture" name="&x;"/></testsuite>'.encode("utf-16"),
+        )):
+            with self.subTest(index=index):
+                context = self.retention_fixture(data)
+                output = self.root / "android" / "tools" / "meshcli" / "build" / f"invalid-{index}"
+                with patch.object(reader, "execution_inputs", return_value=context):
+                    result = reader.retain(self.root, output)
+                self.assertEqual("blocked", result["validation"]["status"])
+                self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+
+    def test_retention_requires_every_actual_cli_identity_and_a_new_destination(self):
+        cases = reader.required_cli_cases()
+        nodes = "".join(f"<testcase classname={quoteattr(scope)} name={quoteattr(name)}/>"
+                        for scope, name in sorted(cases))
+        data = (f'<testsuite tests="87" failures="0" errors="0" skipped="0">{nodes}</testsuite>').encode("utf-8")
+        context = self.retention_fixture(data)
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "passed-fixture"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output)
+            self.assertEqual("passed", result["validation"]["status"])
+            self.assertEqual(87, result["validation"]["counts"]["passed"])
+            with self.assertRaises(PortError):
+                reader.retain(self.root, output)
+        self.assertEqual(data, (output / "junit" / "meshcli" / "TEST-fixture.xml").read_bytes())
+
+    def test_protocol_failure_retention_does_not_require_or_invent_cli_execution(self):
+        data = (b'<testsuite tests="1" failures="1" errors="0" skipped="0">'
+                b'<testcase classname="actual.Protocol" name="failed operation"><failure>complete protocol cause</failure></testcase>'
+                b'<system-out>protocol stdout</system-out><system-err>protocol stderr</system-err></testsuite>')
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "protocol-failure"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output, module="protocol")
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertIsNone(result["validation"]["counts"])
+        self.assertEqual(data, (output / "junit" / "protocol" / "TEST-fixture.xml").read_bytes())
+        self.assertEqual(["protocol"], [record["module"] for record in result["raw_reports"]])
+        self.assertFalse((output / "junit" / "meshcli").exists())
+        self.assertFalse(self.root.joinpath(*reader.MODULES["meshcli"][0].split("/")).exists())
+        self.assertFalse(result["physical_radio_verified"])
+
+    def test_protocol_retention_requires_the_full_original_floor_without_cli_reports(self):
+        native = self.native_floor_fixture()
+        nodes = "".join(f"<testcase classname={quoteattr(case['class'])} name={quoteattr(case['name'])}/>"
+                        for case in native["protocol"])
+        data = (f'<testsuite tests="4711" failures="0" errors="0" skipped="0">{nodes}</testsuite>').encode("utf-8")
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "protocol-pass"
+        with patch.object(reader, "execution_inputs", return_value=context):
+            result = reader.retain(self.root, output, module="protocol")
+        self.assertEqual("passed", result["validation"]["status"])
+        self.assertEqual(4711, result["validation"]["counts"]["passed"])
+        self.assertFalse((output / "junit" / "meshcli").exists())
+        self.assertFalse(self.root.joinpath(*reader.MODULES["meshcli"][0].split("/")).exists())
+
+    def test_missing_protocol_reports_are_explicit_failure_not_empty_success(self):
+        context = self.retention_fixture(b"<testsuite", "protocol")
+        self.root.joinpath(*reader.MODULES["protocol"][0].split("/"), "TEST-fixture.xml").unlink()
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "missing-protocol"
+        with patch.object(reader, "execution_inputs", return_value=context), self.assertRaises(PortError):
+            reader.retain(self.root, output, module="protocol")
+        self.assertFalse((output / "raw-retention.json").exists())
+
+    def test_retention_never_normalizes_raw_xml_and_rejects_input_blob_substitution(self):
+        self.report()
+        self.file.write_bytes(self.file.read_bytes().replace(b"></", b">\r\n</"))
+        raw = reader.raw_junit(self.reports, self.root)
+        self.assertEqual(self.file.read_bytes(), raw[self.file.name])
+        output = self.root / "wrong-input"
+        with self.assertRaises(PortError):
+            reader.preserve_raw(output, {"fixture.py": "a" * 40}, {"fixture.py": b"wrong"}, {"meshcli": raw})
+
+    def test_missing_zero_failed_skipped_and_inconsistent_reports_reject(self):
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root, 1)
+        for counts, nodes in [
+            ('tests="0" failures="0" errors="0" skipped="0"', ""),
+            ('tests="2" failures="0" errors="0" skipped="0"', '<testcase classname="x" name="one"/>'),
+            ('tests="1" failures="1" errors="0" skipped="0"', '<testcase classname="x" name="one"><failure/></testcase>'),
+            ('tests="1" failures="0" errors="0" skipped="1"', '<testcase classname="x" name="one"><skipped/></testcase>'),
+        ]:
+            with self.subTest(counts=counts):
+                self.report(nodes, counts)
+                with self.assertRaises(PortError):
+                    reader.junit(self.reports, self.root, 1)
+
+    def test_fabricated_pass_counter_cannot_hide_actual_error(self):
+        self.report('<testcase classname="x" name="one"><error message="actual"/></testcase>')
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root, 1)
+
+    def test_duplicate_or_missing_case_identity_rejects(self):
+        for nodes, count in [
+            ('<testcase name="one"/>', 1),
+            ('<testcase classname="x" name="one"/><testcase classname="x" name="one"/>', 2),
+        ]:
+            self.report(nodes, f'tests="{count}" failures="0" errors="0" skipped="0"')
+            with self.assertRaises(PortError):
+                reader.junit(self.reports, self.root, 1)
+
+    def test_malformed_and_utf16_entity_reports_reject(self):
+        self.file.write_bytes(b"<testsuite")
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root, 1)
+        self.file.write_bytes('<!DOCTYPE testsuite [<!ENTITY x "secret">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="&x;"/></testsuite>'.encode("utf-16"))
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root, 1)
+
+    def test_utf16_and_utf32_declarations_are_rejected_before_any_xml_parser_or_counts(self):
+        text = '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="&x;"/></testsuite>'
+        for encoding in ("utf-8", "utf-16", "utf-16-le", "utf-16-be", "utf-32", "utf-32-le", "utf-32-be"):
+            with self.subTest(encoding=encoding):
+                self.file.write_bytes(text.encode(encoding))
+                with (
+                    patch.object(reader, "suite_counts") as counts,
+                    patch.object(reader, "read_xml") as parser,
+                    self.assertRaises(PortError),
+                ):
+                    reader.junit(self.reports, self.root, 1)
+                counts.assert_not_called()
+                parser.assert_not_called()
+
+    def test_safe_utf16_xml_keeps_actual_bytes_and_outcomes(self):
+        text = '<testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="x" name="safe"/><system-out>complete</system-out></testsuite>'
+        for encoding in ("utf-8", "utf-16", "utf-16-le", "utf-16-be"):
+            with self.subTest(encoding=encoding):
+                data = text.encode(encoding)
+                self.file.write_bytes(data)
+                cases, raw, counts = reader.junit(self.reports, self.root, 1)
+                self.assertEqual(data, raw[self.file.name])
+                self.assertEqual(1, counts["passed"])
+                self.assertEqual("safe", cases[0]["name"])
+                failure = text.replace('failures="0"', 'failures="1"').replace(
+                    '<testcase classname="x" name="safe"/>',
+                    '<testcase classname="x" name="safe"><failure>actual failure</failure></testcase>',
+                )
+                self.file.write_bytes(failure.encode(encoding))
+                with self.assertRaises(PortError):
+                    reader.junit(self.reports, self.root, 1)
+
+    def test_per_file_size_is_rejected_before_parsing_even_below_total_set_limit(self):
+        self.file.write_bytes(b" " * (8 * 1024 * 1024 + 1))
+        with (
+            patch.object(reader, "suite_counts") as counts,
+            patch.object(reader, "read_xml") as parser,
+            self.assertRaises(PortError),
+        ):
+            reader.junit(self.reports, self.root, 1)
+        counts.assert_not_called()
+        parser.assert_not_called()
+
+    def test_unsafe_protocol_retention_preserves_bytes_but_never_parses_or_passes(self):
+        data = '<!DOCTYPE testsuite [<!ENTITY x "fixture">]><testsuite/>'.encode("utf-32")
+        context = self.retention_fixture(data, "protocol")
+        output = self.root / "android" / "tools" / "meshcli" / "build" / "unsafe-protocol"
+        with (
+            patch.object(reader, "execution_inputs", return_value=context),
+            patch.object(reader, "suite_counts") as counts,
+            patch.object(reader, "read_xml") as parser,
+        ):
+            result = reader.retain(self.root, output, module="protocol")
+        counts.assert_not_called()
+        parser.assert_not_called()
+        self.assertEqual("blocked", result["validation"]["status"])
+        self.assertEqual(data, (output / "junit" / "protocol" / "TEST-fixture.xml").read_bytes())
+
+    def test_reduced_nonzero_discovery_does_not_satisfy_floor(self):
+        self.report()
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root, 2)
+
+    def test_reports_cannot_escape_bounded_root(self):
+        self.report()
+        with self.assertRaises(PortError):
+            reader.junit(self.reports, self.root / "unrelated", 1)
+
+    def test_explicit_native_aliases_preserve_three_parameter_families(self):
+        aliases = reader.aliases()
+        self.assertEqual(30, len(aliases))
+        self.assertIn(("NewCommandsTests", "setPathHashMode mode 0 (1-byte hashes)"), aliases)
+        self.assertIn(("MeshEventErrorCodeTests", "All six firmware sub-codes map to the matching ErrorCode"), aliases)
+        self.assertEqual(aliases[("MeshEventErrorCodeTests", "Non-error events have no typed error code")],
+                         aliases[("MeshEventErrorCodeTests", "deviceErrorCode is nil for non-deviceError MeshCoreError cases")])
+
+    def test_invocation_requires_exact_version_stage_host_head_and_run(self):
+        path = self.root / "invocation.json"
+        head = "a" * 40
+        record = {
+            "schema_version": 1, "stage": "protocol", "host": "linux",
+            "identity": {"binding": {
+                "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
+                "base_sha": "b" * 40, "head_sha": head, "source_sha": reader.SOURCE,
+                "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY,
+            }, "run_id": 123, "run_attempt": 1},
+        }
+        path.write_text(json.dumps(record), encoding="utf-8")
+        self.assertEqual(record, reader.invocation_record(path, head, "linux"))
+        for field, value in [("schema_version", 2), ("schema_version", True), ("stage", "prepare"), ("host", "windows")]:
+            wrong = {**record, field: value}
+            path.write_text(json.dumps(wrong), encoding="utf-8")
+            with self.assertRaises(PortError):
+                reader.invocation_record(path, head, "linux")
+        path.write_text(json.dumps(record), encoding="utf-8")
+        with self.assertRaises(PortError):
+            reader.invocation_record(path, "c" * 40, "linux")
+        record["identity"]["run_attempt"] = True
+        path.write_text(json.dumps(record), encoding="utf-8")
+        with self.assertRaises(PortError):
+            reader.invocation_record(path, head, "linux")
+
+    def test_local_identity_never_claims_hosted_authority(self):
+        record = reader.invocation_record(None, "a" * 40, "linux")
+        self.assertNotIn("identity", record)
+        self.assertIn("no hosted run authority", record["scope"])
+
+    def test_committed_text_crlf_is_not_drift_but_content_change_is(self):
+        head = self.commit_input("input.kt", b"first\nsecond\n")
+        source = self.root / "input.kt"
+        source.write_bytes(b"first\r\nsecond\r\n")
+        inputs, raw = reader.checked_checkout(self.root, head, {"input.kt"})
+        self.assertEqual(b"first\nsecond\n", raw["input.kt"])
+        self.assertEqual(reader.blob(raw["input.kt"]), inputs["input.kt"])
+        source.write_bytes(b"changed\nsecond\n")
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"input.kt"})
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"uncommitted.kt"})
+
+    def test_extensionless_license_newlines_preserve_the_complete_immutable_blob(self):
+        head = self.commit_input("LICENSE", b"Copyright fixture\nExact license terms\n")
+        source = self.root / "LICENSE"
+        source.write_bytes(b"Copyright fixture\r\nExact license terms\r\n")
+        inputs, raw = reader.checked_checkout(self.root, head, {"LICENSE"})
+        self.assertEqual(b"Copyright fixture\nExact license terms\n", raw["LICENSE"])
+        self.assertEqual(reader.blob(raw["LICENSE"]), inputs["LICENSE"])
+        source.write_bytes(b"Copyright fixture\r\nChanged license terms\r\n")
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"LICENSE"})
+
+    def test_extensionless_binary_newlines_are_not_normalized(self):
+        head = self.commit_input("binary-input", b"\xff\n\x01")
+        (self.root / "binary-input").write_bytes(b"\xff\r\n\x01")
+        with self.assertRaises(PortError):
+            reader.checked_checkout(self.root, head, {"binary-input"})
+
+    def test_frozen_baseline_accepts_checkout_newlines_not_changed_identities(self):
+        retained = (reader.EVIDENCE / "baseline-native.json").read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(reader.BASELINE_SHA256, reader.sha(retained.replace(b"\n", b"\r\n")))
+        native = self.native_floor_fixture()
+        baseline = self.root / "docs" / "android" / "evidence" / "WP-109" / "baseline-native.json"
+        for data in (retained, retained.replace(b"\n", b"\r\n")):
+            baseline.write_bytes(data)
+            reader.validate_native_floor(self.root, native)
+        changed = retained.replace(b"correct layout()", b"changed layout()", 1)
+        self.assertNotEqual(retained, changed)
+        baseline.write_bytes(changed)
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, native)
+
+    def test_every_new_tcp_and_cli_row_is_required_not_only_class_presence_or_total(self):
+        native = self.native_floor_fixture()
+        reader.validate_native_floor(self.root, native)
+        self.assertEqual(87, len(native["meshcli"]))
+        incomplete = {**native, "meshcli": [
+            case for case in native["meshcli"]
+            if case["name"] not in reader.CLI_FACTORIES["CliTcpTest"]["bidiControlCharacters"]
+            and "detects a closed" not in case["name"]
+        ]}
+        self.assertEqual(73, len(incomplete["meshcli"]), "Reproduces actual d472 discovery, not native execution")
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, incomplete)
+        replaced = {**native, "meshcli": [*native["meshcli"][:-1], {
+            "class": reader.CLI_PREFIX + "CliTcpTest", "name": "unrelated replacement()", "outcome": "passed",
+        }]}
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, replaced)
+        without_tcp = {**native, "protocol": native["protocol"][:-1]}
+        with self.assertRaises(PortError):
+            reader.validate_native_floor(self.root, without_tcp)
+
+    def test_complete_count_schema_rejects_booleans_and_nonintegral_values(self):
+        valid = {"discovered": 87, "run": 87, "passed": 87, "failed": 0, "errors": 0, "skipped": 0}
+        self.assertEqual(valid, reader.require_counts(valid, minimum=87))
+        for key, invalid in (("failed", False), ("errors", 0.0), ("passed", "87"), ("skipped", None)):
+            with self.subTest(key=key):
+                with self.assertRaises(PortError):
+                    reader.require_counts({**valid, key: invalid}, minimum=87)
+
+    def test_required_inputs_include_tools_production_tests_hooks_and_source_scope(self):
+        class Manifest:
+            def inputs(self, wp):
+                return [{"path": "MeshCore/Tests/original.swift"}]
+        entries = {
+            "android/tools/meshcli/src/main/Main.kt": "a" * 40,
+            "android/tools/meshcli/src/test/MainTest.kt": "b" * 40,
+            "android/tools/meshcli/verification/tests/test_reader.py": "c" * 40,
+            "android/tools/meshcli/build.gradle.kts": "d" * 40,
+            "android/build-logic/convention/src/main/BuildConventions.kt": "e" * 40,
+            "android/gradle/dependency-locks/immutable.lockfile": "f" * 40,
+        }
+        required = reader.required_inputs(entries, Manifest())
+        self.assertTrue(set(entries) <= required)
+        self.assertIn("MeshCore/Tests/original.swift", required)
+        self.assertIn("docs/android/evidence/WP-109/baseline-native.json", required)
+        self.assertIn("android/core/testing/fixtures/protocol-vectors.tsv", required)
+        self.assertTrue(reader.required_runtime_inputs() <= required)
+        self.assertIn("LICENSE", required)
+        self.assertIn("android/app/src/main/assets/licenses/BouncyCastle-MIT.txt", required)
+
+
+if __name__ == "__main__":
+    unittest.main()

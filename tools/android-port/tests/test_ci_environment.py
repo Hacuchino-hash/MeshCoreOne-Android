@@ -9,13 +9,17 @@ import tarfile
 import unittest
 import xml.etree.ElementTree as ET
 import zipfile
+from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import patch
 
 from fixtures import REPO
 from controller.ci_environment import candidate_environment, host_name, toolchain_lock, verify_wrapper
 from controller.errors import PortError
+from controller.gates import Binding, policy_revision
+from controller.model import git, load_manifest
 from controller.provision import download_archive, extract_archive, local_package_xml, provision, safe_member, sdk_metadata
+from controller.schema import load_json
 
 
 class EnvironmentTests(unittest.TestCase):
@@ -25,6 +29,170 @@ class EnvironmentTests(unittest.TestCase):
             "android_home": str(directory / "sdk"), "private_root": str(directory / "private"),
             "provenance": {"scope": "fixture only"},
         }
+
+    def forwarding_identity(self):
+        manifest = load_manifest(REPO)
+        rules = load_json(REPO / "docs" / "android" / "automation-policy.json")
+        head = git(REPO, "rev-parse", "HEAD").decode().strip()
+        return {
+            "binding": asdict(Binding(
+                "cbattlegear/MeshCoreOne-Android", "WP-003", "1" * 40, head,
+                manifest.data["reference"]["commit"], manifest.sha256, policy_revision(manifest, rules),
+            )),
+            "run_id": 123, "run_attempt": 2,
+        }
+
+    def captured_stage(self, directory, host, stage, identity, *, local=False):
+        from controller.ci import run_stage
+
+        state = {**self.state(directory), "host": host}
+        output = directory / "evidence"
+        calls = []
+
+        def execute(command, environment, log, **kwargs):
+            calls.append((command, environment, log, kwargs))
+            if log.name == f"gradle-{stage}.log":
+                raise PortError("Declared command fixture failure; never a real JVM run")
+
+        with (
+            patch("controller.ci_environment.host_name", return_value=host),
+            patch("controller.ci.execution_identity", return_value=identity) as observe_identity,
+            patch("controller.ci.verify_wrapper"),
+            patch("controller.ci.shutil.which", return_value="fixture-pwsh"),
+            patch("controller.ci.execute", side_effect=execute),
+            patch.dict(os.environ, {"GH_TOKEN": "fixture-only", "GITHUB_TOKEN": "fixture-only",
+                                    "ANDROID_CI_OUTPUT": str(output)}),
+            self.assertRaises(PortError),
+        ):
+            run_stage(stage, state, output, local=local)
+        self.assertEqual(2, len(calls))
+        self.assertFalse((output / f"stage-{stage}.json").exists(), "A failed command cannot publish success")
+        if host == "windows":
+            wrapper_record = load_json(output / f"gradle-{stage}-invocation.json")
+            arguments = wrapper_record["arguments"]
+            self.assertIn("-InvocationFile", calls[1][0])
+            self.assertEqual(str(output / f"gradle-{stage}-invocation.json"), calls[1][0][-1])
+        else:
+            arguments = calls[1][0][3:]
+        for key in ("GH_TOKEN", "GITHUB_TOKEN", "ANDROID_CI_OUTPUT", "GITHUB_RUN_ID", "GITHUB_EVENT_PATH"):
+            self.assertNotIn(key, calls[1][1], "No credential or disallowed parent environment forwarding")
+        self.assertIn("--dependency-verification", arguments)
+        self.assertEqual("strict", arguments[arguments.index("--dependency-verification") + 1])
+        self.assertIn("--rerun-tasks", arguments)
+        self.assertIn("--max-workers=1", arguments)
+        return output, state, arguments, observe_identity.call_count
+
+    def test_meshcli_forwarding_uses_actual_arguments_and_bound_json_on_both_hosts(self):
+        identity = self.forwarding_identity()
+        for host in ("linux", "windows"):
+            for stage in ("verify", "protocol"):
+                with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
+                    output, state, arguments, calls = self.captured_stage(Path(temporary), host, stage, identity)
+                    self.assertEqual(1, calls)
+                    self.assertEqual({
+                        "schema_version": 1, "stage": stage, "identity": identity, "host": state["host"],
+                    }, load_json(output / "wp109-invocation.json"))
+                    self.assertIn("-PmeshCliEvidenceDirectory=" + str(output / "wp109"), arguments)
+                    self.assertIn("-PmeshCliInvocationFile=" + str(output / "wp109-invocation.json"), arguments)
+                    self.assertEqual(2, len([arg for arg in arguments if arg.startswith("-PmeshCli")]))
+
+    def test_meshcli_local_none_identity_is_explicit_and_keeps_existing_local_budgets(self):
+        for host in ("linux", "windows"):
+            with self.subTest(host=host), tempfile.TemporaryDirectory() as temporary:
+                output, _, arguments, _ = self.captured_stage(Path(temporary), host, "protocol", None, local=True)
+                value = load_json(output / "wp109-invocation.json")
+                self.assertIsNone(value["identity"])
+                self.assertEqual(host, value["host"])
+                self.assertIn("-PscaffoldTestHeap=256m", arguments)
+                self.assertTrue(any(arg.startswith("-PscaffoldTestJvmArgs=") for arg in arguments))
+
+    def test_meshcli_real_executor_identity_preserves_event_head_base_run_attempt_and_host(self):
+        from controller.ci import meshcli_evidence_options
+        from controller.ci_environment import write_json
+
+        identity = self.forwarding_identity()
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            event = directory / "event.json"
+            write_json(event, {"pull_request": {
+                "base": {"repo": {"full_name": "cbattlegear/MeshCoreOne-Android"},
+                         "sha": identity["binding"]["base_sha"]},
+                "head": {"sha": identity["binding"]["head_sha"]},
+            }})
+            with patch.dict(os.environ, {
+                "GITHUB_EVENT_PATH": str(event), "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "cbattlegear/MeshCoreOne-Android",
+                "GITHUB_RUN_ID": "123", "GITHUB_RUN_ATTEMPT": "2",
+            }):
+                options = meshcli_evidence_options("verify", self.state(directory), directory / "evidence")
+            value = load_json(directory / "evidence" / "wp109-invocation.json")
+            self.assertEqual(identity, value["identity"])
+            self.assertEqual(host_name(), value["host"])
+            self.assertEqual("verify", value["stage"])
+            self.assertEqual(2, len(options))
+
+    def test_meshcli_forwarding_does_not_touch_other_declared_stages(self):
+        for host in ("linux", "windows"):
+            for stage in ("prepare", "standalone", "assemble", "lint"):
+                with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
+                    output, _, arguments, calls = self.captured_stage(Path(temporary), host, stage, None)
+                    self.assertEqual(0, calls)
+                    self.assertFalse((output / "wp109-invocation.json").exists())
+                    self.assertFalse(any(arg.startswith("-PmeshCli") for arg in arguments))
+
+    def test_wp301_native_evidence_property_uses_actual_verify_arguments_only_on_both_hosts(self):
+        for host in ("linux", "windows"):
+            for stage in ("verify", "protocol", "prepare", "standalone", "assemble", "lint"):
+                with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
+                    output, _, arguments, _ = self.captured_stage(Path(temporary), host, stage, None)
+                    actual = [arg for arg in arguments if arg.startswith("-Pwp301EvidenceDirectory=")]
+                    expected = ["-Pwp301EvidenceDirectory=" + str(output / "wp301-native")] if stage == "verify" else []
+                    self.assertEqual(expected, actual)
+
+    def test_meshcli_unknown_malformed_or_stale_identity_blocks_before_any_jvm_command(self):
+        from controller.ci import run_stage
+
+        valid = self.forwarding_identity()
+        variants = [
+            {}, {**valid, "binding": {}}, {**valid, "run_id": True}, {**valid, "run_attempt": 0},
+            {**valid, "binding": {**valid["binding"], "head_sha": "2" * 40}},
+            {**valid, "binding": {**valid["binding"], "base_sha": "malformed"}},
+            {**valid, "binding": {**valid["binding"], "repository": "other/repository"}},
+        ]
+        for identity in variants:
+            with self.subTest(identity=identity), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                with (
+                    patch("controller.ci.execution_identity", return_value=identity),
+                    patch("controller.ci.verify_wrapper"),
+                    patch("controller.ci.execute") as execute,
+                    self.assertRaises(PortError),
+                ):
+                    run_stage("protocol", self.state(directory), directory / "evidence")
+                execute.assert_not_called()
+                self.assertFalse((directory / "evidence" / "wp109-invocation.json").exists())
+                self.assertFalse((directory / "evidence" / "stage-protocol.json").exists())
+
+    def test_meshcli_missing_malformed_or_zero_reports_never_publish_a_successful_stage(self):
+        from controller.ci import run_stage
+
+        for data in (None, b"<testsuite", b'<testsuite tests="0" failures="0" errors="0" skipped="0"/>'):
+            with self.subTest(data=data), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                reports = directory / "android" / "core" / "protocol" / "build" / "test-results" / "test"
+                reports.mkdir(parents=True)
+                if data is not None:
+                    (reports / "TEST-fixture.xml").write_bytes(data)
+                with (
+                    patch("controller.ci.REPO", directory),
+                    patch("controller.ci.execution_identity", return_value=None),
+                    patch("controller.ci.verify_wrapper"),
+                    patch("controller.ci.execute"),
+                    patch("controller.ci.shutil.which", return_value="fixture-pwsh"),
+                    self.assertRaises(PortError),
+                ):
+                    run_stage("protocol", self.state(directory), directory / "evidence")
+                self.assertFalse((directory / "evidence" / "stage-protocol.json").exists())
 
     def test_parent_allowlist_is_preserved_and_credentials_are_not_inherited(self):
         with tempfile.TemporaryDirectory() as temporary:

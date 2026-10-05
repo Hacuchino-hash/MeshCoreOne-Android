@@ -169,6 +169,7 @@ class StageReportTests(unittest.TestCase):
 
         with ExitStack() as mocks:
             mocks.enter_context(patch("controller.ci.REPO", repo))
+            mocks.enter_context(patch("controller.ci.execution_identity", return_value=None))
             mocks.enter_context(patch("controller.ci.platform.python_version", return_value="3.12.4"))
             mocks.enter_context(patch("controller.ci.toolchain_lock", return_value={"python": "3.12.4"}))
             mocks.enter_context(patch("controller.ci.verify_wrapper"))
