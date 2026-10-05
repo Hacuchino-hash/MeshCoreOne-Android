@@ -142,6 +142,18 @@ internal class RoomRepositoryContext(
         }
     }
 
+    internal suspend fun <T> restoreBackup(
+        afterCommit: () -> Unit,
+        block: suspend RepositoryTransaction.() -> T,
+    ): T = access("importBackupDatabase", writing = true) {
+        mutex.withLock {
+            ensureOpen()
+            flushRxLocked()
+            val transaction = RepositoryTransaction(database, clock, pendingRx)
+            committedTransaction(afterCommit, returnCommittedOnCancellation = true) { transaction.block() }
+        }
+    }
+
     suspend fun saveRx(row: RxLogEntryEntity) = access("saveRxLogEntry", writing = true) {
         mutex.withLock {
             ensureOpen()
@@ -255,7 +267,11 @@ internal class RoomRepositoryContext(
         }
     }
 
-    private suspend fun <T> committedTransaction(afterCommit: () -> Unit, block: suspend () -> T): T {
+    private suspend fun <T> committedTransaction(
+        afterCommit: () -> Unit,
+        returnCommittedOnCancellation: Boolean = false,
+        block: suspend () -> T,
+    ): T {
         if (database.inTransaction()) {
             invalidData("PersistenceStore owns its commit boundary; an external Room transaction must use its DAOs")
         }
@@ -286,7 +302,7 @@ internal class RoomRepositoryContext(
                 afterCommit()
                 result
             }
-            caller.ensureActive()
+            if (!returnCommittedOnCancellation) caller.ensureActive()
             return value
         } finally {
             listener.dispose()
