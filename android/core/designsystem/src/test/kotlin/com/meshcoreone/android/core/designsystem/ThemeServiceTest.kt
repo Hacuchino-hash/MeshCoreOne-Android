@@ -299,8 +299,9 @@ class ThemeServiceTest {
     }
     @Test fun parentCancellationProducesTerminalStateAndNoLiveChildJobs() = runBlocking<Unit> {
         harness { h, s ->
+            s.setCurrent(ThemeId.NORD)
             h.parent.cancelAndJoin()
-            assertIs<ThemeServiceState.Closed>(s.state.value)
+            assertEquals(ThemeId.NORD, assertIs<ThemeServiceState.Closed>(s.state.value).previous?.current?.id)
             assertFalse(h.parent.children.any())
             val failure = assertFailsWith<ThemeServiceFailure> { s.refreshFromPreferences() }
             assertEquals(ThemeProblem.OwnerClosed, failure.problem)

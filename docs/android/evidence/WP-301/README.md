@@ -47,8 +47,9 @@ were launched.
 | `python .\tools\android-port\portmap.py` | Passed on clean initial HEAD and after the new source/header work; headers are traceability, not parity. |
 | `python .\android\scaffold\sync_notices.py` | Passed on clean initial full HEAD; no shared notices regenerated. |
 | `python .\tools\android-port\theme_convert.py --write` | Passed; only declared owned outputs written from frozen Git inputs. |
-| `python .\tools\android-port\theme_convert.py --check --self-test` | Passed: **20 discovered/passed, zero failures/errors/skips**; ten themes, 44 named colors, 89 primary inputs, 12 exact recovery locales. |
+| `python .\tools\android-port\theme_convert.py --check --self-test` | Passed: **21 discovered/passed, zero failures/errors/skips**; ten themes, 44 named colors, 89 primary inputs, 12 exact recovery locales. |
 | `python .\docs\android\evidence\WP-301\collect_evidence.py --inventory --self-test` | Passed: **8 evidence-reader tests**, 58 source families, 55 mapped and three explicitly removed billing-only families; static inventory, not native execution. |
+| `python .\docs\android\evidence\WP-301\verify_packaging.py --normalize --self-test` | Passed: **4 notice-reader tests** and exact bytes/hashes of all four new frozen notices; APK inspection not yet run. |
 | `git --no-pager diff --check` | Passed after the inventory/reader repair. |
 
 The converter source map is
@@ -60,7 +61,8 @@ dispositions and all 20 primary production sources are accounted for.
 ## Native verification contract
 
 The module declares `verifyThemeConversion`, `verifyThemeTests`,
-`resolveThemeDependencies` and `inspectThemeConsumerGraphs`. Its real
+`verifyThemeNotices`, `verifyThemePackaging`, `resolveThemeDependencies` and
+`inspectThemeConsumerGraphs`. Its real
 `testDebugUnitTest`/case collector is attached to the existing root
 `verifyScaffoldTests`; the generic current-head module JUnit collector retains
 the complete suite on both hosted operating systems.

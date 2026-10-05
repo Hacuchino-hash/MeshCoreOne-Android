@@ -261,7 +261,8 @@ def main():
             originals, mapped, production, methods, inputs, parameters = static_inventory()
             result = {"result": "valid-static-inventory-not-execution", "original_families": len(originals),
                       "mapped_families": len(mapped), "removed_families": len(EXCLUSIONS), "native_methods": len(methods),
-                      "source_parameter_families": parameters, "primary_production_inputs": len(production)}
+                      "source_parameter_families": parameters, "primary_production_inputs": 20,
+                      "all_production_source_links": len(production)}
         else:
             result = collect(args.junit)
         print(json.dumps(result, sort_keys=True))

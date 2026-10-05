@@ -124,7 +124,9 @@ def component(value, location):
 
 def parse_color_asset(data, location):
     asset = unique_json(data, location)
-    if set(asset) - {"colors", "info"} or asset.get("info", {}).get("version") != 1:
+    info = asset.get("info")
+    if (set(asset) - {"colors", "info"} or not isinstance(info, dict) or
+            set(info) != {"author", "version"} or info.get("version") != 1 or info.get("author") != "xcode"):
         fail(location, "unsupported color asset structure")
     colors = asset.get("colors")
     if not isinstance(colors, list) or not colors:
@@ -134,7 +136,10 @@ def parse_color_asset(data, location):
         if not isinstance(entry, dict) or set(entry) - {"idiom", "color", "appearances"} or entry.get("idiom") != "universal":
             fail(location, "unsupported color idiom/entry")
         appearance = {}
-        for item in entry.get("appearances", []):
+        appearances = entry.get("appearances", [])
+        if not isinstance(appearances, list):
+            fail(location, "appearances must be an array")
+        for item in appearances:
             if not isinstance(item, dict) or set(item) != {"appearance", "value"}:
                 fail(location, "malformed appearance")
             key, value = item["appearance"], item["value"]
@@ -225,7 +230,7 @@ def parse_themes(text, products, default_id):
             "category_hues": [float(categories[n]) for n in (1, 2, 3)] if categories else None,
             "category_override": [int(overrides[n], 16) for n in (1, 2, 3)] if overrides else None,
         })
-    if [theme["id"] for theme in result if theme["preferred_scheme"] is not None] != ["ember"]:
+    if [(theme["id"], theme["preferred_scheme"]) for theme in result if theme["preferred_scheme"] is not None] != [("ember", "dark")]:
         fail(THEME_SOURCE, "forced-scheme rules changed")
     return result
 

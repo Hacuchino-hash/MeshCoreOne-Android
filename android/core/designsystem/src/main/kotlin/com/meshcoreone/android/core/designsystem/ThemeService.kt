@@ -80,7 +80,14 @@ class ThemeService private constructor(
     init {
         lifetime.invokeOnCompletion {
             closed.set(true)
-            mutableState.value = ThemeServiceState.Closed(previous)
+            val current = mutableState.value
+            val finalSelection = when (current) {
+                is ThemeServiceState.Ready -> current.selection
+                is ThemeServiceState.Failed -> current.previous
+                is ThemeServiceState.Closed -> current.previous
+                ThemeServiceState.Loading -> null
+            }
+            mutableState.value = ThemeServiceState.Closed(finalSelection)
         }
     }
 

@@ -105,6 +105,16 @@ class ConverterTest(unittest.TestCase):
             with self.subTest(raw=raw), self.assertRaises(converter.ThemeConversionError):
                 converter.parse_color_asset(raw, "test")
 
+    def test_malformed_info_and_appearance_types_are_typed_failures(self):
+        for info in (None, [], {"version": 1}, {"author": "other", "version": 1}):
+            with self.subTest(info=info), self.assertRaises(converter.ThemeConversionError):
+                converter.parse_color_asset(json.dumps({"info": info, "colors": [color()]}).encode(), "test")
+        for appearances in (None, "dark", {}):
+            value = color()
+            value["appearances"] = appearances
+            with self.subTest(appearances=appearances), self.assertRaises(converter.ThemeConversionError):
+                self.parse([value])
+
     def test_frozen_theme_catalog_and_registry_order_are_independent(self):
         source = converter.blob(converter.THEME_SOURCE).decode()
         products = {name: "io.pocketmesh.app.theme." + name for name in converter.IDS[1:]}
@@ -119,7 +129,8 @@ class ConverterTest(unittest.TestCase):
         source = converter.blob(converter.THEME_SOURCE).decode()
         products = {name: name for name in converter.IDS[1:]}
         for text in (source.replace('static let fern = Theme(', 'static let fern2 = Theme('),
-                     source.replace('preferredColorScheme: .dark', 'preferredColorScheme: .bright')):
+                     source.replace('preferredColorScheme: .dark', 'preferredColorScheme: .bright'),
+                     source.replace('preferredColorScheme: .dark', 'preferredColorScheme: .light')):
             with self.subTest(text=text[:30]), self.assertRaises(converter.ThemeConversionError):
                 converter.parse_themes(text, products, "default")
 

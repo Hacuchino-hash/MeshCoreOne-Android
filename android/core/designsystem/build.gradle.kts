@@ -30,6 +30,7 @@ val repository = rootProject.projectDir.parentFile
 val converter = repository.resolve("tools").resolve("android-port").resolve("theme_convert.py")
 val evidenceCollector = repository.resolve("docs").resolve("android").resolve("evidence")
     .resolve("WP-301").resolve("collect_evidence.py")
+val packagingInspector = evidenceCollector.parentFile.resolve("verify_packaging.py")
 
 val themePlatformSdk37 = configurations.create("themePlatformSdk37") {
     isCanBeConsumed = false
@@ -64,6 +65,13 @@ val verifyThemeConversion by tasks.registering(Exec::class) {
     commandLine("python", converter.absolutePath, "--check", "--self-test")
 }
 tasks.named("preBuild") { dependsOn(verifyThemeConversion) }
+val verifyThemeNotices by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Preserve exact frozen GPL/MIT bytes; normalize only byte-equivalent owned Windows notices."
+    workingDir(repository)
+    commandLine("python", packagingInspector.absolutePath, "--normalize", "--self-test")
+}
+tasks.named("preBuild") { dependsOn(verifyThemeNotices) }
 
 val verifyThemeTests by tasks.registering(Exec::class) {
     group = "verification"
@@ -75,6 +83,16 @@ val verifyThemeTests by tasks.registering(Exec::class) {
 }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyThemeTests) }
 tasks.named("check") { dependsOn(verifyThemeTests) }
+val verifyThemePackaging by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Inspect actual debug APK identity, exact theme notices/source map and test-fixture absence."
+    dependsOn(":app:assembleDebug")
+    workingDir(repository)
+    commandLine("python", packagingInspector.absolutePath, "--self-test", "--apk",
+        rootProject.project(":app").layout.buildDirectory.file("outputs/apk/debug/app-debug.apk").get().asFile.absolutePath)
+}
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyThemePackaging) }
+tasks.named("check") { dependsOn(verifyThemePackaging) }
 
 val resolveThemeDependencies by tasks.registering {
     group = "verification"
