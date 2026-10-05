@@ -219,6 +219,18 @@ class ConnectionManager(
     override suspend fun connect(target: ConnectionTarget) = connect(target, forceFullSync = false, forceReconnect = false)
 
     suspend fun connect(target: ConnectionTarget, forceFullSync: Boolean, forceReconnect: Boolean) {
+        // Swift connect(to:): while connected to a different radio, route through switchDevice, which forces a
+        // full sync, refills the preserve budget and reports a failed switch as a connection loss.
+        val requested = (target as? ConnectionTarget.Bluetooth)?.deviceId
+        val current = connectedDevice?.id
+        if (requested != null && current != null && requested != current && connectionState.isOperational) {
+            switchDevice(target)
+            return
+        }
+        connectAttempt(target, forceFullSync, forceReconnect)
+    }
+
+    private suspend fun connectAttempt(target: ConnectionTarget, forceFullSync: Boolean, forceReconnect: Boolean) {
         currentCoroutineContext().ensureActive()
         val initiatingJob = currentCoroutineContext()[Job]
         val reentrant = currentCoroutineContext()[RuntimeOperation]?.owner === operationIdentity
@@ -862,7 +874,16 @@ class ConnectionManager(
 
     suspend fun switchDevice(target: ConnectionTarget) {
         synchronized(lock) { cleanSync = null; attemptedSync = null }
-        connect(target, forceFullSync = true, forceReconnect = false)
+        try {
+            connectAttempt(target, forceFullSync = true, forceReconnect = false)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            // Swift's switchDevice catch: the old radio's services are already gone, so observers would stay on its
+            // connected state unless the failed switch is reported through the same loss callback.
+            observer.onConnectionLost()
+            throw failure
+        }
         if (connectionState.isOperational) resetPreserveBudgetAfterDeviceSwitch()
     }
 
