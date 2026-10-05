@@ -89,6 +89,8 @@ interface BlockedChannelSenderDao : RowWriter<BlockedChannelSenderEntity> {
     suspend fun forRadio(radioId: UUID): List<BlockedChannelSenderEntity>
     @Query("SELECT * FROM blocked_channel_senders WHERE radioId = :radioId AND name = :name")
     suspend fun forName(radioId: UUID, name: String): List<BlockedChannelSenderEntity>
+    @Query("DELETE FROM blocked_channel_senders WHERE radioId = :radioId AND id = :id")
+    suspend fun delete(radioId: UUID, id: UUID): Int
     @Query("DELETE FROM blocked_channel_senders WHERE radioId = :radioId AND name = :name") suspend fun deleteName(radioId: UUID, name: String): Int
     @Query("DELETE FROM blocked_channel_senders WHERE radioId = :radioId") suspend fun clearRadio(radioId: UUID): Int
 }

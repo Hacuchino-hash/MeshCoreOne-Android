@@ -1,0 +1,56 @@
+// PortedFrom: MC1Services/Tests/MC1ServicesTests/IdentityReconciliationIntegrationTests.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.data.repository
+
+import com.meshcoreone.android.core.model.RadioId
+import java.util.UUID
+import kotlin.test.*
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
+
+class IdentityReconciliationPersistenceTest : RepositoryTest() {
+    @Test @OriginalCase("IdentityReconciliationIntegrationTests::Remove + erase/flash + re-pair + import config re-links orphaned children()")
+    fun publicKeyReconciliationReattachesTheOriginalRadioPartition() = runTest {
+        val original = device().copy(publicKey = key(0x11), isActive = true)
+        store.saveDevice(original)
+        store.saveContact(RADIO_A, frame(0x22, "Bob"))
+        store.demoteDeviceToGhost(original.id)
+        val ghost = assertNotNull(store.fetchDevice(original.publicKey))
+        val paired = device(RADIO_B).copy(publicKey = key(0x33), isActive = true)
+        store.saveDevice(paired)
+        assertTrue(store.fetchContacts(RADIO_B).isEmpty())
+        assertEquals(1, store.fetchContacts(RADIO_A).size)
+        assertEquals(RADIO_A, store.reconcileGhostIdentity(paired.id, original.publicKey))
+        val updated = assertNotNull(store.fetchDevice(paired.id))
+        assertEquals(RADIO_A, updated.radioId)
+        assertEquals(original.publicKey, updated.publicKey)
+        assertNull(store.fetchDevice(original.id))
+        assertNull(store.fetchDevice(ghost.id))
+        assertEquals(listOf("Bob"), store.fetchContacts(RADIO_A).map { it.name })
+    }
+
+    @Test @OriginalCase("IdentityReconciliationIntegrationTests::No reconciliation when radio's publicKey didn't change after re-pair()")
+    fun currentDeviceWithoutAGhostKeepsItsRadioID() = runTest {
+        val current = device().copy(isActive = true)
+        store.saveDevice(current)
+        assertNull(store.reconcileGhostIdentity(current.id, current.publicKey))
+        val unchanged = assertNotNull(store.fetchDevice(current.id))
+        assertEquals(current.radioId, unchanged.radioId)
+        assertEquals(current.publicKey, unchanged.publicKey)
+    }
+
+    @Test @OriginalCase("IdentityReconciliationIntegrationTests::Reconciliation does not migrate post-pair child rows to the reconciled radioID()")
+    fun reconciliationDoesNotInventAMigrationForTemporaryChildRows() = runTest {
+        val original = device().copy(publicKey = key(0x11), isActive = true)
+        store.saveDevice(original)
+        store.demoteDeviceToGhost(original.id)
+        val temporary = RadioId(UUID.randomUUID())
+        val paired = device(temporary).copy(publicKey = key(0x22), isActive = true)
+        store.saveDevice(paired)
+        store.saveContact(temporary, frame(0x33, "PostPair"))
+        assertEquals(RADIO_A, store.reconcileGhostIdentity(paired.id, original.publicKey))
+        assertEquals(listOf("PostPair"), store.fetchContacts(temporary).map { it.name })
+        assertTrue(store.fetchContacts(RADIO_A).isEmpty())
+        assertEquals(RADIO_A, assertNotNull(store.fetchDevice(paired.id)).radioId)
+        assertEquals(original.publicKey, assertNotNull(store.fetchDevice(paired.id)).publicKey)
+    }
+}

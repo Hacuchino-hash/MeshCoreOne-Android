@@ -68,6 +68,7 @@ class ValueConverters {
     }
 
     fun doublesToBlob(values: SnapshotList<Double>): Bytes = decode("trace hops") {
+        if (values.any { !it.isFinite() }) throw DatabaseValueException("trace hops", "Non-finite element")
         Bytes.utf8(JSONArray(values.toList()).toString())
     }
     fun blobToDoubles(value: Bytes): SnapshotList<Double> = decode("trace hops") {
