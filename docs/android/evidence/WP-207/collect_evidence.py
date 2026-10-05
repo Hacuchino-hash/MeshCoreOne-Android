@@ -24,6 +24,37 @@ def git(*args):
     return subprocess.check_output(["git", "-C", str(ROOT), *args]).decode().strip()
 
 
+def read_junit(directory, record_root=ROOT):
+    require(directory.resolve().is_relative_to(record_root.resolve()), "JUnit input escapes its declared root")
+    files = sorted(directory.glob("TEST-*.xml"))
+    require(files, "Missing full JVM runtime JUnit")
+    native = {}
+    reports = []
+    for path in files:
+        require(path.is_file() and not path.is_symlink(), "Linked/non-file JUnit is not evidence")
+        raw = path.read_bytes()
+        require(len(raw) <= 16 * 1_048_576 and b"<!DOCTYPE" not in raw and b"<!ENTITY" not in raw, "Unsafe/oversized JUnit input")
+        root = ET.fromstring(raw)
+        nodes = root.findall("testcase")
+        require(root.tag == "testsuite" and nodes, "Malformed/zero runtime JUnit")
+        require(int(root.get("tests", "-1")) == len(nodes), "JUnit discovered/testcase mismatch")
+        for field in ("failures", "errors", "skipped"):
+            require(int(root.get(field, "-1")) == 0, "Failed/skipped full runtime suite")
+        for node in nodes:
+            require(not any(node.find(field) is not None for field in ("failure", "error", "skipped")),
+                    "Failed/skipped testcase hidden by aggregate")
+            name = node.get("name", "")
+            class_name = node.get("classname", "")
+            require(name and class_name.startswith("com.meshcoreone.android.core.runtime.") and name not in native,
+                    "Missing/duplicate/foreign testcase identity")
+            native[name] = class_name
+        reports.append({
+            "path": path.relative_to(record_root).as_posix(),
+            "sha256": hashlib.sha256(raw).hexdigest(), "size_bytes": len(raw), "discovered": len(nodes),
+        })
+    return native, reports
+
+
 def collect():
     manifest = json.loads((ROOT / "docs/android/port-manifest.json").read_text(encoding="utf-8"))
     semantic = hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
@@ -61,29 +92,7 @@ def collect():
     require(set(declarations) == set(source_cases), "Missing/extra original families: " +
             repr(sorted(set(source_cases) - set(declarations))) + " / " +
             repr(sorted(set(declarations) - set(source_cases))))
-    files = sorted((MODULE / "build/test-results/test").glob("TEST-*.xml"))
-    require(files, "Missing full JVM runtime JUnit")
-    native = {}
-    reports = []
-    for path in files:
-        raw = path.read_bytes()
-        require(b"<!DOCTYPE" not in raw and b"<!ENTITY" not in raw, "Unsafe JUnit input")
-        root = ET.fromstring(raw)
-        nodes = root.findall("testcase")
-        require(root.tag == "testsuite" and nodes, "Malformed/zero runtime JUnit")
-        require(int(root.get("tests", "-1")) == len(nodes), "JUnit discovered/testcase mismatch")
-        for field in ("failures", "errors", "skipped"):
-            require(int(root.get(field, "-1")) == 0, "Failed/skipped full runtime suite")
-        for node in nodes:
-            require(not any(node.find(field) is not None for field in ("failure", "error", "skipped")),
-                    "Failed/skipped testcase hidden by aggregate")
-            name = node.get("name", "")
-            require(name and name not in native, "Missing/duplicate testcase identity")
-            native[name] = node.get("classname")
-        reports.append({
-            "path": path.relative_to(ROOT).as_posix(),
-            "sha256": hashlib.sha256(raw).hexdigest(), "size_bytes": len(raw), "discovered": len(nodes),
-        })
+    native, reports = read_junit(MODULE / "build/test-results/test")
     for identity in source_cases:
         matches = [name for name in native if name == identity or name.startswith(identity + " ")]
         require(len(matches) == 1, "Original family did not actually execute exactly once: " + identity)

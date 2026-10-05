@@ -107,6 +107,7 @@ internal class TestRadio : MeshTransport {
     var closeFailure: Exception? = null
     var beforeSend: suspend (Bytes) -> Unit = {}
     var beforeConnect: suspend () -> Unit = {}
+    var beforeClose: suspend () -> Unit = {}
     val frames = mutableListOf<Bytes>()
     override suspend fun connect() {
         beforeConnect()
@@ -114,6 +115,7 @@ internal class TestRadio : MeshTransport {
         if (!connected) { inbound = Channel(Channel.UNLIMITED); connects++; connected = true }
     }
     override suspend fun disconnect() {
+        beforeClose()
         if (connected) { closes++; connected = false; inbound.close() }
         closeFailure?.let { throw it }
     }
@@ -167,8 +169,9 @@ internal class TestPlatform : ConnectionPlatform {
     var adoptionSucceeds = false
     var onState: suspend () -> Unit = {}
     var activationCount = 0
+    var activationFailure: Exception? = null
     val foregroundCalls = mutableListOf<Boolean>()
-    override suspend fun activate() { activationCount++ }
+    override suspend fun activate() { activationCount++; activationFailure?.let { throw it } }
     override suspend fun foreground(active: Boolean) { foregroundCalls += active }
     override suspend fun state(target: ConnectionTarget): PlatformLinkState { onState(); return state }
     override suspend fun isRegistered(deviceId: UUID): Boolean = registered
@@ -184,6 +187,7 @@ internal class TestLink(val radio: TestRadio, override val type: TransportType) 
     var registrations = 0
     var live: SessionToken? = null
     var bondRefreshAllowed = true
+    var beforeBondRefresh: suspend () -> Unit = {}
     val clearedBonds = mutableListOf<UUID>()
     var configured = false
     override fun register(callbacks: LinkCallbacks): AutoCloseable {
@@ -196,7 +200,7 @@ internal class TestLink(val radio: TestRadio, override val type: TransportType) 
     override suspend fun setSessionLive(token: SessionToken?) { live = token }
     override suspend fun recordBondVerification(deviceId: UUID, at: Instant) { check(live == null) }
     override suspend fun clearBondVerification(deviceId: UUID) { clearedBonds += deviceId; bondRefreshAllowed = false }
-    override suspend fun mayRefreshBond(deviceId: UUID): Boolean = bondRefreshAllowed && live != null
+    override suspend fun mayRefreshBond(deviceId: UUID): Boolean { beforeBondRefresh(); return bondRefreshAllowed && live != null }
 }
 
 internal class TestServices(val inputs: RuntimeServiceInputs) : RuntimeServices {

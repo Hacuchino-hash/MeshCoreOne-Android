@@ -83,6 +83,7 @@ class ConnectionManager(
     private val operations = Mutex()
     private val operationIdentity = Any()
     private val activation = Mutex()
+    private val bondPersistence = Mutex()
     private val transitions = EventBroadcaster<ConnectionSnapshot>()
     private val values = MutableStateFlow(ConnectionSnapshot(
         DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null,
@@ -158,7 +159,9 @@ class ConnectionManager(
         // Native v1 already has stable IDs and sort dates: do not run Apple's destructive backfills.
         rooms.resetAllRemoteNodeSessionConnections()
         setIntent(lastConnection.restoredIntent())
-        platform.activate()
+        try { platform.activate() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { reportIssue(failure, LifecycleStage.CONNECT) }
         activated = true
         if (connectionIntent == ConnectionIntent.UserDisconnected) return@withLock
         val last = lastConnection.read()
@@ -708,7 +711,8 @@ class ConnectionManager(
         val owner = synchronized(lock) { bondPersistEpoch++; active ?: retained }
         owner?.link?.clearBondVerification(deviceId)
         if (owner?.device?.id == deviceId) owner.link?.setSessionLive(null)
-        if (lastConnection.clear(deviceId)) observer.onLastDeviceCleared()
+        val holderCleared = bondPersistence.withLock { lastConnection.clear(deviceId) }
+        if (holderCleared) observer.onLastDeviceCleared()
     }
 
     suspend fun close(): TeardownReport {
@@ -794,8 +798,15 @@ class ConnectionManager(
                         if (owner.ownsPhysical) owner.session?.stop(true)
                     } catch (failure: Exception) { issues += TeardownIssue(LifecycleStage.CLOSE_TRANSPORT, failure) }
                     finally {
-                        owner.link?.let { if (owner.ownsPhysical) PhysicalOwnership.release(it.transport, owner.physicalOwner) }
-                        owner.ownsPhysical = false
+                        val link = owner.link
+                        if (link != null && owner.ownsPhysical) {
+                            try {
+                                if (!link.transport.isConnected()) {
+                                    PhysicalOwnership.release(link.transport, owner.physicalOwner)
+                                    owner.ownsPhysical = false
+                                } else issues += TeardownIssue(LifecycleStage.CLOSE_TRANSPORT, ConnectionError.RetainedPhysicalLink())
+                            } catch (failure: Exception) { issues += TeardownIssue(LifecycleStage.CLOSE_TRANSPORT, failure) }
+                        }
                     }
                     TeardownReport(issues.snapshot())
                 }.also { owner.physicalClosed = it; it.start() }
@@ -959,7 +970,9 @@ class ConnectionManager(
         val epoch = synchronized(lock) { bondPersistEpoch }
         val id = owner.device?.id ?: return
         if (owner.link?.mayRefreshBond(id) != true) return
-        if (synchronized(lock) { epoch == bondPersistEpoch } && isCurrent(owner)) lastConnection.persistBondVerification(id)
+        bondPersistence.withLock {
+            if (synchronized(lock) { epoch == bondPersistEpoch } && isCurrent(owner)) lastConnection.persistBondVerification(id)
+        }
     }
     private fun surfaceAuthenticationFailure(id: UUID) {
         val fire = synchronized(lock) { if (authFailureDevice == id) false else { authFailureDevice = id; true } }

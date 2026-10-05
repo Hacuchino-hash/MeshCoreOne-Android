@@ -54,5 +54,24 @@ val verifyConnectionRuntimeTests by tasks.registering(Exec::class) {
         .resolve("WP-207").resolve("collect_evidence.py").absolutePath)
 }
 
+val verifyRuntimeNativeIntegrationTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require actual new runtime consumer cases and full unchanged native repository/preference suites."
+    dependsOn(":core:data:testDebugUnitTest", ":core:datastore:testDebugUnitTest")
+    workingDir(repository)
+    commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
+        .resolve("WP-207").resolve("collect_native_evidence.py").absolutePath)
+}
+
+val verifyRuntimeEvidenceReaders by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Run positive and adversarial runtime raw-evidence reader cases."
+    workingDir(repository)
+    commandLine("python", "-B", "-m", "unittest", "discover", "-s",
+        repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-207").absolutePath,
+        "-p", "test_collect_evidence.py", "-v")
+}
+
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyConnectionRuntimeTests) }
-tasks.named("check") { dependsOn(verifyConnectionRuntimeTests) }
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyRuntimeNativeIntegrationTests, verifyRuntimeEvidenceReaders) }
+tasks.named("check") { dependsOn(verifyConnectionRuntimeTests, verifyRuntimeNativeIntegrationTests, verifyRuntimeEvidenceReaders) }

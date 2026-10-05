@@ -50,10 +50,14 @@ the required current-head whole-root proof.
 | --- | --- |
 | `python -B tools\android-port\controller\validate.py` | Passed; exact 65/185/eight gates/source/semantic pins |
 | `python -B -m unittest discover -s android\core\runtime\verification -p test_dependency_proposal.py -v` | 8 discovered/passed, zero failures/skips |
+| Updated proposal reader after actual hosted default-namespace failure | 10 discovered/passed, zero failures/skips |
+| `python -B -m unittest discover -s docs\android\evidence\WP-207 -p test_collect_evidence.py -v` | 8 discovered/passed, zero failures/skips |
 | Gated `:core:runtime:resolveRuntimeDependencies :core:runtime:compileTestKotlin --write-locks --dependency-verification strict` | Initial compile found a wrong `FrequencyRange` import; corrected |
 | Gated `:core:runtime:test` selecting values/policy/utilities/coordinator | 105 discovered, 103 passed, two native original-error-identity failures; implementation corrected, assertions retained |
 | Gated corrected source-core run | Found a misplaced deadline-racer return; corrected |
 | Gated full `:core:runtime:resolveRuntimeDependencies :core:runtime:test --write-locks` | BLOCKED before JVM execution by capacity guard; free virtual 663,672 KiB, below required 2,097,152 KiB |
+| Hosted auxiliary proposal, run `37327134397` attempt 1 at `b5761fa37e9eda8b420b3ad597e7c996adada788` | Failed closed on a default-namespace metadata-reader bug; fixed without changing shared XML or versions |
+| Hosted Linux root proof, run `37327134377` attempt 1 at that head | Failed closed on absent runtime module lock; official artifact `11353320137` SHA-256 verified before reading its log |
 
 The last two fixes and complete manager/native suites have **not yet passed**.
 Zero/missing/failed/skipped test evidence is not acceptance. The module-local
@@ -66,6 +70,12 @@ into the existing root `verifyScaffoldTests` without editing root/build logic.
 The generic CI module collector retains runtime's complete current input blobs
 and raw JUnit. No invented Gradle task or source credit from prerequisite
 protocol/data/store/BLE suites is used.
+
+`verifyRuntimeNativeIntegrationTests` awaits the actual full data/store unit tasks
+and checks all nine new runtime consumers plus the unchanged prior module floors.
+`verifyRuntimeEvidenceReaders` runs positive/malformed/zero/skip/identity adversaries.
+These new tasks are declared in the owned module before invocation. Both join
+existing root verification; they do not manufacture Android/Room evidence.
 
 ## Assertion and adaptation boundaries
 

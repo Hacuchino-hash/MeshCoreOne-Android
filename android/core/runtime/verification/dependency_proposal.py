@@ -33,6 +33,7 @@ NEW_COORDINATES = {
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.10.2",
 }
 TEST_CONFIGURATIONS = {"testCompileClasspath", "testRuntimeClasspath"}
+VERIFICATION_NS = {"v": "https://schema.gradle.org/dependency-verification"}
 
 
 def require(condition, message):
@@ -72,10 +73,19 @@ def validate_delta(before_text, after_text, verification):
         require(configurations == after[coordinate], "Changed admitted coordinate/configurations: " + coordinate)
     new = set(after) - set(before)
     require(new.issubset(NEW_COORDINATES), "Unapproved new dependency/version")
+    metadata = ET.fromstring(verification)
+    require(metadata.tag == "{https://schema.gradle.org/dependency-verification}verification-metadata",
+            "Unknown Gradle verification metadata namespace")
+    require(metadata.findtext("v:configuration/v:verify-metadata", namespaces=VERIFICATION_NS) == "true",
+            "Artifact metadata verification must stay enabled")
     admitted = set()
-    for component in ET.fromstring(verification).findall("./components/component"):
+    for component in metadata.findall("v:components/v:component", VERIFICATION_NS):
         coordinates = f"{component.get('group')}:{component.get('name')}:{component.get('version')}"
-        if component.findall("./artifact/sha256"):
+        checksums = component.findall("v:artifact/v:sha256", VERIFICATION_NS)
+        require(all(re.fullmatch(r"[0-9a-f]{64}", item.get("value", "")) for item in checksums),
+                "Malformed artifact checksum")
+        if checksums:
+            require(coordinates not in admitted, "Duplicate admitted metadata coordinate")
             admitted.add(coordinates)
     require(new.issubset(admitted), "New coordinate is not already checksum admitted")
     for coordinate in new:

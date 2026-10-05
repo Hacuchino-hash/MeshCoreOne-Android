@@ -1,6 +1,7 @@
 """AndroidOnly: WP-207 Adversarial owned dependency generation DATA boundaries."""
 
 import copy
+from pathlib import Path
 import unittest
 
 from dependency_proposal import (
@@ -10,7 +11,7 @@ from controller.errors import PortError
 
 OLD = "org.jetbrains.kotlin:kotlin-stdlib:2.3.20=compileClasspath,testCompileClasspath\nempty=annotationProcessor\n"
 NEW = OLD + "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2=testCompileClasspath,testRuntimeClasspath\n"
-METADATA = b'<verification-metadata><components><component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-test" version="1.10.2"><artifact name="test.pom"><sha256 value="' + b"a" * 64 + b'"/></artifact></component></components></verification-metadata>'
+METADATA = b'<verification-metadata xmlns="https://schema.gradle.org/dependency-verification"><configuration><verify-metadata>true</verify-metadata></configuration><components><component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-test" version="1.10.2"><artifact name="test.pom"><sha256 value="' + b"a" * 64 + b'"/></artifact></component></components></verification-metadata>'
 
 
 class DependencyProposalTests(unittest.TestCase):
@@ -50,6 +51,19 @@ class DependencyProposalTests(unittest.TestCase):
             validate_delta(OLD, NEW.replace(OLD.splitlines()[0] + "\n", ""), METADATA)
         with self.assertRaises(PortError):
             validate_delta(OLD, NEW, b"<verification-metadata><components/></verification-metadata>")
+
+    def test_actual_gradle_default_namespace_pins_the_vetted_test_coordinate(self):
+        metadata = (Path(__file__).resolve().parents[3] / "gradle" / "verification-metadata.xml").read_bytes()
+        self.assertEqual(1, len(validate_delta(OLD, NEW, metadata)))
+
+    def test_wrong_namespace_disabled_and_malformed_metadata_fail(self):
+        for value in (
+            METADATA.replace(b"https://schema.gradle.org/dependency-verification", b"unknown"),
+            METADATA.replace(b"<verify-metadata>true", b"<verify-metadata>false"),
+            METADATA.replace(b"a" * 64, b"not-a-checksum"),
+        ):
+            with self.subTest(value=value), self.assertRaises(PortError):
+                validate_delta(OLD, NEW, value)
 
     def test_exact_normal_pr_identity(self):
         event, environment = self.identity()

@@ -289,5 +289,69 @@ class RuntimeOwnershipTest {
                 assertTrue(radios.isEmpty()); assertEquals(ConnectionIntent.None, manager.connectionIntent)
             }
         },
+        nativeCase("services-available callback can synchronously disconnect without a non-reentrant operation deadlock") {
+            withFixture {
+                onAvailable = { manager.disconnect() }
+                assertFailsWith<CancellationException> { manager.connect(platform.target) }
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+                assertEquals(1, radios.single().closes); assertEquals(1, services.single().teardowns)
+                assertEquals(ConnectionIntent.UserDisconnected, last.restoredIntent())
+            }
+        },
+        nativeCase("services-available callback can replace its own generation before stale ready promotion") {
+            withFixture {
+                val replacement = target()
+                var replaced = false
+                onAvailable = {
+                    if (!replaced) { replaced = true; manager.connect(replacement) }
+                }
+                assertFailsWith<CancellationException> { manager.connect(platform.target) }
+                assertEquals(replacement.deviceId, manager.connectedDevice?.id)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(1, radios.first().closes); assertEquals(0, radios.last().closes)
+                assertEquals(0, services.first().monitoringStarts); assertEquals(1, services.last().monitoringStarts)
+            }
+        },
+        nativeCase("forget during suspended bond-refresh query cannot resurrect the persisted shield") {
+            withFixture {
+                connect()
+                val link = links.single()
+                val gate = CompletableDeferred<Unit>(); link.beforeBondRefresh = { gate.await() }
+                link.callbacks!!.onBondRefreshed(); runCurrent()
+                manager.clearPersistedConnection(platform.target.deviceId)
+                gate.complete(Unit); runCurrent()
+                assertNull(last.bondVerificationDate(platform.target.deviceId))
+                assertNull(last.read().deviceId); assertEquals(listOf(platform.target.deviceId), link.clearedBonds)
+            }
+        },
+        nativeCase("uncertain physical close never releases its lease to a competing runtime") {
+            val shared = TestRadio(); val a = RuntimeFixture(this); val b = RuntimeFixture(this)
+            a.createRadio = { shared }; b.createRadio = { shared }
+            try {
+                a.connect(); shared.beforeClose = { throw IllegalStateException("close did not reach driver") }
+                val report = a.manager.disconnect()
+                assertFalse(report.isComplete); assertTrue(shared.isConnected())
+                assertFailsWith<ConnectionError.ForeignPhysicalOwner> { b.manager.connect(b.platform.target) }
+                assertEquals(0, shared.closes)
+            } finally {
+                shared.beforeClose = {}
+                shared.disconnect()
+                b.close(); a.close()
+            }
+        },
+        nativeCase("optional BLE activation failure does not block the persisted WiFi connection") {
+            withFixture {
+                val id = UUID.randomUUID(); val radio = RadioId(UUID.randomUUID())
+                devices.rows[id] = DeviceDTO(id = id, radioId = radio, publicKey = publicKey, nodeName = "WiFi",
+                    connectionMethods = listOf(ConnectionMethod.WiFi("localhost", 5000u)).snapshot())
+                last.persist(id, radio, "WiFi")
+                platform.activationFailure = ConnectionError.UnsupportedCapability("companion association")
+                manager.activate()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(TransportType.WIFI, links.single().type)
+                assertTrue(diagnostics.filterIsInstance<RuntimeDiagnostic.Failure>().any { it.cause === platform.activationFailure })
+                assertEquals(1, resetCount)
+            }
+        },
     )
 }
