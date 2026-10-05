@@ -345,6 +345,7 @@ def required_inputs(entries, manifest):
         "docs/android/test-cases.json", "docs/android/port-manifest.json", "docs/android/automation-policy.json",
         "docs/android/evidence/WP-004/inventory-details.json", "docs/android/evidence/WP-109/baseline-native.json",
         "android/core/testing/fixtures/protocol-vectors.tsv", "android/core/testing/fixtures/protocol-vectors.json",
+        "tools/android-port/tests/test_ci_environment.py", "tools/android-port/tests/test_workflows.py",
         "LICENSE",
         *("android/app/src/main/assets/licenses/" + name
           for name in ("GPL-3.0.txt", "MeshCore-MIT.txt", "BouncyCastle-MIT.txt", "Apache-2.0.txt")),

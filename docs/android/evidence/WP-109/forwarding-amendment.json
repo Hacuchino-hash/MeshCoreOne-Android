@@ -42,5 +42,24 @@
   ],
   "local_jvm_slot_granted": false,
   "physical_radio_execution_authorized": false,
-  "stdout_archive_fallback_implemented": false
+  "stdout_archive_fallback_implemented": false,
+  "additional_fixture_only_amendment": {
+    "state": "ACTIVE",
+    "authority": "Coordinator independently read test_workflows.py lines145-215 and authorized the exact existing fake-repository fixture isolation",
+    "path": "tools/android-port/tests/test_workflows.py",
+    "verified_original_blob": "330e461c7ea0a1af03681f1911b52a65fd7b260d",
+    "allowed_region": "StageReportTests.execute_stage ExitStack only",
+    "change": "Add patch(controller.ci.execution_identity, return_value=None)",
+    "production_identity_refusal_unchanged": true
+  },
+  "authorized_base_reconciliation": {
+    "initial_identity_and_receipt_history_unchanged": true,
+    "actual_new_main": "e303e8795ab4e7cc45e02d791e6a2829085c2288",
+    "verified_parents": [
+      "3da3a73b8481c49d035486924a813b331bf184d0",
+      "314aa2587b31ca03dcf7681e552132eaed665000"
+    ],
+    "own_remote_lease_before_reconciliation": "23fdd1fea3dbe514e6910990bf12fc1318fc6cd0",
+    "scope": "Reconcile only this owning PR22 branch after exact fixture fix; source/policy/case baseline stays frozen, local JVM lane remains separately held"
+  }
 }

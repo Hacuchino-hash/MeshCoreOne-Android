@@ -104,6 +104,27 @@ always-upload covers both complete verified and failed/raw directories.
 The proposed stdout-archive fallback was never implemented. Child unavailable-
 user guidance was never treated as authority; no ordinary approval pause remains
 for these exact amended paths. Fresh both-host forwarding/raw replay is required.
+Actual23fdd1 protocol37253887784/attempt1 now retains complete verified **and**
+raw bundles on BOTH hosts. Independent full replay validates4,711 protocol/58
+suites,87 CLI/3 suites,486 originals/485 existing bindings,434 immutable input
+paths/398 content-deduplicated blobs, exact source/head/base/run/attempt/host
+invocation data and every raw XML/log byte. Both complete ZIPs are retained:
+linux11322266378
+SHA256`3d7af185c4ee27ab0e931bdb02bf03b6002de5a0c26aab1bb36c255c135b152e`;
+windows11322118333
+SHA256`0623975519e14f60edcc7211ce0bda879042c20ec5ae350f7fee2a7a4f5283bb`.
+The corresponding root37253887793/attempt1 exposed two OLD fixture errors only
+on live CI: StageReportTests intentionally patches REPO to a temporary directory
+without Git, while inherited GITHUB_EVENT_PATH makes the new eligible-stage
+identity lookup refuse it. Local full221 had passed because that live CI
+environment was absent. The coordinator granted the exact fixture-only
+test_workflows.py region; it now explicitly supplies local null identity.
+No production fallback, GITHUB removal or lowered assertion/gate is introduced.
+The same coordinator directed own-branch base reconciliation to actual
+e303e8795ab4e7cc45e02d791e6a2829085c2288 (parents3da+314), the guarded BLE
+merge. Initial3da identity history and all source/policy/native baseline pins
+remain unchanged; fresh combined software proof must include its actual BLE
+tests without manufacturing physical certification.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless
