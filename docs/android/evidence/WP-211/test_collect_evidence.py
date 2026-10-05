@@ -140,6 +140,49 @@ class IdentityReaderTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Stale/foreign"):
                     reader.invocation(path)
 
+    def test_current_coordinator_freeze_keeps_the_exact_reviewed_producer_and_test_blobs(self):
+        freeze = reader.frozen_producers()
+        self.assertEqual("98f64d2582e16e2e49c8c4fe79d5b7a239b970dd", freeze["reviewed_head_sha"])
+        self.assertEqual(reader.FROZEN_PRODUCERS,
+                         {entry["path"]: entry["git_blob"] for entry in freeze["files"]})
+
+    def test_modified_frozen_producer_is_rejected_without_silently_advancing_the_freeze(self):
+        with patch.object(reader, "git", return_value="0" * 40):
+            with self.assertRaisesRegex(ValueError, "Reviewed producer blob drift"):
+                reader.frozen_producers()
+
+
+class NativeHookTests(unittest.TestCase):
+    def test_the_admitted_hook_runs_both_actual_test_tasks_and_keeps_earlier_hooks(self):
+        text = (reader.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text(encoding="utf-8")
+        self.assertIn('dependsOn(":core:services:test", "testDebugUnitTest", retainDeviceSettingsRoomEvidence)', text)
+        for hook in ("verifyBackupTests", "verifyPersistenceRepositoryTests", "verifyDeviceSettingsTests"):
+            self.assertIn(f'rootProject.tasks.named("verifyScaffoldTests") {{ dependsOn({hook}) }}', text)
+            self.assertIn(f'tasks.named("check") {{ dependsOn({hook}) }}', text)
+        self.assertEqual(1, text.count('testImplementation(project(":core:services"))'))
+        self.assertNotIn('\n    implementation(project(":core:services"))', text)
+        self.assertNotIn('project(":core:services").dependencies', text)
+
+    def test_raw_room_completion_is_a_finalizer_and_does_not_assert_success(self):
+        text = (reader.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text(encoding="utf-8")
+        self.assertIn('tasks.named("testDebugUnitTest") { finalizedBy(retainDeviceSettingsRoomEvidence) }', text)
+        self.assertIn('mustRunAfter("testDebugUnitTest")', text)
+        self.assertIn('"--retain-only"', text)
+        self.assertIn('.resolve("room-completion-$deviceSettingsAttempt")', text)
+        self.assertIn('.resolve("full-$deviceSettingsAttempt")', text)
+        self.assertIn('deviceSettingsInvocation.map { java.io.File(it).parentFile.resolve("wp211-native")', text)
+
+    def test_standalone_linux_executor_forwards_exact_actual_invocation_and_private_retention_path(self):
+        text = (reader.OUT / "run_linux_verification.py").read_text(encoding="utf-8")
+        self.assertIn('tasks = [":core:services:test", ":core:data:testDebugUnitTest"]', text)
+        self.assertIn('"--continue", "--no-daemon"', text)
+        self.assertIn('"-PmeshCliInvocationFile=" + str(invocation_file)', text)
+        self.assertIn('"-Pwp211EvidenceDirectory=" + str(output / "gradle-retention")', text)
+        self.assertLess(text.index('retain(output / "raw", invocation_file)'),
+                        text.index('if outcome["exit_code"] != 0'))
+        self.assertLess(text.index('retain(output / "raw", invocation_file)'),
+                        text.index('proof = validate_retained'))
+
 
 class ProducerReaderTests(unittest.TestCase):
     def test_every_frozen_radio_row_matches_all_native_fields(self):

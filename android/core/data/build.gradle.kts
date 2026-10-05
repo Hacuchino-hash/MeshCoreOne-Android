@@ -85,21 +85,38 @@ val verifyBackupTests by tasks.registering(Exec::class) {
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }
 tasks.named("check") { dependsOn(verifyBackupTests) }
 
+val deviceSettingsReader = repository.resolve("docs").resolve("android").resolve("evidence")
+    .resolve("WP-211").resolve("collect_evidence.py")
+val deviceSettingsInvocation = providers.gradleProperty("meshCliInvocationFile")
+val deviceSettingsEvidenceRoot = providers.gradleProperty("wp211EvidenceDirectory").orElse(
+    deviceSettingsInvocation.map { java.io.File(it).parentFile.resolve("wp211-native").absolutePath },
+).orElse(repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-211")
+    .resolve("retained").absolutePath)
+val deviceSettingsAttempt = System.currentTimeMillis().toString()
+
+val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain verbatim service/Room reports and immutable inputs even after an actual Room runner failure."
+    mustRunAfter("testDebugUnitTest")
+    workingDir(repository)
+    commandLine(buildList {
+        addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--retain-only", "--output",
+            java.io.File(deviceSettingsEvidenceRoot.get()).resolve("room-completion-$deviceSettingsAttempt").absolutePath))
+        deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
+    })
+}
+
+tasks.named("testDebugUnitTest") { finalizedBy(retainDeviceSettingsRoomEvidence) }
+
 val verifyDeviceSettingsTests by tasks.registering(Exec::class) {
     group = "verification"
     description = "Require all WP-211 original families, expanded rows and complete real service/Room JUnit."
-    dependsOn(":core:services:test", "testDebugUnitTest")
+    dependsOn(":core:services:test", "testDebugUnitTest", retainDeviceSettingsRoomEvidence)
     workingDir(repository)
-    val reader = repository.resolve("docs").resolve("android").resolve("evidence")
-        .resolve("WP-211").resolve("collect_evidence.py")
     commandLine(buildList {
-        addAll(listOf("python", "-B", reader.absolutePath))
-        providers.gradleProperty("meshCliInvocationFile").orNull?.let {
-            addAll(listOf("--invocation-file", it))
-        }
-        providers.gradleProperty("wp211EvidenceDirectory").orNull?.let {
-            addAll(listOf("--output", it))
-        }
+        addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--output",
+            java.io.File(deviceSettingsEvidenceRoot.get()).resolve("full-$deviceSettingsAttempt").absolutePath))
+        deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
     })
 }
 

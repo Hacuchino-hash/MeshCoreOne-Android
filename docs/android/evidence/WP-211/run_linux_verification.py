@@ -34,6 +34,9 @@ def execute(state_path, output, invocation_file=None):
         "-Pkotlin.compiler.execution.strategy=in-process", "-PscaffoldTestHeap=512m",
         "--project-cache-dir", str(Path(state["private_root"]) / "project-wp211"),
     ]
+    if invocation_file is not None:
+        arguments.append("-PmeshCliInvocationFile=" + str(invocation_file))
+    arguments.append("-Pwp211EvidenceDirectory=" + str(output / "gradle-retention"))
     outcome = {"schema_version": 1, "tasks": tasks, "arguments": arguments, "host": "linux",
                "exit_code": None, "execution_error": None}
     try:

@@ -37,6 +37,24 @@ ROOM_BINDING = re.compile(rf'@DeviceSettingsSourceCase\(({QUOTED})\)\s*@Test\s+f
 ROOM_METHOD = re.compile(r'@Test\s+fun\s+(\w+)\s*\(')
 MAX_XML_BYTES = 16 * 1024 * 1024
 MIN_NATIVE_CASES = 88
+FROZEN_PRODUCERS = {
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/device/RegionalAreas.kt":
+        "090ce5f23a4e36f8580094b7d43ecc8e6c40368f",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/device/RadioPresets.kt":
+        "7c2e8758af93a8dd379d2232bcad9259e1627fc7",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/device/RadioOptions.kt":
+        "c47b1a3421a0fb37eaf157de557c861936342b6e",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt":
+        "b2a6b84a3846c016184e06772da4800700e3e8af",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/device/RegionalAreasTest.kt":
+        "676a7a79f725afb34de320c729ecc06af08c138b",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/device/RadioPresetTest.kt":
+        "aadba158183cfefc517e723ba781755c8c9a5ae8",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/device/DeviceSettingsFaultTest.kt":
+        "92f88b189f8ad41a44c15950a0659ea7d6125f15",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/device/SourceCases.kt":
+        "6a0e37b4ad26f0127ac7c04b9fc82971cf18c6cf",
+}
 
 
 def require(condition, message):
@@ -91,7 +109,24 @@ def frozen_families():
     return primary, families
 
 
+def frozen_producers():
+    freeze = load_json(OUT / "producer-freeze.json")
+    require(freeze["schema_version"] == 1 and freeze["repository"] == "cbattlegear/MeshCoreOne-Android" and
+            freeze["work_package"] == "WP-211" and freeze["lease"] == LEASE and freeze["source_sha"] == SOURCE and
+            freeze["manifest_sha256"] == MANIFEST and freeze["policy_revision"] == POLICY,
+            "Coordinator producer-freeze binding drift")
+    paths = {entry["path"]: entry["git_blob"] for entry in freeze["files"]}
+    require(len(paths) == len(freeze["files"]) and paths == FROZEN_PRODUCERS, "Frozen producer path/blob drift")
+    require(re.fullmatch(r"[0-9a-f]{40}", freeze["reviewed_head_sha"]), "Missing immutable reviewed producer head")
+    for path, expected in paths.items():
+        require(git("rev-parse", freeze["reviewed_head_sha"] + ":" + path) == expected, "Reviewed producer blob drift")
+        require(git("rev-parse", "HEAD:" + path) == expected, "Frozen producer edited without repair receipt")
+        require(git("hash-object", str(ROOT.joinpath(*path.split("/")))) == expected, "Frozen producer checkout drift")
+    return freeze
+
+
 def source_map():
+    frozen_producers()
     primary, families = frozen_families()
     declarations, native = {}, {}
     for path in sorted(TEST.glob("*.kt")):
@@ -166,7 +201,8 @@ def inputs():
         result[path] = {"git_blob": expected, "checkout_blob": git("hash-object", str(actual_path)),
                         "sha256": sha256(actual_path.read_bytes())}
     require(result, "Zero immutable compiled inputs")
-    for path in [*MAIN.glob("*.kt"), *TEST.glob("*.kt"), ROOT / ROOM_PATH, OUT / "collect_evidence.py"]:
+    readers = sorted(OUT.glob("*.py")) + [OUT / "producer-freeze.json"]
+    for path in [*MAIN.glob("*.kt"), *TEST.glob("*.kt"), ROOT / ROOM_PATH, *readers]:
         relative = path.relative_to(ROOT).as_posix()
         expected = git("rev-parse", "HEAD:" + relative)
         require(git("hash-object", str(path)) == expected, "Uncommitted/stale owned compiled or reader input: " + relative)
@@ -235,6 +271,7 @@ def retain(output, invocation_file=None):
     metadata["execution"] = invocation(invocation_file)
     persist()
     metadata["input_blobs"] = inputs()
+    metadata["producer_freeze"] = load_json(OUT / "producer-freeze.json")
     primary = load_json(ROOT / "docs" / "android" / "port-manifest.json")["inventory"]
     metadata["primary_inputs"] = [
         {"path": item["path"], "reference_blob": item["blob_sha"],
@@ -256,6 +293,7 @@ def validate_retained(output, invocation_file=None):
     require(all(value["git_blob"] == value["checkout_blob"] for value in metadata["input_blobs"].values()),
             "Compiled input checkout differs from immutable HEAD")
     require(metadata["input_blobs"] == inputs(), "Retained input identities are stale")
+    require(metadata["producer_freeze"] == frozen_producers(), "Retained producer freeze is stale")
     require(not metadata["missing_directories"], "Missing actual mandatory JUnit")
     _, families, native, room_methods = source_map()
     services = junit(output / "junit" / "services", "com.meshcoreone.android.core.services.")

@@ -105,6 +105,30 @@ must retain raw files after failed Gradle execution as well: a dependent Exec
 does not run when its prerequisite test task fails. No failed test is counted
 as acceptance merely because a diagnostic bundle was retained.
 
+The admitted data hook now routes raw reports/input maps into the actual
+root invocation's sibling `wp211-native` directory, so the incumbent always-on
+artifact uploader retains them without a workflow/root/services-build edit.
+`wp211EvidenceDirectory` selects an explicit **root** for those outputs;
+each Gradle invocation has separate new `room-completion-<attempt>` and
+`full-<attempt>` snapshots rather than overwriting or validating stale reports.
+The data runner's `retainDeviceSettingsRoomEvidence` finalizer runs with
+`--retain-only` even when that actual test task fails, preserving unsuccessful
+XML before any WP-211 verdict. It does not assert successful execution when
+services reports are absent. The full verifier still requires both actual
+runners and all301 device-JVM names plus all12 Room method identities.
+The standalone Linux executor's `finally` remains the bounded mechanism for
+retaining compilation/prerequisite failures as well; task finalizers do not
+claim to run when their finalized runner never started.
+
+The exact additional retention task, automatically finalized after the real
+data runner, is `:core:data:retainDeviceSettingsRoomEvidence`. The actual hook
+invokes this reader shape before validation:
+
+```text
+python -B docs/android/evidence/WP-211/collect_evidence.py --retain-only --output <new-root/room-completion-attempt> [--invocation-file <actual-root-invocation>]
+python -B docs/android/evidence/WP-211/collect_evidence.py --output <new-root/full-attempt> [--invocation-file <actual-root-invocation>]
+```
+
 The Linux executor must first verify declared pinned execution state, then run
 those actual module tasks with strict dependency verification, no build cache
 and forced execution. Complete verbatim JUnit, current compiled inputs and
@@ -124,7 +148,7 @@ produced these outcomes:
 
 | Command | Actual result |
 | --- | --- |
-| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 18 reader/producer regression tests passed; synthetic XML/static catalog checks only, no native parity credit |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 23 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
 | `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 88 native JVM declarations and 12 real Room declarations; `native_execution=false` |
 | `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, ten county keys, all 28 regular/three repeat preset fields/order/availability/priorities/hash sizes, and 2+6 fault declarations; `native_tests_run=false` |
 | `git --no-pager diff --check` | Passed for the authored changes |
@@ -221,6 +245,23 @@ was retained, including294277-byte compiler log SHA-256
 The services build/strict-lock handoff remains exclusively WP-218; no
 dependency bypass, borrowed unmerged producer or hand-written lock is used.
 
+The later actual **reviewed98f64 head** consumer run **37386539848 / attempt1**
+also passed all381 data cases including **12/12 DeviceSettingsRoomTest**
+(seven original +five native, zero failures/errors/skips). The complete
+artifact `wp203-producer-37386539848-1`, id11379941597, size88177 bytes,
+published digest
+`sha256:5cae1691a4f7fb94ffa46be108f993953eef2e78459bd338fd4b26840109e286`
+was retained before reading its raw XML and exact HEAD/base/source/run binding.
+The exact Room XML SHA-256 is
+`4ea4289b6e13fdac240a4fe2c735e88d42bcf3b9ddb5287d2372ca0a65f9ff28`.
+That head's failing services compiler artifact `scaffold-37386539918-1`,
+id11378997057, size75289 bytes, published digest
+`sha256:df75c4a27855357224032e26fdf9ede1eedc405c944df26769b0daa93f44f3dc`
+was likewise retained; compiler log SHA-256
+`d26a97b626e4786ee686bdc941807b6b9f0ecfc1dc88004c2443c254d09f5bb8`.
+These results do not roll forward to later hook edits: they are exact
+historical98f64 Room evidence and a still-failing services compile.
+
 Static declaration counts are not executed services-JVM counts; the limited
 actual Room consumer result above is recorded separately. The services module needs the
 incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the
@@ -260,6 +301,46 @@ that location does not confer WP-201 parity credit. WP-304 selects localized
 whole-sentence GPS variants. WP-218 consumes the actual `RegionalAreas`
 lookup; it does not substitute a resolver lambda or duplicate the catalog.
 Neither handoff completes this WP or assembles the WP-303 service graph.
+
+The coordinator's 2026-10-05T23:22:32Z message and explicit source-closure
+follow-up freeze exactly the eight producer/test/helper blobs at reviewed head
+`98f64d2582e16e2e49c8c4fe79d5b7a239b970dd`; see `producer-freeze.json`.
+Source-map/native readers reject any drift from those exact eight blobs
+without a same-task actual-bug repair receipt. The independent reviewer
+reported no significant production issue on that head, **static only**.
+No executed301-case JVM evidence, human gate or merge authority follows
+from that report.
+
+Production closure is **RegionalAreas.kt + RadioPresets.kt**: the actual
+RadioRegion enum lives in RadioPresets, and recommendation calls back into
+RegionalAreas. RadioPresets also uses the already merged protocol's
+MeshCoreException and model snapshots/RegionSelection. No enum is duplicated.
+**RadioOptions.kt** is added only to close the paired RadioPresetTest's
+direct bandwidth/range dependencies. The paired RegionalAreas/RadioPreset/
+fault tests use the exact **SourceCases.kt** JUnit identity helper; its async
+definitions require the already pinned coroutines-test in the WP-218 build
+producer. **DeviceSettingsFaults.kt** is independently carryable with its
+already merged protocol exception dependency. The carry set contains no
+DeviceService, SettingsService, context, discovery, factory, Room test edge,
+full service graph, build/lock edit or ownership/catalog advancement.
+
+The data hook already scheduled the actual services test in the original
+PR. It cannot supply a missing services test dependency. The current-head
+scaffold run **37386539918 / attempt1** actually fails at
+`:core:services:compileTestKotlin` on `kotlinx.coroutines.test`/`TestScope`.
+The exact read-only WP-218 build producer at
+`0e36f61839d1cd7a99e2d7c1c800b912fd362532`, blob
+`3a6ecda9eb8b3d3db315b91746276222692e1174`, declares
+`testImplementation(libs.kotlinx.coroutines.test)`. It is **unmerged** and
+has not been copied or injected into this candidate. An actual coordinator
+frozen/serialized build-and-strict-lock handoff is necessary. This is not a
+JSON dependency requirement for WP-211 and is not fixed by adding another
+duplicate task hook or borrowing the data module's test classpath.
+That exact producer's root services lock blob is
+`6065703315850927e5836e9af4845b873735638a`; its declared testCompileClasspath/
+testRuntimeClasspath contain coroutines-test and coroutines-test-jvm1.10.2.
+This is a read-only identity observation, not authorization to carry either
+shared file or evidence of a successful WP-211 resolver/test command.
 
 The source `BatteryInfo+Display` voltage/linear/OCV-interpolation helpers and
 their original percentage assertions are primary-owned by **WP-304**;
