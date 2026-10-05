@@ -418,5 +418,36 @@ class RuntimeOwnershipTest {
                 assertEquals(1, radios.first().closes); assertEquals(0, manager.consecutiveRebuildFailures)
             }
         },
+        nativeCase("temporary partial factory failure closes its generation and retries with one fresh service graph") {
+            withFixture {
+                var first = true; var partialClosed = 0
+                onFactory = { _, ownership ->
+                    if (first) {
+                        first = false
+                        ownership.own(LifecycleStage.STOP_SERVICES) { partialClosed++ }
+                        throw ConnectionError.InitializationFailed("temporary construction failure")
+                    }
+                }
+                manager.connect(platform.target, false, true)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(2, radios.size); assertEquals(1, radios.first().closes); assertEquals(0, radios.first().collectors)
+                assertEquals(1, partialClosed); assertEquals(1, services.first().teardowns)
+                assertEquals(0, services.first().monitoringStarts); assertEquals(1, services.last().monitoringStarts)
+                assertEquals(1, radios.last().collectors); assertEquals(1, devices.rows.size)
+            }
+        },
+        nativeCase("rapid duplicate reconnect completions rebuild one actual session and one monitor generation") {
+            withFixture {
+                connect()
+                val callbacks = links.single().callbacks!!
+                callbacks.onAutoReconnecting("dropped"); runCurrent()
+                repeat(5) { callbacks.onReconnected() }; runCurrent()
+                assertEquals(2, radios.size); assertEquals(2, services.size)
+                assertEquals(1, radios.first().closes); assertEquals(0, radios.first().collectors)
+                assertEquals(1, services.first().teardowns); assertEquals(1, services.last().monitoringStarts)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertTrue(radios.all { it.maximumCollectors == 1 })
+            }
+        },
     )
 }
