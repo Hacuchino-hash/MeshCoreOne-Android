@@ -45,15 +45,18 @@ class ConnectionRuntimeRoomIntegrationTest : RepositoryTest() {
             store.saveMessage(message)
             val pending = PendingSendDTO(
                 UUID.randomUUID(), original, message.id, PendingSendKind.DM, contact.id, null, false,
-                message.text, message.timestamp, null, 0, AT, attemptCount = null,
+                message.text, message.timestamp, null, 0, AT, attemptCount = 0,
             )
             store.insertPendingSendAssigningSequence(pending)
+            val legacy = pending.copy(id = UUID.randomUUID(), messageID = UUID.randomUUID(), attemptCount = null)
+            store.insertPendingSendAssigningSequence(legacy)
             h.manager.disconnect(RuntimeDisconnectReason.WIFI_RECONNECT_PREP)
             val next = h.target.copy(deviceId = UUID.randomUUID())
             h.manager.connect(next)
             assertEquals(original, h.manager.connectedDevice!!.radioId)
             assertEquals(listOf(message.id), h.hydrated.last().map { it.messageID })
-            assertNull(h.hydrated.last().single().attemptCount)
+            assertEquals(0L, h.hydrated.last().single().attemptCount)
+            assertTrue(store.fetchPendingSends(original).none { it.id == legacy.id })
             assertEquals(MessageStatus.PENDING, store.fetchMessage(EntityKey(original, message.id))!!.status)
             assertNotNull(store.fetchContact(EntityKey(original, contact.id)))
             assertNull(store.fetchDevice(restored.id)); assertEquals(original, store.fetchDevice(next.deviceId)!!.radioId)
