@@ -83,6 +83,30 @@ class BundleTests(unittest.TestCase):
             with self.assertRaisesRegex(OracleError, "actual hosted"):
                 CI.identity()
 
+    def test_failure_retention_preserves_raw_failure_without_claiming_success(self):
+        source = self.root / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
+        source.mkdir(parents=True)
+        raw = b'<testsuite tests="1" failures="1"><testcase name="actual"><failure/></testcase></testsuite>'
+        (source / "TEST-failure.xml").write_bytes(raw)
+        output = self.root / "output"
+        output.mkdir()
+        with patch.object(CI, "REPO", self.root):
+            CI.retain_native_xml(output, self.identity)
+        self.assertEqual(raw, (output / "junit" / "TEST-failure.xml").read_bytes())
+        evidence = json.loads((output / "raw-native-retention.json").read_text(encoding="utf8"))
+        self.assertEqual(self.identity, evidence["identity"])
+        self.assertNotIn("passed", evidence)
+        self.assertEqual(1, len(evidence["reports"]))
+
+    def test_missing_report_retention_is_not_a_zero_test_success_record(self):
+        output = self.root / "output"
+        output.mkdir()
+        with patch.object(CI, "REPO", self.root):
+            CI.retain_native_xml(output, self.identity)
+        value = json.loads((output / "raw-native-retention.json").read_text(encoding="utf8"))
+        self.assertEqual([], value["reports"])
+        self.assertNotIn("result", value)
+
 
 if __name__ == "__main__":
     unittest.main()

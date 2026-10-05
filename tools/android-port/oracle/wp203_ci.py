@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -23,7 +24,8 @@ LOCK_TASK = (":core:data:dependencies", "--write-locks")
 DATA_NAMES = {
     "producer": ("kotlin-export.meshcoreone", "kotlin-export.json", "kotlin-room-proof.json"),
     "consumer": ("kotlin-restored.json", "swift-to-kotlin-room-proof.json"),
-    "swift": ("swift-export.meshcoreone", "swift-export.json", "swift-room-proof.json", "swift-results.json", "swift-source-map.json", "swift-results.xml"),
+    "swift": ("swift-export.meshcoreone", "swift-export.json", "swift-room-proof.json", "swift-results.json", "swift-source-map.json",
+              "swift-results.xml", "swift-restore-export.log"),
 }
 MAXIMUM_DATA_BYTES = 52_428_800
 
@@ -69,10 +71,30 @@ def validate_bundle(root, stage, expected_identity):
     else:
         from oracle.wp203_interop import TASK_DESCRIPTION, verify_swift_xml
         report = load_json(root / "swift-results.json")
-        actual = verify_swift_xml(root / "swift-results.xml")
+        actual = verify_swift_xml(root / "swift-results.xml", root / "swift-restore-export.log")
         if report != actual or evidence["junit"] != actual or evidence["tasks"] != TASK_DESCRIPTION:
             raise OracleError("Missing actual SwiftData restore assertion evidence")
     return evidence
+
+
+def retain_native_xml(output, bound):
+    source = REPO / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
+    destination = output / "junit"
+    destination.mkdir(exist_ok=True)
+    retained = []
+    for path in sorted(source.glob("TEST-*.xml")):
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > 8 * 1024 * 1024:
+            raise OracleError("Unsafe or oversized raw native report retention")
+        target = destination / path.name
+        shutil.copyfile(path, target)
+        if digest_file(path) != digest_file(target):
+            raise OracleError("Raw native XML changed during retention")
+        retained.append(record(destination, path.name))
+    (output / "raw-native-retention.json").write_bytes(json_bytes({
+        "identity": bound, "reports": retained,
+        "scope": "verbatim raw XML retained even after runner failure; not a passing outcome",
+    }))
+    return destination
 
 
 def native(stage, state, output, incoming=None):
@@ -99,7 +121,7 @@ def native(stage, state, output, incoming=None):
         execute([str(wrapper), "-p", str(REPO / "android"), *LOCK_TASK, *options], environment, output / "owner-lock-generation.log")
         owner_lock = REPO / "android" / "core" / "data" / "gradle.lockfile"
         shutil.copyfile(owner_lock, output / "data-gradle.lockfile")
-        changed = __import__("subprocess").check_output(
+        changed = subprocess.check_output(
             ["git", "--no-pager", "-C", str(REPO), "diff", "--name-only", "--", "android"], text=True).splitlines()
         if any(path != "android/core/data/gradle.lockfile" for path in changed):
             raise OracleError("Owner lock generation changed an unadmitted Android input")
@@ -112,11 +134,10 @@ def native(stage, state, output, incoming=None):
     command = [str(wrapper), "-p", str(REPO / "android"), *TASKS, *options, "--no-build-cache", "--rerun-tasks"]
     if incoming:
         command.append("-Pwp203InteropInputDir=" + str(incoming.resolve()))
-    execute(command, environment, output / ("native-" + stage + ".log"))
-    xml = REPO / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
-    (output / "junit").mkdir()
-    for path in sorted(xml.glob("TEST-*.xml")):
-        shutil.copyfile(path, output / "junit" / path.name)
+    try:
+        execute(command, environment, output / ("native-" + stage + ".log"))
+    finally:
+        retain_native_xml(output, bound)
     actual_reports = report_record(output, output / "junit")
     produced = REPO / "android" / "core" / "data" / "build" / "reports" / "wp203" / "interop"
     for name in DATA_NAMES[stage]:
@@ -147,7 +168,7 @@ def main(argv=None):
         result = native(args.stage, load_json(args.state), args.output, args.input)
         print(json_bytes({"stage": result["stage"], "result": "passed", "identity": result["identity"]}).decode(), end="")
         return 0
-    except (PortError, OSError, ValueError, KeyError) as error:
+    except (PortError, OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print("BLOCKED: " + str(error), file=sys.stderr)
         return 2
 

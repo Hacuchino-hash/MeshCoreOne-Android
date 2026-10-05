@@ -24,9 +24,9 @@ not a successful runner result.
 | --- | --- | --- |
 | `:core:data:dependencies --write-locks --dependency-verification strict --quiet` | Generate only the admitted owner-local dependency state | Passed through registered private gate: five existing serialization1.7.3 records gain four compile configurations each; no new version or shared content delta |
 | `:core:data:compileDebugKotlin --dependency-verification strict --quiet` | Compile the actual production backup and admitted producer seams | Pending |
-| `:core:data:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | Complete actual Room/codec module suite, not a map surrogate | Pending |
-| `:core:data:verifyBackupTests --dependency-verification strict --quiet` | Fail-closed original-family and raw nonzero/unskipped backup proof | Pending |
-| `:core:data:verifyPersistenceRepositoryTests --dependency-verification strict --quiet` | Preserve original WP-202 producer behavior and separate all-module evidence | Pending |
+| `:core:data:testDebugUnitTest --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | Complete actual Room/codec module suite, not a map surrogate | Historical Linux run37332274169/head852792fe: 348 passed, zero failed/errors/skips; final-head refresh required |
+| `:core:data:verifyBackupTests --dependency-verification strict --quiet` | Fail-closed original-family and raw nonzero/unskipped backup proof | Same actual Linux run: 194 native backup cases / 171 distinct original bindings passed |
+| `:core:data:verifyPersistenceRepositoryTests --dependency-verification strict --quiet` | Preserve original WP-202 producer behavior and separate all-module evidence | Same actual Linux run: 154 repository methods / 208 original dispositions passed separately |
 | `verifyScaffoldTests validateModuleGraph --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | Complete native integration/graph regression proof | Pending |
 | `:core:protocol:test --dependency-verification strict --no-build-cache --rerun-tasks --quiet` | Complete frozen protocol regression proof | Pending |
 | `:app:assembleDebug lintScaffold --dependency-verification strict --quiet` | Debug APK/native lint; no release or device claim | Pending |
@@ -36,7 +36,7 @@ not a successful runner result.
 | `python .\docs\android\evidence\WP-203\collect_evidence.py --inventory-only` | Original case/native declaration binding | 171/171 original bindings, 194 native declarations; not execution |
 | `python -m unittest discover -s .\docs\android\evidence\WP-202 -p test_collect_evidence.py -q` | Frozen producer collector guards | 19 passed, zero failures/errors/skips |
 | `python -m unittest discover -s .\docs\android\evidence\WP-203 -p test_collect_evidence.py -q` | Raw backup evidence guard negatives | 9 passed, zero failures/errors/skips; synthetic inputs not native proof |
-| `python -m unittest discover -s .\tools\android-port\oracle\tests -p test_wp203_*.py -q` | Cross-direction artifact/source/XML guard negatives | 16 passed, zero failures/errors/skips; not Swift execution |
+| `python -m unittest discover -s .\tools\android-port\oracle\tests -p test_wp203_*.py -q` | Cross-direction artifact/source/XML guard negatives | 20 passed, zero failures/errors/skips; not Swift execution |
 | `python .\tools\android-port\controller\workflows.py` | Declared workflow trust-boundary assertions | Passed; no live publisher/gate claim |
 | `python .\tools\android-port\controller\verification_config.py --check` | Unchanged semantic manifest/overlay policy | Passed; feature acceptance remains unconfigured in canonical manifest |
 
@@ -55,6 +55,16 @@ the internal hook type. The helper is now internal; that repair is not
 reported passed until re-executed. A single later repair probe was refused
 as `NATIVE_BUILD_BUSY` before starting Gradle. No filtered suite, compile
 failure or resource refusal is complete native or original-case evidence.
+
+The real full historical local run discovered 348 methods, passed 347 and
+failed one added exact-cap-prefix assertion, with zero skips. The codec now
+delivers the entire permitted prefix and probes a private single overflow
+byte; it never exposes that byte to a reader. The prior real non-JSON bomb
+failure is also repaired without whole expanded-buffer allocation: a known
+JSON/UTF-8 decode failure drains the still-bounded inflater so source
+decompression/size error precedence remains exact. The subsequent actual
+Linux producer run passed all 348 methods and retained the complete raw
+module XML, 171 original bindings, input blobs and measured export hashes.
 
 ## Real cross-direction boundary
 
@@ -78,8 +88,25 @@ directory>` and `python tools/android-port/oracle/wp203_ci.py consumer
 actual `verifyBackupTests`, `verifyPersistenceRepositoryTests` and
 `validateModuleGraph`, with strict dependency verification and forced tests.
 Swift executes existing WP-004 codecs plus real `swift test --package-path
-<isolated MC1Services> --filter WP203InteropTests --no-parallel --xunit-output
-<raw XML> --scratch-path <isolated build>` on frozen production code.
+<isolated MC1Services> --filter WP203InteropTests --parallel --num-workers 1
+--disable-swift-testing --verbose --xunit-output <raw XML> --scratch-path
+<isolated build>` on frozen production code. This uses exactly one XCTest
+worker, not parallel agent work.
+
+Run37332274169/head852792fe actually compiled the full frozen source and
+executed the owned SwiftData XCTest with **one test / zero failures**,
+restoring Kotlin's export and producing genuine Swift export/proof bytes.
+Its pipeline still failed closed: Darwin SwiftPM's non-parallel XCTest
+runner does not emit the requested xUnit file; only a separate zero-case
+Swift Testing report was emitted. That zero report was **not accepted**.
+The real SwiftPM parallel runner is required to produce actual XCTest XML.
+Its measured generator has no skipped-count attribute, so the reader also
+requires the hash-bound framework trace identifying the exact mandatory
+test as passed and `Executed 1 test, with 0 failures (0 unexpected)`.
+Missing/renamed/zero/skipped/malformed evidence remains blocked.
+The consumer was skipped in this historical failed pipeline, so this does
+not claim completed bidirectional acceptance. Raw measured hashes are in
+`hosted-history.json`.
 
 The producer separately generates only its admitted module-local lock with
 the declared `:core:data:dependencies --write-locks` command. Any real local

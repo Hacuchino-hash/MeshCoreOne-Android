@@ -76,6 +76,26 @@ class SwiftReportTests(unittest.TestCase):
         with self.assertRaisesRegex(OracleError, "count/outcome"):
             INTEROP.verify_swift_xml(self.path)
 
+    def test_actual_swiftpm_xunit_shape_requires_unskipped_framework_trace(self):
+        self.write()
+        self.path.write_text(self.path.read_text(encoding="utf8").replace(' skipped="0"', ""), encoding="utf8")
+        log = self.root / "execution.log"
+        log.write_text(
+            f"Test Case '-[MC1ServicesTests.WP203InteropTests {INTEROP.TEST_NAME}]' passed (0.1 seconds).\n"
+            "Executed 1 test, with 0 failures (0 unexpected) in 0.1 seconds\n", encoding="utf8")
+        report = INTEROP.verify_swift_xml(self.path, log)
+        self.assertEqual(INTEROP.sha256(log.read_bytes()), report["execution_log_sha256"])
+        self.assertEqual(1, report["passed"])
+
+    def test_skipped_or_missing_framework_trace_never_substitutes_for_pass(self):
+        self.write()
+        log = self.root / "execution.log"
+        for text in ("Executed 0 tests", f"Test Case '-[MC1ServicesTests.WP203InteropTests {INTEROP.TEST_NAME}]' skipped"):
+            with self.subTest(text=text):
+                log.write_text(text, encoding="utf8")
+                with self.assertRaisesRegex(OracleError, "mandatory unskipped"):
+                    INTEROP.verify_swift_xml(self.path, log)
+
     def test_windows_staging_cannot_claim_mac_execution(self):
         with patch.object(INTEROP.platform, "system", return_value="Windows"):
             with self.assertRaisesRegex(OracleError, "Windows staging is not execution"):

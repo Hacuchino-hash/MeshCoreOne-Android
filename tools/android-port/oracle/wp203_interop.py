@@ -24,7 +24,8 @@ DOCC = '.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.0
 TASK_DESCRIPTION = [
     "python tools/android-port/oracle/codec_harness.py run --output <new runner-temp codec directory>",
     "swift test --package-path <new frozen MC1Services stage> --filter WP203InteropTests "
-    "--no-parallel --xunit-output <raw runner-temp Swift XML> --scratch-path <new runner-temp Swift build>",
+    "--parallel --num-workers 1 --disable-swift-testing --verbose --xunit-output <raw runner-temp Swift XML> "
+    "--scratch-path <new runner-temp Swift build>",
 ]
 
 
@@ -101,7 +102,7 @@ def stage_package(reference, destination):
     return result
 
 
-def verify_swift_xml(path):
+def verify_swift_xml(path, execution_log=None):
     if path.is_symlink() or not path.is_file() or path.stat().st_size > 8 * 1024 * 1024:
         raise OracleError("Missing, unsafe or oversized actual Swift XML")
     with path.open("rb") as stream:
@@ -126,10 +127,23 @@ def verify_swift_xml(path):
         direct = suite.findall("testcase")
         if direct:
             for key, expected in (("tests", len(direct)), ("failures", 0), ("errors", 0), ("skipped", 0)):
+                if key == "skipped" and key not in suite.attrib and execution_log is not None:
+                    continue
                 if key not in suite.attrib or int(suite.attrib[key]) != expected:
                     raise OracleError("Swift XML count/outcome disagreement")
-    return {"test": name, "discovered": 1, "passed": 1, "failed": 0, "skipped": 0,
-            "xml_sha256": sha256(raw)}
+    result = {"test": name, "discovered": 1, "passed": 1, "failed": 0, "skipped": 0, "xml_sha256": sha256(raw)}
+    if execution_log is not None:
+        if execution_log.is_symlink() or not execution_log.is_file() or execution_log.stat().st_size > 52_428_800:
+            raise OracleError("Missing/unsafe/oversized actual XCTest execution trace")
+        log_raw = execution_log.read_bytes()
+        log = log_raw.decode("utf8")
+        passed = re.findall(r"Test Case '[^'\n]*\b" + re.escape(TEST_NAME) + r"[^'\n]*' passed", log)
+        if len(passed) != 1 or not re.search(r"Executed 1 test, with 0 failures \(0 unexpected\)", log):
+            raise OracleError("Actual XCTest trace lacks the mandatory unskipped passed test")
+        if re.search(r"Test Case '[^'\n]*\b" + re.escape(TEST_NAME) + r"[^'\n]*' skipped", log):
+            raise OracleError("Actual XCTest test was skipped")
+        result["execution_log_sha256"] = sha256(log_raw)
+    return result
 
 
 def execute(command, environment, log):
@@ -167,9 +181,11 @@ def run(incoming, output, stage_root):
     environment["WP203_SWIFT_OUTPUT"] = str(output)
     xml = output / "swift-results.xml"
     command = [compiler, "test", "--package-path", str(stage_root / "MC1Services"), "--filter", "WP203InteropTests",
-               "--no-parallel", "--xunit-output", str(xml), "--scratch-path", str(stage_root / "swift-build")]
-    execute(command, environment, output / "swift-restore-export.log")
-    result = verify_swift_xml(xml)
+               "--parallel", "--num-workers", "1", "--disable-swift-testing", "--verbose",
+               "--xunit-output", str(xml), "--scratch-path", str(stage_root / "swift-build")]
+    execution_log = output / "swift-restore-export.log"
+    execute(command, environment, execution_log)
+    result = verify_swift_xml(xml, execution_log)
     write_or_check(output / "swift-results.json", json_bytes(result), check=False)
     proof = load_json(output / "swift-room-proof.json")
     if (proof.get("source_sha") != SOURCE_SHA or proof.get("inserted") != 12 or proof.get("skipped") != 0
