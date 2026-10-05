@@ -45,6 +45,10 @@ It was subsequently superseded by actual merged WP-203 production at base
 `d8f9b842581496baa382be1fe54dc866354b8150`; the coordinator explicitly authorized
 that exact current-main adoption through an attributed owning-branch merge.
 The backup hooks and source floors are preserved, not reverted to the carry.
+The later independently merged CI-consolidation PR #29 advanced actual main
+to `3c06d97e11cea96827c3349e78d1a5db7a8d5ad0` (parents `d8f9b842` and
+`4f3793dd`). It is adopted only as an actual merged base, not as an unmerged
+external actor's checkout. Earlier run/base bindings remain historical.
 
 Initial local JVM execution used the coordinator's private exclusive build gate and
 the existing credential-stripped scaffold runner with private user/project/
@@ -61,6 +65,15 @@ committed module input blobs and the actual executor binding even on failure.
 Successful owned hooks additionally retain `runtime-assertions.json` and
 `native-assertions.json`; neither changes a failed verdict into success.
 
+A subsequent exact two-file DATA-reader amendment authorizes only canonical,
+case-sensitive `path.name` sorting in `module_junit.safe_reports` and focused
+regressions. Windows `Path` normcase sorting had reordered `SourceReconnect*`
+and `SourceReconnection*`, making a genuine Linux artifact fail strict array
+replay on the observing host. The original failing PureWindowsPath-enumeration
+test was executed before the one-line repair. No set normalization, missing
+report acceptance, schema/workflow change or Windows native build is introduced;
+membership, raw bytes/hashes, ordering and all XML/failure guards stay strict.
+
 ## Declared commands and observed results
 
 | Command | Observed result and scope |
@@ -71,6 +84,7 @@ Successful owned hooks additionally retain `runtime-assertions.json` and
 | `python -B -m unittest discover -s docs\android\evidence\WP-207 -p test_collect_evidence.py -v` | 10 discovered/passed, zero failures/errors/skips |
 | `python -B -m unittest discover -s docs\android\evidence\WP-202 -p test_collect_evidence.py -v` | 19 discovered/passed after exact approved producer carry; original repository source credit remains separate |
 | `python -B -m unittest discover -s tools\android-port\tests -p test_ci_environment.py -v` | 18 discovered/passed for the admitted verify-only forwarding, exact argv and failure/credential boundaries |
+| `python -B -m unittest discover -s tools\android-port\tests -p test_module_junit.py -v` with `PYTHONPATH=tools\android-port` | 22 discovered/passed, zero failures/errors/skips. The focused case-sensitive regression failed before the approved one-line fix; full strict historical `validate_result` subsequently passed unchanged rather than using set-normalized acceptance |
 | Gated `:core:runtime:resolveRuntimeDependencies :core:runtime:compileTestKotlin --write-locks --dependency-verification strict` | Initial compile found a wrong `FrequencyRange` import; corrected |
 | Gated `:core:runtime:test` selecting values/policy/utilities/coordinator | 105 discovered, 103 passed, two native original-error-identity failures; implementation corrected, assertions retained |
 | Gated corrected source-core run | Found a misplaced deadline-racer return; corrected |
@@ -81,6 +95,13 @@ Successful owned hooks additionally retain `runtime-assertions.json` and
 | Hosted raw runtime runs before final source repairs | 218/213/5 failed, then 218/217/1 failed; zero errors/skips. All faulty assertions/production paths were repaired in this same PR, never disabled |
 | Hosted full Linux scaffold, run `37349456919` attempt 1 at `10936dea54feb0d7797a111a05739555a106a80f`, base `d8f9b842581496baa382be1fe54dc866354b8150` | Composite verification, standalone assertions, APK assembly, lint, APK inspection and aggregate all passed. Raw runtime 224, data 369 and DataStore 137 all passed without failures/errors/skips |
 | Hosted corrective Linux scaffold, run `37352588958` attempt 1 at `d09fc4c107d290047913171377e48bf67cec287e` | Failed before native/JVM test execution: Gradle's `java` extension shadowed the new fully-qualified `java.io.File` output path. Repaired with an explicit `File` import; no tests or acceptance claimed from this run |
+| Hosted repaired-build Linux scaffold, run `37353308922` attempt 1 at `e24c5608a024b09b55e2ab2e952ca361e224846d` | Actual raw runtime 226 discovered/225 passed/one failed, zero errors/skips; data 369 and DataStore 137 all passed. The new authored handshake test incorrectly expected CONNECTING after physical connection. Frozen state semantics define CONNECTED before AppStart completes; the test now asserts that exact phase, no READY token/send drain, and the entire unchanged snapshot across observer cancellation |
+
+The last failed run's official artifact `11364565110`, 1,722,774 bytes,
+SHA-256 `7235c60e4b7cfcec759d81e290f418a25ae3f618b8e2e3fb6183cbb917408b0f`,
+passed official digest and all 75 bounded member/CRC checks. Its exact executor
+binding and complete failed runtime/native raw outcomes were retained before
+the fail-closed result. It is not full-root, final-head or APK acceptance.
 
 The successful `10936dea` snapshot is **historical**, not acceptance for later
 source edits: independent review subsequently identified coupled shared-attempt

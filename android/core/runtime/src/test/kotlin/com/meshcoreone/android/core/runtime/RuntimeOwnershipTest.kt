@@ -104,10 +104,13 @@ class RuntimeOwnershipTest {
                 val observer = backgroundScope.async { manager.connect(platform.target) }
                 try {
                     runCurrent()
+                    val beforeCancellation = manager.snapshot.value
+                    assertEquals(DeviceConnectionState.CONNECTED, beforeCancellation.state)
+                    assertNull(beforeCancellation.token); assertFalse(beforeCancellation.state.canDrainSendQueue)
                     observer.cancelAndJoin()
                     assertTrue(observer.isCancelled); assertTrue(owner.isActive)
                     assertEquals(platform.target.deviceId, manager.activeConnectionAttemptDeviceId)
-                    assertEquals(DeviceConnectionState.CONNECTING, manager.connectionState)
+                    assertEquals(beforeCancellation, manager.snapshot.value)
                     assertEquals(1, radios.size); assertEquals(0, radios.single().closes)
                     assertEquals(1, radios.single().collectors); assertTrue(services.isEmpty())
                     gate.complete(Unit); runCurrent(); owner.await()
