@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "work_package": "WP-301",
+  "owner": "design-system-engineer",
+  "lease": "autonomous-WP-301-2cf00464",
+  "receipt_received_at": "2026-10-05T07:14:44.303Z",
+  "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+  "app_session": "0273a25a-e3b9-4950-9464-0a586b9a8b93",
+  "active_native_session": "74633b51-98c1-4c1c-b17f-2b90760edf1f",
+  "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
+  "branch": "cbattlegear-native-themes-and-identity",
+  "initial_base_sha": "2cf00464950e1fb9aae0dd913402eb3e12dc0044",
+  "initial_head_sha": "2cf00464950e1fb9aae0dd913402eb3e12dc0044",
+  "initial_worktree_clean": true,
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "source_tree": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "write_paths": [
+    "android/core/designsystem/",
+    "tools/android-port/theme_convert.py",
+    "docs/android/generated/icon-map.json",
+    "docs/android/deviations/WP-301.md",
+    "docs/android/evidence/WP-301/"
+  ],
+  "approved_owned_adaptations": [
+    "Copy exact pinned Appearance.Accessibility.ThemeReverted translations into module-owned generated resources with a typed accessor for unknown restored theme IDs; no entitlement/refund behavior or shared localization edits.",
+    "Preserve source palette components and document the System high-contrast white-outgoing contrast exception while fitting native Material foreground roles to actual WCAG thresholds."
+  ],
+  "local_jvm_authorized": false,
+  "shared_graph_authorized": true,
+  "shared_consumer_locks_authorized": false,
+  "amendments": [
+    {
+      "authority": "Same coordinator, same lease, delivered to active native session",
+      "paths": [
+        "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/ModuleGraph.kt",
+        "android/build-logic/convention/src/test/kotlin/com/meshcoreone/buildlogic/ModuleGraphTest.kt",
+        "docs/android/architecture/modules.md"
+      ],
+      "scope": "Add only designsystem -> datastore, real positive/reverse-cycle/forbidden Gradle fixtures, and its true process-lifetime description. Preserve every existing graph guard."
+    }
+  ],
+  "scope": "Coordinator-bound write-only receipt, not source parity, a JVM-slot grant, formal gate approval, hardware evidence, fleet activation or merge authority."
+}

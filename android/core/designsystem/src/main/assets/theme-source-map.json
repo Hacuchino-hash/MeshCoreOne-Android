@@ -1,0 +1,6243 @@
+{
+  "all_input_blobs": {
+    "AppIcon.icon/Assets/app-icon.png": "415a1a52d1a00ebc87d020507805a93c3e412c6a",
+    "AppIcon.icon/Assets/background.png": "32d812bf0cb83f2da77be48dca7c544e1f701a62",
+    "AppIcon.icon/icon.json": "dbab34c548a5c313c75cc4f15d013f4290d31902",
+    "LICENSE": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+    "MC1/ContentView.swift": "9beb0ea2574e02608ac972e71eaeac2ef93b30fa",
+    "MC1/Extensions/Color+Hex.swift": "498188df4a16fdb6bc41d5a70fbd653c24d493fa",
+    "MC1/Extensions/SNRQuality+Color.swift": "84f94ce98b512763c0c8f65578d094cc1436e1ab",
+    "MC1/Resources/Assets.xcassets/AppAccentColor.colorset/Contents.json": "02ad7501b7e31e8f89e3d77557daccbb7ef43fb4",
+    "MC1/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json": "13613e3ee1a9348462a11a77a619faa808a346eb",
+    "MC1/Resources/Assets.xcassets/Contents.json": "73c00596a7fca3f3d4bdd64053b69d86745f9e10",
+    "MC1/Resources/Assets.xcassets/HashtagDefault.colorset/Contents.json": "bf0789fe651a865fdfba2c6dfd537a2f9a752db4",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Accent.colorset/Contents.json": "1ee3600dc41d304fa759d9af5519b009033aea69",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Canvas.colorset/Contents.json": "15786420a7bf2824633779c7527b1f72dc5a94cd",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Card.colorset/Contents.json": "b9027ef297f920b8319c41681b35e959f508fff2",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Hashtag.colorset/Contents.json": "e6403a081ba55795ca239d26c26da29c32f12521",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/OutgoingText.colorset/Contents.json": "43efa35c4729c024e682eb95e11eed7bde445c3e",
+    "MC1/Resources/Assets.xcassets/Theme/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Accent.colorset/Contents.json": "9b9c3062ac66404d2f71e8e2e436ebd17af1c849",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Hashtag.colorset/Contents.json": "f559d6d20122b062ad20fdbc4f51a0cee9bbd39a",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Text.colorset/Contents.json": "112afafe1558de2e2a1285ddb74a93de3194583b",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Accent.colorset/Contents.json": "4331bb7d11235b2502cdc60f76cb49860d229086",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Canvas.colorset/Contents.json": "69ee9fe117f6cc29382c1d6adb5a3c4b3375a0a0",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Card.colorset/Contents.json": "beef994100d65cef98bddee1da1f426e9620d844",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Hashtag.colorset/Contents.json": "69ac85cc5b103d41376b373937daf2302dd8a805",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/OutgoingText.colorset/Contents.json": "15dfcbe311397111189ed8782cf31cfe9f6ec390",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Accent.colorset/Contents.json": "9dab68d9ef229436d146120ea1bcaf55cef11a20",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Canvas.colorset/Contents.json": "dd60f15e1ec5ab9b45464c3ef865c49a9417047e",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Card.colorset/Contents.json": "efb9857b70b5cba031057ade87f40eeb9337a132",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Hashtag.colorset/Contents.json": "c11d6588e53fca186a66951ae2c90751443f5977",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/OutgoingText.colorset/Contents.json": "fe13c89e8161d37f4cfc2d29514b377499fb07a2",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Accent.colorset/Contents.json": "0da56d808f9a86e06b3a3c90ed426a1aa96eaaea",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Canvas.colorset/Contents.json": "084e7f14efe3defd60092832c7e5f7fd0360f21a",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Card.colorset/Contents.json": "b230e7f8c7c7f11ee865d08f93bc8202755a2e02",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Hashtag.colorset/Contents.json": "f060d14a4df818bf2aca32ff7f027b7805931241",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Accent.colorset/Contents.json": "cf55fe43fe643a74119a4ac0757496e4cb87a4c4",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Canvas.colorset/Contents.json": "83099d802c125a51a8678988b86ccc8faa3dfc56",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Card.colorset/Contents.json": "3eaf9e23b6ef46a687ef0ebb324f5e09b53ae14f",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Contents.json": "787495bddd901e6a71694ea6e67323f73dd66d16",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Hashtag.colorset/Contents.json": "9aaf26b11b12761b2d0d812e2a1baf7ab341995b",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/OutgoingText.colorset/Contents.json": "d3d11b38afe8649e9df3b09e888b8e8134771ad3",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Accent.colorset/Contents.json": "fe393b4068a042551c9fac8af830baa1e93abd48",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Canvas.colorset/Contents.json": "a330bdea88250a92b9d33616ae92fe64fa620f22",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Card.colorset/Contents.json": "549416193c579771b1fc4a1b78e488787d23ea6b",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Hashtag.colorset/Contents.json": "ccaf0cef80d6c0197bd34c725d49a9586da14568",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/OutgoingText.colorset/Contents.json": "6bc2ff19c3826f6bf903edb28bc6bfe89d55a7f8",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Accent.colorset/Contents.json": "7cdf61c489847f78599ed6217714673fe03b917e",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Canvas.colorset/Contents.json": "3ddd7192ce86e53d24f901f77f6fff672bdb5661",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Card.colorset/Contents.json": "0ef9ada85932ba3767ea57fe98bac57860df2262",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Hashtag.colorset/Contents.json": "4c2d73c0b308772282d6c2a45ffbe1719f1262b9",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/OutgoingText.colorset/Contents.json": "34a99ad40f3725a2c30d5f4041822b590d20d4a6",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Accent.colorset/Contents.json": "9991f1c511516ef0436848638a0699233c13abcf",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Canvas.colorset/Contents.json": "a8ee0a5e48ee7add9a6494f74dd606e7e12cc698",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Card.colorset/Contents.json": "f2a241c2e7327969f254b82f445ae77449aadcd4",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Contents.json": "787495bddd901e6a71694ea6e67323f73dd66d16",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Hashtag.colorset/Contents.json": "2b6a03d84f3bad01e3c2b720226fc7fdbaba3e7a",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/OutgoingText.colorset/Contents.json": "f7cd53e3b053abcecb65a5c18a7ce101e97017f8",
+    "MC1/Resources/Localization/de.lproj/Settings.strings": "9f7ae7562b40a528885c4ad891f62a0e1de7a464",
+    "MC1/Resources/Localization/en.lproj/Settings.strings": "cd3ab48cc6bfa9785491ea8c9627abb32a3c6dcc",
+    "MC1/Resources/Localization/es.lproj/Settings.strings": "68b480269c1226bc26404850910635dda3c4e17a",
+    "MC1/Resources/Localization/fr.lproj/Settings.strings": "b95ef917bae4ecd0bdbd9ad556499d45a847eaf6",
+    "MC1/Resources/Localization/it.lproj/Settings.strings": "715c1e100ee6b22d2753b7ec8acaf4e381b34f23",
+    "MC1/Resources/Localization/ko.lproj/Settings.strings": "9ed3e62ddbca2de41bd1a1ddc403ea7c09f1d07c",
+    "MC1/Resources/Localization/nl.lproj/Settings.strings": "586d0b1f3a37b1361e3ca9d9933df36a6e2b3d9b",
+    "MC1/Resources/Localization/pl.lproj/Settings.strings": "910c63e20117674bb4f172452044054a66e0c36a",
+    "MC1/Resources/Localization/pt.lproj/Settings.strings": "9236a45870755f99c05390df02555aced6849c96",
+    "MC1/Resources/Localization/ru.lproj/Settings.strings": "65160a98297bf6b20fba65073945699711107fda",
+    "MC1/Resources/Localization/uk.lproj/Settings.strings": "a5e417a8e42ce33426a33f27252a0b7b03a06e14",
+    "MC1/Resources/Localization/zh-Hans.lproj/Settings.strings": "dad01490cfa3f00f7a144f3c0aa10c8dbebbe42e",
+    "MC1/Settings.bundle/Packages/Catppuccin.plist": "3ef6068cd507bf363ce97fff5b2f426d01ccca23",
+    "MC1/Settings.bundle/Packages/Nord.plist": "260894dfe74f62db1053dcbda740dc60d808d967",
+    "MC1/Settings.bundle/Packages/Solarized.plist": "e8373332f720bf2566cc32aabe77f118261af1e7",
+    "MC1/State/StatusPillState.swift": "d50864899f5331c63323fcdd5187616afdec77b8",
+    "MC1/Theme/AppColorSchemePreference.swift": "f6d8e493027f9e88d4fd0a4743912cd7fbd0903b",
+    "MC1/Theme/AppColors.swift": "ccf6c4132c082c26f86ea3323bd823cb0110d850",
+    "MC1/Theme/AppearanceToken.swift": "ec5eb002d350889701f6975bf230d9b576788465",
+    "MC1/Theme/AvatarCategory.swift": "70425d9953a68b2f9f9de88181e72f01690412ca",
+    "MC1/Theme/CategoryAvatarColors.swift": "07374fb895cb218753f8013f7cceccd2b572d993",
+    "MC1/Theme/CategoryHues.swift": "3a0591c9f2ed168b35006b65903e70408be67472",
+    "MC1/Theme/EnvironmentValues+AppTheme.swift": "6ffa49e37d2189c6bc6b565ea0b6c87ac461ac5a",
+    "MC1/Theme/IdentityGamut.swift": "5ff0890e7ee242e9d78f6db7cfa548b8f5d8a17f",
+    "MC1/Theme/Theme+AvatarColors.swift": "46fea7ea6cad7da1abf35976424213dd9ba45d68",
+    "MC1/Theme/Theme+LocalizedName.swift": "c15e3be7399c60b739c7f5231059b768ea4d4471",
+    "MC1/Theme/Theme.swift": "337e304c6384d48627bbcec19ffa7a37ffbe8f26",
+    "MC1/Theme/ThemeCardMetrics.swift": "d9f6fd0118bd17e2096eb741507cb28fcbb8949a",
+    "MC1/Theme/ThemePaletteSwatch.swift": "fa4e3c8ca2789c93945d07cd6b0210c8512be7d3",
+    "MC1/Theme/ThemeRegistry.swift": "d9da7c1a253647d10a241b1ddea668887fe94286",
+    "MC1/Theme/ThemeService.swift": "c7f0744feba5d84027e884678a0b8f3a4daba382",
+    "MC1/Theme/ThemeServiceError.swift": "3b61531a9b1221e85d44b78f9a7c25f289965591",
+    "MC1/Theme/ThemedSurfaceModifiers.swift": "01d8271f208b8604dbe6a4386006491f1eb71290",
+    "MC1/Theme/WCAGContrast.swift": "d7290b291a144442297c1ce8c60c98805ebca44e",
+    "MC1/Views/Appearance/Components/ThemeSelectionCard.swift": "be471b898ef43f9ad6564aeaac7db0991c322a07",
+    "MC1/Views/Chats/ChannelAvatar.swift": "de5cd7adb69fa83fa650552ee8119fbbab2d982c",
+    "MC1/Views/Components/BLEStatusIndicatorView.swift": "e4aff2802012869e9f45492d96c5b97c5bdc30cd",
+    "MC1/Views/Components/NodeAvatar.swift": "c617ebf4063bb32e3a1ca0450cd4f90340a4c8f8",
+    "MC1Services/Sources/MC1Services/Models/Rendering/EnvInputs.swift": "aca434f4d971d0f9dc4c8f7c575a2f168527b5b7",
+    "MC1Services/Sources/MC1Services/Models/Rendering/SNRQuality.swift": "7bfd48a129a966c06f68ff6aec17eb428b631828",
+    "MC1Services/Sources/MC1Services/Services/StoreCatalog.swift": "db08a506d241bf491286414ca78d314ed5f07e42",
+    "MC1Tests/AppColorSchemePreferenceTests.swift": "ef730c917c2882531971a214076156c4d5a06873",
+    "MC1Tests/AppStateThemeWiringTests.swift": "7747a0d0412299b93d527d211883949be8305ede",
+    "MC1Tests/AppThemeEnvironmentTests.swift": "74e792eb77222158549e47dd5cd7c1228fa090b2",
+    "MC1Tests/MessageTextThemeTests.swift": "17b89f9ca0ee1fecb5b35e3fb293020ed8920e01",
+    "MC1Tests/Theme/IdentityGamutTests.swift": "2990361c2ce10c71c773420e5d0df67b92e5bb7e",
+    "MC1Tests/Theme/ThemeContrastTests.swift": "94bf85a509ff0dbb769790ab41858bb553d6bf3c",
+    "MC1Tests/Theme/ThemeStructureTests.swift": "cea7203edec1d4986c519f5163e2f2bebce13ba4",
+    "MC1Tests/ThemeLocalizedNameTests.swift": "18c5f20ebc7c28cdf9b753e25e260b9f829690d3",
+    "MC1Tests/ThemeRegistryTests.swift": "0911076da0335968a0d544629757b035060f6c57",
+    "MC1Tests/ThemeServiceTests.swift": "9f4a6d812ceaad0f89f34b059b8e20f44804b58e"
+  },
+  "asset_fallback": "exact appearance; same luminosity standard; universal high; universal standard",
+  "color_assets": {
+    "AppAccentColor": {
+      "blob_sha": "02ad7501b7e31e8f89e3d77557daccbb7ef43fb4",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.922,
+            "green": 0.388,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.922",
+            "green": "0.388",
+            "red": "0.141"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.922,
+            "green": 0.388,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.922",
+            "green": "0.388",
+            "red": "0.141"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.961,
+            "green": 0.471,
+            "red": 0.196
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.961",
+            "green": "0.471",
+            "red": "0.196"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.922,
+            "green": 0.388,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.922",
+            "green": "0.388",
+            "red": "0.141"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/AppAccentColor.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.922,
+            "green": 0.388,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.922",
+            "green": "0.388",
+            "red": "0.141"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.961,
+            "green": 0.471,
+            "red": 0.196
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.961",
+            "green": "0.471",
+            "red": "0.196"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.922,
+            "green": 0.388,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.922",
+            "green": "0.388",
+            "red": "0.141"
+          }
+        }
+      }
+    },
+    "HashtagDefault": {
+      "blob_sha": "bf0789fe651a865fdfba2c6dfd537a2f9a752db4",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.918,
+            "green": 0.824,
+            "red": 0.353
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.918",
+            "green": "0.824",
+            "red": "0.353"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.918,
+            "green": 0.824,
+            "red": 0.353
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.918",
+            "green": "0.824",
+            "red": "0.353"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.471,
+            "green": 0.392,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.471",
+            "green": "0.392",
+            "red": "0.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.561,
+            "green": 0.478,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.561",
+            "green": "0.478",
+            "red": "0.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/HashtagDefault.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.918,
+            "green": 0.824,
+            "red": 0.353
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.918",
+            "green": "0.824",
+            "red": "0.353"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.471,
+            "green": 0.392,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.471",
+            "green": "0.392",
+            "red": "0.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.561,
+            "green": 0.478,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.561",
+            "green": "0.478",
+            "red": "0.000"
+          }
+        }
+      }
+    },
+    "Theme/Catppuccin/Accent": {
+      "blob_sha": "1ee3600dc41d304fa759d9af5519b009033aea69",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.753,
+            "red": 0.851
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.753",
+            "red": "0.851"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.969,
+            "green": 0.651,
+            "red": 0.796
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.969",
+            "green": "0.651",
+            "red": "0.796"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.91,
+            "green": 0.169,
+            "red": 0.482
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.910",
+            "green": "0.169",
+            "red": "0.482"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.937,
+            "green": 0.224,
+            "red": 0.533
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.937",
+            "green": "0.224",
+            "red": "0.533"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.753,
+            "red": 0.851
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.753",
+            "red": "0.851"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.969,
+            "green": 0.651,
+            "red": 0.796
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.969",
+            "green": "0.651",
+            "red": "0.796"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.91,
+            "green": 0.169,
+            "red": 0.482
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.910",
+            "green": "0.169",
+            "red": "0.482"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.937,
+            "green": 0.224,
+            "red": 0.533
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.937",
+            "green": "0.224",
+            "red": "0.533"
+          }
+        }
+      }
+    },
+    "Theme/Catppuccin/Canvas": {
+      "blob_sha": "15786420a7bf2824633779c7527b1f72dc5a94cd",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.067,
+            "red": 0.067
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.067",
+            "red": "0.067"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.118,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.118",
+            "red": "0.118"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.969,
+            "red": 0.961
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.969",
+            "red": "0.961"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.961,
+            "green": 0.945,
+            "red": 0.937
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.961",
+            "green": "0.945",
+            "red": "0.937"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.067,
+            "red": 0.067
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.067",
+            "red": "0.067"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.118,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.118",
+            "red": "0.118"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.969,
+            "red": 0.961
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.969",
+            "red": "0.961"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.961,
+            "green": 0.945,
+            "red": 0.937
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.961",
+            "green": "0.945",
+            "red": "0.937"
+          }
+        }
+      }
+    },
+    "Theme/Catppuccin/Card": {
+      "blob_sha": "b9027ef297f920b8319c41681b35e959f508fff2",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.353,
+            "green": 0.278,
+            "red": 0.271
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.353",
+            "green": "0.278",
+            "red": "0.271"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.267,
+            "green": 0.196,
+            "red": 0.192
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.267",
+            "green": "0.196",
+            "red": "0.192"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.8,
+            "green": 0.753,
+            "red": 0.737
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.800",
+            "green": "0.753",
+            "red": "0.737"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.855,
+            "green": 0.816,
+            "red": 0.8
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.855",
+            "green": "0.816",
+            "red": "0.800"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.353,
+            "green": 0.278,
+            "red": 0.271
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.353",
+            "green": "0.278",
+            "red": "0.271"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.267,
+            "green": 0.196,
+            "red": 0.192
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.267",
+            "green": "0.196",
+            "red": "0.192"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.8,
+            "green": 0.753,
+            "red": 0.737
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.800",
+            "green": "0.753",
+            "red": "0.737"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.855,
+            "green": 0.816,
+            "red": 0.8
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.855",
+            "green": "0.816",
+            "red": "0.800"
+          }
+        }
+      }
+    },
+    "Theme/Catppuccin/Hashtag": {
+      "blob_sha": "e6403a081ba55795ca239d26c26da29c32f12521",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 0.784,
+            "red": 0.651
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "0.784",
+            "red": "0.651"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.98,
+            "green": 0.706,
+            "red": 0.537
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.980",
+            "green": "0.706",
+            "red": "0.537"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.694,
+            "green": 0.263,
+            "red": 0.055
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.694",
+            "green": "0.263",
+            "red": "0.055"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.744,
+            "green": 0.31,
+            "red": 0.091
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.744",
+            "green": "0.310",
+            "red": "0.091"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 0.784,
+            "red": 0.651
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "0.784",
+            "red": "0.651"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.98,
+            "green": 0.706,
+            "red": 0.537
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.980",
+            "green": "0.706",
+            "red": "0.537"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.694,
+            "green": 0.263,
+            "red": 0.055
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.694",
+            "green": "0.263",
+            "red": "0.055"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.744,
+            "green": 0.31,
+            "red": 0.091
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.744",
+            "green": "0.310",
+            "red": "0.091"
+          }
+        }
+      }
+    },
+    "Theme/Catppuccin/OutgoingText": {
+      "blob_sha": "43efa35c4729c024e682eb95e11eed7bde445c3e",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.043,
+            "red": 0.043
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.043",
+            "red": "0.043"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.067,
+            "red": 0.067
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.067",
+            "red": "0.067"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Catppuccin/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.043,
+            "red": 0.043
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.043",
+            "red": "0.043"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.067,
+            "red": 0.067
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.067",
+            "red": "0.067"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Ember/Accent": {
+      "blob_sha": "9b9c3062ac66404d2f71e8e2e436ebd17af1c849",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.1,
+            "red": 0.72
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.100",
+            "red": "0.720"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.1,
+            "red": 0.72
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.100",
+            "red": "0.720"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.09,
+            "green": 0.09,
+            "red": 0.7
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.090",
+            "green": "0.090",
+            "red": "0.700"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.1,
+            "red": 0.72
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.100",
+            "red": "0.720"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Ember/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.1,
+            "red": 0.72
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.100",
+            "red": "0.720"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.09,
+            "green": 0.09,
+            "red": 0.7
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.090",
+            "green": "0.090",
+            "red": "0.700"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.1,
+            "red": 0.72
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.100",
+            "red": "0.720"
+          }
+        }
+      }
+    },
+    "Theme/Ember/Hashtag": {
+      "blob_sha": "f559d6d20122b062ad20fdbc4f51a0cee9bbd39a",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.75,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.750",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.75,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.750",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.4,
+            "green": 0.82,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.400",
+            "green": "0.820",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.75,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.750",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Ember/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.75,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.750",
+            "red": "1.000"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.4,
+            "green": 0.82,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.400",
+            "green": "0.820",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.75,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.750",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Ember/Text": {
+      "blob_sha": "112afafe1558de2e2a1285ddb74a93de3194583b",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.85,
+            "green": 0.85,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.850",
+            "green": "0.850",
+            "red": "0.950"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.85,
+            "green": 0.85,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.850",
+            "green": "0.850",
+            "red": "0.950"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.92,
+            "green": 0.92,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.920",
+            "green": "0.920",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.85,
+            "green": 0.85,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.850",
+            "green": "0.850",
+            "red": "0.950"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Ember/Text.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.85,
+            "green": 0.85,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.850",
+            "green": "0.850",
+            "red": "0.950"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.92,
+            "green": 0.92,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.920",
+            "green": "0.920",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.85,
+            "green": 0.85,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.850",
+            "green": "0.850",
+            "red": "0.950"
+          }
+        }
+      }
+    },
+    "Theme/Fern/Accent": {
+      "blob_sha": "4331bb7d11235b2502cdc60f76cb49860d229086",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.5,
+            "green": 0.8,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.500",
+            "green": "0.800",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.5,
+            "green": 0.8,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.500",
+            "green": "0.800",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.34,
+            "red": 0.14
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.340",
+            "red": "0.140"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.4,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.400",
+            "red": "0.180"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Fern/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.5,
+            "green": 0.8,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.500",
+            "green": "0.800",
+            "red": "0.550"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.34,
+            "red": 0.14
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.340",
+            "red": "0.140"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.4,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.400",
+            "red": "0.180"
+          }
+        }
+      }
+    },
+    "Theme/Fern/Canvas": {
+      "blob_sha": "69ee9fe117f6cc29382c1d6adb5a3c4b3375a0a0",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.023,
+            "green": 0.038,
+            "red": 0.019
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.023",
+            "green": "0.038",
+            "red": "0.019"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.063,
+            "green": 0.078,
+            "red": 0.059
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.063",
+            "green": "0.078",
+            "red": "0.059"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.893,
+            "green": 0.917,
+            "red": 0.905
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.893",
+            "green": "0.917",
+            "red": "0.905"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.957,
+            "red": 0.945
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.957",
+            "red": "0.945"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Fern/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.023,
+            "green": 0.038,
+            "red": 0.019
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.023",
+            "green": "0.038",
+            "red": "0.019"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.063,
+            "green": 0.078,
+            "red": 0.059
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.063",
+            "green": "0.078",
+            "red": "0.059"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.893,
+            "green": 0.917,
+            "red": 0.905
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.893",
+            "green": "0.917",
+            "red": "0.905"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.957,
+            "red": 0.945
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.957",
+            "red": "0.945"
+          }
+        }
+      }
+    },
+    "Theme/Fern/Card": {
+      "blob_sha": "beef994100d65cef98bddee1da1f426e9620d844",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.093,
+            "green": 0.121,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.093",
+            "green": "0.121",
+            "red": "0.082"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.133,
+            "green": 0.161,
+            "red": 0.122
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.133",
+            "green": "0.161",
+            "red": "0.122"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.948,
+            "green": 0.952,
+            "red": 0.948
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.948",
+            "green": "0.952",
+            "red": "0.948"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.988,
+            "green": 0.992,
+            "red": 0.988
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.988",
+            "green": "0.992",
+            "red": "0.988"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Fern/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.093,
+            "green": 0.121,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.093",
+            "green": "0.121",
+            "red": "0.082"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.133,
+            "green": 0.161,
+            "red": 0.122
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.133",
+            "green": "0.161",
+            "red": "0.122"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.948,
+            "green": 0.952,
+            "red": 0.948
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.948",
+            "green": "0.952",
+            "red": "0.948"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.988,
+            "green": 0.992,
+            "red": 0.988
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.988",
+            "green": "0.992",
+            "red": "0.988"
+          }
+        }
+      }
+    },
+    "Theme/Fern/Hashtag": {
+      "blob_sha": "69ac85cc5b103d41376b373937daf2302dd8a805",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.45,
+            "green": 0.85,
+            "red": 0.62
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.450",
+            "green": "0.850",
+            "red": "0.620"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.45,
+            "green": 0.85,
+            "red": 0.62
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.450",
+            "green": "0.850",
+            "red": "0.620"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.09,
+            "green": 0.36,
+            "red": 0.14
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.090",
+            "green": "0.360",
+            "red": "0.140"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.12,
+            "green": 0.42,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.120",
+            "green": "0.420",
+            "red": "0.180"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Fern/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.45,
+            "green": 0.85,
+            "red": 0.62
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.450",
+            "green": "0.850",
+            "red": "0.620"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.09,
+            "green": 0.36,
+            "red": 0.14
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.090",
+            "green": "0.360",
+            "red": "0.140"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.12,
+            "green": 0.42,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.120",
+            "green": "0.420",
+            "red": "0.180"
+          }
+        }
+      }
+    },
+    "Theme/Fern/OutgoingText": {
+      "blob_sha": "15dfcbe311397111189ed8782cf31cfe9f6ec390",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.102,
+            "green": 0.18,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.102",
+            "green": "0.180",
+            "red": "0.102"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Fern/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.102,
+            "green": 0.18,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.102",
+            "green": "0.180",
+            "red": "0.102"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Lavender/Accent": {
+      "blob_sha": "9dab68d9ef229436d146120ea1bcaf55cef11a20",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.65,
+            "red": 0.78
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.650",
+            "red": "0.780"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.65,
+            "red": 0.78
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.650",
+            "red": "0.780"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.61,
+            "green": 0.23,
+            "red": 0.36
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.610",
+            "green": "0.230",
+            "red": "0.360"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.68,
+            "green": 0.28,
+            "red": 0.42
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.680",
+            "green": "0.280",
+            "red": "0.420"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Lavender/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.65,
+            "red": 0.78
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.650",
+            "red": "0.780"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.61,
+            "green": 0.23,
+            "red": 0.36
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.610",
+            "green": "0.230",
+            "red": "0.360"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.68,
+            "green": 0.28,
+            "red": 0.42
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.680",
+            "green": "0.280",
+            "red": "0.420"
+          }
+        }
+      }
+    },
+    "Theme/Lavender/Canvas": {
+      "blob_sha": "dd60f15e1ec5ab9b45464c3ef865c49a9417047e",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.07,
+            "green": 0.019,
+            "red": 0.042
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.070",
+            "green": "0.019",
+            "red": "0.042"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.11,
+            "green": 0.059,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.110",
+            "green": "0.059",
+            "red": "0.082"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.905,
+            "red": 0.917
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.905",
+            "red": "0.917"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.973,
+            "green": 0.945,
+            "red": 0.957
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.973",
+            "green": "0.945",
+            "red": "0.957"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Lavender/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.07,
+            "green": 0.019,
+            "red": 0.042
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.070",
+            "green": "0.019",
+            "red": "0.042"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.11,
+            "green": 0.059,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.110",
+            "green": "0.059",
+            "red": "0.082"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.905,
+            "red": 0.917
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.905",
+            "red": "0.917"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.973,
+            "green": 0.945,
+            "red": 0.957
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.973",
+            "green": "0.945",
+            "red": "0.957"
+          }
+        }
+      }
+    },
+    "Theme/Lavender/Card": {
+      "blob_sha": "efb9857b70b5cba031057ade87f40eeb9337a132",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.16,
+            "green": 0.074,
+            "red": 0.113
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.160",
+            "green": "0.074",
+            "red": "0.113"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.2,
+            "green": 0.114,
+            "red": 0.153
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.200",
+            "green": "0.114",
+            "red": "0.153"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.952"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.992"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Lavender/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.16,
+            "green": 0.074,
+            "red": 0.113
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.160",
+            "green": "0.074",
+            "red": "0.113"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.2,
+            "green": 0.114,
+            "red": 0.153
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.200",
+            "green": "0.114",
+            "red": "0.153"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.952"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.992"
+          }
+        }
+      }
+    },
+    "Theme/Lavender/Hashtag": {
+      "blob_sha": "c11d6588e53fca186a66951ae2c90751443f5977",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.7,
+            "red": 0.88
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.700",
+            "red": "0.880"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.7,
+            "red": 0.88
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.700",
+            "red": "0.880"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.27,
+            "red": 0.45
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.270",
+            "red": "0.450"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.62,
+            "green": 0.32,
+            "red": 0.52
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.620",
+            "green": "0.320",
+            "red": "0.520"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Lavender/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.95,
+            "green": 0.7,
+            "red": 0.88
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.950",
+            "green": "0.700",
+            "red": "0.880"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.27,
+            "red": 0.45
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.270",
+            "red": "0.450"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.62,
+            "green": 0.32,
+            "red": 0.52
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.620",
+            "green": "0.320",
+            "red": "0.520"
+          }
+        }
+      }
+    },
+    "Theme/Lavender/OutgoingText": {
+      "blob_sha": "fe13c89e8161d37f4cfc2d29514b377499fb07a2",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.2,
+            "green": 0.102,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.200",
+            "green": "0.102",
+            "red": "0.141"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Lavender/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.2,
+            "green": 0.102,
+            "red": 0.141
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.200",
+            "green": "0.102",
+            "red": "0.141"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Marine/Accent": {
+      "blob_sha": "0da56d808f9a86e06b3a3c90ed426a1aa96eaaea",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.74,
+            "green": 0.37,
+            "red": 0.22
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.740",
+            "green": "0.370",
+            "red": "0.220"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.8,
+            "green": 0.43,
+            "red": 0.27
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.800",
+            "green": "0.430",
+            "red": "0.270"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.48,
+            "green": 0.2,
+            "red": 0.07
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.480",
+            "green": "0.200",
+            "red": "0.070"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.25,
+            "red": 0.1
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.250",
+            "red": "0.100"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Marine/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.74,
+            "green": 0.37,
+            "red": 0.22
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.740",
+            "green": "0.370",
+            "red": "0.220"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.8,
+            "green": 0.43,
+            "red": 0.27
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.800",
+            "green": "0.430",
+            "red": "0.270"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.48,
+            "green": 0.2,
+            "red": 0.07
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.480",
+            "green": "0.200",
+            "red": "0.070"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.25,
+            "red": 0.1
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.250",
+            "red": "0.100"
+          }
+        }
+      }
+    },
+    "Theme/Marine/Canvas": {
+      "blob_sha": "084e7f14efe3defd60092832c7e5f7fd0360f21a",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.085,
+            "green": 0.046,
+            "red": 0.015
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.085",
+            "green": "0.046",
+            "red": "0.015"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.125,
+            "green": 0.086,
+            "red": 0.055
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.125",
+            "green": "0.086",
+            "red": "0.055"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.917,
+            "red": 0.901
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.917",
+            "red": "0.901"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.973,
+            "green": 0.957,
+            "red": 0.941
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.973",
+            "green": "0.957",
+            "red": "0.941"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Marine/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.085,
+            "green": 0.046,
+            "red": 0.015
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.085",
+            "green": "0.046",
+            "red": "0.015"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.125,
+            "green": 0.086,
+            "red": 0.055
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.125",
+            "green": "0.086",
+            "red": "0.055"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.917,
+            "red": 0.901
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.917",
+            "red": "0.901"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.973,
+            "green": 0.957,
+            "red": 0.941
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.973",
+            "green": "0.957",
+            "red": "0.941"
+          }
+        }
+      }
+    },
+    "Theme/Marine/Card": {
+      "blob_sha": "b230e7f8c7c7f11ee865d08f93bc8202755a2e02",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.148,
+            "green": 0.097,
+            "red": 0.062
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.148",
+            "green": "0.097",
+            "red": "0.062"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.188,
+            "green": 0.137,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.188",
+            "green": "0.137",
+            "red": "0.102"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.948
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.948"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.988
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.988"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Marine/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.148,
+            "green": 0.097,
+            "red": 0.062
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.148",
+            "green": "0.097",
+            "red": "0.062"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.188,
+            "green": 0.137,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.188",
+            "green": "0.137",
+            "red": "0.102"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.948
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.948"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.988
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.988"
+          }
+        }
+      }
+    },
+    "Theme/Marine/Hashtag": {
+      "blob_sha": "f060d14a4df818bf2aca32ff7f027b7805931241",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 0.85,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "0.850",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 0.85,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "0.850",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.49,
+            "green": 0.36,
+            "red": 0.04
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.490",
+            "green": "0.360",
+            "red": "0.040"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.56,
+            "green": 0.42,
+            "red": 0.06
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.560",
+            "green": "0.420",
+            "red": "0.060"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Marine/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 0.85,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "0.850",
+            "red": "0.550"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.49,
+            "green": 0.36,
+            "red": 0.04
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.490",
+            "green": "0.360",
+            "red": "0.040"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.56,
+            "green": 0.42,
+            "red": 0.06
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.560",
+            "green": "0.420",
+            "red": "0.060"
+          }
+        }
+      }
+    },
+    "Theme/Nord/Accent": {
+      "blob_sha": "cf55fe43fe643a74119a4ac0757496e4cb87a4c4",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.871,
+            "green": 0.816,
+            "red": 0.627
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.871",
+            "green": "0.816",
+            "red": "0.627"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.816,
+            "green": 0.753,
+            "red": 0.533
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.816",
+            "green": "0.753",
+            "red": "0.533"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.565,
+            "green": 0.376,
+            "red": 0.243
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.565",
+            "green": "0.376",
+            "red": "0.243"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.62,
+            "green": 0.435,
+            "red": 0.298
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.620",
+            "green": "0.435",
+            "red": "0.298"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Nord/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.871,
+            "green": 0.816,
+            "red": 0.627
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.871",
+            "green": "0.816",
+            "red": "0.627"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.816,
+            "green": 0.753,
+            "red": 0.533
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.816",
+            "green": "0.753",
+            "red": "0.533"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.565,
+            "green": 0.376,
+            "red": 0.243
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.565",
+            "green": "0.376",
+            "red": "0.243"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.62,
+            "green": 0.435,
+            "red": 0.298
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.620",
+            "green": "0.435",
+            "red": "0.298"
+          }
+        }
+      }
+    },
+    "Theme/Nord/Canvas": {
+      "blob_sha": "83099d802c125a51a8678988b86ccc8faa3dfc56",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.208,
+            "green": 0.169,
+            "red": 0.149
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.208",
+            "green": "0.169",
+            "red": "0.149"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.251,
+            "green": 0.204,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.251",
+            "green": "0.204",
+            "red": "0.180"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.898,
+            "red": 0.878
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.898",
+            "red": "0.878"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.957,
+            "green": 0.937,
+            "red": 0.925
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.957",
+            "green": "0.937",
+            "red": "0.925"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Nord/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.208,
+            "green": 0.169,
+            "red": 0.149
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.208",
+            "green": "0.169",
+            "red": "0.149"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.251,
+            "green": 0.204,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.251",
+            "green": "0.204",
+            "red": "0.180"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.933,
+            "green": 0.898,
+            "red": 0.878
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.933",
+            "green": "0.898",
+            "red": "0.878"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.957,
+            "green": 0.937,
+            "red": 0.925
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.957",
+            "green": "0.937",
+            "red": "0.925"
+          }
+        }
+      }
+    },
+    "Theme/Nord/Card": {
+      "blob_sha": "3eaf9e23b6ef46a687ef0ebb324f5e09b53ae14f",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.376,
+            "green": 0.302,
+            "red": 0.271
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.376",
+            "green": "0.302",
+            "red": "0.271"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.322,
+            "green": 0.259,
+            "red": 0.231
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.322",
+            "green": "0.259",
+            "red": "0.231"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Nord/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.376,
+            "green": 0.302,
+            "red": 0.271
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.376",
+            "green": "0.302",
+            "red": "0.271"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.322,
+            "green": 0.259,
+            "red": 0.231
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.322",
+            "green": "0.259",
+            "red": "0.231"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Nord/Hashtag": {
+      "blob_sha": "9aaf26b11b12761b2d0d812e2a1baf7ab341995b",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.853,
+            "green": 0.701,
+            "red": 0.888
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.853",
+            "green": "0.701",
+            "red": "0.888"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.853,
+            "green": 0.701,
+            "red": 0.888
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.853",
+            "green": "0.701",
+            "red": "0.888"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.524,
+            "green": 0.478,
+            "red": 0.316
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.524",
+            "green": "0.478",
+            "red": "0.316"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.515,
+            "green": 0.475,
+            "red": 0.336
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.515",
+            "green": "0.475",
+            "red": "0.336"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Nord/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.853,
+            "green": 0.701,
+            "red": 0.888
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.853",
+            "green": "0.701",
+            "red": "0.888"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.524,
+            "green": 0.478,
+            "red": 0.316
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.524",
+            "green": "0.478",
+            "red": "0.316"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.515,
+            "green": 0.475,
+            "red": 0.336
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.515",
+            "green": "0.475",
+            "red": "0.336"
+          }
+        }
+      }
+    },
+    "Theme/Nord/OutgoingText": {
+      "blob_sha": "d3d11b38afe8649e9df3b09e888b8e8134771ad3",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.251,
+            "green": 0.204,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.251",
+            "green": "0.204",
+            "red": "0.180"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Nord/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.251,
+            "green": 0.204,
+            "red": 0.18
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.251",
+            "green": "0.204",
+            "red": "0.180"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Olive/Accent": {
+      "blob_sha": "fe393b4068a042551c9fac8af830baa1e93abd48",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.65,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.650",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.65,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.650",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.35,
+            "red": 0.25
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.350",
+            "red": "0.250"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.4,
+            "red": 0.3
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.400",
+            "red": "0.300"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Olive/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.3,
+            "green": 0.65,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.300",
+            "green": "0.650",
+            "red": "0.550"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.35,
+            "red": 0.25
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.350",
+            "red": "0.250"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.4,
+            "red": 0.3
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.400",
+            "red": "0.300"
+          }
+        }
+      }
+    },
+    "Theme/Olive/Canvas": {
+      "blob_sha": "a330bdea88250a92b9d33616ae92fe64fa620f22",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.007,
+            "green": 0.035,
+            "red": 0.035
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.007",
+            "green": "0.035",
+            "red": "0.035"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.047,
+            "green": 0.075,
+            "red": 0.075
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.047",
+            "green": "0.075",
+            "red": "0.075"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.885,
+            "green": 0.913,
+            "red": 0.917
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.885",
+            "green": "0.913",
+            "red": "0.917"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.925,
+            "green": 0.953,
+            "red": 0.957
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.925",
+            "green": "0.953",
+            "red": "0.957"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Olive/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.007,
+            "green": 0.035,
+            "red": 0.035
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.007",
+            "green": "0.035",
+            "red": "0.035"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.047,
+            "green": 0.075,
+            "red": 0.075
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.047",
+            "green": "0.075",
+            "red": "0.075"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.885,
+            "green": 0.913,
+            "red": 0.917
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.885",
+            "green": "0.913",
+            "red": "0.917"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.925,
+            "green": 0.953,
+            "red": 0.957
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.925",
+            "green": "0.953",
+            "red": "0.957"
+          }
+        }
+      }
+    },
+    "Theme/Olive/Card": {
+      "blob_sha": "549416193c579771b1fc4a1b78e488787d23ea6b",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.066,
+            "green": 0.101,
+            "red": 0.105
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.066",
+            "green": "0.101",
+            "red": "0.105"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.141,
+            "red": 0.145
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.141",
+            "red": "0.145"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.944,
+            "green": 0.952,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.944",
+            "green": "0.952",
+            "red": "0.952"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.992,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.992",
+            "red": "0.992"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Olive/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.066,
+            "green": 0.101,
+            "red": 0.105
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.066",
+            "green": "0.101",
+            "red": "0.105"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.106,
+            "green": 0.141,
+            "red": 0.145
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.106",
+            "green": "0.141",
+            "red": "0.145"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.944,
+            "green": 0.952,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.944",
+            "green": "0.952",
+            "red": "0.952"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.984,
+            "green": 0.992,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.984",
+            "green": "0.992",
+            "red": "0.992"
+          }
+        }
+      }
+    },
+    "Theme/Olive/Hashtag": {
+      "blob_sha": "ccaf0cef80d6c0197bd34c725d49a9586da14568",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.95,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.950",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.95,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.950",
+            "red": "0.550"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.38,
+            "red": 0.19
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.380",
+            "red": "0.190"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.44,
+            "red": 0.24
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.440",
+            "red": "0.240"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Olive/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.95,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.950",
+            "red": "0.550"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.1,
+            "green": 0.38,
+            "red": 0.19
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.100",
+            "green": "0.380",
+            "red": "0.190"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.44,
+            "red": 0.24
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.440",
+            "red": "0.240"
+          }
+        }
+      }
+    },
+    "Theme/Olive/OutgoingText": {
+      "blob_sha": "6bc2ff19c3826f6bf903edb28bc6bfe89d55a7f8",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.149,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.149",
+            "red": "0.102"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Olive/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.149,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.149",
+            "red": "0.102"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Sakura/Accent": {
+      "blob_sha": "7cdf61c489847f78599ed6217714673fe03b917e",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.82,
+            "green": 0.7,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.820",
+            "green": "0.700",
+            "red": "0.950"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.82,
+            "green": 0.7,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.820",
+            "green": "0.700",
+            "red": "0.950"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.39,
+            "green": 0.15,
+            "red": 0.48
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.390",
+            "green": "0.150",
+            "red": "0.480"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.45,
+            "green": 0.2,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.450",
+            "green": "0.200",
+            "red": "0.550"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Sakura/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.82,
+            "green": 0.7,
+            "red": 0.95
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.820",
+            "green": "0.700",
+            "red": "0.950"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.39,
+            "green": 0.15,
+            "red": 0.48
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.390",
+            "green": "0.150",
+            "red": "0.480"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.45,
+            "green": 0.2,
+            "red": 0.55
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.450",
+            "green": "0.200",
+            "red": "0.550"
+          }
+        }
+      }
+    },
+    "Theme/Sakura/Canvas": {
+      "blob_sha": "3ddd7192ce86e53d24f901f77f6fff672bdb5661",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.038,
+            "green": 0.023,
+            "red": 0.062
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.038",
+            "green": "0.023",
+            "red": "0.062"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.063,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.063",
+            "red": "0.102"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.917,
+            "green": 0.909,
+            "red": 0.933
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.917",
+            "green": "0.909",
+            "red": "0.933"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.957,
+            "green": 0.949,
+            "red": 0.973
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.957",
+            "green": "0.949",
+            "red": "0.973"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Sakura/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.038,
+            "green": 0.023,
+            "red": 0.062
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.038",
+            "green": "0.023",
+            "red": "0.062"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.078,
+            "green": 0.063,
+            "red": 0.102
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.078",
+            "green": "0.063",
+            "red": "0.102"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.917,
+            "green": 0.909,
+            "red": 0.933
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.917",
+            "green": "0.909",
+            "red": "0.933"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.957,
+            "green": 0.949,
+            "red": 0.973
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.957",
+            "green": "0.949",
+            "red": "0.973"
+          }
+        }
+      }
+    },
+    "Theme/Sakura/Card": {
+      "blob_sha": "0ef9ada85932ba3767ea57fe98bac57860df2262",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.101,
+            "green": 0.074,
+            "red": 0.133
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.101",
+            "green": "0.074",
+            "red": "0.133"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.141,
+            "green": 0.114,
+            "red": 0.173
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.141",
+            "green": "0.114",
+            "red": "0.173"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.952"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.992"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Sakura/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.101,
+            "green": 0.074,
+            "red": 0.133
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.101",
+            "green": "0.074",
+            "red": "0.133"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.141,
+            "green": 0.114,
+            "red": 0.173
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.141",
+            "green": "0.114",
+            "red": "0.173"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.952,
+            "green": 0.948,
+            "red": 0.952
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.952",
+            "green": "0.948",
+            "red": "0.952"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.992,
+            "green": 0.988,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.992",
+            "green": "0.988",
+            "red": "0.992"
+          }
+        }
+      }
+    },
+    "Theme/Sakura/Hashtag": {
+      "blob_sha": "4c2d73c0b308772282d6c2a45ffbe1719f1262b9",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.8,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.800",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.8,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.800",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.3,
+            "red": 0.54
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.300",
+            "red": "0.540"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.36,
+            "red": 0.62
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.360",
+            "red": "0.620"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Sakura/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.55,
+            "green": 0.8,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.550",
+            "green": "0.800",
+            "red": "1.000"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.14,
+            "green": 0.3,
+            "red": 0.54
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.140",
+            "green": "0.300",
+            "red": "0.540"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.18,
+            "green": 0.36,
+            "red": 0.62
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.180",
+            "green": "0.360",
+            "red": "0.620"
+          }
+        }
+      }
+    },
+    "Theme/Sakura/OutgoingText": {
+      "blob_sha": "34a99ad40f3725a2c30d5f4041822b590d20d4a6",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.169,
+            "green": 0.078,
+            "red": 0.2
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.169",
+            "green": "0.078",
+            "red": "0.200"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Sakura/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.0,
+            "green": 0.0,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.000",
+            "green": "0.000",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.169,
+            "green": 0.078,
+            "red": 0.2
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.169",
+            "green": "0.078",
+            "red": "0.200"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    },
+    "Theme/Solarized/Accent": {
+      "blob_sha": "9991f1c511516ef0436848638a0699233c13abcf",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.71,
+            "green": 0.467,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.710",
+            "green": "0.467",
+            "red": "0.118"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.71,
+            "green": 0.467,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.710",
+            "green": "0.467",
+            "red": "0.118"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.561,
+            "green": 0.376,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.561",
+            "green": "0.376",
+            "red": "0.082"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.71,
+            "green": 0.467,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.710",
+            "green": "0.467",
+            "red": "0.118"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Solarized/Accent.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.71,
+            "green": 0.467,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.710",
+            "green": "0.467",
+            "red": "0.118"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.561,
+            "green": 0.376,
+            "red": 0.082
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.561",
+            "green": "0.376",
+            "red": "0.082"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.71,
+            "green": 0.467,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.710",
+            "green": "0.467",
+            "red": "0.118"
+          }
+        }
+      }
+    },
+    "Theme/Solarized/Canvas": {
+      "blob_sha": "a8ee0a5e48ee7add9a6494f74dd606e7e12cc698",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.149,
+            "green": 0.118,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.149",
+            "green": "0.118",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.212,
+            "green": 0.169,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.212",
+            "green": "0.169",
+            "red": "0.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.784,
+            "green": 0.878,
+            "red": 0.91
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.784",
+            "green": "0.878",
+            "red": "0.910"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.835,
+            "green": 0.91,
+            "red": 0.933
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.835",
+            "green": "0.910",
+            "red": "0.933"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Solarized/Canvas.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.149,
+            "green": 0.118,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.149",
+            "green": "0.118",
+            "red": "0.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.212,
+            "green": 0.169,
+            "red": 0.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.212",
+            "green": "0.169",
+            "red": "0.000"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.784,
+            "green": 0.878,
+            "red": 0.91
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.784",
+            "green": "0.878",
+            "red": "0.910"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.835,
+            "green": 0.91,
+            "red": 0.933
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.835",
+            "green": "0.910",
+            "red": "0.933"
+          }
+        }
+      }
+    },
+    "Theme/Solarized/Card": {
+      "blob_sha": "f2a241c2e7327969f254b82f445ae77449aadcd4",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.314,
+            "green": 0.259,
+            "red": 0.047
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.314",
+            "green": "0.259",
+            "red": "0.047"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.259,
+            "green": 0.212,
+            "red": 0.027
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.259",
+            "green": "0.212",
+            "red": "0.027"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.941,
+            "green": 0.988,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.941",
+            "green": "0.988",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.89,
+            "green": 0.965,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.890",
+            "green": "0.965",
+            "red": "0.992"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Solarized/Card.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.314,
+            "green": 0.259,
+            "red": 0.047
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.314",
+            "green": "0.259",
+            "red": "0.047"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.259,
+            "green": 0.212,
+            "red": 0.027
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.259",
+            "green": "0.212",
+            "red": "0.027"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.941,
+            "green": 0.988,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.941",
+            "green": "0.988",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.89,
+            "green": 0.965,
+            "red": 0.992
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.890",
+            "green": "0.965",
+            "red": "0.992"
+          }
+        }
+      }
+    },
+    "Theme/Solarized/Hashtag": {
+      "blob_sha": "2b6a03d84f3bad01e3c2b720226fc7fdbaba3e7a",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.697,
+            "green": 0.738,
+            "red": 0.193
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.697",
+            "green": "0.738",
+            "red": "0.193"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.697,
+            "green": 0.738,
+            "red": 0.193
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.697",
+            "green": "0.738",
+            "red": "0.193"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.467,
+            "green": 0.502,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.467",
+            "green": "0.502",
+            "red": "0.118"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.455,
+            "green": 0.482,
+            "red": 0.126
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.455",
+            "green": "0.482",
+            "red": "0.126"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Solarized/Hashtag.colorset/Contents.json",
+      "variants": {
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.697,
+            "green": 0.738,
+            "red": 0.193
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.697",
+            "green": "0.738",
+            "red": "0.193"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.467,
+            "green": 0.502,
+            "red": 0.118
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.467",
+            "green": "0.502",
+            "red": "0.118"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 0.455,
+            "green": 0.482,
+            "red": 0.126
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "0.455",
+            "green": "0.482",
+            "red": "0.126"
+          }
+        }
+      }
+    },
+    "Theme/Solarized/OutgoingText": {
+      "blob_sha": "f7cd53e3b053abcecb65a5c18a7ce101e97017f8",
+      "effective": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_high"
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "dark_standard"
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_high"
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          },
+          "selected_variant": "light_standard"
+        }
+      },
+      "path": "MC1/Resources/Assets.xcassets/Theme/Solarized/OutgoingText.colorset/Contents.json",
+      "variants": {
+        "dark_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "dark_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_high": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        },
+        "light_standard": {
+          "color_space": "srgb",
+          "components": {
+            "alpha": 1.0,
+            "blue": 1.0,
+            "green": 1.0,
+            "red": 1.0
+          },
+          "raw_components": {
+            "alpha": "1.000",
+            "blue": "1.000",
+            "green": "1.000",
+            "red": "1.000"
+          }
+        }
+      }
+    }
+  },
+  "entitlements": "All ten themes are unlocked. Original product IDs are inert provenance, not permissions.",
+  "generator": "tools/android-port/theme_convert.py",
+  "generator_sha256": "83cd2a6fa19e208a8d5190dd4b7d5b7e75951e4ff6ec6087dd1581e382d1a9fe",
+  "primary_owned_inputs": {
+    "AppIcon.icon/Assets/app-icon.png": "415a1a52d1a00ebc87d020507805a93c3e412c6a",
+    "AppIcon.icon/Assets/background.png": "32d812bf0cb83f2da77be48dca7c544e1f701a62",
+    "AppIcon.icon/icon.json": "dbab34c548a5c313c75cc4f15d013f4290d31902",
+    "MC1/Extensions/Color+Hex.swift": "498188df4a16fdb6bc41d5a70fbd653c24d493fa",
+    "MC1/Extensions/SNRQuality+Color.swift": "84f94ce98b512763c0c8f65578d094cc1436e1ab",
+    "MC1/Resources/Assets.xcassets/AppAccentColor.colorset/Contents.json": "02ad7501b7e31e8f89e3d77557daccbb7ef43fb4",
+    "MC1/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json": "13613e3ee1a9348462a11a77a619faa808a346eb",
+    "MC1/Resources/Assets.xcassets/Contents.json": "73c00596a7fca3f3d4bdd64053b69d86745f9e10",
+    "MC1/Resources/Assets.xcassets/HashtagDefault.colorset/Contents.json": "bf0789fe651a865fdfba2c6dfd537a2f9a752db4",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Accent.colorset/Contents.json": "1ee3600dc41d304fa759d9af5519b009033aea69",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Canvas.colorset/Contents.json": "15786420a7bf2824633779c7527b1f72dc5a94cd",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Card.colorset/Contents.json": "b9027ef297f920b8319c41681b35e959f508fff2",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Hashtag.colorset/Contents.json": "e6403a081ba55795ca239d26c26da29c32f12521",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/OutgoingText.colorset/Contents.json": "43efa35c4729c024e682eb95e11eed7bde445c3e",
+    "MC1/Resources/Assets.xcassets/Theme/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Accent.colorset/Contents.json": "9b9c3062ac66404d2f71e8e2e436ebd17af1c849",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Hashtag.colorset/Contents.json": "f559d6d20122b062ad20fdbc4f51a0cee9bbd39a",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Text.colorset/Contents.json": "112afafe1558de2e2a1285ddb74a93de3194583b",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Accent.colorset/Contents.json": "4331bb7d11235b2502cdc60f76cb49860d229086",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Canvas.colorset/Contents.json": "69ee9fe117f6cc29382c1d6adb5a3c4b3375a0a0",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Card.colorset/Contents.json": "beef994100d65cef98bddee1da1f426e9620d844",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Hashtag.colorset/Contents.json": "69ac85cc5b103d41376b373937daf2302dd8a805",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/OutgoingText.colorset/Contents.json": "15dfcbe311397111189ed8782cf31cfe9f6ec390",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Accent.colorset/Contents.json": "9dab68d9ef229436d146120ea1bcaf55cef11a20",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Canvas.colorset/Contents.json": "dd60f15e1ec5ab9b45464c3ef865c49a9417047e",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Card.colorset/Contents.json": "efb9857b70b5cba031057ade87f40eeb9337a132",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Hashtag.colorset/Contents.json": "c11d6588e53fca186a66951ae2c90751443f5977",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/OutgoingText.colorset/Contents.json": "fe13c89e8161d37f4cfc2d29514b377499fb07a2",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Accent.colorset/Contents.json": "0da56d808f9a86e06b3a3c90ed426a1aa96eaaea",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Canvas.colorset/Contents.json": "084e7f14efe3defd60092832c7e5f7fd0360f21a",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Card.colorset/Contents.json": "b230e7f8c7c7f11ee865d08f93bc8202755a2e02",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Hashtag.colorset/Contents.json": "f060d14a4df818bf2aca32ff7f027b7805931241",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Accent.colorset/Contents.json": "cf55fe43fe643a74119a4ac0757496e4cb87a4c4",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Canvas.colorset/Contents.json": "83099d802c125a51a8678988b86ccc8faa3dfc56",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Card.colorset/Contents.json": "3eaf9e23b6ef46a687ef0ebb324f5e09b53ae14f",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Contents.json": "787495bddd901e6a71694ea6e67323f73dd66d16",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Hashtag.colorset/Contents.json": "9aaf26b11b12761b2d0d812e2a1baf7ab341995b",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/OutgoingText.colorset/Contents.json": "d3d11b38afe8649e9df3b09e888b8e8134771ad3",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Accent.colorset/Contents.json": "fe393b4068a042551c9fac8af830baa1e93abd48",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Canvas.colorset/Contents.json": "a330bdea88250a92b9d33616ae92fe64fa620f22",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Card.colorset/Contents.json": "549416193c579771b1fc4a1b78e488787d23ea6b",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Hashtag.colorset/Contents.json": "ccaf0cef80d6c0197bd34c725d49a9586da14568",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/OutgoingText.colorset/Contents.json": "6bc2ff19c3826f6bf903edb28bc6bfe89d55a7f8",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Accent.colorset/Contents.json": "7cdf61c489847f78599ed6217714673fe03b917e",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Canvas.colorset/Contents.json": "3ddd7192ce86e53d24f901f77f6fff672bdb5661",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Card.colorset/Contents.json": "0ef9ada85932ba3767ea57fe98bac57860df2262",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Contents.json": "6e965652df649eb7eefad19280d7b6f10bf088b6",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Hashtag.colorset/Contents.json": "4c2d73c0b308772282d6c2a45ffbe1719f1262b9",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/OutgoingText.colorset/Contents.json": "34a99ad40f3725a2c30d5f4041822b590d20d4a6",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Accent.colorset/Contents.json": "9991f1c511516ef0436848638a0699233c13abcf",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Canvas.colorset/Contents.json": "a8ee0a5e48ee7add9a6494f74dd606e7e12cc698",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Card.colorset/Contents.json": "f2a241c2e7327969f254b82f445ae77449aadcd4",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Contents.json": "787495bddd901e6a71694ea6e67323f73dd66d16",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Hashtag.colorset/Contents.json": "2b6a03d84f3bad01e3c2b720226fc7fdbaba3e7a",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/OutgoingText.colorset/Contents.json": "f7cd53e3b053abcecb65a5c18a7ce101e97017f8",
+    "MC1/Theme/AppColorSchemePreference.swift": "f6d8e493027f9e88d4fd0a4743912cd7fbd0903b",
+    "MC1/Theme/AppColors.swift": "ccf6c4132c082c26f86ea3323bd823cb0110d850",
+    "MC1/Theme/AppearanceToken.swift": "ec5eb002d350889701f6975bf230d9b576788465",
+    "MC1/Theme/AvatarCategory.swift": "70425d9953a68b2f9f9de88181e72f01690412ca",
+    "MC1/Theme/CategoryAvatarColors.swift": "07374fb895cb218753f8013f7cceccd2b572d993",
+    "MC1/Theme/CategoryHues.swift": "3a0591c9f2ed168b35006b65903e70408be67472",
+    "MC1/Theme/EnvironmentValues+AppTheme.swift": "6ffa49e37d2189c6bc6b565ea0b6c87ac461ac5a",
+    "MC1/Theme/IdentityGamut.swift": "5ff0890e7ee242e9d78f6db7cfa548b8f5d8a17f",
+    "MC1/Theme/Theme+AvatarColors.swift": "46fea7ea6cad7da1abf35976424213dd9ba45d68",
+    "MC1/Theme/Theme+LocalizedName.swift": "c15e3be7399c60b739c7f5231059b768ea4d4471",
+    "MC1/Theme/Theme.swift": "337e304c6384d48627bbcec19ffa7a37ffbe8f26",
+    "MC1/Theme/ThemeCardMetrics.swift": "d9f6fd0118bd17e2096eb741507cb28fcbb8949a",
+    "MC1/Theme/ThemePaletteSwatch.swift": "fa4e3c8ca2789c93945d07cd6b0210c8512be7d3",
+    "MC1/Theme/ThemeRegistry.swift": "d9da7c1a253647d10a241b1ddea668887fe94286",
+    "MC1/Theme/ThemeService.swift": "c7f0744feba5d84027e884678a0b8f3a4daba382",
+    "MC1/Theme/ThemeServiceError.swift": "3b61531a9b1221e85d44b78f9a7c25f289965591",
+    "MC1/Theme/ThemedSurfaceModifiers.swift": "01d8271f208b8604dbe6a4386006491f1eb71290",
+    "MC1/Theme/WCAGContrast.swift": "d7290b291a144442297c1ce8c60c98805ebca44e",
+    "MC1Tests/AppColorSchemePreferenceTests.swift": "ef730c917c2882531971a214076156c4d5a06873",
+    "MC1Tests/AppStateThemeWiringTests.swift": "7747a0d0412299b93d527d211883949be8305ede",
+    "MC1Tests/AppThemeEnvironmentTests.swift": "74e792eb77222158549e47dd5cd7c1228fa090b2",
+    "MC1Tests/MessageTextThemeTests.swift": "17b89f9ca0ee1fecb5b35e3fb293020ed8920e01",
+    "MC1Tests/Theme/IdentityGamutTests.swift": "2990361c2ce10c71c773420e5d0df67b92e5bb7e",
+    "MC1Tests/Theme/ThemeContrastTests.swift": "94bf85a509ff0dbb769790ab41858bb553d6bf3c",
+    "MC1Tests/Theme/ThemeStructureTests.swift": "cea7203edec1d4986c519f5163e2f2bebce13ba4",
+    "MC1Tests/ThemeLocalizedNameTests.swift": "18c5f20ebc7c28cdf9b753e25e260b9f829690d3",
+    "MC1Tests/ThemeRegistryTests.swift": "0911076da0335968a0d544629757b035060f6c57",
+    "MC1Tests/ThemeServiceTests.swift": "9f4a6d812ceaad0f89f34b059b8e20f44804b58e"
+  },
+  "reader": {
+    "blob_sha": "51f87a66c4a0af3cb92591484f4c7a242ecf7d2a",
+    "path": "tools/android-port/l10n_convert.py",
+    "revision": "2cf00464950e1fb9aae0dd913402eb3e12dc0044"
+  },
+  "recovery": {
+    "de": {
+      "blob_sha": "9f7ae7562b40a528885c4ad891f62a0e1de7a464",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/de.lproj/Settings.strings",
+      "text": "Design auf den Standard zur\u00fcckgesetzt."
+    },
+    "en": {
+      "blob_sha": "cd3ab48cc6bfa9785491ea8c9627abb32a3c6dcc",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/en.lproj/Settings.strings",
+      "text": "Theme reverted to the default."
+    },
+    "es": {
+      "blob_sha": "68b480269c1226bc26404850910635dda3c4e17a",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/es.lproj/Settings.strings",
+      "text": "Tema restablecido al predeterminado."
+    },
+    "fr": {
+      "blob_sha": "b95ef917bae4ecd0bdbd9ad556499d45a847eaf6",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/fr.lproj/Settings.strings",
+      "text": "Th\u00e8me r\u00e9tabli au th\u00e8me par d\u00e9faut."
+    },
+    "it": {
+      "blob_sha": "715c1e100ee6b22d2753b7ec8acaf4e381b34f23",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/it.lproj/Settings.strings",
+      "text": "Tema ripristinato a quello predefinito."
+    },
+    "ko": {
+      "blob_sha": "9ed3e62ddbca2de41bd1a1ddc403ea7c09f1d07c",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/ko.lproj/Settings.strings",
+      "text": "\ud14c\ub9c8\uac00 \uae30\ubcf8\uac12\uc73c\ub85c \ub418\ub3cc\uc544\uac14\uc2b5\ub2c8\ub2e4."
+    },
+    "nl": {
+      "blob_sha": "586d0b1f3a37b1361e3ca9d9933df36a6e2b3d9b",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/nl.lproj/Settings.strings",
+      "text": "Thema teruggezet naar het standaardthema."
+    },
+    "pl": {
+      "blob_sha": "910c63e20117674bb4f172452044054a66e0c36a",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/pl.lproj/Settings.strings",
+      "text": "Przywr\u00f3cono motyw domy\u015blny."
+    },
+    "pt": {
+      "blob_sha": "9236a45870755f99c05390df02555aced6849c96",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/pt.lproj/Settings.strings",
+      "text": "Tema reposto para o predefinido."
+    },
+    "ru": {
+      "blob_sha": "65160a98297bf6b20fba65073945699711107fda",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/ru.lproj/Settings.strings",
+      "text": "\u0422\u0435\u043c\u0430 \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0435\u043d\u0430 \u043a \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u043e\u0439."
+    },
+    "uk": {
+      "blob_sha": "a5e417a8e42ce33426a33f27252a0b7b03a06e14",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/uk.lproj/Settings.strings",
+      "text": "\u0422\u0435\u043c\u0443 \u043f\u043e\u0432\u0435\u0440\u043d\u0435\u043d\u043e \u043d\u0430 \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0443."
+    },
+    "zh-Hans": {
+      "blob_sha": "dad01490cfa3f00f7a144f3c0aa10c8dbebbe42e",
+      "key": "Appearance.Accessibility.ThemeReverted",
+      "path": "MC1/Resources/Localization/zh-Hans.lproj/Settings.strings",
+      "text": "\u4e3b\u9898\u5df2\u6062\u590d\u4e3a\u9ed8\u8ba4\u3002"
+    }
+  },
+  "reference_commit": "db14559b39d32322b06477c6ae676112f583db50",
+  "reference_tree": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
+  "resource_dispositions": {
+    "AppIcon.icon/Assets/app-icon.png": "verbatim-licensed-incumbent-native-brand-resource",
+    "AppIcon.icon/Assets/background.png": "verbatim-licensed-incumbent-native-brand-resource",
+    "AppIcon.icon/icon.json": "incumbent-icon-recipe-reference-no-Apple-glass-extraction",
+    "MC1/Resources/Assets.xcassets/AppAccentColor.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/HashtagDefault.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Catppuccin/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Ember/Text.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Fern/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Lavender/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Marine/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Nord/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Olive/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Sakura/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Accent.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Canvas.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Card.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Contents.json": "source-namespace-or-native-launcher-reference",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/Hashtag.colorset/Contents.json": "converted-exact-components-and-effective-variants",
+    "MC1/Resources/Assets.xcassets/Theme/Solarized/OutgoingText.colorset/Contents.json": "converted-exact-components-and-effective-variants"
+  },
+  "schema_version": 1,
+  "system_adaptation": "Native neutral/card tiers are runtime tokens, never replacements for named source components.",
+  "themes": [
+    {
+      "canvas": null,
+      "card": null,
+      "category_hues": null,
+      "category_override": [
+        3368584,
+        43775,
+        16746496
+      ],
+      "colors": {
+        "accentColor": "AppAccentColor",
+        "hashtagColor": "HashtagDefault",
+        "outgoingTextColor": "white"
+      },
+      "display_name_key": "Settings.Support.Theme.Default",
+      "hue_anchors": [
+        18.0,
+        25.0,
+        44.0,
+        77.0,
+        120.0,
+        180.0,
+        215.0,
+        255.0,
+        307.0,
+        343.0
+      ],
+      "id": "default",
+      "preferred_scheme": null,
+      "saturation": [
+        0.45,
+        0.7
+      ],
+      "source_product_id": null
+    },
+    {
+      "canvas": "black",
+      "card": null,
+      "category_hues": [
+        0.0,
+        24.0,
+        345.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Ember/Accent",
+        "hashtagColor": "Theme/Ember/Hashtag",
+        "outgoingTextColor": "Theme/Ember/Text"
+      },
+      "display_name_key": "Settings.Support.Theme.Ember",
+      "hue_anchors": [
+        0.0,
+        8.0,
+        12.0,
+        24.0,
+        18.0,
+        345.0
+      ],
+      "id": "ember",
+      "preferred_scheme": "dark",
+      "saturation": [
+        0.5,
+        0.82
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.ember"
+    },
+    {
+      "canvas": "Theme/Fern/Canvas",
+      "card": "Theme/Fern/Card",
+      "category_hues": [
+        90.0,
+        128.0,
+        165.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Fern/Accent",
+        "hashtagColor": "Theme/Fern/Hashtag",
+        "outgoingTextColor": "Theme/Fern/OutgoingText"
+      },
+      "display_name_key": "Settings.Support.Theme.Fern",
+      "hue_anchors": [
+        72.0,
+        90.0,
+        108.0,
+        128.0,
+        150.0,
+        165.0
+      ],
+      "id": "fern",
+      "preferred_scheme": null,
+      "saturation": [
+        0.35,
+        0.65
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.fern"
+    },
+    {
+      "canvas": "Theme/Marine/Canvas",
+      "card": "Theme/Marine/Card",
+      "category_hues": [
+        215.0,
+        188.0,
+        245.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Marine/Accent",
+        "hashtagColor": "Theme/Marine/Hashtag",
+        "outgoingTextColor": "white"
+      },
+      "display_name_key": "Settings.Support.Theme.Marine",
+      "hue_anchors": [
+        178.0,
+        188.0,
+        200.0,
+        215.0,
+        232.0,
+        245.0
+      ],
+      "id": "marine",
+      "preferred_scheme": null,
+      "saturation": [
+        0.4,
+        0.72
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.marine"
+    },
+    {
+      "canvas": "Theme/Olive/Canvas",
+      "card": "Theme/Olive/Card",
+      "category_hues": [
+        85.0,
+        112.0,
+        70.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Olive/Accent",
+        "hashtagColor": "Theme/Olive/Hashtag",
+        "outgoingTextColor": "Theme/Olive/OutgoingText"
+      },
+      "display_name_key": "Settings.Support.Theme.Olive",
+      "hue_anchors": [
+        45.0,
+        55.0,
+        70.0,
+        85.0,
+        100.0,
+        112.0
+      ],
+      "id": "olive",
+      "preferred_scheme": null,
+      "saturation": [
+        0.35,
+        0.62
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.olive"
+    },
+    {
+      "canvas": "Theme/Lavender/Canvas",
+      "card": "Theme/Lavender/Card",
+      "category_hues": [
+        265.0,
+        222.0,
+        302.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Lavender/Accent",
+        "hashtagColor": "Theme/Lavender/Hashtag",
+        "outgoingTextColor": "Theme/Lavender/OutgoingText"
+      },
+      "display_name_key": "Settings.Support.Theme.Lavender",
+      "hue_anchors": [
+        222.0,
+        238.0,
+        248.0,
+        265.0,
+        285.0,
+        302.0
+      ],
+      "id": "lavender",
+      "preferred_scheme": null,
+      "saturation": [
+        0.35,
+        0.62
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.lavender"
+    },
+    {
+      "canvas": "Theme/Sakura/Canvas",
+      "card": "Theme/Sakura/Card",
+      "category_hues": [
+        320.0,
+        290.0,
+        350.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Sakura/Accent",
+        "hashtagColor": "Theme/Sakura/Hashtag",
+        "outgoingTextColor": "Theme/Sakura/OutgoingText"
+      },
+      "display_name_key": null,
+      "hue_anchors": [
+        290.0,
+        305.0,
+        320.0,
+        335.0,
+        350.0,
+        8.0
+      ],
+      "id": "sakura",
+      "preferred_scheme": null,
+      "saturation": [
+        0.4,
+        0.7
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.sakura"
+    },
+    {
+      "canvas": "Theme/Solarized/Canvas",
+      "card": "Theme/Solarized/Card",
+      "category_hues": [
+        205.0,
+        175.0,
+        331.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Solarized/Accent",
+        "hashtagColor": "Theme/Solarized/Hashtag",
+        "outgoingTextColor": "Theme/Solarized/OutgoingText"
+      },
+      "display_name_key": null,
+      "hue_anchors": [
+        1.0,
+        18.0,
+        45.0,
+        68.0,
+        175.0,
+        205.0,
+        237.0,
+        331.0
+      ],
+      "id": "solarized",
+      "preferred_scheme": null,
+      "saturation": [
+        0.5,
+        0.8
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.solarized"
+    },
+    {
+      "canvas": "Theme/Nord/Canvas",
+      "card": "Theme/Nord/Card",
+      "category_hues": [
+        210.0,
+        193.0,
+        280.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Nord/Accent",
+        "hashtagColor": "Theme/Nord/Hashtag",
+        "outgoingTextColor": "Theme/Nord/OutgoingText"
+      },
+      "display_name_key": null,
+      "hue_anchors": [
+        14.0,
+        40.0,
+        92.0,
+        178.0,
+        193.0,
+        210.0,
+        213.0,
+        240.0,
+        280.0,
+        311.0,
+        354.0
+      ],
+      "id": "nord",
+      "preferred_scheme": null,
+      "saturation": [
+        0.25,
+        0.52
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.nord"
+    },
+    {
+      "canvas": "Theme/Catppuccin/Canvas",
+      "card": "Theme/Catppuccin/Card",
+      "category_hues": [
+        267.0,
+        217.0,
+        316.0
+      ],
+      "category_override": null,
+      "colors": {
+        "accentColor": "Theme/Catppuccin/Accent",
+        "hashtagColor": "Theme/Catppuccin/Hashtag",
+        "outgoingTextColor": "Theme/Catppuccin/OutgoingText"
+      },
+      "display_name_key": null,
+      "hue_anchors": [
+        0.0,
+        10.0,
+        23.0,
+        41.0,
+        115.0,
+        170.0,
+        189.0,
+        199.0,
+        217.0,
+        232.0,
+        267.0,
+        316.0,
+        343.0,
+        351.0
+      ],
+      "id": "catppuccin",
+      "preferred_scheme": null,
+      "saturation": [
+        0.4,
+        0.7
+      ],
+      "source_product_id": "io.pocketmesh.app.theme.catppuccin"
+    }
+  ]
+}
