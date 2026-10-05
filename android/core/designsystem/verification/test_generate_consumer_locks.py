@@ -49,7 +49,7 @@ class GenerationTest(unittest.TestCase):
         with self.assertRaises(helper.PortError):
             helper.command({"host": "windows", "private_root": "/isolated/private"})
 
-    def test_clean_exact_ten_changes_are_required(self):
+    def test_clean_only_admitted_lock_changes_are_allowed(self):
         paths = sorted(f"android/gradle/dependency-locks/{name.removeprefix(':').replace(':', '-')}.lockfile"
             for name in helper.locks.MODULES)
         def git(repo, *arguments):
@@ -58,10 +58,22 @@ class GenerationTest(unittest.TestCase):
             self.assertEqual(paths, helper.check_changed_paths(set()))
             with self.assertRaises(helper.PortError):
                 helper.check_changed_paths({"unowned"})
-        for bad in (paths[:-1], paths + ["android/gradle/verification-metadata.xml"]):
+        for partial in ([], paths[:-1]):
+            with patch.object(helper, "git", side_effect=[("\n".join(partial)).encode(), b""]):
+                self.assertEqual(partial, helper.check_changed_paths(set()))
+        for bad in (paths + ["android/gradle/verification-metadata.xml"], ["android/unowned.lockfile"]):
             with patch.object(helper, "git", return_value=("\n".join(bad)).encode()):
                 with self.assertRaises(helper.PortError):
                     helper.check_changed_paths(set())
+
+    def test_unchanged_generated_state_still_requires_full_delta_validation(self):
+        with patch.object(helper, "git", return_value=b""):
+            with patch.object(helper.locks, "check", return_value={"result": "fixture-exact-state"}) as validate:
+                self.assertEqual(([], {"result": "fixture-exact-state"}), helper.verified_resolution(set()))
+                validate.assert_called_once_with()
+            with patch.object(helper.locks, "check", side_effect=ValueError("Actual additions are missing")):
+                with self.assertRaises(ValueError):
+                    helper.verified_resolution(set())
 
     def test_unknown_event_is_rejected_before_provisioning(self):
         with patch.dict(os.environ, {"GITHUB_EVENT_NAME": "workflow_dispatch"}):

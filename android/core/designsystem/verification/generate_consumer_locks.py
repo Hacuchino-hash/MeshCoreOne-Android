@@ -103,9 +103,14 @@ def check_changed_paths(before):
     after = set(git(ROOT, "diff", "--name-only", "HEAD").decode().splitlines())
     admitted = {f"android/gradle/dependency-locks/{name.removeprefix(':').replace(':', '-')}.lockfile"
         for name in locks.MODULES}
-    require(not before and after == admitted, "unknown or incomplete tracked-file write")
+    require(not before and after <= admitted, "unknown tracked-file write")
     require(not git(ROOT, "ls-files", "--others", "--exclude-standard").strip(), "unknown untracked candidate write")
     return sorted(after)
+
+
+def verified_resolution(before):
+    changed = check_changed_paths(before)
+    return changed, locks.check()
 
 
 def run(root):
@@ -135,8 +140,7 @@ def run(root):
         actual = command(state)
         record["command"] = actual
         ci.execute(actual, environment, proposal / "resolver.log", timeout=900)
-        record["changed_paths"] = check_changed_paths(before)
-        delta = locks.check()
+        record["changed_paths"], delta = verified_resolution(before)
         record["delta"] = delta
         records = []
         destination = proposal / "locks"

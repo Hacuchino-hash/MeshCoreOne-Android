@@ -1,12 +1,14 @@
 # WP-301 evidence
 
-**Implementation candidate; current native suite failed.** The
+**Implementation candidate; final current-head native/root proof is pending.** The
 earlier bounded local execution discovered/passed **87 tests**, zero
 failures/errors/skips, and retained **39 native PNG renders**. Those captures
 include the historical scroll-state limitation described below; they are not
-current proof for the review repairs. Exact consumer lock admission is active,
-but regeneration and complete current-head Windows/Linux/root/APK evidence
-remain pending. No device, hardware, signing,
+current proof for the review repairs. The latest completed repair run failed
+one of 92 cases on each host. Its identified external test-query correction
+has been adopted preserving authorship, and actual approved generated consumer
+locks are now persisted. Complete current-head Windows/Linux/root/APK evidence
+remains pending. No device, hardware, signing,
 formal licensing/gate, iOS/UIKit, complete-app or merged-WP acceptance is claimed.
 
 Repository: `cbattlegear/MeshCoreOne-Android`; owner `design-system-engineer`;
@@ -68,10 +70,11 @@ Current dependency additions still require actual resolution.
 | `:core:designsystem:verifyThemeTests :core:designsystem:lintDebug --dependency-verification strict` | Passed; complete native suite confirmed, owned lint **0 Error, 0 Fatal, 3 Warning**. |
 | `:convention:test --dependency-verification strict` with `-BuildLogic` | Passed in an independently declared private cache; actual positive/reverse-cycle/forbidden graph fixtures executed. |
 | `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --self-test` | Passed: **8 reader regressions**; incomplete additions, changed versions, other configuration changes and malformed/zero records are rejected. |
-| `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --check --self-test` | Failed closed on actual unregenerated consumer locks, as required; reader tests passed but no generated-state success is claimed. |
+| `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --check --self-test` | Initially failed closed on unregenerated state. After independently authorized actual byte persistence, passed: **8 reader tests**, exact ten locks/80 configurations/sixteen additions; every original version and other configuration preserved. |
 | `Invoke-MeshCoreNativeBuild -Owner WP-301 -Action { ... :core:designsystem:resolveAdmittedThemeConsumerGraphs --write-locks --dependency-verification strict }` | Gate blocked **before action/JVM** with `NATIVE_BUILD_CAPACITY`, virtual KiB **1,608,564** below **2,097,152**, physical KiB **8,272,312**. No lock generation occurred. |
 | `python .\docs\android\evidence\WP-301\retain_native_junit.py --self-test` | Passed: **10 reader regressions**; complete failure/malformed/zero/skipped XML is copied before validation and remains blocked, with no overwrite or repository-overlap fallback. |
-| `python .\android\core\designsystem\verification\generate_consumer_locks.py --self-test --workflow-check` | Passed: **10 helper regressions** plus actual existing workflow trust-boundary rules; closed/merged/wrong-base candidates, extra commands and unknown tracked/untracked writes fail closed. No generated state is claimed before execution. |
+| `python .\android\core\designsystem\verification\generate_consumer_locks.py --self-test --workflow-check` | Passed: **11 helper regressions** plus existing trust-boundary rules; closed/merged/wrong-base candidates, extra commands and unknown writes fail closed. An unchanged regenerated state still requires the full independent delta check. |
+| `python .\tools\android-port\controller\ci.py python --output <own-private-evidence-directory>` | After exact committed producer carry at `661736a4...`, passed **222 controller + 15 original scaffold tests**, zero failures/errors/skips. |
 
 These local Gradle tasks use `android\scaffold\invoke-gradle.ps1` with
 `-ConstrainedMemory -BuildHeap 512m -BuildMetaspace 512m -TestHeap 256m`,
@@ -85,8 +88,8 @@ pre-repair commit; final current-head hosted proof remains mandatory.
 [verbatim graph](consumer-dependency-graphs.tsv) identify only sixteen added
 DataStore1.2.1/Okio3.9.1/serialization-json1.7.3 components, all already admitted
 in the existing checksum XML. The coordinator independently admitted exactly
-these ten paths/eight configurations each/sixteen additions, but **actual targeted
-consumer regeneration has not run**. The local APK packaging command failed
+these ten paths/eight configurations each/sixteen additions. The initial local
+resolver did not run: the local APK packaging command failed
 to receive a daemon response under critically low OS commit/pagefile headroom.
 Only the specifically confirmed own idle/teardown daemon PID 4396 was stopped;
 the known private-cache PID scan then proved zero own JVMs and the slot was
@@ -116,10 +119,32 @@ checks actual candidate/head/base/run/attempt/source/manifest/policy, invokes
 only the declared resolver with strict verification, rejects unknown writes or
 version/configuration deltas, and uploads exact generated locks as a data
 proposal. This neither replaces mandatory CI nor commits/pushes/merges anything.
-Actual generation and independent artifact readback are still required.
+[Actual successful generation](hosted-lock-generation/run.json) at
+run **37324980133/attempt1**, head
+`661736a4797947430564edccce3dd1cb1cfed1d0`, base
+`e697823c8937eb5b12a40362ca2c5aae4c45f56a`, produced all ten exact lock files.
+The raw ZIP is **69,846 bytes**, SHA-256
+`275497901b1f9920539b47ecfeae89c52715975dd4e6a91f983a7f350679ed3e`
+(reported and independently recomputed). All 14 CRC-valid proposal entries
+are preserved byte-for-byte under deterministic gzip. The actual selected
+graph has **10,144 rows**, SHA-256
+`3192576b10a4bf256f871f1aac059022f056bf3c99989196519f1e33462c0653`.
+After independent complete coordinator readback, only these actual approved
+bytes were persisted in the ten leased paths. No manual/inferred lock records
+or generation-as-native-pass label is used. Later unchanged resolution still
+executes the same strict resolver and requires full delta/input validation.
 The owning branch includes the guarded WP-202 main merge
 `e697823c8937eb5b12a40362ca2c5aae4c45f56a`; earlier run/base bindings stay
 historical rather than being retroactively rebound to that newer base.
+
+An external same-repository CLI conversation advanced the remote branch to
+`738509bb380bffe51a7cd9cc17ba64327619b9c9`, parent exactly `661736a4...`, with
+one owned test-line unmerged-semantics query. Source writes stopped while the
+coordinator identified the actor; this worker did not author or push that
+commit. The separately authorized clean fast-forward preserves external
+authorship and leaves visibility/contrast assertions, source/production/floors
+and all 92 method declarations unchanged. The original `661736a4...` normal
+run was canceled by the successor, not relabeled as passing.
 
 The exclusive WP-109 owner froze the reviewed `81f677` producer; the coordinator
 admitted carrying its full self-contained three-file delta from e697, not a
