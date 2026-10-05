@@ -81,11 +81,8 @@ def validate_candidate(value: dict, text: str):
     if gate.get("name") != "android-ci" or gate.get("if") != "${{ always() }}" or gate.get("needs") != ["build"]:
         raise PortError("android-ci must always aggregate every required build outcome")
     build = jobs["build"]
-    matrix = build.get("strategy", {}).get("matrix", {}).get("include")
-    if matrix != [{"host": "linux", "runner": "ubuntu-24.04"}, {"host": "windows", "runner": "windows-2025"}]:
-        raise PortError("Both isolated pinned-label execution hosts are mandatory")
-    if build.get("strategy", {}).get("fail-fast") != "false":
-        raise PortError("One host failure must not suppress the other host's evidence")
+    if build.get("runs-on") != "ubuntu-24.04" or "strategy" in build:
+        raise PortError("The Linux execution host is mandatory and unmatrixed")
     runs = "\n".join(step.get("run", "") for step in build["steps"])
     if any("if" in step for step in build["steps"] if "run" in step):
         raise PortError("Mandatory candidate stages cannot be conditionally skipped")
