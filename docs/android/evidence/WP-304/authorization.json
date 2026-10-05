@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "work_package": "WP-304",
+  "owner": "design-system-engineer",
+  "lease": "autonomous-WP-304-824df06b",
+  "received_at": "2026-10-05T12:30:15.228-05:00",
+  "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+  "native_cli_session": "a9041f32-822e-4069-8ac7-608c93b08eea",
+  "app_session_alias": "1e89e152-8bc4-440f-930c-fb0f73b6d199",
+  "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
+  "original_managed_branch": "cbattlegear-refactored-spoon",
+  "current_branch": "cbattlegear-refactored-spoon",
+  "rename": "Native rename tool unavailable; parent explicitly authorized retaining the dedicated original branch. No raw Git rename.",
+  "original_base_sha": "824df06bfa91d2d7d39237a894b10ab06b8c039d",
+  "original_parents": [
+    "05a6b0f830de9f803f04674f6275073dfabfd9b1",
+    "b9037e352fab65309b358b1d2f2e6b3e3ed1b636"
+  ],
+  "current_base_sha": "d8f9b842581496baa382be1fe54dc866354b8150",
+  "current_base_parents": [
+    "824df06bfa91d2d7d39237a894b10ab06b8c039d",
+    "3a03d24dc7d268d96dee86c85ce8e6dd055053d2"
+  ],
+  "initial_and_reconciled_status": "Clean including all untracked paths; explicitly authorized own-branch fast-forward only.",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "source_tree": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "primary_path_blob_map_sha256": "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802",
+  "primary_inputs": {"production": 75, "test": 13, "total": 88},
+  "source_test_floor": {"families": 130, "expanded_scenarios": 158},
+  "write_paths": [
+    "android/core/ui/",
+    "docs/android/deviations/WP-304.md",
+    "docs/android/evidence/WP-304/"
+  ],
+  "shared_amendment": {
+    "paths": [
+      "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/ModuleGraph.kt",
+      "android/build-logic/convention/src/test/kotlin/com/meshcoreone/buildlogic/ModuleGraphTest.kt",
+      "docs/android/architecture/modules.md"
+    ],
+    "scope": "Only core:ui -> core:datastore, positive/reverse-cycle/forbidden-edge guards and process-lifetime rationale. Preserve all other guards and edges."
+  },
+  "root_ui_lock": {
+    "path": "android/gradle/dependency-locks/core-ui.lockfile",
+    "blob": "566089f945f40442b8c0980aabee409c1de2c6da",
+    "canonical_lf_bytes": 47512,
+    "canonical_lf_sha256": "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96",
+    "write_authorized": false
+  },
+  "module_local_lock": "Allowed only after actual separately authorized scoped Linux generation; no handwritten records or silent incumbent version changes.",
+  "producer_seams_authorized": false,
+  "native_execution_authorized": false,
+  "execution_boundary": "No Windows JVM/Gradle, WSL installs, shared-cache bootstrap or global setup. Exact scoped Linux generation/testing requires a separate grant.",
+  "scope": "Authorship receipt and readiness only; not source parity, native execution, gate acceptance, merge authority, fleet activation or whole-app completion."
+}

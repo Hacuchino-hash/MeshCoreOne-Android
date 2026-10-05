@@ -32,7 +32,7 @@ internal val allowedEdges: Map<String, Set<String>> = buildMap {
     put(":core:connectivity", setOf(":core:protocol", ":core:model", ":core:contracts", ":core:ble"))
     put(":core:runtime", setOf(":core:protocol", ":core:model", ":core:contracts"))
     put(":core:services", setOf(":core:protocol", ":core:model", ":core:contracts"))
-    put(":core:ui", setOf(":core:model", ":core:contracts", ":core:designsystem", ":core:l10n"))
+    put(":core:ui", setOf(":core:model", ":core:contracts", ":core:designsystem", ":core:l10n", ":core:datastore"))
     put(":core:maps", setOf(":core:model", ":core:contracts", ":core:designsystem", ":core:ui", ":core:l10n"))
     val featureCore = setOf(":core:model", ":core:contracts", ":core:designsystem", ":core:ui", ":core:maps", ":core:l10n")
     featurePaths.forEach { put(it, featureCore) }
