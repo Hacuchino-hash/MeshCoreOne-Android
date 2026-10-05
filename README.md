@@ -1,3 +1,30 @@
+# MeshCore One (MC1) — Android port
+
+This fork hosts an in-progress **native Android port** of MeshCore One, built by a fleet of
+specialized Copilot agents against a pinned, read-only Swift/iOS reference. The original Swift
+app (below) remains the behavior specification; Android work lands under `android/`.
+
+See [`docs/android/PORTING_PLAN.md`](docs/android/PORTING_PLAN.md) for the full plan and
+[`docs/android/port-manifest.json`](docs/android/port-manifest.json) for the authoritative,
+machine-readable work package (WP) list.
+
+### Android port status
+
+22 of 65 planned work packages are merged, covering: automation bootstrap, architecture ADRs,
+the pinned Gradle scaffold, Linux-only CI with cross-workflow fail-fast, the parity-test
+foundation, 12-locale localization, protocol byte/value/crypto/packet/parser parity, Cayenne LPP,
+immutable events, JVM session/transport (TCP, mock, NUS BLE), Room-backed persistence and
+migrations, Keystore-backed preferences, bidirectional iOS/Android backup compatibility, and
+native theme/identity foundations.
+
+In progress: connection-runtime lifecycle ownership (WP-207) and content/location safety
+primitives (WP-218). Everything else in the manifest is still pending.
+
+This status is updated as work-package pull requests merge — see merged PR titles
+(`[WP-xxx] ...`) for the detailed, per-package history.
+
+---
+
 # MeshCore One (MC1)
 
 A MeshCore client built for Apple devices in Swift.   
