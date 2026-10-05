@@ -1,287 +1,216 @@
 # WP-109 protocol sweep and executable TCP meshcli
 
-**Candidate implementation; protocol passes, CLI proof remains incomplete.** The actual
-898892e6 protocol run37232304276/attempt1 failed on BOTH Windows/Linux before
-test discovery: the new ownership clock's inferred continuation type was
-`CancellableContinuation<*>`, incompatible with its typed sleeper table.
-Both real compiler logs agree on lines39/43. The scoped repair explicitly
-specializes `suspendCancellableCoroutine<Unit>` in both new injected clocks;
-no expectation, identity floor, timeout or source producer changes. Fresh
-compiled/executed Kotlin/CLI and software acceptance still require proof.
-The actual fbef8c7f protocol37238479360/attempt1 subsequently reached all
-4,711 protocol cases successfully and then executed the72 real meshcli cases
-on both hosts, with2 actual CLI failures. All four deployed-main process cases
-were part of that real suite. The initial shared workflow retains protocol raw
-XML only and strips CI output variables before Gradle, so failed CLI XML is not
-yet retained in those bundles; this is the already requested concrete serialized
-forwarding/artifact seam, not permission to invent case outcomes. The owned
-test listener now emits actual failed fixture testcase/exception details at
-error level even under the real quiet runner, enabling same-PR diagnosis while
-the full raw forwarding amendment remains separately gated.
-Actual a37d1d5a protocol37240261699/attempt1 exposes both identical CLI failures
-on Windows/Linux: the UTF8 fixture incorrectly expected a trailing U+202E after
-the unchanged pinned DeviceInfo parser trims terminal controls, and the contact
-query's valid public ID `a5` repeated32 times contains the old `5a` repeated16
-secret sentinel. The fixtures now put U+202E inside retained model text and use
-the distinct exact16-byte `private-channel!` secret with independent literal
-hex/plaintext absence assertions. Raw ESC/bidi output is still forbidden. No
-production, source, golden, case identity or expected exit is changed; fresh
-execution of the same72 CLI cases is required before reporting success.
-The exact deployed output boundary is now covered by three additional declared
-cases: actual child stdout/stderr pipes closed before a real peer response, plus
-unavailable stderr during usage rejection with zero socket construction. Main
-checks the JVM PrintStream error flag rather than assuming suppressed stream
-IOExceptions mean success; output failure remains exit8 even if no diagnostic
-stream is writable. These declarations still require fresh actual execution.
-Twelve independently listed Unicode Bidi_Control rows now also traverse the
-real device query/socket and require literal JSON escapes for interior ALM,
-LRM/RLM, embeddings/overrides/pop and isolate controls. This closes the omitted
-ALM/LRM/RLM escape branches without changing source parser text behavior.
-The candidate declares87 CLI cases after these15 genuinely new native-only
-rows; they are not added original Swift declarations or duplicated parity labels.
-Actual d4721a47 normal protocol37242211561/attempt1 is green on both hosts, but
-the independently downloaded full Gradle log reports **73 CLI cases, not87**.
-The two new process tests and twelve-row bidi factory were mistakenly declared
-as local functions, so compilation/class-presence gates did not discover them.
-They are now class-level declarations. The reader requires all87 exact CLI
-identities/rows and all three new real-TCP identities in addition to the unchanged
-4,708 baseline, so this concrete reduced-discovery run no longer passes.
-No threshold is reduced and no green status substitutes for complete raw proof.
-The reader also rejects boolean schema/count substitutes and invented local
-authority, and retains the declared immutable CI/build-logic/catalog/wrapper/
-locks/notice inputs. Its complete input set is capped at2,048 files/64MiB with
-the existing per-file checks; binary artifacts retain exact bytes.
-Actual609ac6e4 protocol37244082018/attempt1 now gets through the mandatory87
-discovery floor and17 reader regressions on both hosts, but fails closed on the
-expected dynamic-case XML name representation. Gradle's failed-test listener
-reported method/index descriptors, whereas the full XML reader uses testcase
-names. The diagnostic now preserves the complete actual identity list in the
-retained Gradle failure log so the precise binding can be repaired, not guessed
-or relaxed. Complete raw CLI XML/input-bundle forwarding remains ungranted.
-Actual89aafd24 run37245043485/attempt1 exposes **87 identical full XML
-identities on both hosts**:40 arguments,41 TCP and6 deployed-main cases.
-Every row reached the strict zero-failed/skipped JUnit reader; the binding
-failure was the distinction between Gradle listener method/index descriptors
-and XML DynamicTest display names. The expected inventory now uses the exact
-declared parameter display labels, including every original planned row and
-both real closed-pipe main cases. It still requires87 distinct exact identities,
-not interchangeable names or relaxed class/count matching. Full raw XML and
-input blobs, not the diagnostic identity list alone, remain required for handoff.
-The prior d472 root37242211513/attempt1 was also independently replayed in full:
-schema2,215 controller+15 scaffold,47 composite+31 fresh standalone,
-166 model/45 Room/25 localization,24 lint targets/zero Error/Fatal/495 inherited
-warnings, real debug package/min31/target37/notices/static16KiB checks.
-Its actual module graph has zero incoming CLI edges and the actual APK DEX
-contains no CLI/testing/Room-verification packages. Both full root ZIPs are
-retained privately:windows11317764180
-SHA256`b8f3bb866a2723cc115b2c62baf6d83573f279346d11d53655ac268f71c5dd94`;
-linux11318355919
-SHA256`751d538775a733cbe638f140fb7092c937d54f0a5990a999a8b3084873a46f10`.
-This is prior software proof, not the current87-row/full-input/raw acceptance
-or any physical/API/firmware certification.
-The owned module now declares `retainMeshCliEvidence` as the actual CLI test's
-always-run finalizer and a normal verification dependency. It retains every
-raw XML/log byte and the complete immutable input blobs into the explicit
-`meshCliEvidenceDirectory` with a `-raw` suffix, including failed, zero and
-malformed reports. Validation errors produce a blocked manifest and nonzero
-exit; missing reports remain an explicit failure. This closes the owned
-failed-test retention path without expanding shared file authority. Existing
-collector copying is reused, with exact input blob and copied-byte checks.
-New reader regressions cover successful87-row retention, complete failed log
-nodes, malformed/zero/UTF16-entity raw preservation, stale destinations and blob
-substitution. The serialized shared forwarding properties remain required
-before either successful or failed bundles enter actual ANDROID_CI_OUTPUT.
-This new hook still requires fresh actual hosted execution.
-The coordinator subsequently issued the exact ACTIVE serialized forwarding
-amendment; see [forwarding-amendment.json](forwarding-amendment.json).
-Only `ci.py` and its existing environment tests are additionally leased, bound
-to actual main3da and ci.py blob38a5f6ac4478e93cab12372edd90a6191af6f724.
-Verify/protocol now write the actual schema1 stage/identity/host record and
-forward the two already-declared properties. Identity is validated before any
-JVM command; local null remains explicit. Other stages, stripped credentials,
-strict tasks/caches/outcomes/schema and workflows remain unchanged. Existing
-always-upload covers both complete verified and failed/raw directories.
-The proposed stdout-archive fallback was never implemented. Child unavailable-
-user guidance was never treated as authority; no ordinary approval pause remains
-for these exact amended paths. Fresh both-host forwarding/raw replay is required.
-Actual23fdd1 protocol37253887784/attempt1 now retains complete verified **and**
-raw bundles on BOTH hosts. Independent full replay validates4,711 protocol/58
-suites,87 CLI/3 suites,486 originals/485 existing bindings,434 immutable input
-paths/398 content-deduplicated blobs, exact source/head/base/run/attempt/host
-invocation data and every raw XML/log byte. Both complete ZIPs are retained:
-linux11322266378
-SHA256`3d7af185c4ee27ab0e931bdb02bf03b6002de5a0c26aab1bb36c255c135b152e`;
-windows11322118333
-SHA256`0623975519e14f60edcc7211ce0bda879042c20ec5ae350f7fee2a7a4f5283bb`.
-The corresponding root37253887793/attempt1 exposed two OLD fixture errors only
-on live CI: StageReportTests intentionally patches REPO to a temporary directory
-without Git, while inherited GITHUB_EVENT_PATH makes the new eligible-stage
-identity lookup refuse it. Local full221 had passed because that live CI
-environment was absent. The coordinator granted the exact fixture-only
-test_workflows.py region; it now explicitly supplies local null identity.
-No production fallback, GITHUB removal or lowered assertion/gate is introduced.
-The same coordinator directed own-branch base reconciliation to actual
-e303e8795ab4e7cc45e02d791e6a2829085c2288 (parents3da+314), the guarded BLE
-merge. Initial3da identity history and all source/policy/native baseline pins
-remain unchanged; fresh combined software proof must include its actual BLE
-tests without manufacturing physical certification.
-Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
-hosts, so the former failing CLI task no longer blocks it. The reader then
-failed closed for two text representations: Windows checks out the extensionless
-`MeshCore/LICENSE` as CRLF, and Linux checks out the frozen baseline as LF while
-its independently retained capture SHA256 binds CRLF. The repair admits only
-text checkout newline equivalence, retains the exact committed license blobs,
-and hashes the unchanged baseline in its original capture representation.
-The original b090ca12 capture pin and all4,708 identities remain mandatory; the
-unchanged Git baseline's LF SHA256 is
-`bc79f0e42277fe474a310b77f07dcbcd2f1a7499c9b75c37faa1f52598461d74`.
-New regressions reject changed license content, normalized binary bytes and
-changed baseline identities. No missing raw CLI artifact is inferred from the
-successful dependency task; full complete-bundle retention is still required.
-Independently downloaded current protocol ZIPs11317553531/windows
-SHA256`e4de3d7fd3a4bcd622d85bef8e68ffcaa3c1acd8b660962ff1dea59387f9ec8f`
-and11317328543/linux
-SHA256`ba25df86378beb5842c2049991a6565d6593457ef855dd13e5ea3c69205c36a5`
-each contain58 actual raw suites/4,711 discovered/run/passed/zero
-failed/errors/skips. Direct replay still binds all486 originals to485 unique
-existing cases. The expanded reader regression suite executes15/15 with zero
-failures/errors/skips locally; no local JVM is started.
-The actual repaired5bd14bbd normal protocol37234505781/attempt1 then discovered
-all4,711 cases/58 suites on both hosts: all4,708 old identities and the owning-job
-TCP-close case passed, while two new cause assertions failed because coroutine
-stack recovery adds a ConnectionLost copy before the exact canonical typed
-correlation cause. Full actual58-suite bundles/three-case XML and both ZIP
-digests are retained privately. The assertions now search the bounded real
-cause chain for the **same exact type and wildcard metadata**, rather than
-incorrectly assuming a direct cause. This is not a lowered error expectation,
-ignored test, producer repair or passing CLI claim.
-Normal79fafb7e run37236598495/attempt1 then executed all4,711 cases with
-only the retained-link test's remaining state/type assumption failing on both
-hosts. Inspection of the actual merged ownership code confirms two deliberately
-different states: active foreign owner means ConcurrentTransportOwner; an ended
-but physically retained link means RetainedTransport. The same real-TCP test
-now explicitly exercises both phases in that order and keeps exact cause types,
-zero unwanted connects/closes and awaited old-owner cleanup. All4,708 unchanged
-baseline cases passed; no producer/golden/threshold was modified.
-The local JVM lane initially remains held by WP-202 and the
-explicit shared CI forwarding seam needs a separate serialized amendment.
+**Implemented and executed code candidate, ready for coordinator review.**
+The reconciled code head `c6fc6309548d7b01d9edf5b905cdefc9e6f49c6d`
+passes normal Windows/Linux protocol and complete root CI against actual main
+`e303e8795ab4e7cc45e02d791e6a2829085c2288`. All four uploaded bundles were
+independently downloaded, SHA256-matched and reparsed in full, including complete
+CLI XML/log nodes, verified/raw input blobs and actual run bindings. This is
+software/code evidence, not physical-radio or protected-source acceptance.
 
-Repository `cbattlegear/MeshCoreOne-Android`; owner `test-parity-engineer`.
-One native session `275e27fd-1c49-41c5-9336-10210596a8c1`, app alias
-`8d2d2cdb-cbba-4190-9f36-17b2cd01a728`, managed branch
-`cbattlegear-protocol-parity-and-cli`. The coordinator's ACTIVE
-`autonomous-WP-109-3da3a73b` receipt arrived before the first repository edit;
-see [authorization](authorization.json). No extra agent/session was launched.
+## Identity, ownership and frozen inputs
 
-| Immutable binding | Value |
+Repository `cbattlegear/MeshCoreOne-Android`; WP-109 owner
+`test-parity-engineer`; ordinary owning [PR22](https://github.com/cbattlegear/MeshCoreOne-Android/pull/22).
+Native session `275e27fd-1c49-41c5-9336-10210596a8c1`, app alias
+`8d2d2cdb-cbba-4190-9f36-17b2cd01a728`, project
+`663db92c-ed50-4a77-aded-bda85a7c503a`, managed branch
+`cbattlegear-protocol-parity-and-cli`. Only the assigned owning checkout was used.
+
+| Binding | Exact value |
 | --- | --- |
-|Initial clean owning/main HEAD|`3da3a73b8481c49d035486924a813b331bf184d0`|
-|Pinned source|`db14559b39d32322b06477c6ae676112f583db50`|
-|Pinned source tree|`8918fdc604341e6996a68c88f6bb1c02b9c2f87e`|
-|Semantic manifest|`78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746`|
-|Semantic policy|`56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a`|
+| Initial clean owning/main HEAD | `3da3a73b8481c49d035486924a813b331bf184d0` |
+| Tested reconciled code head | `c6fc6309548d7b01d9edf5b905cdefc9e6f49c6d` |
+| Authorized current base | `e303e8795ab4e7cc45e02d791e6a2829085c2288` |
+| Frozen source | `db14559b39d32322b06477c6ae676112f583db50` |
+| Frozen source tree | `8918fdc604341e6996a68c88f6bb1c02b9c2f87e` |
+| Semantic manifest | `78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746` |
+| Semantic policy | `56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a` |
 
-Actual merged prerequisites were read directly: WP-105 PR10/merge
-`4331a4dddd13126ab05f4b4d74e654f313c5d414`, and WP-107 PR19/merge3da at
-reviewed head `2fe60386dc6cfe678e26fc24974d48027080926c`. No protocol input byte
-differs between that reviewed head and initial3da.
+The ACTIVE [initial receipt](authorization.json) preceded every edit.
+The [exact forwarding and fixture amendments](forwarding-amendment.json)
+separately admit only `ci.py`, its existing environment tests, and one local-null
+patch in `StageReportTests.execute_stage`. The coordinator-directed merge of
+exact e303 (parents initial3da and `314aa2587b31ca03dcf7681e552132eaed665000`)
+preserves initial identity/history rather than rewriting it. Imported BLE code
+is the already guarded base, not additional WP-109 ownership.
 
-## Concrete implementation
+Actual prerequisites WP-105 PR10 and WP-107 PR19 were checked as merged, including
+the reviewed `2fe60386dc6cfe678e26fc24974d48027080926c` session implementation.
+All source/test/user-input/license bytes, ownership, 65 IDs, 185 edges, eight
+gates and canonical planned/pending states remain unchanged. No additional agent,
+session, fleet, schedule, setting, signing or publisher was activated.
 
-The owned application plugin declares a real deployed `MeshCli.main`, installed
-launcher and module-only locks. The runner validates explicit numeric endpoint/
-port/deadline arguments before constructing any socket, uses the real merged
-WiFiTransport/MeshCoreSession, performs only local companion reads, reports
-typed nonzero errors/partial streams, sanitizes UTF8 output, and awaits physical
-cleanup/critical-filter drainage before publishing a complete result.
+## Executable behavior and actual assertions
 
-Owned loopback and production-only-classpath process tests target the real
-entrypoint/parser/session/socket, not a surrogate mock CLI. Clock/barrier tests
-cover deadlines/cancellation/teardown; source-independent frames cover real
-split/coalesced reads, ACK/push filtering, channel windows/indexes/errors, contact
-completeness and rejected secret/mutating operations. A separate protocol parity
-suite targets intentional wildcard quarantine and retained physical ownership
-over actual TCP. These are code declarations until actual execution is retained.
+The JVM application uses the real merged `WiFiTransport` and `MeshCoreSession`,
+with a real `MeshCli.main` and production-only-classpath child-process tests.
+An operator must supply a numeric IPv4/IPv6 endpoint. Port defaults to5000;
+the monotonic overall deadline defaults to5000ms and accepts25..120000ms.
+Commands are only `device`, `capabilities`, `battery`, `time`, `contacts` and
+`channels`; the default is `device`. There is no automatic endpoint or DNS/mDNS.
 
-The owned `verifyProtocolParity` hook connects to normal root
-`verifyScaffoldTests` and the real protocol task finalizer. It requires the full
-existing4,708 protocol identities and new actual CLI suites, runs the owned
-collector regressions, preserves every raw JUnit testcase/log node and required
-immutable input blob, and reparses the full output. The generic root module
-collector still intentionally excludes `tools`; separate CLI replay is required.
+No mesh send, message drain, remote admin, radio reconfiguration, signing or
+key/PIN/channel-secret export is reachable. Matching real responses, complete
+contact headers/counts/canonical unique IDs and actual channel slots determine
+complete versus partial output. ACK/pushes cannot manufacture read success.
+Critical ERR/disabled/malformed events drain before complete output. Teardown
+awaits the real socket/claim release even after cancellation.
 
-## Original assertions and actual prerequisite replay
+UTF8 output escapes terminal and all twelve Unicode bidi controls. Generic
+errors do not echo arguments, endpoints, credentials, message bodies or foreign
+exception prose. Actual closed stdout/stderr pipes produce output exit8.
+Exits are0 complete,2 usage,3 timeout,4 protocol,5 transport/teardown,6 partial,
+7 unsupported,8 output and130 cooperative cancellation. Abrupt OS signal
+cleanup is deliberately not certified.
+
+All87 exact native CLI identities execute:40 argument cases,41 real TCP cases
+and6 actual deployed-main cases. Split/coalesced frames, pipeline/index/ACK
+behavior, unknown/missing errors, malformed/EOF/truncated packets, contact
+completeness, capability rejection, exact injected deadlines, cancellation,
+cleanup, sanitation and process exits are asserted. Three new real-TCP protocol
+consumer cases preserve wildcard quarantine and active/retained ownership.
+No test-only surrogate entrypoint or arbitrary timing sleep substitutes for this.
+
+The normal root/protocol hooks require all4,708 pre-existing identities, all
+three new TCP identities and every87 CLI row, not class/count-only green.
+`retainMeshCliEvidence` is the actual CLI test's always-run finalizer: raw XML
+and log bytes plus immutable inputs are copied before validation; failed,
+malformed, zero or reduced reports retain a blocked manifest and nonzero exit.
+The verified collector independently reparses the complete result.
+
+Eligible CI verify/protocol stages forward only the two declared properties
+and actual schema1 stage/identity/host JSON. The parent environment/credentials,
+strict tasks, cache flags, stage/outcome/schema behavior and workflows are
+unchanged. The generic root collector still excludes tools; the separate full
+CLI bundles are required and now actually retained by existing always-upload.
+
+## Complete current software evidence
+
+Normal protocol [37257471897/attempt1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37257471897)
+and root [37257471866/attempt1](https://github.com/cbattlegear/MeshCoreOne-Android/actions/runs/37257471866)
+both pass on BOTH Windows/Linux hosts at the tested reconciled code head/base.
+Each verified and raw CLI bundle has436 immutable input paths/400
+content-deduplicated Git blobs, all three CLI XML suites and exact actual
+repository/base/head/source/policy/run/attempt/host data. Copied raw bytes/digests
+and input blob identities match between the verified and raw-retention bundles.
+
+| Executed evidence, per host | Discovered/run/passed | Failed/errors/skipped |
+| --- | ---: | --- |
+| Complete protocol /58 suites | 4,711 | 0/0/0 |
+| Actual CLI /3 suites | 87 | 0/0/0 |
+| Controller Python | 221 | 0/0/0 |
+| Scaffold Python | 15 | 0/0/0 |
+| Owned raw/source reader regressions | 21 | 0/0/0 |
+| Composite Kotlin:31 conventions+4 contracts+10 app+2 Room fixture | 47 | 0/0/0 |
+| Fresh standalone conventions | 31 | 0/0/0 |
+| Existing model / Room / localization | 166 /45 /25 | 0/0/0 |
+| Imported merged BLE software cases | 295 | 0/0/0 |
+
+All24 actual Android lint targets have zero Error/Fatal and495 inherited
+warnings. Schema2 root proof includes real graph/runtime/Room inspection,
+min31/target37/debug package/notices and static16KiB alignment. The actual
+graph has no incoming CLI production edge; every actual APK DEX excludes
+CLI/testing/Room-verification packages. Physical/native-runtime compatibility
+remains explicitly false, including in the raw APK inspection.
+
+| Complete artifact | ID | Independently matched ZIP SHA256 |
+| --- | ---: | --- |
+| protocol-windows-37257471897-1 | 11323965237 | `8573fea4702eb01751bd8084498d77f6a0291ca6deb4b99d0c7c08c672e8416d` |
+| protocol-linux-37257471897-1 | 11323855326 | `dcc12a07e3b3cc1c2e0f80f9081fd236652ccf70b8bd048900e9388879ca4f56` |
+| scaffold-windows-37257471866-1 | 11323618634 | `67d4766f1bd89d33545f8c2f6bf48ae2788c7db6f64e1987e5dab8070a070827` |
+| scaffold-linux-37257471866-1 | 11323272846 | `6c4295708acfbf40b758945e4a02aad33b9b83954fab566d4e25e1fda3921d0c` |
+
+Actual debug APK SHA256: Windows
+`0f8da9ab24bcdeb7ea4bc552b2a1120d3bf3ed78f03c27ca256df691e5c3e99d`,
+Linux `c99becec4d41c52b0b0561b9b1d4457af21cf075fe4239c0bd5b46b69ef7ed26`.
+The worker's complete ZIPs/extractions/replay are in its private
+`files\wp109-combined\c6fc6309\` session artifact area; nothing was discarded
+or represented by a summary-only counter.
+
+## Original assertion/parameter accounting
 
 [source-cases.json](source-cases.json) records all486 original MeshCore
-declarations with exact source path/blob/ID/parameter family, actual assertion
-sites/helper provenance, complete declared inputs, source-body digest and real
-existing JUnit bindings. The direct audit reconciles455 exact names and31
-native aliases into485 unique native cases (two nonerror accessor families share
-one fully asserted native case). The three parameter declarations retain all12
-declared rows; embedded source loop families remain in their actual assertions.
-No filename/header-only acceptance or new original CLI labels are claimed.
+declarations with exact source path/blob/ID/family, assertion/helper sites,
+complete declared inputs, source-body digest and real existing native binding.
+455 exact names plus31 audited aliases reconcile to485 unique existing
+native cases: two original nonerror accessor families share one fully asserted
+case. The three parameter declarations retain all12 rows; embedded loop families
+remain in their actual assertions. New original cases/exclusions are both zero.
 
-All51 later WP-104 seams reconcile exactly:20 V112 nonbuilder cases
-(18 parser+2 real ContactManager) and31 nonbuilder RoundTrip cases. The
-legacy asynchronous flags scenario is separate from the former encoder-only
-test. The seven WP-103 Session and two WP-106 filtered-wrapper seams execute
-in the real existing session suites. No original source owner is reassigned.
-The15 GPL application formatted-display adapters remain test-only/later
-production consumers, not new protocol/application production acceptance.
+The51 WP-104 later seams are exactly20 V112 nonbuilders (18 parsers+2 actual
+ContactManager) plus31 RoundTrip nonbuilders. Legacy asynchronous flags are a
+separate actual case, not the former encoder-only proxy. Seven WP-103 session
+and two WP-106 filtered-wrapper seams execute. Primary source owners do not
+change. The15 GPL formatted-display adapters remain test-only/later application
+consumers, not newly completed MIT protocol or product services.
 
-The complete actual reviewed2fe normal protocol run
-**37217793524 / attempt1** was independently downloaded and reparsed on this
-worker: each host has4,708 actual cases/57 nonzero suites/34 reviewed regressions,
-identical complete identities,0 failures/errors/skips. This is prerequisite
-proof, not execution of the new CLI.
+The full prerequisite reviewed2fe run37217793524/attempt1 has4,708 cases/57
+suites/34 reviewed regressions per host, zero failures/errors/skips. Its complete
+actual Linux XML generated [baseline-native.json](baseline-native.json).
+Original CRLF capture pin stays
+`b090ca122bbd28fd72a6e9654bd8590e4b5db3ef497b9530135e728d8bc7bcd4`;
+unchanged LF Git text is
+`bc79f0e42277fe474a310b77f07dcbcd2f1a7499c9b75c37faa1f52598461d74`.
+Only text checkout newline equivalence is admitted, never binary/content drift.
+Helper37217793523/1 has35 cases/6 suites; duplicated foundation support inputs
+are qualified source identities, not newly counted CLI cases.
 
-| Actual artifact | ID | Independently matched ZIP SHA256 |
-| --- | ---: | --- |
-|protocol-windows-37217793524-1|11309211075|`9acbac058d3d5744233e02a3dfd339c26c77ec9a1530e50a2713019183bada22`|
-|protocol-linux-37217793524-1|11308899131|`438a7f46975082d1d1e20324f8369b850eef4d4e2054152b417dbbd5d4892f75`|
-|wp004-helpers-37217793523-1|11309117966|`c34fa18fbae0bcfe8a7f04dea5fba084f4fa969a487a05a44e0f6aa8a04c9f21`|
+## Exact executed commands and outcomes
 
-The actual helper artifact has35 cases/6 suites including the original
-three cancellation-clock families and native extensions. Its duplicate source
-copies are not relabeled new CLI cases. [baseline-native.json](baseline-native.json)
-is generated from all57 complete actual Linux XML files and independently pinned
-at SHA256`b090ca122bbd28fd72a6e9654bd8590e4b5db3ef497b9530135e728d8bc7bcd4`.
-Every baseline identity is mandatory in later candidate replay.
-
-## Executed lightweight commands so far
-
-| Exact command | Actual result |
+| Command | Result |
 | --- | --- |
-|`python .\tools\android-port\controller\verification_config.py --check`|PASS; unchanged supervised overlay/semantic manifest|
-|`python .\tools\android-port\controller\validate.py`|PASS;1,866 inputs/65 WPs/185 edges/eight gates unchanged|
-|`python .\tools\android-port\test_inventory.py --check`|PASS;468 paths/5,133 original declarations unchanged|
-|`python .\tools\android-port\extract_vectors.py --check`|PASS;49 immutable independent vectors unchanged|
-|`python .\tools\android-port\portmap.py`|PASS; new Android-only/native/source headers accounted|
-|`python .\android\tools\meshcli\verification\stage_locks.py`|PASS; unchanged generated initial module locks staged in owned directory|
-|`python .\android\tools\meshcli\verification\collect_evidence.py baseline --baseline <own-private-reviewed2fe-junit>`|PASS; exact4,708 identities/57 reports and pinned baseline bytes|
-|`python .\android\tools\meshcli\verification\collect_evidence.py self-test`|PASS;12 actual discovered/run/passed,0 failures/errors/skips|
-|`git --no-pager diff --check`|PASS|
-|Declared `ci.py preflight --state <own-private-environment> --output <own-private-output> --local`, before private state creation|BLOCKED: missing explicit own JSON state; failed before any Java/output creation|
-|Declared `ci.py local-inputs --root <own-private-root> --jdk <approved-readonly-JDK> --sdk <approved-readonly-SDK>`|PASS; own private caches declared, no Java/installer/global configuration invoked|
+| `python tools/android-port/controller/ci.py run --stage protocol` | PASS both hosts,4,711/87 complete raw/input/binding replay |
+| `python tools/android-port/controller/ci.py python` | PASS both hosts,221+15 actual positive discovery |
+| `python tools/android-port/controller/ci.py run --stage verify` | PASS both hosts,47 composite+all native modules+4,711/87 |
+| `python tools/android-port/controller/ci.py run --stage standalone` | PASS both hosts,31 fresh strict cases |
+| `python tools/android-port/controller/ci.py run --stage assemble` | PASS both hosts,actual debug APK |
+| `python tools/android-port/controller/ci.py run --stage lint` | PASS both hosts,24 targets/zero errors/495 warnings |
+| `python tools/android-port/controller/ci.py inspect` | PASS both hosts,actual APK/notices/static alignment/schema2 proof |
+| `python .\tools\android-port\controller\test_runner.py --quiet` | PASS locally,221/221 fixture-only controller cases; no JVM |
+| `python .\android\tools\meshcli\verification\collect_evidence.py self-test` | PASS locally/hosted,21/21 strict reader/retention regressions |
+| `python .\tools\android-port\controller\verification_config.py --check` | PASS; historical feature configured=false/canonical overlay unchanged |
+| `python .\tools\android-port\controller\validate.py` | PASS;1,866 inputs/65 IDs/185 edges/eight gates |
+| `python .\tools\android-port\test_inventory.py --check` | PASS;468 paths/5,133 original declarations |
+| `python .\tools\android-port\extract_vectors.py --check` | PASS;49 independent vectors |
+| `python .\tools\android-port\portmap.py` | PASS; source/native provenance accounted |
+| `git --no-pager diff --check` | PASS |
 
-The read-only ZIP replay and mapping probes initially selected the wrong uploaded
-namespace (`junit/protocol` is beneath `_temp/.../evidence`), yielding zero matched
-reports. This failed closed; the corrected exact namespace reparse reached all57
-complete reports and486 original bindings. No counter/golden was reduced.
+No local JVM/Android CLI bootstrap/install was executed. Normal hosted builds
+used the unchanged checksum-pinned JDK21.0.12.1+1/Gradle9.8.0/Kotlin2.3.20/
+AGP9.4.1/SDK37.2 tuple, strict verification and explicit private caches.
+No exact hardware/signing/license result is inferred from these commands.
 
-Actual Kotlin/module graph/runtime/APK commands and exact-head both-host
-run/attempt evidence remain pending; none is invented in this candidate record.
-No local Java is started before the coordinator grants the held lane.
+## Reproduced same-PR failures and complete repairs
 
-## Boundaries
+| Actual head/run/attempt | Observed failure | Repair without source/golden/floor reduction |
+| --- | --- | --- |
+| 898892e6 /37232304276/1 | Both hosts: injected sleeper continuation inferred star type before discovery | Explicit `suspendCancellableCoroutine<Unit>` |
+| 5bd14bbd /37234505781/1 | Two new TCP cause assertions; old4,708 all pass | Bounded search for the same exact canonical type and wildcard through coroutine stack-recovery copies |
+| 79fafb7e /37236598495/1 | Active/retained ownership state assumption | Test both actual distinct typed phases; retain zero alien closes/writes and awaited old-owner cleanup |
+| fbef8c7f /37238479360/1; a37d1d5a /37240261699/1 | Real72 CLI, two failures: trailing bidi trimmed by source and rotated secret substring inside public a5 ID | Interior control fixture and distinct exact16-byte secret; both hex/plaintext absence remain asserted |
+| 234e2ad2 /37241357205/1 | Immutable license/baseline checkout newline representations | Preserve exact source/capture bytes and typed text-only equivalence; reject changed content/binary/identities |
+| d4721a47 /37242211561/1 | Green73 CLI exposed14 unregistered local-function tests | Class-level tests plus every87 exact required identity; no class/count-only green |
+| 609ac6e4 /37244082018/1;89aafd24 /37245043485/1 | Listener descriptors differ from actual XML DynamicTest names | Bind every declared row against87 identical actually observed XML identities |
+| 23fdd1fe /37253887793/1 | Two OLD fake/no-Git stage fixtures inherited live CI identity; local221 had passed | Exact authorized fixture-only local-null patch; production unknown/stale identity refusal unchanged |
 
-`WP-109-behavior`, `WP-109-boundaries` and `WP-109-source-test-parity` require
-new candidate execution and coordinator independent review, not this prepared
-implementation or historical prerequisite replay. See
-[native adaptations](../../deviations/WP-109.md) and the
-[operator contract](../../../../android/tools/meshcli/README.md).
+The read-only baseline replay's initial wrong artifact namespace also failed
+closed with zero matches before the correct complete reports were selected.
+The proposed stdout archive was never implemented; unavailable-user guidance
+never constituted a shared write grant. All shared work has exact recorded
+coordinator amendments, not blanket ownership exceptions.
 
-**Physical-radio status: BLOCKED.** No device/firmware/endpoint/operator
-authorization was supplied or exercised. No BLE/Android API/device, iOS/macOS,
-backup interoperability, legal/signing/release/source/protected-publisher
-acceptance, activation or downstream-WP claim is made.
+## Acceptance and remaining boundaries
+
+`WP-109-behavior`, `WP-109-boundaries`, `WP-109-source-test-parity`: code and
+actual complete software evidence are delivered for coordinator independent
+review/guarded merge. File traceability is not protected source acceptance.
+See [native adaptations](../../deviations/WP-109.md) and
+[operator instructions](../../../../android/tools/meshcli/README.md).
+
+**Physical radio remains BLOCKED:** no actual authorized device, firmware,
+endpoint or operator was supplied or exercised. Loopback/BLE Robolectric/APK
+inspection is not real radio/API/OEM/native-runtime certification. No iOS/macOS,
+backup interoperability, human legal, release-signing/distribution, protected
+source/publisher, activation or downstream-WP completion is claimed. No
+self-merge, formal review or protected approval was performed.
