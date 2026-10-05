@@ -33,8 +33,9 @@ EXPECTED = {
             "distinctLastConnectionAndBondHoldersClearIndependentlyInTheActualStore",
             "missingPerDeviceDefaultsAreWrittenOnceAndExplicitFalseIsNeverOverwritten",
             "closedActualStoreErrorsNeverBecomeMissingConnectionSuccess",
+            "queuedBondRefreshCannotRecreateForgottenSlotAfterRealDataStoreClear",
         },
-        136,
+        137,
     ),
 }
 

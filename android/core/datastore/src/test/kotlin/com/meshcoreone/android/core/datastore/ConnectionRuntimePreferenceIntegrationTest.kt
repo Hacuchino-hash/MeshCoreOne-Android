@@ -15,6 +15,9 @@ import kotlin.math.floor
 import kotlin.time.Duration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -126,6 +129,39 @@ class ConnectionRuntimePreferenceIntegrationTest {
         val failure = assertFailsWith<StorageFailure> { last.read() }
         assertEquals(StorageProblem.OwnerClosed, failure.problem)
         assertTrue(h.reporter.failures.isNotEmpty())
+    }
+
+    @Test
+    fun queuedBondRefreshCannotRecreateForgottenSlotAfterRealDataStoreClear() = runBlocking {
+        withStorage(temporary.newFolder()) { h ->
+            val adapter = PreferenceAdapter(h.owner.preferences)
+            val id = UUID.randomUUID()
+            val release = CompletableDeferred<Unit>()
+            val entered = CompletableDeferred<Unit>()
+            var epoch = 0L
+            val queued = object : ProcessConnectionPreferences by adapter {
+                override suspend fun update(transform: (MutableMap<String, RuntimePreferenceValue>) -> Unit): RuntimePreferenceSnapshot {
+                    entered.complete(Unit)
+                    release.await()
+                    return adapter.update(transform)
+                }
+            }
+            val last = LastConnectionStore(adapter, clock)
+            last.persistBondVerification(id)
+            val captured = epoch
+            val refresh = async(start = CoroutineStart.UNDISPATCHED) {
+                LastConnectionStore(queued, clock).persistBondVerification(id) { epoch == captured }
+            }
+            entered.await()
+            epoch++
+            last.clear(id)
+            release.complete(Unit); refresh.await()
+            assertNull(last.bondVerificationDate(id))
+            assertFalse(h.owner.preferences.snapshot().contains(
+                PreferenceKey.StringKey(PersistenceKeys.LAST_BOND_VERIFIED_DEVICE_ID, null)))
+            h.reopen()
+            assertNull(LastConnectionStore(PreferenceAdapter(h.owner.preferences), clock).bondVerificationDate(id))
+        }
     }
 
     private class PreferenceAdapter(private val preferences: PreferenceStore) : ProcessConnectionPreferences {

@@ -28,6 +28,7 @@ private class Delegate : BLEReconnectionDelegate {
     var rebuildHook: suspend () -> Unit = {}
     var failureHook: suspend () -> Unit = {}
     var queryHook: suspend () -> Unit = {}
+    var notifyHook: suspend () -> Unit = {}
     override fun setConnectionState(state: DeviceConnectionState) { this.state = state }
     override fun clearConnectedDevice() { cleared = true }
     override suspend fun teardownSessionForReconnect() { teardowns++; order += "teardown" }
@@ -37,7 +38,7 @@ private class Delegate : BLEReconnectionDelegate {
         if (throwsRemaining > 0) { throwsRemaining--; throw IllegalStateException("rebuild failure") }
     }
     override suspend fun disconnectTransport() { disconnects++ }
-    override suspend fun notifyAutoReconnectStarted() { autoNotifications++; order += "notifyAutoReconnectStarted" }
+    override suspend fun notifyAutoReconnectStarted() { autoNotifications++; order += "notifyAutoReconnectStarted"; notifyHook() }
     override suspend fun notifyConnectionLost() { notifications++ }
     override suspend fun handleReconnectionFailure() { failures++; failureHook() }
     override suspend fun isTransportAutoReconnecting(): Boolean { queryHook(); return auto }
@@ -261,6 +262,37 @@ class SourceReconnectionCoordinatorTest {
             withCoordinator(timeout = 1.seconds) { c, d ->
                 c.handleEnteringAutoReconnect(UUID.randomUUID()); c.cancelTimeout()
                 advanceTimeBy(2000); runCurrent(); assertEquals(DeviceConnectionState.CONNECTING, d.connectionState)
+            }
+        },
+    )
+
+    @TestFactory
+    fun nativeReviewCases() = listOf(
+        nativeCase("refreshing a claimed reconnect timeout does not replace its pending teardown receipt") {
+            withCoordinator { c, d ->
+                val gate = CompletableDeferred<Unit>()
+                d.notifyHook = { gate.await() }
+                val id = UUID.randomUUID()
+                val entry = backgroundScope.async { c.handleEnteringAutoReconnect(id) }; runCurrent()
+                val generation = c.reconnectGeneration
+                c.restartTimeout(id)
+                val completion = backgroundScope.async { c.handleReconnectionComplete(id) }; runCurrent()
+                assertEquals(0, d.teardowns); assertTrue(d.rebuilds.isEmpty()); assertFalse(completion.isCompleted)
+                assertEquals(generation + 1, c.reconnectGeneration)
+                gate.complete(Unit); runCurrent(); entry.await(); completion.await()
+                assertEquals(1, d.teardowns); assertEquals(listOf(id), d.rebuilds)
+                assertNull(c.reconnectingDeviceId)
+            }
+        },
+        nativeCase("completion invoked by a timeout query remains cancellation-active and releases the successful cycle") {
+            withCoordinator(timeout = 1.seconds) { c, d ->
+                val id = UUID.randomUUID()
+                d.rebuildHook = { currentCoroutineContext().ensureActive(); yield(); currentCoroutineContext().ensureActive() }
+                c.handleEnteringAutoReconnect(id)
+                d.queryHook = { d.queryHook = {}; c.handleReconnectionComplete(id) }
+                runCurrent(); advanceTimeBy(1000); runCurrent()
+                assertEquals(listOf(id), d.rebuilds); assertEquals(0, d.failures); assertNull(c.reconnectingDeviceId)
+                assertEquals(0, d.notifications)
             }
         },
     )

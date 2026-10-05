@@ -86,8 +86,9 @@ class LastConnectionStore(
         return wasHolder
     }
 
-    suspend fun persistBondVerification(deviceId: UUID) {
+    suspend fun persistBondVerification(deviceId: UUID, stillCurrent: () -> Boolean = { true }) {
         preferences.update {
+            if (!stillCurrent()) return@update
             it[PersistenceKeys.LAST_BOND_VERIFIED_DEVICE_ID] = RuntimePreferenceValue.Text(deviceId.canonicalString())
             it[PersistenceKeys.LAST_BOND_VERIFIED_DATE] = RuntimePreferenceValue.Date(clock.instant)
         }
@@ -109,8 +110,9 @@ class LastConnectionStore(
     suspend fun restoredIntent(): ConnectionIntent =
         ConnectionIntent.restored(preferences.read().flag(PersistenceKeys.USER_EXPLICITLY_DISCONNECTED) == true)
 
-    suspend fun persistIntent(intent: ConnectionIntent) {
+    suspend fun persistIntent(intent: ConnectionIntent, stillCurrent: () -> Boolean = { true }) {
         preferences.update {
+            if (!stillCurrent()) return@update
             if (intent == ConnectionIntent.UserDisconnected) {
                 it[PersistenceKeys.USER_EXPLICITLY_DISCONNECTED] = RuntimePreferenceValue.Flag(true)
             } else it.remove(PersistenceKeys.USER_EXPLICITLY_DISCONNECTED)

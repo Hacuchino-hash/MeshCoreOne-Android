@@ -449,5 +449,86 @@ class RuntimeOwnershipTest {
                 assertTrue(radios.all { it.maximumCollectors == 1 })
             }
         },
+        nativeCase("cancellation after ready during real time query retires token session and graph together") {
+            withFixture {
+                val gate = CompletableDeferred<Unit>()
+                createRadio = { TestRadio().also { it.beforeSend = { frame -> if (frame[0].toInt() == 5) gate.await() } } }
+                val work = backgroundScope.async { manager.connect(platform.target) }; runCurrent()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                work.cancelAndJoin(); runCurrent()
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState); assertNull(manager.snapshot.value.token)
+                assertNull(manager.connectedDevice); assertEquals(1, services.single().teardowns)
+                assertEquals(1, radios.single().closes); assertEquals(0, radios.single().collectors)
+                gate.complete(Unit)
+            }
+        },
+        nativeCase("older disconnect finishing cleanup cannot close or persist manual-stop over a newer ready connection") {
+            withFixture {
+                connect()
+                val gate = CompletableDeferred<Unit>(); var first = true
+                preferences.beforeUpdate = { if (first) { first = false; gate.await() } }
+                val oldStop = backgroundScope.async { manager.disconnect() }; runCurrent()
+                val successor = target(); manager.connect(successor)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                gate.complete(Unit); runCurrent(); oldStop.await()
+                assertEquals(successor.deviceId, manager.connectedDevice?.id); assertEquals(0, radios.last().closes)
+                assertEquals(ConnectionIntent.WantsConnection(), manager.connectionIntent)
+                assertEquals(ConnectionIntent.None, last.restoredIntent())
+                assertEquals(1, radios.first().closes)
+            }
+        },
+        nativeCase("stored BLE restoration installs its declared callback route before platform activation") {
+            withFixture {
+                val radio = RadioId(UUID.randomUUID())
+                last.persist(platform.target.deviceId, radio, "Stored")
+                platform.state = platform.state.copy(autoReconnecting = true, connectedDeviceId = platform.target.deviceId)
+                platform.onActivate = {
+                    assertEquals(1, links.size); assertEquals(1, links.single().registrations)
+                    links.single().callbacks!!.onAutoReconnecting("restored")
+                }
+                manager.activate(); runCurrent()
+                assertTrue(manager.isTransportAutoReconnecting())
+                links.first().callbacks!!.onReconnected(); runCurrent()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(1, services.size); assertEquals(1, services.single().monitoringStarts)
+                assertEquals(1, radios.last().collectors)
+            }
+        },
+        nativeCase("owned system adoption reaches ready through the actual registered link route rather than a manager backdoor") {
+            withFixture {
+                last.persist(platform.target.deviceId, RadioId(UUID.randomUUID()), "Stored")
+                platform.state = platform.state.copy(systemConnected = true)
+                platform.adoptionSucceeds = true
+                manager.connect(platform.target, true, true)
+                assertEquals(DeviceConnectionState.CONNECTING, manager.connectionState)
+                assertEquals(1, links.size); assertEquals(0, radios.single().collectors)
+                links.single().callbacks!!.onReconnected(); runCurrent()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                assertEquals(1, services.size); assertEquals(listOf(true), services.single().syncForces)
+            }
+        },
+        nativeCase("remote reauthentication IDs never cross distinct radio partitions with the same session UUID") {
+            withFixture {
+                val sameSession = UUID.randomUUID()
+                onFactory = { handle, _ -> handle.remoteSessions = setOf(sameSession) }
+                connect(); links.first().callbacks!!.onAutoReconnecting("lost"); runCurrent()
+                createRadio = { TestRadio().also { it.key = Bytes(ByteArray(32) { 17 }) } }
+                manager.connect(target())
+                assertTrue(services.last().reauthenticated.isEmpty())
+                assertNotEquals(services.first().token.radioId, services.last().token.radioId)
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+            }
+        },
+        nativeCase("authentication failure before connected callback surfaces once and a healthy episode resets the latch") {
+            withFixture {
+                createRadio = { TestRadio().also { it.connectFailure = LinkFailure.AuthenticationFailed() } }
+                repeat(2) { assertFailsWith<LinkFailure.AuthenticationFailed> { manager.connect(platform.target, false, true) } }
+                assertEquals(listOf(platform.target.deviceId), authFailures); assertTrue(manager.shouldAllowConnection(false))
+                createRadio = { TestRadio() }; connect(); manager.disconnect(RuntimeDisconnectReason.WIFI_RECONNECT_PREP)
+                createRadio = { TestRadio().also { it.connectFailure = LinkFailure.AuthenticationFailed() } }
+                assertFailsWith<LinkFailure.AuthenticationFailed> { manager.connect(platform.target, false, true) }
+                assertEquals(listOf(platform.target.deviceId, platform.target.deviceId), authFailures)
+            }
+        },
     )
 }

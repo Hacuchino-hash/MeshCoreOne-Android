@@ -42,7 +42,7 @@ class BLEReconnectionCoordinator(
         require(uiTimeout.isFinite() && uiTimeout.isPositive())
         require(maximumWindow.isFinite() && maximumWindow.isPositive())
     }
-    private class Cycle(val deviceId: UUID, val generation: Long, val started: Duration) {
+    private class Cycle(val deviceId: UUID, val generation: Long, var started: Duration) {
         val teardown = CompletableDeferred<Unit>()
         var uiTimedOut = false
     }
@@ -136,10 +136,7 @@ class BLEReconnectionCoordinator(
         val claim = synchronized(lock) {
             val existing = cycle
             if (existing?.deviceId == deviceId) {
-                Cycle(deviceId, existing.generation, clock.elapsed).also {
-                    it.teardown.complete(Unit)
-                    cycle = it
-                }
+                existing.also { it.started = clock.elapsed; it.uiTimedOut = false }
             } else {
                 generation = Math.incrementExact(generation)
                 Cycle(deviceId, generation, clock.elapsed).also {
@@ -175,6 +172,8 @@ class BLEReconnectionCoordinator(
         cancelTimeout()
         val task = scope.launch(start = CoroutineStart.LAZY) {
             clock.sleep(uiTimeout)
+            val firingJob = kotlinx.coroutines.currentCoroutineContext()[Job]
+            synchronized(lock) { if (timeout === firingJob) timeout = null }
             handleUITimeout(claim)
         }
         synchronized(lock) {

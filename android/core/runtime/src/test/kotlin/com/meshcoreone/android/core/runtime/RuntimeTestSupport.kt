@@ -44,6 +44,7 @@ internal class TestPreferences : ProcessConnectionPreferences {
     var reads = 0
     var writes = 0
     var failure: Exception? = null
+    var beforeUpdate: suspend () -> Unit = {}
     override suspend fun read(): RuntimePreferenceSnapshot {
         failure?.let { throw it }
         reads++
@@ -51,6 +52,7 @@ internal class TestPreferences : ProcessConnectionPreferences {
     }
     override suspend fun update(transform: (MutableMap<String, RuntimePreferenceValue>) -> Unit): RuntimePreferenceSnapshot {
         failure?.let { throw it }
+        beforeUpdate()
         val next = values.toMutableMap()
         transform(next)
         values.clear()
@@ -171,8 +173,9 @@ internal class TestPlatform : ConnectionPlatform {
     var onState: suspend () -> Unit = {}
     var activationCount = 0
     var activationFailure: Exception? = null
+    var onActivate: suspend () -> Unit = {}
     val foregroundCalls = mutableListOf<Boolean>()
-    override suspend fun activate() { activationCount++; activationFailure?.let { throw it } }
+    override suspend fun activate() { activationCount++; activationFailure?.let { throw it }; onActivate() }
     override suspend fun foreground(active: Boolean) { foregroundCalls += active }
     override suspend fun state(target: ConnectionTarget): PlatformLinkState { onState(); return state }
     override suspend fun isRegistered(deviceId: UUID): Boolean = registered
