@@ -1,6 +1,6 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/DeviceService.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Errors/SettingsServiceError.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Typed neutral producer metadata and cause/retry assertions for later localized consumers.
+// Native assertions: typed neutral producer metadata and cause/retry behavior for later localized consumers.
 package com.meshcoreone.android.core.services.device
 
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError

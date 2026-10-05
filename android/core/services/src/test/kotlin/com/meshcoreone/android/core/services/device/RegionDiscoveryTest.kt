@@ -1,11 +1,12 @@
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/Services/RegionDiscoveryServiceTests.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Real-session discovery tag, timing, typed failure, cancellation and route/target regressions.
+// Native assertions: real-session discovery tags, timing, typed failures, cancellation and route/target behavior.
 package com.meshcoreone.android.core.services.device
 
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
 import com.meshcoreone.android.core.model.ContactDTO
 import com.meshcoreone.android.core.model.DiscoveredNodeDTO
+import com.meshcoreone.android.core.model.uppercaseHexString
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.command.PacketBuilder
 import com.meshcoreone.android.core.protocol.config.MeshCoreException

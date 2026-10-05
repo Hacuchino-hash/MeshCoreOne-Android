@@ -1,5 +1,5 @@
 // PortedFrom: MC1Services/Sources/MC1Services/ServiceContainer.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Construct only this WP's connection bundle, not a complete WP-303 SessionServices graph.
+// Native adaptation: construct only this WP's connection bundle, not a complete WP-303 SessionServices graph.
 package com.meshcoreone.android.core.services.device
 
 import com.meshcoreone.android.core.contracts.domain.ContactPersisting

@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import patch
 
 import collect_evidence as reader
+import verify_producers as producers
 
 
 class JUnitReaderTests(unittest.TestCase):
@@ -138,6 +139,42 @@ class IdentityReaderTests(unittest.TestCase):
                 path.write_text(json.dumps(value))
                 with self.assertRaisesRegex(ValueError, "Stale/foreign"):
                     reader.invocation(path)
+
+
+class ProducerReaderTests(unittest.TestCase):
+    def test_every_frozen_radio_row_matches_all_native_fields(self):
+        self.assertEqual({"all": 28, "repeatPresets": 3}, producers.check_radio_catalog())
+
+    def test_changed_radio_values_and_availability_memberships_fail(self):
+        path = producers.NATIVE / "RadioPresets.kt"
+        native = path.read_text(encoding="utf-8")
+        mutations = (
+            ('"eu-narrow", "EU/UK (Narrow)"', '"eu-narrow", "Changed name"'),
+            ('RadioRegion.OCEANIA, 915.800, 250.0, 10u, 5u', 'RadioRegion.OCEANIA, 915.801, 250.0, 10u, 5u'),
+            ('areas("US", "US-PA", "US-NJ")', 'areas("US", "US-PA", "US-DE")'),
+            ('"nz-lr", "New Zealand (Gisborne)"', '"changed-id", "New Zealand (Gisborne)"'),
+            ('repeatSectionHeader = "EU/Asia"', 'repeatSectionHeader = "Changed"'),
+        )
+        for before, after in mutations:
+            self.assertIn(before, native)
+            with self.subTest(field=before), patch.object(Path, "read_text", return_value=native.replace(before, after, 1)):
+                with self.assertRaisesRegex(ValueError, "radio tuple/name/availability"):
+                    producers.check_radio_catalog()
+
+    def test_catalog_argument_parser_preserves_nested_and_quoted_commas(self):
+        self.assertEqual(
+            ['country: "US"', 'listOf("a,b", nested("x"))', "pathHashSize = 3"],
+            producers.split_arguments('country: "US", listOf("a,b", nested("x")), pathHashSize = 3,'),
+        )
+        for malformed in ('country: "US', 'listOf("x"', "nested())"):
+            with self.subTest(value=malformed), self.assertRaisesRegex(ValueError, "Malformed catalog"):
+                producers.split_arguments(malformed)
+
+    def test_catalog_unknown_tier_and_duplicate_named_fields_are_errors(self):
+        with self.assertRaisesRegex(ValueError, "Unknown availability tier"):
+            producers.availability('missingTier("US")', False)
+        with self.assertRaisesRegex(ValueError, "Duplicate source preset"):
+            producers.preset_row(['id: "x"', 'id: "y"'], True)
 
 
 if __name__ == "__main__":

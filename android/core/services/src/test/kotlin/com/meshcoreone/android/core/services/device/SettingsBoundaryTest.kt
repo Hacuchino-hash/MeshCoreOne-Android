@@ -1,6 +1,6 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/SettingsService.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Services/SettingsService+Verified.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Negative, capability, exact-threshold, cancellation and generation cases over the actual session.
+// Native assertions: negative, capability, exact-threshold, cancellation and generation cases over the actual session.
 package com.meshcoreone.android.core.services.device
 
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError

@@ -7,10 +7,10 @@ import kotlinx.coroutines.test.runTest
 
 internal fun original(
     suite: String, name: String, signature: String = "()", assertions: () -> Unit,
-): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature", assertions)
+): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature") { assertions() }
 
 internal fun nativeCase(name: String, assertions: () -> Unit): DynamicTest =
-    DynamicTest.dynamicTest("WP-211::$name", assertions)
+    DynamicTest.dynamicTest("WP-211::$name") { assertions() }
 
 internal fun originalAsync(
     suite: String, name: String, assertions: suspend TestScope.() -> Unit,

@@ -34,7 +34,7 @@ class DeviceService(
         synchronized(callbackLock) { onDeviceUpdated = null }
     }
 
-    suspend fun updateOCVSettings(deviceID: UUID, preset: String, customArray: String?) = context.operation {
+    suspend fun updateOCVSettings(deviceID: UUID, preset: String, customArray: String?): Unit = context.operation {
         val (updated, callback) = operationLock.withLock {
             context.requireCurrent()
             val current = dataStore.fetchDevice(deviceID)
@@ -57,5 +57,6 @@ class DeviceService(
         }
         context.requireCurrent()
         callback?.invoke(SessionEvent(context.token, updated))
+        Unit
     }
 }

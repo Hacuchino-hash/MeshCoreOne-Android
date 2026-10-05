@@ -112,11 +112,12 @@ class SettingsService(
         return result
     }
 
-    suspend fun applyRadioPreset(preset: RadioPreset) = operation {
+    suspend fun applyRadioPreset(preset: RadioPreset): Unit = operation {
         writeRadio(preset.frequencyKHz, preset.bandwidthHz, preset.spreadingFactor, preset.codingRate, null)
         preset.pathHashMode?.let { mode ->
             if (configuration { queryDevice() }.supportsPathHashMode) configuration { setPathHashMode(mode) }
         }
+        Unit
     }
 
     suspend fun setRadioParams(

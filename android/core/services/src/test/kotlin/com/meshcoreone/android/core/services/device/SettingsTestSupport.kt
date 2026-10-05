@@ -107,11 +107,16 @@ internal class TestRadio : MeshTransport {
     var disconnects = 0
     var collectors = 0
     var maximumCollectors = 0
+    var sendFailure: MeshTransportError? = null
     var onSend: suspend (Bytes) -> Unit = {}
     override suspend fun connect() { connects++; mock.connect() }
     override suspend fun disconnect() { disconnects++; mock.disconnect() }
     override suspend fun isConnected() = mock.isConnected()
-    override suspend fun send(data: Bytes) { mock.send(data); onSend(data) }
+    override suspend fun send(data: Bytes) {
+        sendFailure?.let { throw it }
+        mock.send(data)
+        onSend(data)
+    }
     override suspend fun receivedData(): Flow<Bytes> {
         val incoming = mock.receivedData()
         return flow {

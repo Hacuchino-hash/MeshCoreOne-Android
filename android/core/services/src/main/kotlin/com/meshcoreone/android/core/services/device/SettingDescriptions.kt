@@ -1,5 +1,5 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/SettingsService+Verified.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Preserve Swift numeric verification metadata rather than locale/JVM scientific spelling.
+// Native adaptation: preserve Swift numeric verification metadata rather than locale/JVM scientific spelling.
 package com.meshcoreone.android.core.services.device
 
 import java.math.BigDecimal

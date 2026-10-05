@@ -36,6 +36,7 @@ NATIVE = re.compile(rf'\bnative(?:Case|Async)\(\s*({QUOTED})')
 ROOM_BINDING = re.compile(rf'@DeviceSettingsSourceCase\(({QUOTED})\)\s*@Test\s+fun\s+(\w+)\s*\(')
 ROOM_METHOD = re.compile(r'@Test\s+fun\s+(\w+)\s*\(')
 MAX_XML_BYTES = 16 * 1024 * 1024
+MIN_NATIVE_CASES = 88
 
 
 def require(condition, message):
@@ -118,7 +119,7 @@ def source_map():
         require(identity in families and identity not in declarations, "Unknown/duplicate Room original binding")
         declarations[identity] = {"native_source": ROOM_PATH.as_posix(), "runner": "room", "method": method}
     require(set(declarations) == set(families), "Missing originals: " + repr(sorted(set(families) - set(declarations))))
-    require(len(native) >= 40, "Native failure/cancellation/capability assertions must not be lowered")
+    require(len(native) >= MIN_NATIVE_CASES, "Native failure/cancellation/capability assertions must not be lowered")
     room_methods = set(ROOM_METHOD.findall(room_text))
     require(len(room_methods) == len(ROOM_METHOD.findall(room_text)) and len(room_methods) >= 12,
             "Missing/duplicate original and native Room consumers")

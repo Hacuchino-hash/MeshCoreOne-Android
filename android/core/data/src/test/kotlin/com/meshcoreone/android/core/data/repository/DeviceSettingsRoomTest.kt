@@ -1,7 +1,7 @@
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/KnownRegionTests.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Services/DeviceService.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/State/AppState+Wiring.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-211 Actual Room/process-store consumers of this WP's real connection bundle and protocol session.
+// Native assertions: actual Room/process-store consumers of this WP's real connection bundle and protocol session.
 package com.meshcoreone.android.core.data.repository
 
 import com.meshcoreone.android.core.contracts.domain.*

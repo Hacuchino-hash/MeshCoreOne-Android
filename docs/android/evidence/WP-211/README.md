@@ -124,10 +124,72 @@ produced these outcomes:
 
 | Command | Actual result |
 | --- | --- |
-| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 14 reader regression tests passed; synthetic XML only, no native parity credit |
-| `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 69 native JVM declarations and 12 real Room declarations; `native_execution=false` |
-| `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, 10 county keys and 2+6 fault declarations; `native_tests_run=false` |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 18 reader/producer regression tests passed; synthetic XML/static catalog checks only, no native parity credit |
+| `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 88 native JVM declarations and 12 real Room declarations; `native_execution=false` |
+| `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, ten county keys, all 28 regular/three repeat preset fields/order/availability/priorities/hash sizes, and 2+6 fault declarations; `native_tests_run=false` |
 | `git --no-pager diff --check` | Passed for the authored changes |
+
+Nineteen additional actual-session role assertions cover forwarding/range
+clipping without optimistic success, invalid raw SF/CR firmware rejection,
+PIN/clock/capability widths, DTO-default/compatibility other-parameter paths,
+unverified preset semantics, complete stats units, custom variables, GPS
+enabling, key export/import/disabled/length behavior, actual signing capacity/
+chunks/signature and source reset-versus-reboot completion contracts.
+All device-changing packets target only deterministic test transports.
+The native reader floor is now88 declarations, not a lowered placeholder;
+the exact raw names, all parameter rows and twelve Room method identities
+are additionally checked against current committed source.
+
+The first actual Linux scaffold attempt at authored head
+`cf079fdcac68457417f72c5efd483bc7500554e3`, run **37382894958 / attempt1**,
+stopped at the frozen traceability step before SDK/JVM execution. Its error
+was mixed `PortedFrom`/`AndroidOnly` dispositions in six source-derived files.
+Those files retain their actual frozen source mappings; the native-adaptation
+comments no longer assert a contradictory Android-only disposition.
+The real `portmap.py` check is now part of the exact local verification:
+
+```powershell
+python -B .\tools\android-port\portmap.py
+```
+
+The failed run's actual artifact is `scaffold-37382894958-1`, id11375822238,
+size700 bytes, published digest
+`sha256:0d40eb5f459e3cae1ed1252b1dd10193342ede8a3a0666d440d2eeb42e89190b`.
+This is failed **pre-JVM** diagnostic evidence, not native parity.
+
+The independent Linux consumer run **37382894934 / attempt1** reached actual
+`:core:services:compileKotlin` through the real data producer tasks at that
+same head. It failed at RegionDiscoveryService's missing import of the
+incumbent `Bytes.uppercaseHexString` model extension. The service and native
+discovery test now import that exact existing helper; no identity algorithm
+or wire/persistence implementation was duplicated.
+Its failed producer artifact is `wp203-producer-37382894934-1`, id11375173475,
+size14656 bytes, published digest
+`sha256:15872c9ebc62aa0b2a5b66cc2aa233d6310fabdb135f7e473a7794de7b7d693d`.
+This is failed Kotlin compilation evidence, **zero successful service/Room
+executions**, not WP-211 parity or WP-203 compatibility credit.
+
+Both actual failed artifacts were retained under the native CLI session's
+private `files/wp211-ci/run-<run>-attempt-1` directories. The verbatim trace log
+SHA-256 is `83d43c523b6b454414343b1e7b3ec5fc104081bad72dd19b6d3220a355717dd5`;
+the actual consumer compile log SHA-256 is
+`18bed43e576771b31475ffde14e72d837c13faaef4b34041bf05328edc665e2d`.
+The latter run's raw-retention record explicitly contains zero XML reports.
+Its mechanically generated data lock has **the same Git-normalized text**
+as the incumbent (LF SHA-256
+`9e33b19e97d8b8f20f95f7b83dc744c5403082615bd434546dcad43751eb0c10`,
+incumbent Git blob `af40912627e2ca3c03445d5d43164a53c676294c`).
+No proposal bytes, manual entries or line-ending-only lock edit were adopted.
+This observation does not authorize the producer's broader `dependencies
+--write-locks` command as a new WP-211 command or replace exact test evidence.
+
+The ordinary WP-211 PR was published from the actual complete authoring
+checkpoint, as the coordinator explicitly requested. It is not a producer-only
+PR or a completion/merge claim. Subsequent repairs stay in that same managed
+branch/PR; current immutable head and native run outcomes are reported there.
+The original early producer checkpoint remains
+`83347ede94cb1af5854d8d306caced49695eb335`. RegionalAreas/fault declaration
+behavior is unchanged by the traceability-comment repair.
 
 These are not executed Kotlin/JUnit counts. The services module needs the
 incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the
@@ -167,3 +229,9 @@ that location does not confer WP-201 parity credit. WP-304 selects localized
 whole-sentence GPS variants. WP-218 consumes the actual `RegionalAreas`
 lookup; it does not substitute a resolver lambda or duplicate the catalog.
 Neither handoff completes this WP or assembles the WP-303 service graph.
+
+The source `BatteryInfo+Display` voltage/linear/OCV-interpolation helpers and
+their original percentage assertions are primary-owned by **WP-304**;
+`BatteryMonitor` polling/threshold lifecycle is **WP-303**. This WP retains
+actual battery millivolts/storage and OCV DTO/preset behavior without duplicating
+those consumers or claiming that their UI/monitor/mathematical suites ran.
