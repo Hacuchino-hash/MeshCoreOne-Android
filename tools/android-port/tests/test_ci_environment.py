@@ -140,6 +140,15 @@ class EnvironmentTests(unittest.TestCase):
                     self.assertFalse((output / "wp109-invocation.json").exists())
                     self.assertFalse(any(arg.startswith("-PmeshCli") for arg in arguments))
 
+    def test_wp301_native_evidence_property_uses_actual_verify_arguments_only_on_both_hosts(self):
+        for host in ("linux", "windows"):
+            for stage in ("verify", "protocol", "prepare", "standalone", "assemble", "lint"):
+                with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
+                    output, _, arguments, _ = self.captured_stage(Path(temporary), host, stage, None)
+                    actual = [arg for arg in arguments if arg.startswith("-Pwp301EvidenceDirectory=")]
+                    expected = ["-Pwp301EvidenceDirectory=" + str(output / "wp301-native")] if stage == "verify" else []
+                    self.assertEqual(expected, actual)
+
     def test_meshcli_unknown_malformed_or_stale_identity_blocks_before_any_jvm_command(self):
         from controller.ci import run_stage
 
