@@ -72,6 +72,14 @@ val verifyRuntimeEvidenceReaders by tasks.registering(Exec::class) {
         "-p", "test_collect_evidence.py", "-v")
 }
 
+val printRuntimeFailureDiagnostics by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Print bounded actual raw module failures after verification; never change its result."
+    workingDir(repository)
+    commandLine("python", "-B", layout.projectDirectory.file("verification/print_failures.py").asFile.absolutePath)
+}
+
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyConnectionRuntimeTests) }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyRuntimeNativeIntegrationTests, verifyRuntimeEvidenceReaders) }
+rootProject.tasks.named("verifyScaffoldTests") { finalizedBy(printRuntimeFailureDiagnostics) }
 tasks.named("check") { dependsOn(verifyConnectionRuntimeTests, verifyRuntimeNativeIntegrationTests, verifyRuntimeEvidenceReaders) }
