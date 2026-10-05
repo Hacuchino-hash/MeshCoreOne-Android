@@ -55,6 +55,22 @@
   "shared_consumer_locks_authorized": true,
   "amendments": [
     {
+      "authority": "Coordinator-approved deterministic carry of exclusive WP-109 owner frozen producer 81f677; shared writes frozen before transfer",
+      "paths": [
+        "tools/android-port/controller/ci.py",
+        "tools/android-port/tests/test_ci_environment.py",
+        "tools/android-port/tests/test_workflows.py"
+      ],
+      "scope": "Carry only the full three-file e697 main-to-frozen-producer delta, 197 insertions/one deletion. Existing reviewed WP-109 property/identity prerequisites and verify-only WP-301 output property; no CLI production, stage/task/budget/env/schema/pin or workflow change. CI files freeze after carry.",
+      "patch_bytes": 15262,
+      "patch_sha256": "f5b472b69b62a3e072089c2bf6b0544a565244ae09f73a77df3acc1d77946066",
+      "required_committed_blobs": {
+        "tools/android-port/controller/ci.py": "b926d112f8fa0e2af212a09c92420709cf7b4185",
+        "tools/android-port/tests/test_ci_environment.py": "308bc651c79456bc190e426990ca1c808fbc0c67",
+        "tools/android-port/tests/test_workflows.py": "ddf40d616100b0033e9daa70673b63d8a6430788"
+      }
+    },
+    {
       "authority": "Coordinator explicitly admitted one bounded remote generation alternative after unchanged local capacity failure",
       "paths": [
         ".github/workflows/android-theme-dependency-generation.yml"

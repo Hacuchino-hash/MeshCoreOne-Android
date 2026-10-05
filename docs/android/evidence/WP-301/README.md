@@ -37,10 +37,10 @@ directory and the WP deviation document. The separately granted graph files
 only add the actual preference consumer edge, preserve every old guard, add real
 Gradle fixtures and describe the process lifetime.
 
-No app/feature/UI/manifest/localization/catalog/controller/workflow/checksum
-policy was changed. The exact ten-consumer lock amendment is recorded in the
-receipt; all other shared lock paths remain unowned. No new agents or owning
-worktrees were launched.
+No app/feature/UI/manifest/localization/catalog/checksum policy was changed.
+The exact ten-consumer locks, one auxiliary candidate workflow and frozen
+three-file executor carry are separate amendments in the receipt; all other
+shared paths remain unowned. No new agents or owning worktrees were launched.
 
 The first real both-host attempt reached resource parsing and rejected absent
 strict state in the newly declared owned local lock. [Lock seed](lock-seed.json)
@@ -71,7 +71,7 @@ Current dependency additions still require actual resolution.
 | `python .\docs\android\evidence\WP-301\verify_consumer_locks.py --check --self-test` | Failed closed on actual unregenerated consumer locks, as required; reader tests passed but no generated-state success is claimed. |
 | `Invoke-MeshCoreNativeBuild -Owner WP-301 -Action { ... :core:designsystem:resolveAdmittedThemeConsumerGraphs --write-locks --dependency-verification strict }` | Gate blocked **before action/JVM** with `NATIVE_BUILD_CAPACITY`, virtual KiB **1,608,564** below **2,097,152**, physical KiB **8,272,312**. No lock generation occurred. |
 | `python .\docs\android\evidence\WP-301\retain_native_junit.py --self-test` | Passed: **10 reader regressions**; complete failure/malformed/zero/skipped XML is copied before validation and remains blocked, with no overwrite or repository-overlap fallback. |
-| `python .\android\core\designsystem\verification\generate_consumer_locks.py --self-test --workflow-check` | Passed: **8 helper regressions** plus actual existing workflow trust-boundary rules; only the newly approved auxiliary path is admitted, no generated state is claimed before execution. |
+| `python .\android\core\designsystem\verification\generate_consumer_locks.py --self-test --workflow-check` | Passed: **10 helper regressions** plus actual existing workflow trust-boundary rules; closed/merged/wrong-base candidates, extra commands and unknown tracked/untracked writes fail closed. No generated state is claimed before execution. |
 
 These local Gradle tasks use `android\scaffold\invoke-gradle.ps1` with
 `-ConstrainedMemory -BuildHeap 512m -BuildMetaspace 512m -TestHeap 256m`,
@@ -117,6 +117,20 @@ only the declared resolver with strict verification, rejects unknown writes or
 version/configuration deltas, and uploads exact generated locks as a data
 proposal. This neither replaces mandatory CI nor commits/pushes/merges anything.
 Actual generation and independent artifact readback are still required.
+The owning branch includes the guarded WP-202 main merge
+`e697823c8937eb5b12a40362ca2c5aae4c45f56a`; earlier run/base bindings stay
+historical rather than being retroactively rebound to that newer base.
+
+The exclusive WP-109 owner froze the reviewed `81f677` producer; the coordinator
+admitted carrying its full self-contained three-file delta from e697, not a
+bare two-file stub or unrelated CLI production. The supplied automatic patch
+is **15,262 bytes**, SHA-256
+`f5b472b69b62a3e072089c2bf6b0544a565244ae09f73a77df3acc1d77946066`.
+`git apply --check` preceded the carry, and the exact required normalized Git
+blobs are recorded in [authorization](authorization.json). It forwards
+`wp301EvidenceDirectory` only for the original verify stage; inherited
+credentials, mandatory tasks, original budgets, source pins and evidence
+schema are unchanged. These three CI files are frozen after carry.
 
 ## Actual initial hosted failure
 
@@ -196,7 +210,7 @@ Complete extracted failure bundles are [retained verbatim](hosted-repair-failure
 passing suite evidence. Owned error-level test diagnostics and an independent
 raw-JUnit finalizer now preserve produced bytes before any success validator.
 The finalizer requires an explicit bounded external `wp301EvidenceDirectory`;
-the minimal executor forwarding amendment is separately requested, not inferred.
+the exact producer forwarding carry is now separately admitted.
 No source/contrast expectation is changed without the actual failure trace.
 
 That run inspected actual debug APKs before the failing suite: Linux

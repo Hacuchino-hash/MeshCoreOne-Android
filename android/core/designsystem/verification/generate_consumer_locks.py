@@ -49,6 +49,7 @@ def validate_workflow(text):
         "changed authorized PR scope")
     require(job.get("name") == "WP-301 generated lock proposal", "auxiliary cannot impersonate mandatory CI")
     steps = job["steps"]
+    require(len(steps) == 6, "extra or missing auxiliary step")
     checkout = next(step for step in steps if step.get("uses", "").startswith("actions/checkout@"))
     require(checkout["with"].get("ref") == "${{ github.event.pull_request.head.sha }}"
         and checkout["with"].get("fetch-depth") == "0", "candidate checkout is not exact and complete")
@@ -56,9 +57,12 @@ def validate_workflow(text):
     require(setup["with"] == {"python-version": "3.12.4", "architecture": "x64"}, "changed Python input")
     runs = [step.get("run", "") for step in steps if "run" in step]
     require(len(runs) == 3 and not any("if" in step for step in steps if "run" in step), "conditional or extra candidate action")
-    require("--require-hashes" in runs[0] and "requirements-ci.txt" in runs[0], "unadmitted parser installation")
-    require("--self-test --workflow-check" in runs[1] and '--run --root "${{ runner.temp }}/wp301-generation"' in runs[2],
-        "missing exact helper validation/generation")
+    require(runs == [
+        "python -m pip install --disable-pip-version-check --require-hashes --no-deps --only-binary=:all: "
+            "-r tools/android-port/controller/requirements-ci.txt --quiet",
+        "python android/core/designsystem/verification/generate_consumer_locks.py --self-test --workflow-check",
+        'python android/core/designsystem/verification/generate_consumer_locks.py --run --root "${{ runner.temp }}/wp301-generation"',
+    ], "missing or modified exact helper validation/generation commands")
     upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
     require(upload["with"]["path"] == "${{ runner.temp }}/wp301-generation/proposal"
         and upload["with"]["if-no-files-found"] == "error", "unbounded or success-shaped upload")
@@ -69,13 +73,17 @@ def identity():
     require(os.environ.get("GITHUB_EVENT_NAME") == "pull_request", "unknown execution event")
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf8"))
     pr = event["pull_request"]
-    require(event["number"] == 24 and pr["head"]["ref"] == "cbattlegear-native-themes-and-identity"
+    require(event["number"] == 24 and pr["state"] == "open" and not pr.get("merged", False)
+        and pr["base"]["ref"] == "main" and pr["title"].startswith("[WP-301]")
+        and pr["head"]["ref"] == "cbattlegear-native-themes-and-identity"
         and pr["head"]["repo"]["full_name"] == "cbattlegear/MeshCoreOne-Android", "unapproved candidate identity")
     current = ci.execution_identity()
     require(current is not None, "missing immutable run identity")
     manifest = load_manifest(ROOT)
     policy = json.loads((ROOT / "docs" / "android" / "automation-policy.json").read_text(encoding="utf8"))
     binding = dict(current["binding"], work_package="WP-301")
+    subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", binding["base_sha"],
+        binding["head_sha"]], check=True, capture_output=True)
     require(binding["source_sha"] == SOURCE and manifest.sha256 == MANIFEST
         and binding["policy_revision"] == POLICY and policy_revision(manifest, policy) == POLICY, "changed source/manifest/policy")
     require(git(ROOT, "rev-parse", SOURCE + "^{tree}").decode().strip() == "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
@@ -96,6 +104,7 @@ def check_changed_paths(before):
     admitted = {f"android/gradle/dependency-locks/{name.removeprefix(':').replace(':', '-')}.lockfile"
         for name in locks.MODULES}
     require(not before and after == admitted, "unknown or incomplete tracked-file write")
+    require(not git(ROOT, "ls-files", "--others", "--exclude-standard").strip(), "unknown untracked candidate write")
     return sorted(after)
 
 
@@ -109,7 +118,8 @@ def run(root):
     validate_workflow(WORKFLOW.read_text(encoding="utf8"))
     verify_wrapper()
     before = set(git(ROOT, "diff", "--name-only", "HEAD").decode().splitlines())
-    require(not before, "candidate checkout must be clean before actual generation")
+    require(not before and not git(ROOT, "ls-files", "--others", "--exclude-standard").strip(),
+        "candidate checkout must be clean before actual generation")
     proposal = root / "proposal"
     proposal.mkdir(parents=True)
     record = {"schema_version": 1, "work_package": "WP-301", "scope": "Actual generated lock bytes as a data proposal; no automatic persistence, suite, device, gate or merge acceptance.",

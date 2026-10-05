@@ -43,7 +43,7 @@ val retainThemeUnitEvidence by tasks.registering(Exec::class) {
     group = "verification"
     description = "Preserve complete produced raw XML before validation, including failure identities/stacks and input bindings."
     workingDir(repository)
-    commandLine("python", nativeRetainer.absolutePath, "--junit",
+    commandLine("python", nativeRetainer.absolutePath, "--self-test", "--junit",
         layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
         "--output", providers.gradleProperty("wp301EvidenceDirectory").getOrElse(""))
 }

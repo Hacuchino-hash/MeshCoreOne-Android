@@ -26,7 +26,7 @@ from controller.model import git, load_manifest
 from controller.module_junit import collect_module_tests
 from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
-from controller.schema import decode_json, load_json, positive_integer
+from controller.schema import decode_json, fields, load_json, positive_integer
 from controller.test_runner import run_suite
 
 TASKS = {
@@ -92,6 +92,29 @@ def execution_identity():
     }
 
 
+def meshcli_evidence_options(stage: str, state: dict, output: Path):
+    if stage not in ("verify", "protocol"):
+        return []
+    output = output_directory(str(output))
+    identity = execution_identity()
+    if identity is not None:
+        fields(identity, {"binding", "run_id", "run_attempt"}, label="meshcli invocation identity")
+        binding = Binding.parse(identity["binding"])
+        if (binding.repository != "cbattlegear/MeshCoreOne-Android" or binding.work_package != "WP-003"
+                or binding.head_sha != git(REPO, "rev-parse", "HEAD").decode().strip()):
+            raise PortError("Meshcli forwarding requires the exact actual executor binding")
+        positive_integer(identity["run_id"], "Actual meshcli workflow run")
+        positive_integer(identity["run_attempt"], "Actual meshcli workflow attempt")
+    invocation = output / "wp109-invocation.json"
+    write_json(invocation, {
+        "schema_version": 1, "stage": stage, "identity": identity, "host": state["host"],
+    })
+    return [
+        "-PmeshCliEvidenceDirectory=" + str(output / "wp109"),
+        "-PmeshCliInvocationFile=" + str(invocation),
+    ]
+
+
 def execute(command: list[str], environment: dict | None, log: Path, *, timeout=1800):
     log.parent.mkdir(parents=True, exist_ok=True)
     print("Executing " + " ".join(str(item) for item in command[:5]), flush=True)
@@ -144,6 +167,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
     standalone = stage == "standalone"
     environment = candidate_environment(state, standalone=standalone, local=local)
     verify_wrapper()
+    evidence_options = meshcli_evidence_options(stage, state, output)
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
     project = REPO / "android" / ("build-logic" if standalone else "")
@@ -161,6 +185,9 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
     ]
     if local:
         options.append("-PscaffoldTestJvmArgs=-Xms32m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=256m")
+    options.extend(evidence_options)
+    if stage == "verify":
+        options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
     command = [str(wrapper), "-p", str(project), *TASKS[stage], *options]
     if state["host"] == "windows":
