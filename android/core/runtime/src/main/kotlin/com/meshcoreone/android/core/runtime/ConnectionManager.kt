@@ -297,16 +297,6 @@ class ConnectionManager(
         synchronized(lock) { requireCurrent(owner); owner.link = link }
         PhysicalOwnership.acquire(link.transport, owner.physicalOwner)
         owner.ownsPhysical = true
-        owner.callbacks = link.register(LinkCallbacks(
-            onDisconnected = { failure -> dispatch(owner, "link.disconnected") { handleConnectionLoss(owner, failure) } },
-            onAutoReconnecting = { details -> dispatch(owner, "link.autoReconnect") { autoReconnectEntered(owner, details) } },
-            onReconnected = { dispatch(owner, "link.reconnected") {
-                val id = owner.device?.id ?: (owner.target as? ConnectionTarget.Bluetooth)?.deviceId
-                    ?: throw ConnectionError.InvalidIdentity()
-                reconnectionCoordinator.handleReconnectionComplete(id)
-            } },
-            onBondRefreshed = { dispatch(owner, "link.bondRefresh") { persistBondRefresh(owner) } },
-        ))
         val sessionClock = object : SessionClock {
             override val now: Duration get() = clock.elapsed
             override val wallClock: java.time.Clock get() = java.time.Clock.fixed(clock.instant, java.time.ZoneOffset.UTC)
@@ -320,13 +310,31 @@ class ConnectionManager(
                 }
             },
         )
-        owner.session = session
+        synchronized(lock) { requireCurrent(owner); owner.session = session }
+        val registration = link.register(LinkCallbacks(
+            onDisconnected = { failure -> dispatch(owner, "link.disconnected") { handleConnectionLoss(owner, failure) } },
+            onAutoReconnecting = { details -> dispatch(owner, "link.autoReconnect") { autoReconnectEntered(owner, details) } },
+            onReconnected = { dispatch(owner, "link.reconnected") {
+                val id = owner.device?.id ?: (owner.target as? ConnectionTarget.Bluetooth)?.deviceId
+                    ?: throw ConnectionError.InvalidIdentity()
+                reconnectionCoordinator.handleReconnectionComplete(id)
+            } },
+            onBondRefreshed = { dispatch(owner, "link.bondRefresh") { persistBondRefresh(owner) } },
+        ))
+        val installed = synchronized(lock) {
+            if (isCurrent(owner)) { owner.callbacks = registration; true } else false
+        }
+        if (!installed) {
+            val cancelled = CancellationException("Registration completed for a retired generation")
+            try { registration.close() } catch (failure: Exception) { cancelled.addSuppressed(failure) }
+            throw cancelled
+        }
         val states = session.connectionState
         owner.scope.launch(start = CoroutineStart.UNDISPATCHED) {
             states.collect { state ->
                 if (state == ConnectionState.Connected) {
                     owner.sawConnected = true
-                    if (isCurrent(owner)) publish(DeviceConnectionState.CONNECTED, transport = state)
+                    publishFor(owner, DeviceConnectionState.CONNECTED, transport = state)
                 } else if (owner.sawConnected && (state == ConnectionState.Disconnected || state is ConnectionState.Failed)) {
                     dispatch(owner, "session.terminal") {
                         if (isCurrent(owner)) handleConnectionLoss(owner, (state as? ConnectionState.Failed)?.error)
@@ -334,7 +342,7 @@ class ConnectionManager(
                 }
             }
         }
-        if (reconnecting) publish(DeviceConnectionState.CONNECTED, token = null, issue = null)
+        if (reconnecting) publishFor(owner, DeviceConnectionState.CONNECTED, token = null, issue = null)
         withRuntimeTimeout(10.seconds, "session.start", suspendingClock) {
             session.start(if (reconnecting) 1L else null, disconnectTransportOnFailure = true)
         }
@@ -357,7 +365,7 @@ class ConnectionManager(
         val prior = existing ?: byKey
         val radioId = prior?.radioId ?: RadioId(DeviceIdentity.deriveUUID(info.publicKey))
         val token = SessionToken(processEpoch, Generation(owner.number), radioId)
-        owner.token = token
+        synchronized(lock) { requireCurrent(owner); owner.token = token }
         // Native firmware older than auto-add configuration reports a typed DeviceError, not an empty connection.
         val autoAdd = try { session.getAutoAddConfig() }
         catch (failure: MeshCoreException.DeviceError) {
@@ -369,19 +377,22 @@ class ConnectionManager(
             listOf(ConnectionMethod.WiFi(it.host, it.port))
         } ?: emptyList()
         val device = DeviceDTO.fromConnection(deviceId, radioId, info, capabilities, autoAdd, prior, methods, clock.instant)
-        owner.device = device
+        synchronized(lock) { requireCurrent(owner); owner.device = device }
         val ownership = FactoryOwnership(token)
         owner.ownership = ownership
         val services = serviceFactory.create(RuntimeServiceInputs(
             SessionInputs(token, session, this, owner.scope), device,
             RuntimeServiceCallbacks(
-                cleanChannelSync = { if (isCurrent(owner)) synchronized(lock) { cleanSync = radioId to clock.instant } },
-                channelSyncAttempted = { if (isCurrent(owner)) synchronized(lock) { attemptedSync = radioId to clock.instant } },
+                cleanChannelSync = { synchronized(lock) { if (isCurrent(owner)) cleanSync = radioId to clock.instant } },
+                channelSyncAttempted = { synchronized(lock) { if (isCurrent(owner)) attemptedSync = radioId to clock.instant } },
                 reconcileIdentity = { reconcileIdentity(token) },
             ),
         ), ownership)
         ownership.verifyReturned(services)
-        owner.services = OwnedRadioServices(services, ownership, context)
+        synchronized(lock) {
+            requireCurrent(owner)
+            owner.services = OwnedRadioServices(services, ownership, context)
+        }
         requireCurrent(owner)
         devices.saveDevice(device)
         requireCurrent(owner)
@@ -398,6 +409,7 @@ class ConnectionManager(
         val ranges = if (capabilities.clientRepeat) session.getRepeatFreq().snapshot() else SnapshotList.empty()
         requireCurrent(owner)
         synchronized(lock) {
+            requireCurrent(owner)
             deviceValue = device
             repeatRanges = ranges
             publishLocked(DeviceConnectionState.CONNECTED, ConnectionState.Connected, token, null)
@@ -420,7 +432,7 @@ class ConnectionManager(
             if (requested) publishLocked(intent = ConnectionIntent.WantsConnection())
             forceFullSync || requested
         }
-        publish(DeviceConnectionState.SYNCING)
+        requirePublished(owner, DeviceConnectionState.SYNCING)
         val sync = services.initialSync(force)
         requireCurrent(owner)
         when (sync) {
@@ -432,7 +444,7 @@ class ConnectionManager(
                 promoteToReady(owner, syncSucceeded = true)
             }
             is RuntimeSyncResult.Failed -> {
-                publish(DeviceConnectionState.SYNCING, issue = issueFor(sync.cause, LifecycleStage.START_MONITORING))
+                requirePublished(owner, DeviceConnectionState.SYNCING, issue = issueFor(sync.cause, LifecycleStage.START_MONITORING))
                 reporter.report(RuntimeDiagnostic.Failure("initialSync", sync.cause))
                 if (link.type == TransportType.WIFI) syncDeviceTimeIfNeeded(owner)
             }
@@ -441,8 +453,8 @@ class ConnectionManager(
 
     private suspend fun promoteToReady(owner: RadioGeneration, syncSucceeded: Boolean) {
         requireCurrent(owner)
-        publish(if (syncSucceeded) DeviceConnectionState.READY else DeviceConnectionState.SYNCING, issue = null)
-        synchronized(lock) { authFailureDevice = null }
+        requirePublished(owner, if (syncSucceeded) DeviceConnectionState.READY else DeviceConnectionState.SYNCING, issue = null)
+        synchronized(lock) { if (isCurrent(owner)) authFailureDevice = null }
         if (syncSucceeded || owner.link?.type == TransportType.WIFI) syncDeviceTimeIfNeeded(owner)
         requireCurrent(owner)
         if (syncSucceeded) {
@@ -530,7 +542,17 @@ class ConnectionManager(
 
     override suspend fun teardownSessionForReconnect() {
         val old = synchronized(lock) {
-            active?.also { active = null; retained = it; deviceValue = null; repeatRanges = SnapshotList.empty() }
+            active?.also {
+                active = null
+                retained = it
+                deviceValue = null
+                repeatRanges = SnapshotList.empty()
+                publishLocked(
+                    state = if (connectionState == DeviceConnectionState.DISCONNECTED) DeviceConnectionState.DISCONNECTED
+                        else DeviceConnectionState.CONNECTING,
+                    token = null,
+                )
+            }
         } ?: return
         old.operation?.cancel()
         val report = closeGeneration(old, disconnectPhysical = false)
@@ -1022,6 +1044,24 @@ class ConnectionManager(
         token: SessionToken? = values.value.token,
         issue: ConnectionIssue? = values.value.issue,
     ) = synchronized(lock) { publishLocked(state, transport, token, issue) }
+    private fun publishFor(
+        owner: RadioGeneration,
+        state: DeviceConnectionState,
+        transport: ConnectionState = values.value.transport,
+        token: SessionToken? = owner.token,
+        issue: ConnectionIssue? = values.value.issue,
+    ): Boolean = synchronized(lock) {
+        if (!isCurrent(owner)) return@synchronized false
+        publishLocked(state, transport, token, issue)
+        true
+    }
+    private fun requirePublished(
+        owner: RadioGeneration,
+        state: DeviceConnectionState,
+        issue: ConnectionIssue? = values.value.issue,
+    ) {
+        if (!publishFor(owner, state, issue = issue)) throw CancellationException("Stale state publication")
+    }
     private fun publishLocked(
         state: DeviceConnectionState = values.value.state,
         transport: ConnectionState = values.value.transport,

@@ -353,5 +353,42 @@ class RuntimeOwnershipTest {
                 assertEquals(1, resetCount)
             }
         },
+        nativeCase("synchronous callback during registration owns a session and closes a late registration without starting radio traffic") {
+            val fixture = RuntimeFixture(this, dispatcher = UnconfinedTestDispatcher(testScheduler))
+            try {
+                fixture.onRegistration = { it.onDisconnected(LinkFailure.ConnectionFailed("registration loss")) }
+                assertFailsWith<CancellationException> { fixture.manager.connect(fixture.platform.target) }
+                assertEquals(1, fixture.links.single().callbackClosures)
+                assertTrue(fixture.radios.single().frames.isEmpty()); assertEquals(0, fixture.radios.single().connects)
+                assertEquals(0, fixture.radios.single().collectors)
+                assertNull(fixture.manager.snapshot.value.token)
+            } finally { fixture.close() }
+        },
+        nativeCase("cancelled sync with delayed completion cannot publish a stale token or ready state") {
+            withFixture {
+                val gate = CompletableDeferred<Unit>()
+                onFactory = { handle, _ -> handle.beforeSync = { withContext(NonCancellable) { gate.await() } } }
+                val work = backgroundScope.async { runCatching { manager.connect(platform.target) } }; runCurrent()
+                assertEquals(DeviceConnectionState.SYNCING, manager.connectionState)
+                val stop = backgroundScope.async { manager.disconnect() }; runCurrent()
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState); assertNull(manager.snapshot.value.token)
+                assertFalse(stop.isCompleted)
+                gate.complete(Unit); runCurrent(); stop.await()
+                assertIs<CancellationException>(work.await().exceptionOrNull())
+                assertEquals(0, syncedCount); assertEquals(1, services.single().teardowns)
+                assertEquals(1, radios.single().closes); assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+            }
+        },
+        nativeCase("retired sync callbacks cannot overwrite a successor process cache or timestamps") {
+            withFixture {
+                connect(); val old = services.single().inputs.callbacks
+                createRadio = { TestRadio().also { it.key = Bytes(ByteArray(32) { 7 }) } }
+                manager.connect(target())
+                val clean = manager.lastCleanChannelSync; val attempted = manager.lastAttemptedChannelSync
+                advanceTimeBy(2000); old.cleanChannelSync(); old.channelSyncAttempted()
+                assertEquals(clean, manager.lastCleanChannelSync); assertEquals(attempted, manager.lastAttemptedChannelSync)
+                assertEquals(manager.connectedDevice!!.radioId, clean!!.first)
+            }
+        },
     )
 }

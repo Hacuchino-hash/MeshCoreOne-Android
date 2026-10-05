@@ -14,6 +14,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.time.Instant
 import java.util.UUID
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
@@ -190,10 +191,12 @@ internal class TestLink(val radio: TestRadio, override val type: TransportType) 
     var beforeBondRefresh: suspend () -> Unit = {}
     val clearedBonds = mutableListOf<UUID>()
     var configured = false
+    var registrationHook: (LinkCallbacks) -> Unit = {}
     override fun register(callbacks: LinkCallbacks): AutoCloseable {
         check(this.callbacks == null)
         this.callbacks = callbacks
         registrations++
+        registrationHook(callbacks)
         return AutoCloseable { callbackClosures++; this.callbacks = null }
     }
     override suspend fun configure(capabilities: DeviceCapabilities, platform: DevicePlatform) { configured = true }
@@ -251,7 +254,7 @@ internal class TestServices(val inputs: RuntimeServiceInputs) : RuntimeServices 
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class RuntimeFixture(val test: TestScope, parent: Job? = null) {
+internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatcher: CoroutineDispatcher? = null) {
     val clock = TestClock(test.testScheduler)
     val preferences = TestPreferences()
     val last = LastConnectionStore(preferences, clock)
@@ -272,6 +275,7 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null) {
     var createRadio: () -> TestRadio = { TestRadio() }
     var onFactory: suspend (TestServices, FactoryOwnership) -> Unit = { _, _ -> }
     var onAvailable: suspend () -> Unit = {}
+    var onRegistration: (LinkCallbacks) -> Unit = {}
     val manager = ConnectionManager(
         devices,
         object : RoomPersisting by rejectingRole(RoomPersisting::class.java) {
@@ -285,7 +289,10 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null) {
         last, platform,
         RuntimeLinkFactory { target ->
             val radio = createRadio().also { radios += it }
-            TestLink(radio, if (target is ConnectionTarget.WiFi) TransportType.WIFI else TransportType.BLUETOOTH).also { links += it }
+            TestLink(radio, if (target is ConnectionTarget.WiFi) TransportType.WIFI else TransportType.BLUETOOTH).also {
+                it.registrationHook = onRegistration
+                links += it
+            }
         },
         RuntimeServiceFactory { inputs, ownership ->
             val result = TestServices(inputs).also { services += it }
@@ -302,7 +309,8 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null) {
             onLastDeviceCleared = { order += "forgot" },
         ),
         RuntimeIssueReporter(diagnostics::add), clock,
-        context = test.backgroundScope.coroutineContext + (parent ?: checkNotNull(test.backgroundScope.coroutineContext[Job])),
+        context = test.backgroundScope.coroutineContext + (parent ?: checkNotNull(test.backgroundScope.coroutineContext[Job])) +
+            (dispatcher ?: EmptyCoroutineContext),
         configuration = SessionConfiguration(defaultTimeout = 1.0, clientIdentifier = "MCore"),
         jitter = { 0.0 },
     )
