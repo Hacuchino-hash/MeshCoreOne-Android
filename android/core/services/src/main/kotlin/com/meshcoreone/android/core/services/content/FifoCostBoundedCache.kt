@@ -1,18 +1,25 @@
 // PortedFrom: MC1/Services/DecodedPreviewCache.swift@db14559b39d32322b06477c6ae676112f583db50
-//             MC1/Services/InlineImageCache.swift (decoded-entry eviction policy)@db14559b39d32322b06477c6ae676112f583db50
-//             MC1/Services/LinkPreviewCache.swift (NSCache countLimit/totalCostLimit shape)@db14559b39d32322b06477c6ae676112f583db50
-// Generic extraction of the FIFO, count-and-cost-bounded eviction policy shared by every image
-// cache in the original source. The originals differ only in their payload type (UIImage pair,
-// Data, LinkPreviewDataDTO) and in concurrency primitive (OSAllocatedUnfairLock, actor + NSCache);
-// this module owns the pure, synchronous eviction algorithm only. Thread-safety and the concrete
-// payload (android.graphics.Bitmap, network bytes, etc.) are narrow native-adapter
-// responsibilities layered on top (see docs/android/deviations/WP-218.md).
+//             MC1/Services/InlineImageCache.swift (decoded-mirror and servesPage-mirror eviction
+//             policy, both of which use the exact same hand-rolled insertion-order structure as
+//             DecodedPreviewCache)@db14559b39d32322b06477c6ae676112f583db50
+// Generic extraction of the FIFO, count-and-cost-bounded eviction policy shared by
+// DecodedPreviewCache's `mirror` and InlineImageCache's `decodedMirror`/`servesPageMirror` - all
+// three are hand-rolled `[String: V]` dictionaries plus an explicit `insertionOrder` array under
+// a lock, evicting oldest-first while keeping the just-inserted entry. This is NOT the same
+// policy as LinkPreviewCache's `NSCache` memory tier: NSCache's internal eviction order is
+// OS-managed/undocumented (Apple docs: "not a strict LRU"), not insertion-order FIFO, so it is
+// deliberately NOT modeled by this type - LinkPreviewCache's own memory-tier port (not yet
+// implemented) will need its own policy, most likely a `LinkedHashMap(accessOrder = true)`-backed
+// LRU, not this FIFO primitive. This module owns only the pure, synchronous eviction algorithm;
+// thread-safety is layered by [ThreadSafeFifoCostBoundedCache] and concrete payload types
+// (android Bitmap-equivalent, network bytes, etc.) are narrow native-adapter responsibilities
+// layered on top (see docs/android/deviations/WP-218.md).
 package com.meshcoreone.android.core.services.content
 
 /**
- * A FIFO cache bounded by both entry count and total cost, mirroring the eviction policy shared
- * by `DecodedPreviewCache`, `InlineImageCache`'s decoded mirror, and `LinkPreviewCache`'s
- * `NSCache` (`countLimit` + `totalCostLimit`).
+ * A FIFO cache bounded by both entry count and total cost, mirroring the hand-rolled
+ * insertion-order eviction policy shared by `DecodedPreviewCache.mirror`,
+ * `InlineImageCache.decodedMirror`, and `InlineImageCache.servesPageMirror`.
  *
  * Eviction is insertion-order FIFO (not true LRU - the originals never promote on read either):
  * entries are evicted oldest-first while there is more than one entry and either bound is
@@ -20,8 +27,8 @@ package com.meshcoreone.android.core.services.content
  * matching the Swift comment "so a large hero is still served once."
  *
  * Not thread-safe by itself - the original types each wrap an equivalent single-threaded
- * structure in their own lock/actor. Callers needing concurrent access should guard calls with
- * their own synchronization primitive, exactly as the Swift originals do around their raw state.
+ * structure under their own lock/actor (`OSAllocatedUnfairLock`). Use
+ * [ThreadSafeFifoCostBoundedCache] to reproduce that wait-free-read, lock-guarded-write shape.
  */
 class FifoCostBoundedCache<K, V>(
     private val maxEntryCount: Int,

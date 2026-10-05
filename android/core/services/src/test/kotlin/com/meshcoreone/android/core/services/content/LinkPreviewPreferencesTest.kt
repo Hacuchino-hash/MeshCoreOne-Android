@@ -1,8 +1,11 @@
 // PortedFrom: MC1Tests/Models/LinkPreviewPreferencesTests.swift@db14559b39d32322b06477c6ae676112f583db50
 // Uses InMemoryLinkPreviewPreferencesSource in place of the Swift test's per-test UserDefaults
 // suite (test.<UUID>) - the port's unit boundary is the policy, not the storage mechanism.
+// Setters go through suspend LinkPreviewPreferences.setXxx calls (matching the real
+// asynchronous DataStore producer contract), run under kotlinx-coroutines-test's runTest.
 package com.meshcoreone.android.core.services.content
 
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -18,59 +21,59 @@ class LinkPreviewPreferencesTest {
     }
 
     @Test
-    fun `shouldAutoResolve for DM respects settings`() {
+    fun `shouldAutoResolve for DM respects settings`() = runTest {
         val prefs = LinkPreviewPreferences(InMemoryLinkPreviewPreferencesSource())
 
-        prefs.previewsEnabled = true
-        prefs.autoResolveDM = true
+        prefs.setPreviewsEnabled(true)
+        prefs.setAutoResolveDM(true)
         assertTrue(prefs.shouldAutoResolve(isChannelMessage = false))
 
-        prefs.autoResolveDM = false
+        prefs.setAutoResolveDM(false)
         assertFalse(prefs.shouldAutoResolve(isChannelMessage = false))
 
-        prefs.previewsEnabled = false
-        prefs.autoResolveDM = true
+        prefs.setPreviewsEnabled(false)
+        prefs.setAutoResolveDM(true)
         assertFalse(prefs.shouldAutoResolve(isChannelMessage = false))
     }
 
     @Test
-    fun `shouldAutoResolve for channel respects settings`() {
+    fun `shouldAutoResolve for channel respects settings`() = runTest {
         val prefs = LinkPreviewPreferences(InMemoryLinkPreviewPreferencesSource())
 
-        prefs.previewsEnabled = true
-        prefs.autoResolveChannels = true
+        prefs.setPreviewsEnabled(true)
+        prefs.setAutoResolveChannels(true)
         assertTrue(prefs.shouldAutoResolve(isChannelMessage = true))
 
-        prefs.autoResolveChannels = false
+        prefs.setAutoResolveChannels(false)
         assertFalse(prefs.shouldAutoResolve(isChannelMessage = true))
     }
 
     @Test
-    fun `shouldShowPreview reflects global toggle`() {
+    fun `shouldShowPreview reflects global toggle`() = runTest {
         val prefs = LinkPreviewPreferences(InMemoryLinkPreviewPreferencesSource())
 
-        prefs.previewsEnabled = true
+        prefs.setPreviewsEnabled(true)
         assertTrue(prefs.shouldShowPreview)
 
-        prefs.previewsEnabled = false
+        prefs.setPreviewsEnabled(false)
         assertFalse(prefs.shouldShowPreview)
     }
 
     @Test
-    fun `Master off overrides channel auto-resolve too`() {
+    fun `Master off overrides channel auto-resolve too`() = runTest {
         val prefs = LinkPreviewPreferences(InMemoryLinkPreviewPreferencesSource())
 
-        prefs.previewsEnabled = false
-        prefs.autoResolveChannels = true
+        prefs.setPreviewsEnabled(false)
+        prefs.setAutoResolveChannels(true)
         assertFalse(prefs.shouldAutoResolve(isChannelMessage = true))
     }
 
     @Test
-    fun `Underlying source mutations are reflected through the wrapper`() {
+    fun `Underlying source mutations are reflected through the wrapper`() = runTest {
         val source = InMemoryLinkPreviewPreferencesSource()
         val prefs = LinkPreviewPreferences(source)
 
-        source.previewsEnabled = true
+        source.update(LinkPreviewPreferencesSnapshot(previewsEnabled = true))
         assertEquals(true, prefs.previewsEnabled)
     }
 }

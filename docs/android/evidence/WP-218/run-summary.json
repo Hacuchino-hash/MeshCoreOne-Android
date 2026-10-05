@@ -108,6 +108,50 @@
       "verification_method": "Re-read the ten TEST-*.xml files directly under android/core/services/build/test-results/test/ after the UP-TO-DATE build completed; confirmed identical 97/0/0/0 breakdown across the same ten classes as the prior real-execution entry above.",
       "gate_contention_history": "First check after pushing the merge+adapter-proposal commits found the gate busy (another WP owner held it); not retried in a loop per no-spin-poll. A single later recheck found it free and this run proceeded.",
       "note": "Confirms the merge with origin/main is behavior-equivalent for core:services: an up-to-date/cached result is the correct and expected Gradle outcome given zero changed inputs, not a gap in verification."
+    },
+    {
+      "command": ".\\gradlew.bat :core:services:test (real gated execution via Invoke-MeshCoreNativeBuild -Owner 'WP-218')",
+      "context": "Coordinator's three corrections: (1) ImageHeaderDecoder extended to JPEG/GIF/WebP (not PNG-only); (2) LinkPreviewPreferences's test-only InMemoryLinkPreviewPreferencesSource moved to src/test, LinkPreviewPreferencesTest rewritten to the real async suspend/Flow API; (3) FifoCostBoundedCache's doc comment corrected to stop claiming NSCache equivalence (NSCache is OS-managed, not insertion-order FIFO) and a first concrete cache orchestrator, DecodedPreviewCache, added on top of it (the hand-rolled insertion-order FIFO + 'keep >=1 entry' policy that DecodedPreviewCache.swift and InlineImageCache.swift's mirrors both genuinely use).",
+      "result": "BUILD SUCCESSFUL",
+      "tests_discovered": 116,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "breakdown": {
+        "UrlSafetyCheckerTest": 34,
+        "MalwareDomainFilterTest": 5,
+        "MalwareDomainParserTest": 3,
+        "ImageUrlClassifierTest": 19,
+        "ImageHeaderDecoderTest": 14,
+        "GeoCoordinateTest": 9,
+        "LinkPreviewPreferencesTest": 6,
+        "ImageByteCostTest": 7,
+        "FifoCostBoundedCacheTest": 8,
+        "BundledMalwareDomainSnapshotTest": 3,
+        "DecodedPreviewCacheTest": 8
+      },
+      "raw_junit_xml": [
+        "TEST-com.meshcoreone.android.core.services.content.UrlSafetyCheckerTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainFilterTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.MalwareDomainParserTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageUrlClassifierTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageHeaderDecoderTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.GeoCoordinateTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.LinkPreviewPreferencesTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.ImageByteCostTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.FifoCostBoundedCacheTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.BundledMalwareDomainSnapshotTest.xml",
+        "TEST-com.meshcoreone.android.core.services.content.DecodedPreviewCacheTest.xml"
+      ],
+      "toolchain_used": {
+        "java_home": "C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\toolchains\\temurin-21\\jdk-21.0.12.1+1",
+        "android_sdk_root": "C:\\Users\\camer\\.copilot\\session-state\\bcb17a74-5fa6-47d0-a4be-b6b595e20559\\files\\toolchains\\android-sdk",
+        "gradle_user_home": "own private cache under this session's files\\gradle-user-home",
+        "android_user_home": "own private cache under this session's files\\android-user-home",
+        "gate_owner": "WP-218"
+      },
+      "notes_on_iteration": "Two prior attempts in this same session failed to compile: (a) ThreadSafeFifoCostBoundedCache.kt's `FifoCostBoundedCache(maxEntryCount, maxTotalCostBytes, costOf)` constructor call needed explicit `<K, V>` type arguments (Kotlin could not infer them from the lambda alone); (b) DecodedPreviewCacheTest.kt initially passed raw `ByteArray`/call-site-unqualified `CachedDecodedPreview(...)` where `LinkPreviewDataDTO.imageData/iconData` require the project's `Bytes` wrapper type and the generic `CachedDecodedPreview<Hero, Icon>` needed explicit type arguments at several call sites. Both are disclosed as real compile-time fixes made before this passing run, not silent edits to match a golden.",
+      "note": "First real gated verification of DecodedPreviewCache.kt + ThreadSafeFifoCostBoundedCache.kt (new, independently-authored test since no MC1Tests/Services/DecodedPreviewCacheTests.swift exists at the pinned commit) and of the two already-corrected files from the prior increment (ImageHeaderDecoder's JPEG/GIF/WebP branches, LinkPreviewPreferencesTest's async rewrite)."
     }
   ],
   "source_test_mapping": {
@@ -124,15 +168,15 @@
     "MC1Tests/Models/LinkPreviewPreferencesTests.swift": "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/LinkPreviewPreferencesTest.kt",
     "MC1/Utilities/ImageByteCost.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/ImageByteCost.kt (no original Swift test file; 7 Kotlin cases independently authored)",
     "Resources/urlhaus-filter-hosts-online.txt": "android/core/services/src/main/resources/content/urlhaus-filter-hosts-online.txt (byte-exact, git hash-object verified) + BundledMalwareDomainSnapshot.kt loader (new, no literal Swift equivalent)",
-    "(shared eviction policy of LinkPreviewCache/DecodedPreviewCache/InlineImageCache)": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/FifoCostBoundedCache.kt (new generic extraction, not a 1:1 port of any single file)"
+    "(shared FIFO eviction primitive used by DecodedPreviewCache.mirror and InlineImageCache.decodedMirror/servesPageMirror -- NOT LinkPreviewCache.memoryCache, which is a raw NSCache and needs its own LRU-shaped port)": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/FifoCostBoundedCache.kt + ThreadSafeFifoCostBoundedCache.kt (ReentrantLock wrapper matching Swift's OSAllocatedUnfairLock synchronous contract)",
+    "MC1/Services/DecodedPreviewCache.swift": "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/content/DecodedPreviewCache.kt (CachedDecodedPreview<Hero, Icon> + DecodedPreviewCache<Hero, Icon>, generic over the native adapter's decoded-image type with injected cost functions; maxEntryCount=50/maxTotalCostBytes=50MB matching the Swift constants) -- no original Swift test file exists for this class, so DecodedPreviewCacheTest.kt (8 cases) is independently authored, covering store/decoded/clear, dto byte-stripping, nil-hero/icon zero cost, entry-count eviction (keeps newest), and the 'keep >=1 entry even over cost budget' rule"
   },
   "not_implemented_this_increment": [
     "MC1/Services/LinkPreviewService.swift (+Scrape)",
-    "MC1/Services/LinkPreviewCache.swift / LinkPreviewCaching.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
-    "MC1/Services/DecodedPreviewCache.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
+    "MC1/Services/LinkPreviewCache.swift / LinkPreviewCaching.swift (orchestrator; memory tier is a raw NSCache, not FIFO -- needs its own LRU-shaped port, plus negative-cache/in-flight-coalescing/semaphore logic and a LinkMetadataFetching-equivalent injected fetch interface)",
     "MC1/Services/RedirectSafetyDelegate.swift",
     "MC1/Services/ImageURLDetector.swift (UIKit/ImageIO-dependent decode/downsample/GIF-frame half only; its isGIFData/downsampledImage test cases remain unported)",
-    "MC1/Services/InlineImageCache.swift (orchestrator; shared eviction policy now exists as FifoCostBoundedCache)",
+    "MC1/Services/InlineImageCache.swift (orchestrator; decodedMirror/servesPageMirror reuse FifoCostBoundedCache as DecodedPreviewCache does, but the HTTP probe/fetch, failedURLs negative cache, inFlightURLs dedup, and concurrency semaphore are not yet built, pending the Android-compatible HTTP backend decision)",
     "MC1/Services/InlineImagePrefetcher.swift",
     "MC1Services/Services/InlineImageDimensionsStore.swift (blocked on a JSON-codec dependency not yet admitted in core:services)",
     "MC1/Services/ElevationService.swift",
