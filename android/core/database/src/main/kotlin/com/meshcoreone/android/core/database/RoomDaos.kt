@@ -10,6 +10,7 @@ import java.util.UUID
 
 @Dao
 interface RemoteNodeSessionDao : RowWriter<RemoteNodeSessionEntity> {
+    @Query("SELECT * FROM remote_node_sessions") suspend fun backupAll(): List<RemoteNodeSessionEntity>
     @Query("SELECT * FROM remote_node_sessions WHERE radioId = :radioId")
     suspend fun forRadio(radioId: UUID): List<RemoteNodeSessionEntity>
     @Query("SELECT * FROM remote_node_sessions WHERE radioId = :radioId AND id = :id")
@@ -36,6 +37,7 @@ interface RemoteNodeSessionDao : RowWriter<RemoteNodeSessionEntity> {
 
 @Dao
 interface RoomMessageDao : RowWriter<RoomMessageEntity> {
+    @Query("SELECT * FROM room_messages") suspend fun backupAll(): List<RoomMessageEntity>
     @Query("SELECT * FROM room_messages WHERE radioId = :radioId AND id = :id")
     suspend fun byId(radioId: UUID, id: UUID): RoomMessageEntity?
     @Query("SELECT * FROM room_messages WHERE radioId = :radioId AND sessionID = :sessionID ORDER BY timestamp, createdAt_seconds, createdAt_nanos LIMIT :limit OFFSET :offset")
