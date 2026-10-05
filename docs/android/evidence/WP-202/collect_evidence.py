@@ -15,6 +15,7 @@ SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 INITIAL_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
 BASE = "2cf00464950e1fb9aae0dd913402eb3e12dc0044"
 TESTS = ROOT / "android" / "core" / "data" / "src" / "test" / "kotlin"
+REPOSITORY_TESTS = TESTS / "com" / "meshcoreone" / "android" / "core" / "data" / "repository"
 REPORTS = ROOT / "android" / "core" / "data" / "build" / "test-results" / "testDebugUnitTest"
 PREFIX = "com.meshcoreone.android.core.data.repository."
 DECLARATION = re.compile(r"(?P<annotations>(?:\s*@(?:Test\b|OriginalCase\([^\n]*\))\s*)+)\s*fun\s+(?P<method>\w+)\s*\(")
@@ -58,7 +59,7 @@ def inventory():
 
 
 def test_declarations():
-    for path in sorted(TESTS.rglob("*.kt")):
+    for path in sorted(REPOSITORY_TESTS.rglob("*.kt")):
         content = path.read_text(encoding="utf8")
         classes = re.findall(r"^\s*class\s+(\w+)\s*:", content, re.MULTILINE)
         if not classes:
@@ -69,6 +70,27 @@ def test_declarations():
             if "@Test" not in declaration["annotations"]:
                 continue
             yield path, PREFIX + classes[0], declaration
+
+
+def module_test_identities():
+    result = set()
+    for path in sorted(TESTS.rglob("*.kt")):
+        content = path.read_text(encoding="utf8")
+        declarations = [item for item in DECLARATION.finditer(content) if "@Test" in item["annotations"]]
+        if not declarations:
+            continue
+        package = re.findall(r"^\s*package\s+([\w.]+)\s*$", content, re.MULTILINE)
+        classes = re.findall(r"^class\s+(\w+)\b", content, re.MULTILINE)
+        if len(package) != 1 or len(classes) != 1 or not package[0].startswith("com.meshcoreone.android.core.data."):
+            raise ValueError("Ambiguous/foreign module testcase source: " + path.name)
+        for declaration in declarations:
+            identity = (package[0] + "." + classes[0], declaration["method"])
+            if identity in result:
+                raise ValueError("Duplicate module testcase declaration: " + repr(identity))
+            result.add(identity)
+    if not result:
+        raise ValueError("Zero current module testcase declarations")
+    return result
 
 
 def bindings():
@@ -90,9 +112,10 @@ def require_complete_native_cases(actual):
     if not declared or len(declared) != len(set(declared)):
         raise ValueError("Zero/duplicate declared native test identities")
     expected = set(declared)
-    if set(actual) != expected:
-        raise ValueError("Incomplete or stale native suite; missing=" + repr(sorted(expected - set(actual))) +
-                         "; unexpected=" + repr(sorted(set(actual) - expected)))
+    repository_actual = {identity for identity in actual if identity[0].startswith(PREFIX)}
+    if repository_actual != expected:
+        raise ValueError("Incomplete or stale native suite; missing=" + repr(sorted(expected - repository_actual)) +
+                         "; unexpected=" + repr(sorted(repository_actual - expected)))
     return len(expected)
 
 
@@ -141,6 +164,7 @@ def raw_suites():
     if not files:
         raise ValueError("Missing actual native testDebugUnitTest XML")
     cases, suites = {}, []
+    declared_module = module_test_identities()
     for path in files:
         raw = bounded_junit_bytes(path)
         root = ET.fromstring(raw)
@@ -152,12 +176,15 @@ def raw_suites():
             raise ValueError("Failed/skipped/inconsistent native suite: " + path.name)
         for node in nodes:
             identity = (node.attrib["classname"], node.attrib["name"])
-            if not all(identity) or identity in cases or not identity[0].startswith(PREFIX):
+            if not all(identity) or identity in cases or identity not in declared_module:
                 raise ValueError("Missing/duplicate/foreign native case identity")
             if any(node.find(kind) is not None for kind in ("failure", "error", "skipped")):
                 raise ValueError("Raw case failed/skipped despite suite counts")
             cases[identity] = {"class": identity[0], "name": identity[1], "outcome": "passed"}
         suites.append({"path": path.relative_to(ROOT).as_posix(), "sha256": digest(raw), "cases": len(nodes)})
+    if set(cases) != declared_module:
+        raise ValueError("Incomplete or stale module suite; missing=" + repr(sorted(declared_module - set(cases))) +
+                         "; unexpected=" + repr(sorted(set(cases) - declared_module)))
     return cases, suites
 
 
@@ -183,7 +210,7 @@ def report():
     if missing:
         raise ValueError("Unresolved original/native-equivalent dispositions: " + repr(sorted(missing)))
     native, suites = raw_suites()
-    require_complete_native_cases(native)
+    repository_count = require_complete_native_cases(native)
     for case in originals:
         binding = mapped[case["id"]]
         identity = (binding["class"], binding["name"])
@@ -221,8 +248,10 @@ def report():
         "head_sha": git("rev-parse", "HEAD").decode().strip(), "source_sha": SOURCE,
         "scope": "actual local Room/JUnit only; not formal review, hardware, signing or compatible backup restore",
         "primary_inputs": source_map, "original_cases": originals, "junit_suites": suites,
-        "native_cases": list(native.values()),
-        "discovery": {"discovered": len(native), "passed": len(native), "failed": 0, "errors": 0, "skipped": 0},
+        "native_cases": [case for identity, case in native.items() if identity[0].startswith(PREFIX)],
+        "discovery": {"discovered": repository_count, "passed": repository_count, "failed": 0, "errors": 0, "skipped": 0},
+        "whole_module_discovery": {"discovered": len(native), "passed": len(native), "failed": 0, "errors": 0, "skipped": 0},
+        "additional_module_cases": [case for identity, case in native.items() if not identity[0].startswith(PREFIX)],
         "schema": {"version": 1, "entities": 17, "identity_hash": schema["identityHash"],
                    "canonical_lf_sha256": digest(raw.replace(b"\r\n", b"\n"))},
     }

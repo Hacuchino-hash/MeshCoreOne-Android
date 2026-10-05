@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(project(":core:runtime"))
 }
 dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
