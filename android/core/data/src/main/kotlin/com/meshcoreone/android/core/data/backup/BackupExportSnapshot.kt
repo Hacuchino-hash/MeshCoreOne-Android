@@ -49,7 +49,7 @@ internal suspend fun MeshCoreDatabase.backupEnvelope(appVersion: String, appBuil
         blockedChannelSenders = blockedSenders().backupAll().map { it.toDTO() }.snapshot(),
         nodeStatusSnapshots = nodeSnapshots().backupAll().map { it.toDTO() }.snapshot(),
         discoveredNodes = discoveredNodes().backupAll().map { it.toDTO() }.snapshot(),
-    ).withActualManifest()
+    ).withActualManifest().also(::validateRelationships)
 }
 
 internal fun requireUnambiguousRadios(identities: List<Pair<java.util.UUID, RadioId>>, field: String) {

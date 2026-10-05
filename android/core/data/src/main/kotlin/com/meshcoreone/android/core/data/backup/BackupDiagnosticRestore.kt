@@ -44,9 +44,9 @@ internal class BackupDiagnosticRestore(
             }
             if (local != null && appended) accounting.record(BackupModelKind.SAVED_TRACE_PATHS, merged = 1)
         }
-        val knownBlocked = db.blockedSenders().backupAll().mapTo(hashSetOf()) { RadioId(it.radioId) to it.name }
+        val knownBlocked = db.blockedSenders().backupAll().mapTo(hashSetOf()) { RadioId(it.radioId) to sourceStringKey(it.name) }
         for (dto in blocked) {
-            if (!knownBlocked.add(dto.radioId to dto.name)) accounting.record(BackupModelKind.BLOCKED_CHANNEL_SENDERS, skipped = 1)
+            if (!knownBlocked.add(dto.radioId to sourceStringKey(dto.name))) accounting.record(BackupModelKind.BLOCKED_CHANNEL_SENDERS, skipped = 1)
             else {
                 write(BackupModelKind.BLOCKED_CHANNEL_SENDERS) { db.blockedSenders().insert(dto.toEntity()) }
                 accounting.record(BackupModelKind.BLOCKED_CHANNEL_SENDERS, inserted = 1)

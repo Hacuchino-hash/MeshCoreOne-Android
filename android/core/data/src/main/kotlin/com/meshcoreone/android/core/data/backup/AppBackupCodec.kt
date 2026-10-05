@@ -15,7 +15,8 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
 /** Stream overloads own and close their input/output, including failure and cancellation. */
-class AppBackupCodec {
+class AppBackupCodec internal constructor(private val observer: JsonMaterializationObserver?) {
+    constructor() : this(null)
     fun parseBackup(
         input: InputStream,
         maxUncompressedBytes: Long = BackupContract.MAX_EXPANDED_BYTES,
@@ -74,7 +75,7 @@ class AppBackupCodec {
 
     internal fun decodeJson(input: InputStream, checkCancellation: () -> Unit = {}): AppBackupEnvelope {
         val decoder = Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT)
-        val stream = BackupJsonStream(InputStreamReader(input, decoder).buffered(BACKUP_STREAM_CHUNK), checkCancellation)
+        val stream = BackupJsonStream(InputStreamReader(input, decoder).buffered(BACKUP_STREAM_CHUNK), checkCancellation, observer)
         val metadata = linkedMapOf<String, JsonElement>()
         var devices = SnapshotList.empty<DeviceDTO>()
         var contacts = SnapshotList.empty<ContactDTO>()
@@ -89,26 +90,27 @@ class AppBackupCodec {
         var snapshots = SnapshotList.empty<NodeStatusSnapshotDTO>()
         var discovered = SnapshotList.empty<DiscoveredNodeDTO>()
         val arrays = hashSetOf<String>()
-        stream.objectMembers { key ->
+        stream.objectMembers(BackupWireSelections.envelope) { key, selection ->
+            fun <T> rows(decode: (JsonElement) -> T): SnapshotList<T> =
+                stream.arrayValues(BackupWireSelections.records.getValue(key), decode).snapshot()
             when (key) {
-                "devices" -> devices = stream.arrayValues(::decodeDevice).snapshot()
-                "contacts" -> contacts = stream.arrayValues(::decodeContact).snapshot()
-                "channels" -> channels = stream.arrayValues(::decodeChannel).snapshot()
-                "messages" -> messages = stream.arrayValues(::decodeMessage).snapshot()
-                "messageRepeats" -> repeats = stream.arrayValues(::decodeRepeat).snapshot()
-                "reactions" -> reactions = stream.arrayValues(::decodeReaction).snapshot()
-                "roomMessages" -> roomMessages = stream.arrayValues(::decodeRoomMessage).snapshot()
-                "remoteNodeSessions" -> sessions = stream.arrayValues(::decodeSession).snapshot()
-                "savedTracePaths" -> paths = stream.arrayValues(::decodeTracePath).snapshot()
-                "blockedChannelSenders" -> blocked = stream.arrayValues(::decodeBlockedSender).snapshot()
-                "nodeStatusSnapshots" -> snapshots = stream.arrayValues(::decodeSnapshot).snapshot()
+                "devices" -> devices = rows(::decodeDevice)
+                "contacts" -> contacts = rows(::decodeContact)
+                "channels" -> channels = rows(::decodeChannel)
+                "messages" -> messages = rows(::decodeMessage)
+                "messageRepeats" -> repeats = rows(::decodeRepeat)
+                "reactions" -> reactions = rows(::decodeReaction)
+                "roomMessages" -> roomMessages = rows(::decodeRoomMessage)
+                "remoteNodeSessions" -> sessions = rows(::decodeSession)
+                "savedTracePaths" -> paths = rows(::decodeTracePath)
+                "blockedChannelSenders" -> blocked = rows(::decodeBlockedSender)
+                "nodeStatusSnapshots" -> snapshots = rows(::decodeSnapshot)
                 "discoveredNodes" -> {
                     if (stream.nextIsNull()) {
                         if (stream.element() !is JsonNull) invalidValue(key, BackupValueProblem.TYPE)
-                    } else discovered = stream.arrayValues(::decodeDiscoveredNode).snapshot()
+                    } else discovered = rows(::decodeDiscoveredNode)
                 }
-                "version", "exportDate", "appVersion", "appBuild", "manifest", "userDefaults" -> metadata[key] = stream.element()
-                else -> stream.element()
+                "version", "exportDate", "appVersion", "appBuild", "manifest", "userDefaults" -> metadata[key] = stream.element(selection)
             }
             if (key in BackupContract.modelArrayKeys) arrays += key
         }

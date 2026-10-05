@@ -117,11 +117,11 @@ internal class BackupMessageRestore(
             affected += parent
         }
         val knownReactions = db.reactions().backupAll().mapTo(hashSetOf()) {
-            ReactionIdentity(ParentIdentity(RadioId(it.radioId), it.messageID), it.senderName, it.emoji)
+            reactionIdentity(ParentIdentity(RadioId(it.radioId), it.messageID), it.senderName, it.emoji)
         }
         for (dto in reactions) {
             val parent = ParentIdentity(dto.radioId, remap[ParentIdentity(dto.radioId, dto.messageID)] ?: dto.messageID)
-            if (parent !in existingParents || !knownReactions.add(ReactionIdentity(parent, dto.senderName, dto.emoji))) {
+            if (parent !in existingParents || !knownReactions.add(reactionIdentity(parent, dto.senderName, dto.emoji))) {
                 accounting.record(BackupModelKind.REACTIONS, skipped = 1)
                 continue
             }
@@ -132,10 +132,10 @@ internal class BackupMessageRestore(
         for (parent in affected) {
             val row = db.messages().byId(parent.radioId.value, parent.id) ?: invalidValue("messages.parent", BackupValueProblem.RELATIONSHIP)
             val reactionsForParent = db.reactions().forMessage(parent.radioId.value, parent.id, -1)
-            val summary = reactionsForParent.takeIf { it.isNotEmpty() }?.groupBy { it.emoji }?.entries
+            val summary = reactionsForParent.takeIf { it.isNotEmpty() }?.groupBy { sourceStringKey(it.emoji) }?.entries
                 ?.sortedWith(compareByDescending<Map.Entry<String, List<ReactionEntity>>> { it.value.size }
                     .thenBy { it.value.minOf { reaction -> reaction.receivedAt.toInstant() } })
-                ?.joinToString(",") { "${it.key}:${it.value.size}" }
+                ?.joinToString(",") { "${it.value.first().emoji}:${it.value.size}" }
             val updated = row.copy(
                 heardRepeats = db.repeats().forMessage(parent.radioId.value, parent.id).size.toLong(),
                 reactionSummary = summary,

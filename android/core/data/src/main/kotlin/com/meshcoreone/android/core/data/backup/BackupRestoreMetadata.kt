@@ -9,19 +9,24 @@ import com.meshcoreone.android.core.model.*
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.math.RoundingMode
 import java.time.Instant
+import java.text.Normalizer
 import java.util.UUID
 
 internal data class PublicKeyIdentity(val radioId: RadioId, val publicKey: Bytes)
 internal data class ChannelSlot(val radioId: RadioId, val index: UByte)
 internal data class ParentIdentity(val radioId: RadioId, val id: UUID)
 internal data class TraceIdentity(val radioId: RadioId, val path: Bytes, val hashSize: Long)
-internal data class ReactionIdentity(val parent: ParentIdentity, val senderName: String, val emoji: String)
+internal data class ReactionIdentity(val parent: ParentIdentity, val canonicalSuffix: String)
+
+internal fun sourceStringKey(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFC)
+internal fun reactionIdentity(parent: ParentIdentity, senderName: String, emoji: String): ReactionIdentity =
+    ReactionIdentity(parent, sourceStringKey("$senderName-$emoji"))
 
 internal fun messageBackupKey(dto: MessageDTO): String =
     if (dto.direction == MessageDirection.OUTGOING) "out-${dto.id.canonicalString()}"
-    else "${dto.radioId.canonicalString}-${dto.deduplicationKey ?: RepositoryDeduplicationKey.contentBased(
+    else sourceStringKey("${dto.radioId.canonicalString}-${dto.deduplicationKey ?: RepositoryDeduplicationKey.contentBased(
         dto.contactID, dto.channelIndex, dto.senderNodeName, dto.timestamp, dto.text,
-    )}"
+    )}")
 
 internal fun rewriteDirectKey(key: String?, from: UUID, to: UUID): String? =
     rewriteLeadingKey(key, "dm-${from.canonicalString()}-", "dm-${to.canonicalString()}-")

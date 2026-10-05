@@ -210,13 +210,13 @@ internal class BackupDatabaseRestore(
 
     private suspend fun insertRoomMessages(rows: List<RoomMessageDTO>, parents: Map<UUID, ParentIdentity>) {
         val known = db.roomMessages().backupAll().mapTo(hashSetOf()) {
-            ParentIdentity(RadioId(it.radioId), it.sessionID) to it.deduplicationKey
+            ParentIdentity(RadioId(it.radioId), it.sessionID) to sourceStringKey(it.deduplicationKey)
         }
         val affected = hashMapOf<ParentIdentity, java.time.Instant>()
         for (dto in rows) {
             currentCoroutineContext().ensureActive()
             val parent = parents[dto.sessionID]
-            if (parent == null || !known.add(parent to dto.deduplicationKey)) {
+            if (parent == null || !known.add(parent to sourceStringKey(dto.deduplicationKey))) {
                 accounting.record(BackupModelKind.ROOM_MESSAGES, skipped = 1)
                 continue
             }
