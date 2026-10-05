@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -109,3 +110,89 @@ class GenerationTest(unittest.TestCase):
         with patch.object(helper, "git", side_effect=[("\n".join(paths)).encode(), b"android/unowned.lockfile"]):
             with self.assertRaises(helper.PortError):
                 helper.check_changed_paths(set())
+
+    def test_verify_local_identity_rejects_stale_generator_or_test_helper(self):
+        for stale_path in ("android/core/services/verification/generate_content_locks.py",
+                "android/core/services/verification/test_generate_content_locks.py"):
+            def read_bytes(self_path, stale_path=stale_path):
+                posix = str(self_path).replace(os.sep, "/")
+                return b"stale-local-bytes" if posix.endswith(stale_path) else b"same-bytes"
+            with patch.object(helper, "git", return_value=b"same-bytes"), \
+                    patch("subprocess.run"), patch.object(Path, "read_bytes", new=read_bytes):
+                with self.assertRaises(helper.PortError):
+                    helper.verify_local_identity({"binding": {"head_sha": "f" * 40}})
+
+    def test_verify_local_identity_rejects_tampered_amendment_request_map(self):
+        amendment_path = "docs/android/evidence/WP-218/dependency-amendment-request.json"
+
+        def read_bytes(self_path):
+            posix = str(self_path).replace(os.sep, "/")
+            return b"tampered-local-bytes" if posix.endswith(amendment_path) else b"same-bytes"
+
+        with patch.object(helper, "git", return_value=b"same-bytes"), \
+                patch("subprocess.run"), patch.object(Path, "read_bytes", new=read_bytes):
+            with self.assertRaises(helper.PortError):
+                helper.verify_local_identity({"binding": {"head_sha": "f" * 40}})
+
+    def test_verify_local_identity_rejects_baseline_not_ancestor_of_head(self):
+        with patch.object(helper, "git", return_value=b"same-bytes"), \
+                patch.object(Path, "read_bytes", return_value=b"same-bytes"), \
+                patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, ["git"])):
+            with self.assertRaises(subprocess.CalledProcessError):
+                helper.verify_local_identity({"binding": {"head_sha": "f" * 40}})
+
+    def test_verify_local_identity_accepts_matching_committed_owned_input(self):
+        with patch.object(helper, "git", return_value=b"same-bytes"), \
+                patch.object(Path, "read_bytes", return_value=b"same-bytes"), patch("subprocess.run") as run:
+            helper.verify_local_identity({"binding": {"head_sha": "f" * 40}})
+            self.assertEqual(run.call_args.kwargs.get("check"), True)
+            self.assertIn(helper.locks.BASE, run.call_args.args[0])
+
+    def test_dependency_graph_source_is_the_single_fixed_build_output_location(self):
+        self.assertEqual(helper.GRAPH_DIRECTORY,
+            helper.ROOT / "android" / "core" / "services" / "build" / "wp218" / "content-dependencies")
+
+    def test_collect_dependency_graph_rejects_missing_configuration(self):
+        with tempfile.TemporaryDirectory() as name:
+            proposal, source = Path(name) / "proposal", Path(name) / "graph-source"
+            proposal.mkdir()
+            source.mkdir()
+            with patch.object(helper, "GRAPH_DIRECTORY", source):
+                with self.assertRaises(helper.PortError):
+                    helper.collect_dependency_graph(proposal)
+
+    def test_collect_dependency_graph_rejects_empty_or_unresolved_graph(self):
+        with tempfile.TemporaryDirectory() as name:
+            source = Path(name) / "graph-source"
+            source.mkdir()
+            for configuration in helper.locks.CONFIGURATIONS:
+                (source / f"{configuration}.tsv").write_text("component\tversion\tstatus\n")
+            with patch.object(helper, "GRAPH_DIRECTORY", source):
+                empty = Path(name) / "proposal-empty"
+                empty.mkdir()
+                with self.assertRaises(helper.PortError):
+                    helper.collect_dependency_graph(empty)
+            for configuration in helper.locks.CONFIGURATIONS:
+                (source / f"{configuration}.tsv").write_text(
+                    "component\tversion\tstatus\nexample:lib:1.0\t1.0\tunresolved: not found\n")
+            with patch.object(helper, "GRAPH_DIRECTORY", source):
+                unresolved = Path(name) / "proposal-unresolved"
+                unresolved.mkdir()
+                with self.assertRaises(helper.PortError):
+                    helper.collect_dependency_graph(unresolved)
+
+    def test_collect_dependency_graph_accepts_actual_resolved_rows_for_every_admitted_configuration(self):
+        with tempfile.TemporaryDirectory() as name:
+            source, proposal = Path(name) / "graph-source", Path(name) / "proposal-ok"
+            source.mkdir()
+            proposal.mkdir()
+            for configuration in helper.locks.CONFIGURATIONS:
+                (source / f"{configuration}.tsv").write_text(
+                    "component\tversion\tstatus\nexample:lib:1.0\t1.0\tresolved\n")
+            with patch.object(helper, "GRAPH_DIRECTORY", source):
+                records = helper.collect_dependency_graph(proposal)
+            self.assertEqual({record["configuration"] for record in records}, helper.locks.CONFIGURATIONS)
+            self.assertTrue(all(record["rows"] == 1 for record in records))
+            for record in records:
+                copied = proposal / record["artifact_path"]
+                self.assertEqual(copied.read_bytes(), (source / f"{record['configuration']}.tsv").read_bytes())

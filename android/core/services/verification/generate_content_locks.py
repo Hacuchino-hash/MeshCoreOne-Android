@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict
+import hashlib
 import importlib.util
 import json
 import os
@@ -31,6 +32,23 @@ SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
 TASK = ":core:services:resolveContentDependencies"
+GRAPH_DIRECTORY = ROOT / "android" / "core" / "services" / "build" / "wp218" / "content-dependencies"
+# Owned WP-218 helper/test/evidence paths that bind this exact generation run to the exact
+# committed bytes it is executing from -- never an unrelated/stale cached copy.
+OWNED_INPUT_PATHS = (
+    "android/core/services/verification/generate_content_locks.py",
+    "android/core/services/verification/test_generate_content_locks.py",
+    "docs/android/evidence/WP-218/verify_content_locks.py",
+    "docs/android/evidence/WP-218/test_content_locks.py",
+    "docs/android/evidence/WP-218/dependency-amendment-request.json",
+)
+# Convention-plugin source that configures core:services (mesh.jvm.library); not already covered
+# by controller.runtime_inputs.FIXED_INPUTS, so it is bound here instead of amending that shared
+# WP-003 module.
+CONVENTION_INPUT_PATHS = (
+    "android/build-logic/convention/build.gradle.kts",
+    "android/build-logic/convention/src/main/kotlin/com/meshcoreone/buildlogic/BuildConventions.kt",
+)
 
 
 def require(condition, message):
@@ -91,6 +109,42 @@ def identity():
     return {"binding": asdict(Binding.parse(binding)), "run_id": current["run_id"], "run_attempt": current["run_attempt"]}
 
 
+def verify_local_identity(bound):
+    head = bound["binding"]["head_sha"]
+    # The lock-admission baseline (verify_content_locks.BASE) must be an actual ancestor of this
+    # candidate head -- never an unrelated/newer commit silently substituted as "the" baseline.
+    subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", locks.BASE, head],
+        check=True, capture_output=True)
+    for relative in OWNED_INPUT_PATHS:
+        committed = git(ROOT, "cat-file", "blob", f"{head}:{relative}")
+        local = (ROOT / relative).read_bytes()
+        require(hashlib.sha256(local).digest() == hashlib.sha256(committed).digest(),
+            "stale or tampered owned input differs from the committed candidate tree: " + relative)
+
+
+def collect_dependency_graph(proposal):
+    # GRAPH_DIRECTORY is the single fixed location the resolveContentDependencies Gradle task
+    # writes to (see android/core/services/build.gradle.kts); never read from anywhere else.
+    destination = proposal / "graph"
+    destination.mkdir()
+    records = []
+    for name in sorted(locks.CONFIGURATIONS):
+        origin = GRAPH_DIRECTORY / f"{name}.tsv"
+        require(origin.is_file(), "missing actual resolved dependency graph for configuration: " + name)
+        rows = [line for line in origin.read_text(encoding="utf8").splitlines() if line.strip()]
+        require(len(rows) > 1, "empty actual resolved dependency graph for configuration: " + name)
+        require(not any(row.split("\t")[-1].startswith("unresolved:") for row in rows[1:]),
+            "unresolved component present in the actual dependency graph for configuration: " + name)
+        target = destination / origin.name
+        shutil.copyfile(origin, target)
+        require(origin.read_bytes() == target.read_bytes(), "proposal graph bytes differ from the actual resolved graph")
+        records.append({"configuration": name, "artifact_path": "graph/" + target.name,
+            "bytes": target.stat().st_size, "sha256": file_sha256(target), "rows": len(rows) - 1})
+    require({record["configuration"] for record in records} == locks.CONFIGURATIONS,
+        "missing admitted configuration in the actual resolved dependency graph")
+    return records
+
+
 def command(state):
     require(state["host"] == "linux", "generation is bounded to the single Linux runner")
     return [str(ROOT / "android" / "gradlew"), "-p", str(ROOT / "android"), TASK,
@@ -119,6 +173,7 @@ def run(root):
     require(root.is_absolute() and not root.exists() and not root.resolve().is_relative_to(ROOT.resolve())
         and not ROOT.resolve().is_relative_to(root.resolve()), "root must be new, bounded and external")
     bound = identity()
+    verify_local_identity(bound)
     verify_committed_inputs(ROOT)
     validate_workflow(WORKFLOW.read_text(encoding="utf8"))
     verify_wrapper()
@@ -140,6 +195,7 @@ def run(root):
         actual = command(state)
         record["command"] = actual
         ci.execute(actual, environment, proposal / "resolver.log", timeout=900)
+        record["dependency_graph"] = collect_dependency_graph(proposal)
         record["changed_paths"], delta = verified_resolution(before)
         record["delta"] = delta
         records = []
@@ -156,8 +212,13 @@ def run(root):
         record["input_blobs"] = {
             path: git(ROOT, "rev-parse", bound["binding"]["head_sha"] + ":" + path).decode().strip()
             for path in ("android/core/services/build.gradle.kts", "android/gradle/verification-metadata.xml",
-                "android/gradle/libs.versions.toml", ".github/workflows/android-content-dependency-generation.yml")
+                "android/gradle/libs.versions.toml", ".github/workflows/android-content-dependency-generation.yml",
+                "tools/android-port/controller/toolchain-pins.json", "android/gradle/wrapper/gradle-wrapper.properties",
+                "android/scaffold/check_environment.py", *OWNED_INPUT_PATHS, *CONVENTION_INPUT_PATHS)
         }
+        initial_lock_path = "android/gradle/dependency-locks/core-services.lockfile"
+        record["initial_lock_blob"] = {"path": initial_lock_path, "base_sha": locks.BASE,
+            "blob": git(ROOT, "rev-parse", locks.BASE + ":" + initial_lock_path).decode().strip()}
         record["result"] = "actual-generated-byte-proposal"
     except (PortError, ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         record["error"] = str(error)
