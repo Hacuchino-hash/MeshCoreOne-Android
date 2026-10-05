@@ -22,7 +22,19 @@ class AppBackupCodec {
         checkCancellation: () -> Unit = {},
     ): AppBackupEnvelope = try {
         BackupInflater(input, maxUncompressedBytes, checkCancellation = checkCancellation).use { inflated ->
-            decodeJson(inflated, checkCancellation).also { it.validate() }
+            val envelope = try {
+                decodeJson(inflated, checkCancellation)
+            } catch (cause: BackupValueException) {
+                requireCompleteInflation(inflated)
+                throw cause
+            } catch (cause: SerializationException) {
+                requireCompleteInflation(inflated)
+                throw cause
+            } catch (cause: java.nio.charset.CharacterCodingException) {
+                requireCompleteInflation(inflated)
+                throw cause
+            }
+            envelope.also { it.validate() }
         }
     } catch (cause: BackupValueException) {
         throw AppBackupException(AppBackupError.InvalidFile, cause)
@@ -30,6 +42,12 @@ class AppBackupCodec {
         throw AppBackupException(AppBackupError.InvalidFile, cause)
     } catch (cause: IOException) {
         throw AppBackupException(AppBackupError.InvalidFile, cause)
+    }
+
+    private fun requireCompleteInflation(inflated: InputStream) {
+        // Source inflation/size errors precede Codable errors, even for non-JSON bombs.
+        val buffer = ByteArray(BACKUP_STREAM_CHUNK)
+        while (inflated.read(buffer) != -1) Unit
     }
 
     fun parseBackup(data: Bytes, maxUncompressedBytes: Long = BackupContract.MAX_EXPANDED_BYTES): AppBackupEnvelope {

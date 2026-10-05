@@ -1,6 +1,6 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Extensions/Data+Extensions.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Services/AppBackupEnvelope.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-203 Explicit raw DEFLATE framing measured by the frozen macOS oracle.
+// Raw DEFLATE framing was measured by the frozen macOS oracle.
 package com.meshcoreone.android.core.data.backup
 
 import com.meshcoreone.android.core.model.*
@@ -57,12 +57,16 @@ internal class BackupInflater(
                 }
                 inflater.setInput(input, 0, count)
             }
-            val request = minOf(length.toLong(), maximumExpanded - expanded + 1).toInt()
-            val count = try { inflater.inflate(buffer, offset, request) } catch (cause: DataFormatException) {
+            val remaining = maximumExpanded - expanded
+            val overflowProbe = remaining == 0L
+            val request = if (overflowProbe) 1 else minOf(length.toLong(), remaining).toInt()
+            val count = try {
+                if (overflowProbe) inflater.inflate(single, 0, 1) else inflater.inflate(buffer, offset, request)
+            } catch (cause: DataFormatException) {
                 invalidValue("compression.deflate", BackupValueProblem.JSON, cause)
             }
             if (count > 0) {
-                if (count.toLong() > maximumExpanded - expanded) {
+                if (overflowProbe) {
                     throw AppBackupException(AppBackupError.DecompressedTooLarge(maximumExpanded))
                 }
                 expanded += count

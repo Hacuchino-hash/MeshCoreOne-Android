@@ -1,6 +1,6 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/AppBackupEnvelope.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Sources/MC1Services/Errors/AppBackupError.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-203 Checked Codable value adapters, without logging input values.
+// Checked Codable value adapters, without logging input values.
 @file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 
 package com.meshcoreone.android.core.data.backup

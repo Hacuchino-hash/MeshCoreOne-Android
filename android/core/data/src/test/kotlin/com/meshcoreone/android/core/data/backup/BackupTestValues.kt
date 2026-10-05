@@ -1,6 +1,6 @@
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/Helpers/AppBackupEnvelope+Testing.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/Helpers/ImportResult+Testing.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-203 Real Room and process DataStore fixtures; no production persistence surrogate.
+// Real Room and process DataStore fixtures; no production persistence surrogate.
 package com.meshcoreone.android.core.data.backup
 
 import android.content.Context
