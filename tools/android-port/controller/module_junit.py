@@ -66,7 +66,7 @@ def bounded_directory(directory: Path, root: Path):
 
 def safe_reports(directory: Path, root: Path):
     bounded_directory(directory, root)
-    files = sorted(directory.glob("TEST-*.xml"))
+    files = sorted(directory.glob("TEST-*.xml"), key=lambda path: path.name)
     if not files:
         raise PortError("Missing mandatory active-module JUnit reports: " + str(directory))
     if any(linked(path) or not path.is_file() for path in files):
