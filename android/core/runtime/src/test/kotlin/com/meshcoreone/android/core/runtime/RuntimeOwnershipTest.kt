@@ -614,5 +614,62 @@ class RuntimeOwnershipTest {
                 foreign.stop(); fresh.close(); failed.close()
             }
         },
+        nativeCase("accepted manual lazy job prevents multithread health from borrowing its revision before start") {
+            withFixture {
+                connect(); platform.state = platform.state.copy(connected = true)
+                manager.handleReconnectionFailure()
+                val accepted = java.util.concurrent.CountDownLatch(1)
+                val release = java.util.concurrent.CountDownLatch(1)
+                onSubmission = {
+                    accepted.countDown()
+                    check(release.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                }
+                val successor = target()
+                val manual = CoroutineScope(Dispatchers.Default).async { manager.connect(successor) }
+                try {
+                    assertTrue(accepted.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                    val before = radios.size
+                    manager.checkBLEConnectionHealth()
+                    assertEquals(before, radios.size)
+                } finally { release.countDown() }
+                runCurrent(); manual.await()
+                assertEquals(successor.deviceId, manager.connectedDevice?.id)
+                assertEquals(2, radios.size); assertEquals(1, radios.first().closes)
+                assertEquals(1, radios.last().collectors)
+            }
+        },
+        nativeCase("inherited typed teardown failure survives later switches and remains visible at process close") {
+            withFixture {
+                connect()
+                val issue = IllegalStateException("radio A RX flush")
+                services.first().closeFailure = issue
+                manager.connect(target())
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                manager.connect(target())
+                assertTrue(diagnostics.filterIsInstance<RuntimeDiagnostic.Teardown>().any { report ->
+                    report.report.issues.any { it.cause === issue }
+                })
+                val closed = manager.close()
+                assertFalse(closed.isComplete); assertTrue(closed.issues.any { it.cause === issue })
+                assertTrue(radios.all { it.closes == 1 && it.collectors == 0 })
+            }
+        },
+        nativeCase("proven foreign retained-link refusal never leaves a phantom tentative runtime owner") {
+            val shared = TestRadio()
+            val foreign = MeshCoreSession(shared,
+                com.meshcoreone.android.core.protocol.config.SessionConfiguration(defaultTimeout = 1.0, clientIdentifier = "MCore"),
+                coroutineContext = backgroundScope.coroutineContext)
+            val failed = RuntimeFixture(this); val fresh = RuntimeFixture(this)
+            failed.createRadio = { shared }; fresh.createRadio = { shared }
+            try {
+                foreign.start(); foreign.stop(disconnectTransport = false)
+                val error = assertFailsWith<MeshCoreException.ConnectionLost> { failed.manager.connect(failed.platform.target) }
+                requiredCause<SessionCorrelationException.RetainedTransport>(error)
+                assertEquals(0, shared.closes); assertTrue(shared.isConnected())
+                failed.manager.close(); assertEquals(0, shared.closes)
+                foreign.stop(disconnectTransport = true)
+                fresh.connect(); assertEquals(1, shared.collectors); assertEquals(DeviceConnectionState.READY, fresh.manager.connectionState)
+            } finally { foreign.stop(); fresh.close(); failed.close() }
+        },
     )
 }

@@ -104,6 +104,7 @@ data class ConnectionObserver(
 )
 
 sealed interface RuntimeDiagnostic {
+    data class OperationSubmitted(val revision: Long) : RuntimeDiagnostic
     data class Failure(val operation: String, val cause: Throwable) : RuntimeDiagnostic
     data class StaleCallback(val operation: String, val generation: Long) : RuntimeDiagnostic
     data class Teardown(val report: com.meshcoreone.android.core.contracts.domain.TeardownReport) : RuntimeDiagnostic

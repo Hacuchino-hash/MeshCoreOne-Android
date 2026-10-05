@@ -282,6 +282,7 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
     var onFactory: suspend (TestServices, FactoryOwnership) -> Unit = { _, _ -> }
     var onAvailable: suspend () -> Unit = {}
     var onRegistration: (LinkCallbacks) -> Unit = {}
+    var onSubmission: () -> Unit = {}
     val manager = ConnectionManager(
         devices,
         object : RoomPersisting by rejectingRole(RoomPersisting::class.java) {
@@ -314,7 +315,10 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
             onAuthenticationFailure = authFailures::add,
             onLastDeviceCleared = { order += "forgot" },
         ),
-        RuntimeIssueReporter(diagnostics::add), clock,
+        RuntimeIssueReporter {
+            diagnostics += it
+            if (it is RuntimeDiagnostic.OperationSubmitted) onSubmission()
+        }, clock,
         context = test.backgroundScope.coroutineContext + (parent ?: checkNotNull(test.backgroundScope.coroutineContext[Job])) +
             (dispatcher ?: EmptyCoroutineContext),
         configuration = SessionConfiguration(defaultTimeout = 1.0, clientIdentifier = "MCore"),

@@ -241,13 +241,15 @@ class ConnectionManager(
             val oldOwners = detachOwnersLocked(DeviceConnectionState.CONNECTING, ConnectionIntent.WantsConnection(forceFullSync))
             val predecessor = precedingStop
             val oldStop = cleanupScope.async(start = CoroutineStart.LAZY) {
-                predecessor?.await()
-                closeCaptured(oldOwners, disconnectPhysical = true)
+                val inherited = predecessor?.await()
+                val own = closeCaptured(oldOwners, disconnectPhysical = true)
+                combineReports(inherited, own)
             }.also { precedingStop = it; it.start() }
             val task = processScope.async(context = RuntimeOperation(operationIdentity), start = CoroutineStart.LAZY) {
                 withOperation(reentrant) {
                     requireRevision(claimedRevision)
-                    oldStop?.await()
+                    val stopped = oldStop.await()
+                    if (!stopped.isComplete) reporter.report(RuntimeDiagnostic.Teardown(stopped))
                     requireRevision(claimedRevision)
                     if (!reentrant) previous?.let { withContext(NonCancellable) { it.cancelAndJoin() } }
                     requireRevision(claimedRevision)
@@ -281,7 +283,7 @@ class ConnectionManager(
                             throw cancelled
                         } catch (failure: Exception) {
                             if (isRetained(owner)) throw CancellationException("Connection transferred to reconnect").apply { initCause(failure) }
-                            if (hasCause<SessionCorrelationException.ConcurrentTransportOwner>(failure) && !owner.sawConnected && owner.ownsPhysical) {
+                            if (provenForeignAdmission(failure, owner)) {
                                 owner.link?.let { PhysicalOwnership.release(it.transport, owner.physicalOwner) }
                                 owner.ownsPhysical = false
                             }
@@ -311,6 +313,7 @@ class ConnectionManager(
             task to previous
         }
         if (!reentrant) previous?.cancel()
+        reporter.report(RuntimeDiagnostic.OperationSubmitted(synchronized(lock) { revision }))
         work.start()
         try { work.await() }
         catch (cancelled: CancellationException) {
@@ -564,9 +567,10 @@ class ConnectionManager(
             val owners = detachOwnersLocked(DeviceConnectionState.DISCONNECTED)
             val predecessor = precedingStop
             val cleanup = cleanupScope.async(start = CoroutineStart.LAZY) {
-                predecessor?.await()
+                val inherited = predecessor?.await()
                 if (!reentrant) work?.cancelAndJoin()
-                closeCaptured(owners, disconnectPhysical = true)
+                val own = closeCaptured(owners, disconnectPhysical = true)
+                combineReports(inherited, own)
             }
             precedingStop = cleanup
             cleanup to expectedRevision
@@ -719,8 +723,11 @@ class ConnectionManager(
 
     suspend fun checkBLEConnectionHealth() {
         if (currentTransportType() == TransportType.WIFI || shouldDeferOpportunisticReconnect || !connectionIntent.wantsConnection) return
-        if (synchronized(lock) { pending?.isActive == true }) return
-        val expectedRevision = synchronized(lock) { revision }
+        val initialClaim = synchronized(lock) {
+            if (pending != null || !connectionIntent.wantsConnection || closed) null
+            else revision to (retained ?: active)
+        } ?: return
+        val expectedRevision = initialClaim.first
         val last = lastConnection.read()
         if (!wantsCurrent(expectedRevision)) return
         val deviceId = last.deviceId ?: return
@@ -737,10 +744,11 @@ class ConnectionManager(
                 return
             }
             val claim = synchronized(lock) {
-                if (!wantsCurrent(expectedRevision) || pending?.isActive == true || rebuildDevice != null) null
+                if (!wantsCurrent(expectedRevision) || pending != null || rebuildDevice != null ||
+                    (retained ?: active) !== initialClaim.second) null
                 else {
                     rebuildDevice = deviceId
-                    (retained ?: active) to reconnectionCoordinator.reconnectGeneration
+                    initialClaim.second to reconnectionCoordinator.reconnectGeneration
                 }
             } ?: return
             try { rebuildClaimed(deviceId, target, claim.first, expectedRevision, claim.second, reentrant = false) }
@@ -893,9 +901,7 @@ class ConnectionManager(
         owner: RadioGeneration, disconnectPhysical: Boolean, primary: Throwable? = null,
     ): TeardownReport {
         synchronized(lock) {
-            if (primary != null && hasCause<SessionCorrelationException.ConcurrentTransportOwner>(primary) &&
-                !owner.sawConnected && owner.ownsPhysical
-            ) {
+            if (primary != null && provenForeignAdmission(primary, owner)) {
                 owner.link?.let { PhysicalOwnership.release(it.transport, owner.physicalOwner) }
                 owner.ownsPhysical = false
             }
@@ -990,6 +996,14 @@ class ConnectionManager(
 
     private suspend fun closeCaptured(owners: List<RadioGeneration>, disconnectPhysical: Boolean): TeardownReport =
         TeardownReport(owners.flatMap { closeGeneration(it, disconnectPhysical).issues }.snapshot())
+
+    private fun combineReports(inherited: TeardownReport?, own: TeardownReport): TeardownReport =
+        TeardownReport(((inherited?.issues ?: emptyList()) + own.issues).distinct().snapshot())
+
+    private fun provenForeignAdmission(failure: Throwable, owner: RadioGeneration): Boolean =
+        owner.ownsPhysical && !owner.sawConnected &&
+            (hasCause<SessionCorrelationException.ConcurrentTransportOwner>(failure) ||
+                hasCause<SessionCorrelationException.RetainedTransport>(failure))
 
     private suspend fun handleConnectionLoss(owner: RadioGeneration, failure: Throwable?) {
         if (!isRelevant(owner)) { reporter.report(RuntimeDiagnostic.StaleCallback("connectionLoss", owner.number)); return }
