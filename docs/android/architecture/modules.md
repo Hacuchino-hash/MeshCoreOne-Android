@@ -22,7 +22,7 @@ Compose, Room, Bluetooth or concrete runtime/service types in their public API.
 | `core:model` | `core:protocol` |
 | `core:contracts` | `core:model`, `core:protocol` |
 | `core:l10n` | none |
-| `core:designsystem` | `core:model`, `core:l10n` |
+| `core:designsystem` | `core:model`, `core:l10n`, `core:datastore` |
 | `core:database` | `core:model` |
 | `core:datastore` | `core:model`, `core:contracts` |
 | `core:data` | `core:protocol`, `core:model`, `core:contracts`, `core:database`, `core:datastore` |
@@ -46,9 +46,16 @@ In particular, **runtime never depends on services**, and services never depend 
 runtime/database/data/connectivity. Constructor-injected ports break those cycles.
 Database entities/DAOs do not construct repositories or services.
 
-A valid construction order is protocol/l10n; model; contracts/designsystem;
-database/datastore/ble/runtime/services/ui/platform adapters; data/connectivity/maps;
+A valid construction order is protocol/l10n; model; contracts; database/datastore/
+ble/runtime/services/platform adapters; designsystem; ui/data/connectivity/maps;
 features; app. Independent modules at a level need no mutual edge.
+
+The WP-301 coordinator-approved theme adapter consumes the actual process-owned
+`PreferenceStore`/`AppearancePreferenceStore`, not another defaults provider.
+Its caller supplies a process scope; stopping a screen collector or replacing a
+radio connection must not close preferences or the theme service. This narrow
+edge does not permit a reverse datastore-to-designsystem dependency, concrete
+preference-store dependencies in features, or changes to the WP dependency DAG.
 
 `core:testing` may depend on production libraries and is consumed only through
 test configurations. An app test factory belongs to the app's test source set,
