@@ -64,6 +64,47 @@ and `:core:data:testDebugUnitTest` tasks, then runs this WP's fail-closed reader
 It must be wired to the incumbent root `verifyScaffoldTests` and owning `check`,
 without editing the unleased root or services build scripts.
 
+The admitted hook is now registered as `:core:data:verifyDeviceSettingsTests`.
+Its exact reader is `python -B docs/android/evidence/WP-211/collect_evidence.py`;
+the root's already-declared `meshCliInvocationFile` carries actual Linux
+base/head/source/policy/run/attempt/host without changing the CI executor.
+`wp211EvidenceDirectory` can select a new owned/private evidence destination.
+The source-only check, which does not execute Kotlin, is:
+
+```powershell
+python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map
+```
+
+The actual Linux module command, executable only after the coordinator's
+services build/lock and pinned Linux readiness handoff, is:
+
+```text
+verifyDeviceSettingsTests --dependency-verification strict --no-build-cache --rerun-tasks
+```
+
+The executor and evidence-reader regression commands are declared before use:
+
+```text
+python -B docs/android/evidence/WP-211/run_linux_verification.py --state <actual-absolute-Linux-state> --output <new-absolute-private-output>
+```
+
+```powershell
+python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q
+```
+
+The executor runs only the actual two module unit tasks with `--continue`,
+strict verification, no build cache, forced execution, one worker and the
+incumbent pinned/credential-stripped Linux preflight. Its `finally` retains
+complete raw reports and immutable inputs before checking the Gradle exit or
+parsing XML. The regression suite uses explicitly synthetic reader fixtures;
+its counts are not device/settings assertion counts.
+
+The owning data hook and `check`/`verifyScaffoldTests` are real Gradle
+registrations, not hypothetical task names. A separate declared Linux executor
+must retain raw files after failed Gradle execution as well: a dependent Exec
+does not run when its prerequisite test task fails. No failed test is counted
+as acceptance merely because a diagnostic bundle was retained.
+
 The Linux executor must first verify declared pinned execution state, then run
 those actual module tasks with strict dependency verification, no build cache
 and forced execution. Complete verbatim JUnit, current compiled inputs and
@@ -77,6 +118,23 @@ does not acquire a production Room/data/runtime/Android dependency. Existing
 WP-201 OCV/RegionSelection implementations are reused and tested, not copied.
 
 ## Current execution state
+
+After the complete authoring pass, the exact declared source-only commands
+produced these outcomes:
+
+| Command | Actual result |
+| --- | --- |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 14 reader regression tests passed; synthetic XML only, no native parity credit |
+| `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 69 native JVM declarations and 12 real Room declarations; `native_execution=false` |
+| `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, 10 county keys and 2+6 fault declarations; `native_tests_run=false` |
+| `git --no-pager diff --check` | Passed for the authored changes |
+
+These are not executed Kotlin/JUnit counts. The services module needs the
+incumbent pinned `libs.kotlinx.coroutines.test` test dependency in the
+**WP-218-owned** services build producer and its real scoped lock graph.
+Neither that file nor the root services lock has been edited here.
+The admitted data test edge is present; any new data test-configuration lock
+entries require actual sanctioned resolution, not hand-written lock text.
 
 Initial declared readiness command:
 

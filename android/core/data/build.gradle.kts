@@ -16,6 +16,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(project(":core:runtime"))
+    testImplementation(project(":core:services"))
 }
 dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
@@ -83,3 +84,24 @@ val verifyBackupTests by tasks.registering(Exec::class) {
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }
 tasks.named("check") { dependsOn(verifyBackupTests) }
+
+val verifyDeviceSettingsTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require all WP-211 original families, expanded rows and complete real service/Room JUnit."
+    dependsOn(":core:services:test", "testDebugUnitTest")
+    workingDir(repository)
+    val reader = repository.resolve("docs").resolve("android").resolve("evidence")
+        .resolve("WP-211").resolve("collect_evidence.py")
+    commandLine(buildList {
+        addAll(listOf("python", "-B", reader.absolutePath))
+        providers.gradleProperty("meshCliInvocationFile").orNull?.let {
+            addAll(listOf("--invocation-file", it))
+        }
+        providers.gradleProperty("wp211EvidenceDirectory").orNull?.let {
+            addAll(listOf("--output", it))
+        }
+    })
+}
+
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyDeviceSettingsTests) }
+tasks.named("check") { dependsOn(verifyDeviceSettingsTests) }

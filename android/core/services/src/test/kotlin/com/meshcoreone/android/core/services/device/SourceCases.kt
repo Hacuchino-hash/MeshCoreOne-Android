@@ -2,6 +2,8 @@
 package com.meshcoreone.android.core.services.device
 
 import org.junit.jupiter.api.DynamicTest
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 
 internal fun original(
     suite: String, name: String, signature: String = "()", assertions: () -> Unit,
@@ -9,3 +11,10 @@ internal fun original(
 
 internal fun nativeCase(name: String, assertions: () -> Unit): DynamicTest =
     DynamicTest.dynamicTest("WP-211::$name", assertions)
+
+internal fun originalAsync(
+    suite: String, name: String, assertions: suspend TestScope.() -> Unit,
+): DynamicTest = original(suite, name) { runTest { assertions() } }
+
+internal fun nativeAsync(name: String, assertions: suspend TestScope.() -> Unit): DynamicTest =
+    nativeCase(name) { runTest { assertions() } }
