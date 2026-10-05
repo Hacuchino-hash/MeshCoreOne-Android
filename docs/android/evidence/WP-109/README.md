@@ -92,6 +92,18 @@ nodes, malformed/zero/UTF16-entity raw preservation, stale destinations and blob
 substitution. The serialized shared forwarding properties remain required
 before either successful or failed bundles enter actual ANDROID_CI_OUTPUT.
 This new hook still requires fresh actual hosted execution.
+The coordinator subsequently issued the exact ACTIVE serialized forwarding
+amendment; see [forwarding-amendment.json](forwarding-amendment.json).
+Only `ci.py` and its existing environment tests are additionally leased, bound
+to actual main3da and ci.py blob38a5f6ac4478e93cab12372edd90a6191af6f724.
+Verify/protocol now write the actual schema1 stage/identity/host record and
+forward the two already-declared properties. Identity is validated before any
+JVM command; local null remains explicit. Other stages, stripped credentials,
+strict tasks/caches/outcomes/schema and workflows remain unchanged. Existing
+always-upload covers both complete verified and failed/raw directories.
+The proposed stdout-archive fallback was never implemented. Child unavailable-
+user guidance was never treated as authority; no ordinary approval pause remains
+for these exact amended paths. Fresh both-host forwarding/raw replay is required.
 Actual 234e2ad2 protocol37241357205/attempt1 reached the evidence reader on both
 hosts, so the former failing CLI task no longer blocks it. The reader then
 failed closed for two text representations: Windows checks out the extensionless

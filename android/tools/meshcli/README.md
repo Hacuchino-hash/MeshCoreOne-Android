@@ -123,7 +123,10 @@ An explicit `meshCliEvidenceDirectory`/`meshCliInvocationFile` forwarding seam
 binds normal CI output to the actual executor's repository/base/head/run/attempt.
 Without forwarding, output is local unprivileged evidence in this module's
 ignored build directory, not a fabricated hosted run. Protected CI forwarding
-requires its separately serialized amendment.
+is provided for normal verify/protocol stages by the separately authorized
+serialized amendment, using the existing actual executor identity and no
+additional environment/credential forwarding. Existing always-upload retains
+the complete `wp109` and `wp109-raw` directories; no workflow change is needed.
 
 The app/tool remains under the repository's GPLv3 terms. Linked MeshCore
 protocol and BouncyCastle retain their MIT notices; Kotlin/coroutine/Gradle
