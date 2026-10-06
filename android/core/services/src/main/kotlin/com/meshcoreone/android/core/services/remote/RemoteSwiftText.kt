@@ -1,0 +1,56 @@
+// AndroidOnly: WP-210 Swift Foundation string/number conversions (Int(_:), Double(_:), CharacterSet trims, Character counts) reproduced for the CLI parsers.
+package com.meshcoreone.android.core.services.remote
+
+import java.util.regex.Pattern
+
+/**
+ * The CLI parsers lean on Swift `String` semantics that differ from Kotlin defaults: `Int(_:)` and
+ * `Double(_:)` reject surrounding whitespace, Unicode digits and Java-only suffixes ("1.5d"), and
+ * `CharacterSet.whitespaces` excludes newlines. These helpers pin the Swift behavior.
+ */
+internal object RemoteSwiftText {
+    private val INTEGER = Regex("[+-]?[0-9]+")
+    private val DECIMAL = Regex("[+-]?(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
+    private val HEX_FLOAT = Regex("([+-]?)0[xX]((?:[0-9a-fA-F]+\\.?[0-9a-fA-F]*|\\.[0-9a-fA-F]+))(?:[pP]([+-]?[0-9]+))?")
+    private val INFINITY = Regex("([+-]?)(?:inf|infinity)", RegexOption.IGNORE_CASE)
+    private val NAN = Regex("[+-]?nan(?:\\([0-9A-Za-z_]*\\))?", RegexOption.IGNORE_CASE)
+    private val GRAPHEME: Pattern = Pattern.compile("\\X")
+
+    /** Swift `Int(_:)` (64-bit): optional sign then ASCII digits only; overflow yields null. */
+    fun int(text: String): Long? = if (INTEGER.matches(text)) text.toLongOrNull() else null
+
+    /** Swift `Double(_:)`: decimal, hexadecimal-float, inf/infinity and nan spellings, nothing else. */
+    fun double(text: String): Double? {
+        if (DECIMAL.matches(text)) return text.toDouble()
+        HEX_FLOAT.matchEntire(text)?.let { match ->
+            val (sign, mantissa, exponent) = match.destructured
+            return java.lang.Double.parseDouble("${sign}0x${mantissa}p${exponent.ifEmpty { "0" }}")
+        }
+        INFINITY.matchEntire(text)?.let { match ->
+            return if (match.groupValues[1] == "-") Double.NEGATIVE_INFINITY else Double.POSITIVE_INFINITY
+        }
+        return if (NAN.matches(text)) Double.NaN else null
+    }
+
+    /** `trimmingCharacters(in: .whitespacesAndNewlines)`. */
+    fun trimWhitespacesAndNewlines(text: String): String = text.trim(::isWhitespaceOrNewline)
+
+    /** `trimmingCharacters(in: .whitespaces)`: tab and space separators, never newlines. */
+    fun trimWhitespaces(text: String): String = text.trim(::isWhitespace)
+
+    /** The first [limit] extended grapheme clusters (Swift `Character`s) of [text]. */
+    fun leadingCharacters(text: String, limit: Int): List<String> {
+        val matcher = GRAPHEME.matcher(text)
+        val characters = ArrayList<String>(limit)
+        while (characters.size < limit && matcher.find()) characters += matcher.group()
+        return characters
+    }
+
+    private fun isWhitespace(character: Char): Boolean =
+        character == '\t' || Character.getType(character) == Character.SPACE_SEPARATOR.toInt()
+
+    private fun isWhitespaceOrNewline(character: Char): Boolean = isWhitespace(character) ||
+        character in '\n'..'\r' || character == '\u0085' ||
+        Character.getType(character) == Character.LINE_SEPARATOR.toInt() ||
+        Character.getType(character) == Character.PARAGRAPH_SEPARATOR.toInt()
+}

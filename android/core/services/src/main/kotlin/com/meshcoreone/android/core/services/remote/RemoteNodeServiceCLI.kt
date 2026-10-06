@@ -1,0 +1,209 @@
+// PortedFrom: MC1Services/Sources/MC1Services/Services/RemoteNodeService+CLI.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.services.remote
+
+import com.meshcoreone.android.core.contracts.domain.EntityKey
+import com.meshcoreone.android.core.protocol.bytes.Bytes
+import com.meshcoreone.android.core.protocol.config.MeshCoreException
+import com.meshcoreone.android.core.protocol.event.MessageSentInfo
+import java.util.UUID
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+
+// MARK: - CLI Commands
+
+/**
+ * Send a CLI command to a remote node and wait for its response (admin only). Replies to structured
+ * `get` queries must parse to their expected shape; anything else waiting in the mesh is dropped
+ * instead of misattributed.
+ *
+ * @param timeout hard maximum time to wait for the response.
+ */
+suspend fun RemoteNodeService.sendCLICommand(
+    session: EntityKey,
+    command: String,
+    timeout: Duration = RemoteOperationTimeoutPolicy.defaultCLITimeout,
+): String = performCLICommand(session, command, timeout, acceptsAnyResponse = false)
+
+/**
+ * Send a raw CLI command (admin only). The next reply from the node is delivered verbatim without
+ * shape validation; used by CLI terminals and commands whose reply format is free-form.
+ */
+suspend fun RemoteNodeService.sendRawCLICommand(
+    session: EntityKey,
+    command: String,
+    timeout: Duration = RemoteOperationTimeoutPolicy.defaultCLITimeout,
+): String {
+    val response = performCLICommand(session, command, timeout, acceptsAnyResponse = true)
+    // Clear the stored password after an admin password change.
+    handlePasswordChangeIfNeeded(command, session)
+    return response
+}
+
+/** Shared send path: holds the node's CLI slot so exactly one command is in flight per node. */
+private suspend fun RemoteNodeService.performCLICommand(
+    session: EntityKey, command: String, timeout: Duration, acceptsAnyResponse: Boolean,
+): String {
+    val remoteSession = dataStore.fetchRemoteNodeSession(session) ?: throw RemoteNodeError.SessionNotFound()
+    if (!remoteSession.isAdmin) throw RemoteNodeError.PermissionDenied()
+
+    val wireCommand = RemoteCLICommandRewriter.rewrite(command, clock.wallClock.instant())
+    // Audit log (with password redaction in the logger implementation).
+    auditLogger.logCLICommand(remoteSession.publicKey, wireCommand)
+
+    val destinationPrefix = remoteSession.publicKey.prefix(6)
+    val requestID = UUID.randomUUID()
+    acquireCLISlot(destinationPrefix, requestID)
+    try {
+        // Reboot has no reply; path-reset+resend would fire a second reboot.
+        if (isFireAndForgetCLI(wireCommand)) {
+            return performCLIExchange(
+                remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout, requestID,
+            )
+        }
+        return performWithDirectPathFloodRecovery(remoteSession.radioId, remoteSession.publicKey, "remoteCLI") {
+            performCLIExchange(remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout, requestID)
+        }
+    } finally {
+        releaseCLISlot(destinationPrefix)
+    }
+}
+
+/** Commands that intentionally get no reply (or treat timeout as success). */
+private fun isFireAndForgetCLI(command: String): Boolean {
+    val lower = RemoteSwiftText.trimWhitespaces(command.lowercase())
+    return lower == "reboot" || lower.startsWith("reboot ")
+}
+
+/**
+ * Register the pending request, send the command, and poll the device for the reply until it arrives
+ * or the effective timeout elapses.
+ */
+private suspend fun RemoteNodeService.performCLIExchange(
+    publicKey: Bytes,
+    destinationPrefix: Bytes,
+    command: String,
+    acceptsAnyResponse: Boolean,
+    timeout: Duration,
+    requestID: UUID,
+): String {
+    val wirePrefix = makeCLIWirePrefix()
+    val pending = RemoteNodeService.PendingCLIRequest(requestID, command, wirePrefix, acceptsAnyResponse)
+    synchronized(lock) { pendingCLIRequests[destinationPrefix] = pending }
+
+    val poller = serviceScope.launch(start = CoroutineStart.LAZY) {
+        val sentInfo = try {
+            session.sendCommand(publicKey, wirePrefix + command, clock.wallClock.instant())
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            val meshError = error as? MeshCoreException ?: MeshCoreException.ConnectionLost(error)
+            takePendingCLIRequest(destinationPrefix, requestID)
+                ?.result?.completeExceptionally(RemoteNodeError.SessionError(meshError))
+            return@launch
+        }
+        pollForCLIReply(sentInfo, destinationPrefix, requestID, timeout)
+    }
+    // Whatever ends the poller (service shutdown included) must not leave the caller parked.
+    poller.invokeOnCompletion {
+        takePendingCLIRequest(destinationPrefix, requestID)?.result?.completeExceptionally(RemoteNodeError.Cancelled())
+    }
+    poller.start()
+
+    try {
+        return pending.result.await()
+    } catch (cancellation: CancellationException) {
+        cancelPendingCLIRequest(destinationPrefix, requestID)
+        throw cancellation
+    }
+}
+
+/** Polls the device queue until the reply resolves the request or the effective timeout elapses. */
+private suspend fun RemoteNodeService.pollForCLIReply(
+    sentInfo: MessageSentInfo, destinationPrefix: Bytes, requestID: UUID, timeout: Duration,
+) {
+    val effectiveTimeout = RemoteOperationTimeoutPolicy.cliTimeout(sentInfo, timeout)
+    val deadline = clock.now + effectiveTimeout
+    while (clock.now < deadline) {
+        // Resumed by handleCLIResponse or cancelled.
+        if (synchronized(lock) { pendingCLIRequests[destinationPrefix]?.id != requestID }) return
+        val pollDuration = minOf(RemoteOperationTimeoutPolicy.pollInterval, deadline - clock.now)
+        try {
+            session.getMessage(maxOf(0.1, pollDuration.toDouble(DurationUnit.SECONDS)))
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: Exception) {
+            // Swift `try?`: a failed poll is retried until the deadline.
+        }
+    }
+    takePendingCLIRequest(destinationPrefix, requestID)?.result?.completeExceptionally(RemoteNodeError.Timeout())
+}
+
+// MARK: - CLI Slot
+
+/** Wait for the node's CLI slot (FIFO); cancellation while queued removes the waiter. */
+private suspend fun RemoteNodeService.acquireCLISlot(prefix: Bytes, waiterID: UUID) {
+    val waiter = synchronized(lock) {
+        if (cliSlotBusy.add(prefix)) return
+        RemoteNodeService.CLISlotWaiter(waiterID).also { cliSlotWaiters.getOrPut(prefix, ::ArrayDeque).addLast(it) }
+    }
+    try {
+        waiter.granted.await()
+    } catch (cancellation: CancellationException) {
+        cancelCLISlotWaiter(prefix, waiter)
+        throw cancellation
+    }
+}
+
+/**
+ * Hand the slot to the next waiter, or free it when none are queued. The grant completes under the
+ * lock so a concurrently cancelled waiter always sees either "still queued" or "granted".
+ */
+private fun RemoteNodeService.releaseCLISlot(prefix: Bytes) {
+    synchronized(lock) {
+        val waiters = cliSlotWaiters[prefix]
+        val next = waiters?.removeFirstOrNull()
+        if (waiters != null && waiters.isEmpty()) cliSlotWaiters.remove(prefix)
+        if (next == null) cliSlotBusy.remove(prefix) else next.granted.complete(Unit)
+    }
+}
+
+/**
+ * A cancelled waiter leaves the queue. If the slot was already handed to it (the grant raced the
+ * cancellation), the slot passes on so it can never leak.
+ */
+private fun RemoteNodeService.cancelCLISlotWaiter(prefix: Bytes, waiter: RemoteNodeService.CLISlotWaiter) {
+    val (wasQueued, wasGranted) = synchronized(lock) {
+        val waiters = cliSlotWaiters[prefix]
+        val removed = waiters?.remove(waiter) == true
+        if (waiters != null && waiters.isEmpty()) cliSlotWaiters.remove(prefix)
+        val granted = !removed && waiter.granted.isCompleted && waiter.granted.getCompletionExceptionOrNull() == null
+        removed to granted
+    }
+    if (wasQueued) waiter.granted.completeExceptionally(RemoteNodeError.Cancelled())
+    if (wasGranted) releaseCLISlot(prefix)
+}
+
+/** Clear the stored password if the command is an admin (not guest) password change. */
+private suspend fun RemoteNodeService.handlePasswordChangeIfNeeded(command: String, session: EntityKey) {
+    val lower = RemoteSwiftText.trimWhitespaces(command.lowercase())
+    if (!lower.startsWith("password ") || lower.contains("guest.password")) return
+    val remoteSession = try {
+        dataStore.fetchRemoteNodeSession(session)
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Exception) {
+        null
+    } ?: return
+    try {
+        passwordStore.deletePassword(remoteSession.publicKey)
+        logger.info { "Cleared stored password after password change for session ${session.id}" }
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (error: Exception) {
+        // The next login fails naturally; the user re-enters the password, overwriting the stale one.
+        logger.warning { "Failed to clear stored password for session ${session.id}: $error" }
+    }
+}
