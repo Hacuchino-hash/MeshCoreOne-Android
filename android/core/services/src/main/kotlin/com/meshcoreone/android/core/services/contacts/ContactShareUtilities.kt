@@ -44,10 +44,14 @@ object ContactShareUtilities {
     const val SHARE_TOKEN_PATTERN: String = "<[0-9a-fA-F]{64}:\\d+:[^>]+>"
 
     /**
-     * Pre-compiled regex for token matching. `UNICODE_CHARACTER_CLASS` makes `\d` match any
-     * Unicode decimal digit, as ICU's `NSRegularExpression` does.
+     * Pre-compiled regex for token matching. `\d` must match any Unicode decimal digit, as ICU's
+     * `NSRegularExpression` does. It is compiled as the explicit `\p{Nd}` rather than with
+     * `UNICODE_CHARACTER_CLASS`, which is not portable to Android's ICU-backed `java.util.regex`.
      */
-    val shareTokenRegex: Pattern = Pattern.compile(SHARE_TOKEN_PATTERN, Pattern.UNICODE_CHARACTER_CLASS)
+    val shareTokenRegex: Pattern = Pattern.compile(SHARE_TOKEN_PATTERN.replace("\\d", UNICODE_DIGIT))
+
+    /** Unicode decimal digit, the same class on the JVM and on Android. */
+    private const val UNICODE_DIGIT = "\\p{Nd}"
 
     private val graphemes: Pattern = Pattern.compile("\\X")
 
