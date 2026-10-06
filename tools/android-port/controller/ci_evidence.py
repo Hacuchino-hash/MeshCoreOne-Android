@@ -15,6 +15,7 @@ from .schema import fields, load_json, positive_integer
 SUITES = {
     "build-logic": ("build-logic/convention/build/test-results/test", 31),
     "contracts": ("core/contracts/build/test-results/test", 4),
+    "services": ("core/services/build/test-results/test", 90),
     "app": ("app/build/test-results/testDebugUnitTest", 10),
     "room-verification": ("scaffold/room-verification/build/test-results/testDebugUnitTest", 2),
 }
