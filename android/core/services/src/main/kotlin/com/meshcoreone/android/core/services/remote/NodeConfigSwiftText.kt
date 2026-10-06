@@ -20,8 +20,9 @@ import kotlin.math.truncate
  */
 internal object NodeConfigSwiftText {
     private val grapheme: Pattern = Pattern.compile("\\X")
-    private val decimalLiteral = Regex("[+-]?(\\d+\\.?\\d*|\\.\\d+)([eE][+-]?\\d+)?")
-    private val hexLiteral = Regex("([+-]?)0[xX]([0-9a-fA-F]+\\.?[0-9a-fA-F]*|\\.[0-9a-fA-F]+)([pP][+-]?\\d+)?")
+    // ASCII digits spelled out: Swift's Double() accepts only ASCII, and `\d` may be Unicode on Android.
+    private val decimalLiteral = Regex("[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)([eE][+-]?[0-9]+)?")
+    private val hexLiteral = Regex("([+-]?)0[xX]([0-9a-fA-F]+\\.?[0-9a-fA-F]*|\\.[0-9a-fA-F]+)([pP][+-]?[0-9]+)?")
     private val infinityLiteral = Regex("([+-]?)(inf|infinity)", RegexOption.IGNORE_CASE)
     private val nanLiteral = Regex("[+-]?nan(\\([0-9A-Za-z_]*\\))?", RegexOption.IGNORE_CASE)
     private const val MAX_SIGNIFICANT_DIGITS = 17

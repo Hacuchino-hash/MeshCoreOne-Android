@@ -60,9 +60,11 @@ sealed interface CLIResponse {
         private const val ECHO_PREFIX_LENGTH = 3
         private val ECHO_PREFIX = Regex("[0-9A-F]{2}\\|")
 
-        // Swift Regex `\d`/`\s` are Unicode-aware; UNICODE_CHARACTER_CLASS matches that.
-        private val TX_MAX = Pattern.compile("max=(-?\\d+)", Pattern.UNICODE_CHARACTER_CLASS)
-        private val TX_LEADING = Pattern.compile("^(-?\\d+)(?:dBm|\\s|$)", Pattern.UNICODE_CHARACTER_CLASS)
+        // Swift Regex `\d`/`\s` are Unicode-aware. Spelled as explicit Unicode classes, not
+        // UNICODE_CHARACTER_CLASS, so they mean the same on the JVM and on Android's ICU-backed regex.
+        private val TX_MAX = Pattern.compile("max=(-?${RemoteSwiftText.UNICODE_DIGIT}+)")
+        private val TX_LEADING =
+            Pattern.compile("^(-?${RemoteSwiftText.UNICODE_DIGIT}+)(?:dBm|${RemoteSwiftText.UNICODE_WHITESPACE}|$)")
 
         /**
          * Queries whose replies have a machine-checkable shape. Free-form gets and set/action commands

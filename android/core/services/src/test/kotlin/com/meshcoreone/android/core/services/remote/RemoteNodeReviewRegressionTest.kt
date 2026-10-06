@@ -53,6 +53,23 @@ class RemoteNodeReviewRegressionTest {
                 }
             }
         },
+        remoteCoreNative("portable Unicode digit and whitespace classes equal the JVM's UNICODE_CHARACTER_CLASS \\d and \\s") {
+            // The explicit spellings must match exactly what the flagged shorthand matched, for every code point.
+            val flaggedDigit = java.util.regex.Pattern.compile("\\d", java.util.regex.Pattern.UNICODE_CHARACTER_CLASS)
+            val flaggedSpace = java.util.regex.Pattern.compile("\\s", java.util.regex.Pattern.UNICODE_CHARACTER_CLASS)
+            val digit = java.util.regex.Pattern.compile(RemoteSwiftText.UNICODE_DIGIT)
+            val space = java.util.regex.Pattern.compile(RemoteSwiftText.UNICODE_WHITESPACE)
+            var digits = 0
+            for (codePoint in 0..Character.MAX_CODE_POINT) {
+                if (codePoint in Character.MIN_SURROGATE.code..Character.MAX_SURROGATE.code) continue
+                val text = String(Character.toChars(codePoint))
+                val isDigit = flaggedDigit.matcher(text).matches()
+                if (isDigit) digits++
+                assertEquals(isDigit, digit.matcher(text).matches(), "digit U+%04X".format(codePoint))
+                assertEquals(flaggedSpace.matcher(text).matches(), space.matcher(text).matches(), "space U+%04X".format(codePoint))
+            }
+            assertTrue(digits > 600, "Unicode decimal digits beyond ASCII must be covered")
+        },
         remoteCoreNative("the non-throwing audit wrapper forwards every audit hook") {
             // A missing override would silently fall back to the interface's no-op default.
             val hooks = RemoteCommandAuditLog::class.java.declaredMethods.map { it.name }.filterNot { "$" in it }.toSet()

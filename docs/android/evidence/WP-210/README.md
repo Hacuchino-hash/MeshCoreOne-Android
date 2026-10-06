@@ -10,8 +10,8 @@ observed results.
 
 | Command | Observed |
 | --- | --- |
-| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **462 tests, 0 failures, 0 errors, 0 skipped** |
-| `./gradlew :core:services:test --rerun` (twice more) | 462 / 462 each time |
+| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **463 tests, 0 failures, 0 errors, 0 skipped** |
+| `./gradlew :core:services:test --rerun` (twice more, before the regex change) | 462 / 462 each time |
 | `python tools/android-port/portmap.py` | exit 0 |
 | `python tools/android-port/controller/validate.py` | exit 0 |
 | `sh docs/android/evidence/WP-210/foundation-oracle/run.sh` | output in `foundation-oracle/output-macos26.txt` |
@@ -22,7 +22,7 @@ two `ErrorLocalizationTests` cases for `RoomServerError` and `BinaryProtocolErro
 
 | Area | Source ids | Total tests |
 | --- | ---: | ---: |
-| RemoteNodeService, CLI/settings parsing, login timeouts, rewriter | 129 | 163 (incl. 34 native) |
+| RemoteNodeService, CLI/settings parsing, login timeouts, rewriter | 129 | 164 (incl. 35 native) |
 | Node config import/export/planner, snapshots | 161 | 198 (incl. 37 native) |
 | Repeater/room admin, RoomServerService, BinaryProtocolService | 2 | 101 (incl. 99 native) |
 

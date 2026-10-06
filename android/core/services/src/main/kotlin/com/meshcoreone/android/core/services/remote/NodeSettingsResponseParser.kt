@@ -40,10 +40,11 @@ object NodeSettingsResponseParser {
 
     // MARK: - Device Clock
 
-    // Swift Regex `\d` is Unicode-aware; UNICODE_CHARACTER_CLASS matches that.
-    private val clockResponseRegex: Pattern = Pattern.compile(
-        "(\\d{1,2}:\\d{2}) - (\\d{1,2}/\\d{1,2}/\\d{4}) UTC", Pattern.UNICODE_CHARACTER_CLASS,
-    )
+    // Swift Regex `\d` is Unicode-aware; spelled as an explicit Unicode class (not UNICODE_CHARACTER_CLASS)
+    // so it means the same on the JVM and on Android's ICU-backed regex.
+    private val clockResponseRegex: Pattern = RemoteSwiftText.UNICODE_DIGIT.let { d ->
+        Pattern.compile("($d{1,2}:$d{2}) - ($d{1,2}/$d{1,2}/$d{4}) UTC")
+    }
 
     /** Swift `DateFormatter` "HH:mm d/M/yyyy" in UTC; non-lenient, so impossible dates are rejected. */
     private val clockResponseDateFormat: DateTimeFormatter =

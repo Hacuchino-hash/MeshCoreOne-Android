@@ -9,6 +9,16 @@ import java.util.regex.Pattern
  * `CharacterSet.whitespaces` excludes newlines. These helpers pin the Swift behavior.
  */
 internal object RemoteSwiftText {
+    /**
+     * Unicode decimal digit (Swift Regex `\d`), spelled as a general category so it means the same on the
+     * JVM and on Android's ICU-backed `java.util.regex`, where UNICODE_CHARACTER_CLASS is not portable.
+     */
+    const val UNICODE_DIGIT: String = "\\p{Nd}"
+
+    /** Unicode White_Space (Swift Regex `\s`), enumerated for the same portability reason. */
+    const val UNICODE_WHITESPACE: String =
+        "[\\t\\n\\u000B\\f\\r \\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
+
     private val INTEGER = Regex("[+-]?[0-9]+")
     private val DECIMAL = Regex("[+-]?(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
     private val HEX_FLOAT = Regex("([+-]?)0[xX]((?:[0-9a-fA-F]+\\.?[0-9a-fA-F]*|\\.[0-9a-fA-F]+))(?:[pP]([+-]?[0-9]+))?")
