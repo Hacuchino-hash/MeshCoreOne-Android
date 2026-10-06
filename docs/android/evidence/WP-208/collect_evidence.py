@@ -216,7 +216,7 @@ def capture(output, invocation=None, repo=ROOT):
             expected = git(repo, "rev-parse", head + ":" + name)
             metadata["input_blobs"].append({"path": name, "git_blob": actual, "expected_blob": expected,
                                            "matches_head": actual == expected, **record(path, repo)})
-    root_lock = repo / "android" / "gradle" / "dependency-locks" / "core--services-gradle.lockfile"
+    root_lock = repo / "android" / "gradle" / "dependency-locks" / "core-services.lockfile"
     if root_lock.is_file():
         name = root_lock.relative_to(repo).as_posix()
         expected = git(repo, "rev-parse", head + ":" + name)

@@ -238,6 +238,9 @@ class EvidenceReaderTest(unittest.TestCase):
         source = repo / "android" / "core" / "services" / "src" / "main" / "Example.kt"
         source.parent.mkdir(parents=True)
         source.write_text("// synthetic capture fixture\n")
+        lock = repo / "android" / "gradle" / "dependency-locks" / "core-services.lockfile"
+        lock.parent.mkdir(parents=True)
+        lock.write_text("# synthetic actual-path lock fixture\n")
         for args in (
             ["init", "--quiet"],
             ["add", "."],
@@ -254,6 +257,9 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertEqual(raw, (output / "junit" / "services" / "TEST-failed.xml").read_bytes())
         self.assertTrue((output / "raw-capture.json").is_file())
         self.assertFalse(metadata["input_blobs"][0]["matches_head"])
+        captured_lock = next(row for row in metadata["input_blobs"] if row["path"] == "android/gradle/dependency-locks/core-services.lockfile")
+        self.assertTrue(captured_lock["matches_head"])
+        self.assertEqual(READER.git(repo, "rev-parse", "HEAD:android/gradle/dependency-locks/core-services.lockfile"), captured_lock["git_blob"])
         self.assertEqual(READER.SOURCE, metadata["source_sha"])
         with self.assertRaises(ValueError):
             READER.validate_capture(output, self.accounting)
