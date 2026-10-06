@@ -11,6 +11,7 @@
 // control flow with coroutines standing in for continuations.
 package com.meshcoreone.android.core.services.content
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
@@ -112,6 +113,13 @@ class LocationService(
                 throw LocationServiceError.LocationTimeout
             } catch (error: LocationServiceError) {
                 throw error
+            } catch (cancellation: CancellationException) {
+                // A genuine outer cancellation (e.g. the caller's own coroutine was cancelled),
+                // distinct from `TimeoutCancellationException` above: must propagate untouched,
+                // not get coerced into a RequestFailed outcome - cancellation is cooperative
+                // coroutine machinery, not a producer failure, mirroring this module's
+                // established precedent (see this file's header and `RegionResolver`).
+                throw cancellation
             } catch (error: Exception) {
                 throw LocationServiceError.RequestFailed(error.message ?: error.toString())
             }

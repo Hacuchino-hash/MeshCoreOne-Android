@@ -26,6 +26,18 @@ class InlineImageCacheTest {
             override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt = attempt
         }
 
+    /**
+     * Builds a cache with its safety gate stubbed to always-safe: these tests exercise the
+     * cache's own fetch/negative-cache/probe decision logic against a domain-name test URL
+     * that isn't DNS-resolvable in a network-restricted test sandbox, so they must not depend on
+     * the real [UrlSafetyChecker]'s DNS resolution leg (already covered independently by
+     * `UrlSafetyCheckerTest`/`RedirectSafetyPolicyTest`).
+     */
+    private fun cacheFor(fetching: BoundedHttpFetching): InlineImageCache =
+        InlineImageCache(fetching, isUrlSafe = { true })
+
+    private fun cacheFor(attempt: HttpFetchAttempt): InlineImageCache = cacheFor(fetcherReturning(attempt))
+
     private fun startedWith(
         statusCode: Int = 200,
         mimeType: String? = "image/png",
@@ -196,7 +208,7 @@ class InlineImageCacheTest {
                 return startedWith(body = png)
             }
         }
-        val cache = InlineImageCache(fetching)
+        val cache = cacheFor(fetching)
 
         val first = cache.fetchImageData("https://example.invalid/photo.png") as InlineImageResult.Loaded
         assertTrue(png.contentEquals(first.data))
@@ -232,7 +244,7 @@ class InlineImageCacheTest {
                 return HttpFetchAttempt.Failed("boom")
             }
         }
-        val cache = InlineImageCache(fetching)
+        val cache = cacheFor(fetching)
         val url = "https://example.invalid/broken.png"
 
         assertEquals(InlineImageResult.Failed, cache.fetchImageData(url))
@@ -246,15 +258,15 @@ class InlineImageCacheTest {
 
     @Test
     fun `fetchImageData rejects a non-2xx status without caching a recognized image`() = runTest {
-        val cache = InlineImageCache(fetcherReturning(startedWith(statusCode = 404, body = makePngBytes())))
+        val cache = cacheFor(startedWith(statusCode = 404, body = makePngBytes()))
 
         assertEquals(InlineImageResult.Failed, cache.fetchImageData("https://example.invalid/missing.png"))
     }
 
     @Test
     fun `fetchImageData rejects an oversized image body`() = runTest {
-        val cache = InlineImageCache(
-            fetcherReturning(startedWith(expectedContentLength = 11L * 1024 * 1024, body = makePngBytes())),
+        val cache = cacheFor(
+            startedWith(expectedContentLength = 11L * 1024 * 1024, body = makePngBytes()),
         )
 
         assertEquals(InlineImageResult.Failed, cache.fetchImageData("https://example.invalid/huge.png"))
@@ -262,14 +274,14 @@ class InlineImageCacheTest {
 
     @Test
     fun `fetchImageData rejects bytes that are not a recognized image`() = runTest {
-        val cache = InlineImageCache(fetcherReturning(startedWith(body = "not an image".toByteArray())))
+        val cache = cacheFor(startedWith(body = "not an image".toByteArray()))
 
         assertEquals(InlineImageResult.Failed, cache.fetchImageData("https://example.invalid/not-image.png"))
     }
 
     @Test
     fun `probeImageDimensions persists resolved dimensions to the attached store`() = runTest {
-        val cache = InlineImageCache(fetcherReturning(startedWith(statusCode = 206, body = makePngBytes(width = 40, height = 30))))
+        val cache = cacheFor(startedWith(statusCode = 206, body = makePngBytes(width = 40, height = 30)))
         val tempDir = java.io.File(System.getProperty("java.io.tmpdir"), "InlineImageCacheTest-${java.util.UUID.randomUUID()}")
         val tempFile = java.io.File(tempDir, "dimensions.json").also { tempDir.mkdirs() }
         val store = InlineImageDimensionsStore(tempFile)
@@ -296,7 +308,7 @@ class InlineImageCacheTest {
                     startedWith(body = makePngBytes())
                 }
         }
-        val cache = InlineImageCache(fetching)
+        val cache = cacheFor(fetching)
         val url = "https://example.invalid/probe-fail.png"
 
         assertNull(cache.probeImageDimensions(url))

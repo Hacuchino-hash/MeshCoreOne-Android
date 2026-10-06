@@ -22,6 +22,16 @@ class LinkPreviewScraperTest {
             override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt = attempt
         }
 
+    /**
+     * Builds a scraper with its safety gate stubbed to always-safe: these tests exercise the
+     * scraper's own bounded-fetch/mime/size/parse decision logic against a domain-name test URL
+     * that isn't DNS-resolvable in a network-restricted test sandbox, so they must not depend on
+     * the real [UrlSafetyChecker]'s DNS resolution leg (already covered independently by
+     * `UrlSafetyCheckerTest`/`RedirectSafetyPolicyTest`).
+     */
+    private fun scraperFor(attempt: HttpFetchAttempt): LinkPreviewScraper =
+        LinkPreviewScraper(fetcherReturning(attempt), isUrlSafe = { true })
+
     private fun startedWith(
         statusCode: Int = 200,
         mimeType: String? = "text/html",
@@ -37,7 +47,7 @@ class LinkPreviewScraperTest {
     @Test
     fun `scrapeHtmlMetadata parses og tags from a stubbed html page`() = runTest {
         val html = """<meta property="og:title" content="Stubbed page"><meta property="og:image" content="https://example.com/hero.jpg">"""
-        val scraper = LinkPreviewScraper(fetcherReturning(startedWith(body = html.toByteArray())))
+        val scraper = scraperFor(startedWith(body = html.toByteArray()))
 
         val result = scraper.scrapeHtmlMetadata("https://example.com/page")
 
@@ -47,9 +57,7 @@ class LinkPreviewScraperTest {
 
     @Test
     fun `scrapeHtmlMetadata rejects a non-html mime type`() = runTest {
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(startedWith(mimeType = "application/json", body = "{}".toByteArray())),
-        )
+        val scraper = scraperFor(startedWith(mimeType = "application/json", body = "{}".toByteArray()))
 
         assertNull(scraper.scrapeHtmlMetadata("https://example.com/page"))
     }
@@ -73,10 +81,8 @@ class LinkPreviewScraperTest {
 
     @Test
     fun `loadImageData rejects an oversized expected content length`() = runTest {
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(
-                startedWith(mimeType = "image/jpeg", expectedContentLength = 10 * 1024 * 1024, body = byteArrayOf(1)),
-            ),
+        val scraper = scraperFor(
+            startedWith(mimeType = "image/jpeg", expectedContentLength = 10 * 1024 * 1024, body = byteArrayOf(1)),
         )
 
         assertNull(scraper.loadImageData("https://example.com/huge.jpg"))
@@ -84,9 +90,7 @@ class LinkPreviewScraperTest {
 
     @Test
     fun `loadImageData rejects a non-image mime type`() = runTest {
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(startedWith(mimeType = "text/plain", body = byteArrayOf(1, 2, 3))),
-        )
+        val scraper = scraperFor(startedWith(mimeType = "text/plain", body = byteArrayOf(1, 2, 3)))
 
         assertNull(scraper.loadImageData("https://example.com/not-an-image.jpg"))
     }
@@ -94,9 +98,7 @@ class LinkPreviewScraperTest {
     @Test
     fun `loadImageData rejects a stream that exceeds the byte cap while streaming`() = runTest {
         val overCap = ByteArray(3 * 1024 * 1024) // over the 2MB image cap, with no expectedContentLength declared
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(startedWith(mimeType = "image/jpeg", body = overCap)),
-        )
+        val scraper = scraperFor(startedWith(mimeType = "image/jpeg", body = overCap))
 
         assertNull(scraper.loadImageData("https://example.com/huge-undeclared.jpg"))
     }
@@ -104,9 +106,7 @@ class LinkPreviewScraperTest {
     @Test
     fun `loadImageData returns the capped bytes for a valid image fetch`() = runTest {
         val bytes = byteArrayOf(0x42, 0x4d, 1, 2, 3) // arbitrary small payload; decode is a separate native adapter concern
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(startedWith(mimeType = "image/jpeg", body = bytes)),
-        )
+        val scraper = scraperFor(startedWith(mimeType = "image/jpeg", body = bytes))
 
         val data = scraper.loadImageData("https://example.com/photo.jpg")
 
@@ -115,16 +115,14 @@ class LinkPreviewScraperTest {
 
     @Test
     fun `boundedFetch rejects a non-2xx status`() = runTest {
-        val scraper = LinkPreviewScraper(
-            fetcherReturning(startedWith(statusCode = 404, body = byteArrayOf(1))),
-        )
+        val scraper = scraperFor(startedWith(statusCode = 404, body = byteArrayOf(1)))
 
         assertNull(scraper.scrapeHtmlMetadata("https://example.com/missing"))
     }
 
     @Test
     fun `boundedFetch rejects a failed fetch attempt`() = runTest {
-        val scraper = LinkPreviewScraper(fetcherReturning(HttpFetchAttempt.Failed("connection refused")))
+        val scraper = scraperFor(HttpFetchAttempt.Failed("connection refused"))
 
         assertNull(scraper.scrapeHtmlMetadata("https://example.com/page"))
     }

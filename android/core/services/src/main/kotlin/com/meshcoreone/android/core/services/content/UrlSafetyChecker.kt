@@ -45,8 +45,18 @@ object UrlSafetyChecker {
 
         if (isPrivateOrReserved(host)) return false
 
+        // A literal IP that already cleared the private/reserved check above is definitively
+        // safe without any DNS lookup: resolving an already-numeric host can't discover a
+        // different address, so a real-network DNS dependency here would be both pointless and,
+        // in a network-restricted test/CI sandbox, a false-negative "fails closed" result for a
+        // genuinely safe public IP literal.
+        if (isIpLiteral(host)) return true
+
         return resolveAndCheck(host, resolveHost)
     }
+
+    /** `true` when [address] parses as either an IPv4 or IPv6 literal (no DNS). */
+    private fun isIpLiteral(address: String): Boolean = parseIpv4(address) != null || parseIpv6(address) != null
 
     /** Checks whether an IP address literal falls within private or reserved ranges. */
     fun isPrivateOrReserved(address: String): Boolean {

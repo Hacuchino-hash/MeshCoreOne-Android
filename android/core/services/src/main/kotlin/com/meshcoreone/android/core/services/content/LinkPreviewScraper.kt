@@ -54,14 +54,23 @@ interface BoundedHttpFetching {
 }
 
 /** `og:image` / `og:title` HTML scrape fallback, and the scraped-image bounded fetch. */
-class LinkPreviewScraper(private val httpFetching: BoundedHttpFetching) {
+class LinkPreviewScraper(
+    private val httpFetching: BoundedHttpFetching,
+    /**
+     * Defaults to the real [UrlSafetyChecker.isSafe] so production callers get the full
+     * scheme/private-range/DNS-rebinding check; tests inject a deterministic override instead
+     * of depending on real DNS resolution for a non-literal test host, mirroring the same
+     * injection seam [RedirectSafetyPolicy.authorize] already establishes.
+     */
+    private val isUrlSafe: suspend (String) -> Boolean = { url -> UrlSafetyChecker.isSafe(url) },
+) {
     /**
      * Fetches the page and scans its `<meta>` tags for an `og:image` / `twitter:image` hero
      * image and an `og:title`. Returns `null` on any safety, network, status, size, or mime
      * failure, or when the page carries neither hint.
      */
     suspend fun scrapeHtmlMetadata(url: String): ScrapedPageMetadata? {
-        if (!UrlSafetyChecker.isSafe(url)) return null
+        if (!isUrlSafe(url)) return null
 
         val data = boundedFetch(
             url = url,
@@ -80,7 +89,7 @@ class LinkPreviewScraper(private val httpFetching: BoundedHttpFetching) {
      * of the page URL's check, exactly as the Swift original does before its image GET.
      */
     suspend fun loadImageData(url: String): ByteArray? {
-        if (!UrlSafetyChecker.isSafe(url)) return null
+        if (!isUrlSafe(url)) return null
 
         return boundedFetch(
             url = url,

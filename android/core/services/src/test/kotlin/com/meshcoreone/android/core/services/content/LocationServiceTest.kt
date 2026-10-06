@@ -5,6 +5,8 @@
 // the source class can actually produce.
 package com.meshcoreone.android.core.services.content
 
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,7 +82,17 @@ class LocationServiceTest {
         val producing = FakeLocationProducing(LocationAuthorizationStatus.NOT_DETERMINED)
         val service = LocationService(producing)
 
-        val fixDeferred = async { service.requestCurrentLocation() }
+        // This child is EXPECTED to fail (DENIED permission), and the test inspects its failure
+        // explicitly via `fixDeferred.await()` below. A plain `async` under this test's own
+        // scope would propagate that failure to the parent Job the instant it's thrown -
+        // cancelling the whole test scope before `await()` ever runs - because child-failure
+        // propagation to a non-supervisor parent isn't deferred until the caller awaits.
+        // Parenting this child under its own `SupervisorJob` (itself still a child of the test
+        // scope, so cleanup/dispatcher tracking is unaffected) isolates that expected failure so
+        // `assertFailsWith` can observe it normally instead of the scope dying out from under it.
+        val fixDeferred = async(SupervisorJob(coroutineContext[Job])) {
+            service.requestCurrentLocation()
+        }
         while (!producing.permissionRequested) delay(1)
         producing.setStatus(LocationAuthorizationStatus.DENIED)
 

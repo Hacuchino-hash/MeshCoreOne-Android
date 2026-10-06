@@ -93,6 +93,13 @@ class CachedDecodedImage(
  */
 class InlineImageCache(
     private val httpFetching: BoundedHttpFetching,
+    /**
+     * Defaults to the real [UrlSafetyChecker.isSafe] so production callers get the full
+     * scheme/private-range/DNS-rebinding check; tests inject a deterministic override instead
+     * of depending on real DNS resolution for a non-literal test host, mirroring the same
+     * injection seam [RedirectSafetyPolicy.authorize] and [LinkPreviewScraper] already establish.
+     */
+    private val isUrlSafe: suspend (String) -> Boolean = { url -> UrlSafetyChecker.isSafe(url) },
 ) : InlineImageDimensionProbing {
     private val stateMutex = Mutex()
     private val failedUrls = mutableSetOf<String>()
@@ -190,7 +197,7 @@ class InlineImageCache(
      * in-flight set - this is a side query, not a [fetchImageData] call.
      */
     override suspend fun probeImageDimensions(url: String): Pair<Int, Int>? {
-        if (!UrlSafetyChecker.isSafe(url)) return null
+        if (!isUrlSafe(url)) return null
 
         return fetchSemaphore.withPermit {
             val attempt = httpFetching.fetch(url, PROBE_TIMEOUT_MS, PROBE_BYTE_RANGE)
@@ -209,7 +216,7 @@ class InlineImageCache(
 
     /** Performs the HTTP fetch, validates the response, and caches the result. */
     private suspend fun performFetch(url: String): InlineImageResult {
-        if (!UrlSafetyChecker.isSafe(url)) {
+        if (!isUrlSafe(url)) {
             markFailed(url)
             return InlineImageResult.Failed
         }
