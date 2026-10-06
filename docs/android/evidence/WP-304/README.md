@@ -278,6 +278,26 @@ bytes, not arbitrary newline/whitespace normalization.
 the genuine43-test1-failure/6-error historical result and complete raw logs.
 No proposal artifact or resolver ran in that failing job.
 
+The subsequent actual d4b42d proposal37408412391 genuinely passed on Linux.
+[`generation-d4b42d-success.json`](generation-d4b42d-success.json) binds its
+complete official artifact/logs and independent readback:38 configurations,
+1472 external rows,40 compile-alignment edges and zero new context admissions.
+An existing owned lock is not replaced by ROOT state; actual resolution retained
+the same54,192/d453 bytes, with all3334 prior inputs unchanged plus only the
+validated empty settings bookkeeping file. This is data proof, not UI acceptance.
+
+Actual d4b42d native run37408412414 discovered and executed all197 UI methods:
+189 passed,8 failed, zero errors/skips. Complete18 raw JUnit reports and one
+input binding are retained through the official log and were re-hashed after
+decoding. All130/158 source receipts exist, but21 remain policy-only.
+[`native-d4b42d-failure.json`](native-d4b42d-failure.json) records exact failures
+and repairs; none is dropped or relabeled. The seven actual partial PNGs are
+inside JUnit system-out receipts, not standalone artifact members. They do not
+cover all ten required states. Visual inspection exposed a missing root dark
+canvas and a nominal font200/RTL dialog using default Android-system values;
+the next assertions verify painted roles and actual layout density/direction.
+Candidate labels or a passing screenshot method alone are not sufficient proof.
+
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):
 real native storage distinctions/adapters, exact committed-preference marker/

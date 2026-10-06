@@ -83,10 +83,13 @@ fun SharedUiScaffold(
     bottomBar: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier.fillMaxSize().windowInsetsPadding(insets)) {
-        topBar()
-        Column(Modifier.weight(1f).fillMaxWidth(), content = content)
-        bottomBar()
+    Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(insets)) {
+            topBar()
+            Column(Modifier.weight(1f).fillMaxWidth(), content = content)
+            bottomBar()
+        }
     }
 }
 

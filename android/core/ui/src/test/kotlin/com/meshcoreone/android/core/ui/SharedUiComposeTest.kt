@@ -7,6 +7,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,10 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
@@ -88,6 +93,7 @@ import java.io.File
 import java.security.MessageDigest
 import java.util.Base64
 import java.util.UUID
+import java.util.Locale
 import kotlin.test.*
 import org.junit.After
 import org.junit.Before
@@ -124,6 +130,20 @@ class SharedUiComposeTest {
     @After fun disposeNativeWindow() { controller.pause().stop().destroy() }
     private fun content(block: @Composable () -> Unit) { controller.get().setContent(content = block) }
 
+    @Suppress("DEPRECATION")
+    private fun configureSystemFontAndDirection(fontScale: Float, direction: LayoutDirection) {
+        compose.runOnUiThread {
+            val application = ApplicationProvider.getApplicationContext<Context>()
+            for (target in setOf(application.resources, controller.get().resources)) {
+                val configuration = Configuration(target.configuration).apply {
+                    this.fontScale = fontScale
+                    setLayoutDirection(Locale.forLanguageTag(if (direction == LayoutDirection.Rtl) "ar" else "en"))
+                }
+                target.updateConfiguration(configuration, target.displayMetrics)
+            }
+        }
+    }
+
     private fun resize(width: Int, height: Int = 900) {
         compose.runOnUiThread {
             val view = controller.get().window.decorView
@@ -132,6 +152,7 @@ class SharedUiComposeTest {
                 View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY))
             view.layout(0, 0, width, height)
         }
+        if (!compose.mainClock.autoAdvance) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
     }
 
@@ -205,7 +226,8 @@ class SharedUiComposeTest {
                         high.value = contrast
                     }
                     compose.onNodeWithTag("header").assertIsDisplayed()
-                    compose.onNodeWithText(resources.getString(C.chatsNotificationLevelAll))
+                    compose.onNode(hasText(resources.getString(C.chatsNotificationLevelAll)) and
+                        hasAnyAncestor(hasTestTag("quick-actions")))
                         .performScrollTo().assertIsSelected().assertHeightIsAtLeast(49.dp).assertWidthIsAtLeast(49.dp)
                 }
             }
@@ -229,6 +251,7 @@ class SharedUiComposeTest {
     }
 
     @Test fun font200CjkRtlLongTextDoesNotClipAndTargetsRemainNativeSized() {
+        configureSystemFontAndDirection(2f, LayoutDirection.Rtl)
         content {
             CompositionLocalProvider(LocalDensity provides Density(1f, 2f), LocalLayoutDirection provides LayoutDirection.Rtl) {
                 MeshCoreTheme(highContrast = true, motionScale = 0f) { sample() }
@@ -241,8 +264,11 @@ class SharedUiComposeTest {
             assertTrue(get(layouts))
         }
         assertTrue(layouts.single().lineCount > 1)
+        assertEquals(2f, layouts.single().layoutInput.density.fontScale)
+        assertEquals(LayoutDirection.Rtl, layouts.single().layoutInput.layoutDirection)
         assertFalse(layouts.single().hasVisualOverflow)
-        compose.onNodeWithText(resources.getString(C.chatsNotificationLevelAll)).performScrollTo()
+        compose.onNode(hasText(resources.getString(C.chatsNotificationLevelAll)) and
+            hasAnyAncestor(hasTestTag("quick-actions"))).performScrollTo()
             .assertHeightIsAtLeast(49.dp).assertWidthIsAtLeast(49.dp)
         compose.onNodeWithTag("header").assertIsDisplayed()
         capture("font200-cjk-rtl")
@@ -259,13 +285,15 @@ class SharedUiComposeTest {
             }
         }
         resize(360)
-        compose.onNodeWithText(resources.getString(L.commonTryAgain)).assertIsDisplayed().assertHeightIsAtLeast(49.dp)
+        val retry = compose.onNode(hasText(resources.getString(L.commonTryAgain)) and hasAnyAncestor(isDialog()))
+        retry.assertIsDisplayed().assertHeightIsAtLeast(49.dp)
         capture("failure-retry", dialog = true)
-        compose.onNodeWithText(resources.getString(L.commonTryAgain)).performClick()
+        retry.performClick()
         compose.runOnIdle { assertEquals(listOf("dismiss", "retry"), order) }
     }
 
     @Test fun nativeRegionDialogKeepsInvalidInputFocusAndBackCancelsWithoutAnAction() {
+        compose.mainClock.autoAdvance = false
         val state = mutableStateOf(RegionManagementState(SnapshotList.of("known"),
             addDialogVisible = true, newRegionName = "invalid region"))
         var adds = 0
@@ -277,6 +305,7 @@ class SharedUiComposeTest {
         resize(360)
         compose.onNodeWithText("invalid region").assertIsFocused()
         compose.onNodeWithText(resources.getString(C.chatsChannelInfoRegionAddSelected)).performClick()
+        compose.mainClock.advanceTimeBy(32)
         compose.onNodeWithText("invalid region").assertIsFocused()
         compose.runOnIdle { assertEquals(RegionValidationError.InvalidCharacters, state.value.validationError); assertEquals(0, adds) }
         capture("dialog", dialog = true)
@@ -285,8 +314,10 @@ class SharedUiComposeTest {
             dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
             dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
         }
+        compose.mainClock.advanceTimeBy(32)
         compose.runOnIdle { assertEquals(0, adds) }
         compose.runOnIdle { assertFalse(state.value.addDialogVisible) }
+        compose.mainClock.autoAdvance = true
     }
 
     @Test fun claimedTipRendersPassiveReadableCopyAndAnExplicitDismissControl() = runBlocking {
@@ -362,6 +393,7 @@ class SharedUiComposeTest {
     }
 
     @Test fun font200RtlStorageRecoveryHasRealTypedMetadataAndNativeBackDismissesWithoutRetry() {
+        configureSystemFontAndDirection(2f, LayoutDirection.Rtl)
         val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(
             StorageFailure(StorageProblem.DeviceLocked, StorageOperation.WRITE)))
         var unlocked = 0
@@ -375,6 +407,12 @@ class SharedUiComposeTest {
         }
         resize(360)
         compose.onNodeWithText(resources.getString(R.string.ui_storage_locked), substring = true).assertIsDisplayed()
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithText(resources.getString(R.string.ui_storage_locked), substring = true)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
+        assertEquals(2f, layouts.single().layoutInput.density.fontScale)
+        assertEquals(LayoutDirection.Rtl, layouts.single().layoutInput.layoutDirection)
+        assertFalse(layouts.single().hasVisualOverflow)
         capture("storage-recovery-font200-rtl", dialog = true)
         compose.runOnUiThread {
             val dialog = assertNotNull(ShadowDialog.getLatestDialog())

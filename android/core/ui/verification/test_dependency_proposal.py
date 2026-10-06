@@ -77,7 +77,10 @@ class DependencyProposalTests(unittest.TestCase):
     def test_line_ending_handling_cannot_admit_mixed_newlines_extra_bytes_or_changed_pairs(self):
         lf = (ROOT / TEST_CONTEXT_INPUT).read_bytes().replace(b"\r\n", b"\n")
         for changed in (lf.replace(b"\n", b"\r\n", 1), lf + b"\n", lf.replace(b"33.6.0-jre", b"33.6.1-jre"),
-                lf.replace(b"debugUnitTestCompileClasspath", b"debugCompileClasspath", 1)):
+                lf.replace(b"debugUnitTestCompileClasspath", b"debugCompileClasspath", 1),
+                lf.replace(b"debugUnitTestCompileClasspath", b"DebugUnitTestCompileClasspath", 1),
+                lf.replace(b'    {\n      "configuration": "debugUnitTestCompileClasspath",\n'
+                    b'      "coordinate": "androidx.concurrent:concurrent-futures:1.2.0"\n    },\n', b"", 1)):
             with self.subTest(changed=changed[:80]), self.assertRaises(PortError):
                 parse_approved_test_context_memberships(changed)
 

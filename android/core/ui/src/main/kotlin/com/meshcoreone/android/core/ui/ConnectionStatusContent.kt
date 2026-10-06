@@ -5,9 +5,7 @@
 // PortedFrom: MC1/Views/Components/SyncingPillOverlay.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.geometry.Offset
@@ -274,10 +273,11 @@ fun SyncingPillOverlay(
     val contentState = if (state == StatusPillState.Hidden) displayedState else state
     SideEffect { if (state != StatusPillState.Hidden) displayedState = state }
     val duration = LocalMeshTheme.current.duration(300)
+    val opacity by animateFloatAsState(if (state == StatusPillState.Hidden) 0f else 1f,
+        animationSpec = tween(duration), label = "SharedStatusPillOpacity")
     Box(modifier) {
         content()
-        AnimatedVisibility(state != StatusPillState.Hidden, Modifier.align(Alignment.TopCenter).padding(top = 8.dp),
-            enter = fadeIn(tween(duration)), exit = fadeOut(tween(duration))) {
+        Box(Modifier.align(Alignment.TopCenter).padding(top = 8.dp).alpha(opacity)) {
             SyncingPillView(contentState,
                 modifier = if (state == StatusPillState.Hidden) Modifier.clearAndSetSemantics {} else Modifier,
                 onDisconnectedTap = if (state == StatusPillState.Hidden) null else onDisconnectedTap)

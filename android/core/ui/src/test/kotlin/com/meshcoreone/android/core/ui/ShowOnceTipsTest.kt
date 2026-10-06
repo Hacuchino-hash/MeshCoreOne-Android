@@ -168,23 +168,22 @@ class ShowOnceTipsTest {
         val directory = temporary.newFolder()
         val h = Harness(directory)
         val storageDirectory = File(directory, "meshcoreone-datastore")
-        val retainedDirectory = File(directory, "retained-datastore")
+        val temporaryWrite = File(storageDirectory, "app.preferences_pb.tmp")
         h.tips.donateCompletedOnboarding()
         val previous = File(storageDirectory, "app.preferences_pb").readBytes()
-        assertTrue(storageDirectory.renameTo(retainedDirectory))
-        assertTrue(storageDirectory.createNewFile())
+        assertTrue(h.storage.preferences.get(SharedTip.DEVICE_MENU.eventKey))
+        assertTrue(temporaryWrite.mkdir())
         try {
             val failure = assertFailsWith<StorageFailure> { h.tips.claim(SharedTip.DEVICE_MENU) { connected } }
             assertEquals(StorageProblem.IoFailure, failure.problem)
             assertEquals(StorageOperation.WRITE, failure.operation)
             assertFalse(h.tips.hasDisplayed(SharedTip.DEVICE_MENU))
-            assertContentEquals(previous, File(retainedDirectory, "app.preferences_pb").readBytes())
+            assertContentEquals(previous, File(storageDirectory, "app.preferences_pb").readBytes())
             assertTrue(h.reported.contains(failure))
         } finally {
             h.close()
-            assertTrue(storageDirectory.isFile)
-            assertTrue(storageDirectory.delete())
-            assertTrue(retainedDirectory.renameTo(storageDirectory))
+            assertTrue(temporaryWrite.isDirectory)
+            assertTrue(temporaryWrite.delete())
         }
         val reopened = Harness(directory)
         try {

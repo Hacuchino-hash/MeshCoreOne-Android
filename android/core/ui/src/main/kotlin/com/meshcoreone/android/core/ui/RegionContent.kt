@@ -77,10 +77,12 @@ fun filteredRegions(regions: List<String>, search: String, locale: Locale): Snap
         if (comparison != 0) comparison else left.compareTo(right)
     }
     if (search.isEmpty()) return sorted.snapshot()
-    require(collator is RuleBasedCollator) { "The platform locale has no substring collation rules" }
-    collator.strength = Collator.PRIMARY
+    val searchCollator = Collator.getInstance(locale)
+    require(searchCollator is RuleBasedCollator) { "The platform locale has no substring collation rules" }
+    searchCollator.strength = Collator.PRIMARY
+    searchCollator.numericCollation = false
     return sorted.filter { region ->
-        StringSearch(search, java.text.StringCharacterIterator(region), collator).first() != StringSearch.DONE
+        StringSearch(search, java.text.StringCharacterIterator(region), searchCollator).first() != StringSearch.DONE
     }.snapshot()
 }
 
