@@ -110,13 +110,31 @@ class EvidenceReaderTest(unittest.TestCase):
 
     def test_actual_runners_have_distinct_lazy_raw_first_finalizers(self):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
-        self.assertIn('if (name == "testDebugUnitTest") finalizedBy(retainMessagingRoomRawEvidence)', text)
-        self.assertIn('if (name == "test") finalizedBy(retainMessagingServicesRawEvidence)', text)
+        self.assertIn('if (name == "testDebugUnitTest") {', text)
+        self.assertIn('finalizedBy(retainMessagingRoomRawEvidence)', text)
+        self.assertIn('if (name == "test") {', text)
+        self.assertIn('finalizedBy(retainMessagingServicesRawEvidence)', text)
         self.assertIn('rootProject.project(":core:services").tasks.withType<Test>().configureEach', text)
         self.assertIn('"raw/services-completion"', text)
         self.assertIn('"raw/room-completion"', text)
         self.assertIn('"validated"', text)
         self.assertNotIn('tasks.named("testDebugUnitTest")', text)
+
+    def test_runner_progress_is_explicit_without_modifying_frozen_services_build(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('WP208_RUNNER_START|', text)
+        self.assertIn('WP208_ROOM_CASE_START|', text)
+        self.assertIn('WP208_ROOM_CASE_END|', text)
+        self.assertIn('WP208_SERVICES_CASE_START|', text)
+        self.assertIn('WP208_SERVICES_CASE_END|', text)
+
+    def test_original_and_native_test_wrappers_always_close_owned_fixtures_on_failure(self):
+        text = (READER.ROOT / READER.SERVICES / READER.MESSAGING / "MessagingTestSupport.kt").read_text()
+        self.assertEqual(2, text.count('{ runMessagingCase(assertion) }'))
+        self.assertIn('fixtureJob = SupervisorJob(test.coroutineContext[Job])', text)
+        self.assertIn('finally { fixtureJob.cancelAndJoin() }', text)
+        self.assertIn('finally {', text)
+        self.assertIn('prior.addSuppressed(failure)', text)
 
     def test_verifier_depends_on_both_actual_tasks_and_preserves_incumbent_hooks(self):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()

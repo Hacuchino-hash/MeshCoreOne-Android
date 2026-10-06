@@ -146,6 +146,27 @@ All14 safe ZIP members/CRC, the complete compiler log and exact actual Linux
 base/head/source/policy/run/attempt binding are retained before validation.
 It contains zero messaging/Room XML and is not the two-residual repair's proof.
 
+The first dependency-enabled run `37406373755`, attempt1 at `ba9de4e3`,
+reached the composite command but timed out at the declared1,800-second executor
+limit. Official artifact11388177397 is16,480 bytes, SHA-256
+`3fab61d6fec0bdec22c607a7d2ec64e0808d73c31dfd2519716b60bf86d1de7a`;
+all14 bounded member paths/types/sizes/CRC and actual Linux invocation were
+verified and retained before analysis. Its real base is the authorized `7e2835ba`,
+not a fabricated main723 substitution. The full2,460-byte Gradle log contains
+only earlier helper output and no completed runner XML or messaging verdict.
+This is **TIMEOUT / unverified**, never zero-failure success.
+
+The owning data TEST hook now logs actual runner and per-case start/end/outcome
+identities at the quiet-visible error log level, without touching the frozen
+services build. This distinguishes a configuration/runner stall from an actual
+assertion failure on the next run; progress lines cannot substitute for complete
+JUnit. Original/native JVM wrappers now always close their explicitly owned
+fixtures/queues and cancel the fixture supervisor even when assertions fail,
+retaining the original exception and any suppressed cleanup causes instead of
+leaking jobs until the runner deadline. No assertion, source floor, timeout
+budget, mandatory suite or error outcome is weakened.
+Two guard regressions extend the Python reader/hook suite to32 cases.
+
 The coordinator's one-file frozen fault producer for UI-304 is exactly
 `MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
 1,969 LF bytes / SHA-256

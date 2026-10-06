@@ -299,15 +299,18 @@ internal class Harness(
     generation: Long = 1,
 ) {
     val token = token(generation = generation)
-    val scope = CoroutineScope(test.coroutineContext)
+    private val fixtureJob = SupervisorJob(test.coroutineContext[Job])
+    val scope = CoroutineScope(test.coroutineContext + fixtureJob)
     val signals = TestSignals(token)
     val clock = TestMessagingClock(test.testScheduler)
     val transport = FirmwareTransport()
-    val session = MeshCoreSession(transport, SessionConfiguration(defaultTimeout = 2.0), clock, test.coroutineContext)
+    val session = MeshCoreSession(transport, SessionConfiguration(defaultTimeout = 2.0), clock, scope.coroutineContext)
     val diagnostics = mutableListOf<MessagingDiagnostic>()
+    private val queues = mutableListOf<ChatSendQueueService>()
     val service = MessageService(token, SELF, session, store, signals, scope, config, clock,
         jitter = { 1.0 }, reporter = MessagingIssueReporter { diagnostics += it })
     val contact = ContactDTO(CONTACT, RADIO, TARGET, "Peer", lastHeardTimestamp = 0u)
+    init { synchronized(fixtures) { fixtures.getOrPut(test) { mutableListOf() } += this } }
     suspend fun start() {
         store.saveContact(contact)
         session.start()
@@ -324,14 +327,21 @@ internal class Harness(
         message: MessageDTO, code: Bytes = Bytes.of(0xAB, 0xCD, 0xEF, 0x12), age: Long = 0,
         timeout: Double = 30.0, delivered: Boolean = false,
     ) = PendingAck(message.id, CONTACT, SnapshotSet(listOf(code)), clock.wallClock.instant().minusSeconds(age), timeout, delivered)
-    suspend fun close() { service.close(); session.stop() }
+    suspend fun close() {
+        try {
+            queues.asReversed().forEach { it.shutdown() }
+            service.close()
+            session.stop()
+        }
+        finally { fixtureJob.cancelAndJoin() }
+    }
     fun sends(code: CommandCode): List<Bytes> = transport.sentData.filter { it[0] == code.rawValue }
     fun queue(
         config: ChatSendQueueConfig = ChatSendQueueConfig(),
         query: MessagingChannelQuery = MessagingChannelQuery { null },
         indexer: OutgoingChannelReactionIndexer = OutgoingChannelReactionIndexer { _, _, _, _, _ -> },
     ) = ChatSendQueueService(token, store, service, query, indexer, signals, scope, config, clock,
-        MessagingIssueReporter { diagnostics += it })
+        MessagingIssueReporter { diagnostics += it }).also { queues += it }
     suspend fun pending(message: MessageDTO, attempt: Long? = 0, isResend: Boolean = false): PendingSendDTO {
         val dto = if (message.channelIndex == null) PendingSendDTO.fromEnvelope(
             DirectMessageEnvelope(message.id, CONTACT, isResend), RADIO, enqueuedAt = clock.wallClock.instant())
@@ -345,10 +355,37 @@ internal class Harness(
 internal fun original(
     suite: String, name: String, signature: String = "()", row: String = "",
     assertion: suspend TestScope.() -> Unit,
-): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature$row") { runTest { assertion() } }
+): DynamicTest = DynamicTest.dynamicTest("$suite::$name$signature$row") { runMessagingCase(assertion) }
 
 internal fun native(name: String, assertion: suspend TestScope.() -> Unit): DynamicTest =
-    DynamicTest.dynamicTest("WP-208::$name") { runTest { assertion() } }
+    DynamicTest.dynamicTest("WP-208::$name") { runMessagingCase(assertion) }
+
+private val fixtures = java.util.IdentityHashMap<TestScope, MutableList<Harness>>()
+
+private fun runMessagingCase(assertion: suspend TestScope.() -> Unit) = runTest {
+    val test = this
+    var originalFailure: Throwable? = null
+    try { assertion() }
+    catch (failure: Throwable) { originalFailure = failure; throw failure }
+    finally {
+        val owned = synchronized(fixtures) { fixtures.remove(test).orEmpty().asReversed() }
+        withContext(NonCancellable) {
+            var cleanupFailure: Exception? = null
+            for (fixture in owned) {
+                try { fixture.close() }
+                catch (failure: Exception) {
+                    val prior = originalFailure
+                    if (prior != null) prior.addSuppressed(failure)
+                    else {
+                        val first = cleanupFailure
+                        if (first == null) cleanupFailure = failure else first.addSuppressed(failure)
+                    }
+                }
+            }
+            cleanupFailure?.let { throw it }
+        }
+    }
+}
 
 internal suspend fun statuses(service: MessageService, subscription: SessionEventSubscription<MessageStatusEvent>): List<MessageStatusEvent> {
     service.finishStatusEvents()

@@ -1,6 +1,9 @@
 // AndroidOnly: WP-202 Admitted Room repository dependencies and complete native assertion hook.
 import java.io.File
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
 
 plugins {
     id("mesh.android.library")
@@ -138,10 +141,39 @@ val verifyMessagingEvidenceReaders by tasks.registering(Exec::class) {
 }
 
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest") finalizedBy(retainMessagingRoomRawEvidence)
+    if (name == "testDebugUnitTest") {
+        finalizedBy(retainMessagingRoomRawEvidence)
+        doFirst { logger.error("WP208_RUNNER_START|$path") }
+        val progressLogger = logger
+        addTestListener(object : TestListener {
+            override fun beforeSuite(suite: TestDescriptor) = Unit
+            override fun afterSuite(suite: TestDescriptor, result: TestResult) = Unit
+            override fun beforeTest(testDescriptor: TestDescriptor) {
+                progressLogger.error("WP208_ROOM_CASE_START|${testDescriptor.className}|${testDescriptor.name}")
+            }
+            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+                progressLogger.error("WP208_ROOM_CASE_END|${testDescriptor.className}|${testDescriptor.name}|${result.resultType}")
+                result.exceptions.forEach { progressLogger.error("WP208 Room failure", it) }
+            }
+        })
+    }
 }
 rootProject.project(":core:services").tasks.withType<Test>().configureEach {
-    if (name == "test") finalizedBy(retainMessagingServicesRawEvidence)
+    if (name == "test") {
+        finalizedBy(retainMessagingServicesRawEvidence)
+        doFirst { logger.error("WP208_RUNNER_START|$path") }
+        val progressLogger = logger
+        addTestListener(object : TestListener {
+            override fun beforeSuite(suite: TestDescriptor) = Unit
+            override fun afterSuite(suite: TestDescriptor, result: TestResult) = Unit
+            override fun beforeTest(testDescriptor: TestDescriptor) {
+                progressLogger.error("WP208_SERVICES_CASE_START|${testDescriptor.className}|${testDescriptor.name}")
+            }
+            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+                progressLogger.error("WP208_SERVICES_CASE_END|${testDescriptor.className}|${testDescriptor.name}|${result.resultType}")
+            }
+        })
+    }
 }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }
 tasks.named("check") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }
