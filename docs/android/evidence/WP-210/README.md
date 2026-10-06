@@ -22,9 +22,9 @@ two `ErrorLocalizationTests` cases for `RoomServerError` and `BinaryProtocolErro
 
 | Area | Source ids | Total tests |
 | --- | ---: | ---: |
-| RemoteNodeService, CLI/settings parsing, login timeouts, rewriter | 129 | 164 (incl. 35 native) |
+| RemoteNodeService, CLI/settings parsing, login timeouts, rewriter | 129 | 163 (incl. 34 native) |
 | Node config import/export/planner, snapshots | 161 | 198 (incl. 37 native) |
-| Repeater/room admin, RoomServerService, BinaryProtocolService | 2 | 100 (incl. 98 native) |
+| Repeater/room admin, RoomServerService, BinaryProtocolService | 2 | 101 (incl. 99 native) |
 
 - **Foundation oracle:** `foundation-oracle/` compiles the Swift `MeshCoreNodeConfig` model with Foundation and prints the real encoder/decoder behavior. The Kotlin export fixture matches it byte for byte. Its decode edge cases (first duplicate key wins, trailing commas, lazy string/number validation) and the String-equality cases are pinned as Kotlin tests.
 - **Mutation checks:** each was broken on purpose, the named test failed, and the code was restored.
