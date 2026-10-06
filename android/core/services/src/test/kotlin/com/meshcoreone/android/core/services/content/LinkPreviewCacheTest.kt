@@ -125,7 +125,7 @@ class LinkPreviewCacheTest {
     }
 
     @Test
-    fun `Concurrent fetches for the same URL coalesce; every caller receives the loaded result`() = runTest {
+    fun `Concurrent fetches for the same URL coalesce, every caller receives the loaded result`() = runTest {
         val fetcher = FakeMetadataFetcher(title = "Coalesced")
         val dataStore = FakePersisting()
         val url = "https://example.com/coalesce"
