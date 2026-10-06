@@ -162,6 +162,8 @@ class SharedUiComposeTest {
             view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY))
             view.layout(0, 0, width, height)
+            // Let a just-shown dialog's window attach before inspecting it (paused looper).
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             val dialog = ShadowDialog.getLatestDialog()
             if (dialog?.isShowing == true) {
                 val dialogView = assertNotNull(dialog.window).decorView
@@ -169,7 +171,12 @@ class SharedUiComposeTest {
                 dialogView.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.AT_MOST),
                     View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.AT_MOST))
                 dialogView.layout(0, 0, dialogView.measuredWidth, dialogView.measuredHeight)
-                dialogView.dispatchWindowFocusChanged(true)
+                // dispatchWindowFocusChanged only notifies views; hasWindowFocus() reads the ViewRootImpl's
+                // AttachInfo, which Robolectric sets through the same shadow ActivityController.windowFocusChanged uses.
+                val root = View::class.java.getMethod("getViewRootImpl").invoke(dialogView)
+                org.robolectric.shadow.api.Shadow.extract<org.robolectric.shadows.ShadowViewRootImpl>(root)
+                    .callWindowFocusChanged(true)
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
                 assertTrue(dialogView.hasWindowFocus())
             }
         }
@@ -565,7 +572,11 @@ class SharedUiComposeTest {
         resize(360)
         compose.runOnIdle { assertTrue(composedWindowFocused) }
         compose.mainClock.autoAdvance = false
-        compose.runOnIdle { state.value = StatusPillState.Syncing }
+        compose.runOnIdle {
+            state.value = StatusPillState.Syncing
+            // Deliver the write to the recomposer now; otherwise the next frame can still see the old state.
+            androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+        }
         compose.mainClock.advanceTimeByFrame()
         compose.runOnIdle { assertEquals(StatusPillState.Syncing, composedState) }
         compose.mainClock.advanceTimeByFrame()
