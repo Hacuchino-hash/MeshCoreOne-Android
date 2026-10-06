@@ -15,6 +15,7 @@ class NodeConfigSwiftTextTest {
                 -120.36 to "-120.36", 1.0 to "1.0", 180.0 to "180.0", 0.1 to "0.1", 0.001 to "0.001", 0.0001 to "0.0001",
                 0.00001 to "1e-05", -0.000015 to "-1.5e-05", 1.0E-7 to "1e-07", 0.1 + 0.2 to "0.30000000000000004",
                 123456.789 to "123456.789", 9007199254740992.0 to "9007199254740992.0",
+                1e16 to "1e+16", 1e15 to "1000000000000000.0", 12345678901234567.0 to "1.2345678901234568e+16", 100000.0 to "100000.0",
                 Double.MAX_VALUE to "1.7976931348623157e+308", Double.MIN_VALUE to "5e-324",
                 Double.NaN to "nan", Double.POSITIVE_INFINITY to "inf", Double.NEGATIVE_INFINITY to "-inf",
             )
