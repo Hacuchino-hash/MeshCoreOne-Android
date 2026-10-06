@@ -154,4 +154,18 @@ internal class NonThrowingAuditLog(
         guarded("cliCommand") { delegate.logCLICommand(publicKey, command) }
     override suspend fun logKeepAlive(target: RemoteAuditTarget, publicKey: Bytes) =
         guarded("keepAlive") { delegate.logKeepAlive(target, publicKey) }
+    override suspend fun logStatusResponse(target: RemoteAuditTarget, publicKey: Bytes, batteryMv: UShort?, uptimeSec: UInt?) =
+        guarded("statusResponse") { delegate.logStatusResponse(target, publicKey, batteryMv, uptimeSec) }
+    override suspend fun logTelemetryResponse(target: RemoteAuditTarget, publicKey: Bytes, pointCount: Int) =
+        guarded("telemetryResponse") { delegate.logTelemetryResponse(target, publicKey, pointCount) }
+    override suspend fun logCLIResponse(publicKey: Bytes, response: String) =
+        guarded("cliResponse") { delegate.logCLIResponse(publicKey, response) }
+    override suspend fun logNeighborsRequest(publicKey: Bytes, count: UByte, offset: UShort) =
+        guarded("neighborsRequest") { delegate.logNeighborsRequest(publicKey, count, offset) }
+    override suspend fun logNeighborsResponse(publicKey: Bytes, totalCount: Int, returnedCount: Int) =
+        guarded("neighborsResponse") { delegate.logNeighborsResponse(publicKey, totalCount, returnedCount) }
+    override suspend fun logRoomMessagePosted(publicKey: Bytes, messageLength: Int) =
+        guarded("roomMessagePosted") { delegate.logRoomMessagePosted(publicKey, messageLength) }
+    override suspend fun logRoomMessageReceived(roomPublicKey: Bytes, authorPrefix: Bytes, messageLength: Int) =
+        guarded("roomMessageReceived") { delegate.logRoomMessageReceived(roomPublicKey, authorPrefix, messageLength) }
 }

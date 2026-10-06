@@ -53,5 +53,12 @@ class RemoteNodeReviewRegressionTest {
                 }
             }
         },
+        remoteCoreNative("the non-throwing audit wrapper forwards every audit hook") {
+            // A missing override would silently fall back to the interface's no-op default.
+            val hooks = RemoteCommandAuditLog::class.java.declaredMethods.map { it.name }.filterNot { "$" in it }.toSet()
+            val forwarded = NonThrowingAuditLog::class.java.declaredMethods.map { it.name }.filterNot { "$" in it }.toSet()
+            assertTrue(hooks.isNotEmpty())
+            assertEquals(emptySet(), hooks - forwarded)
+        },
     )
 }
