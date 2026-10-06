@@ -5,12 +5,11 @@
 // the source class can actually produce.
 package com.meshcoreone.android.core.services.content
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -87,16 +86,16 @@ class LocationServiceTest {
         // scope would propagate that failure to the parent Job the instant it's thrown -
         // cancelling the whole test scope before `await()` ever runs - because child-failure
         // propagation to a non-supervisor parent isn't deferred until the caller awaits.
-        // Parenting this child under its own `SupervisorJob` (itself still a child of the test
-        // scope, so cleanup/dispatcher tracking is unaffected) isolates that expected failure so
-        // `assertFailsWith` can observe it normally instead of the scope dying out from under it.
-        val fixDeferred = async(SupervisorJob(coroutineContext[Job])) {
-            service.requestCurrentLocation()
+        // `supervisorScope` isolates that expected failure (its own Job doesn't propagate a
+        // child's failure to its parent) and, unlike a manually constructed `SupervisorJob()`,
+        // completes automatically once this block and its children finish - so it leaves no
+        // dangling active job for `runTest`'s own cleanup to flag as leaked.
+        val error = supervisorScope {
+            val fixDeferred = async { service.requestCurrentLocation() }
+            while (!producing.permissionRequested) delay(1)
+            producing.setStatus(LocationAuthorizationStatus.DENIED)
+            assertFailsWith<LocationServiceError.NotAuthorized> { fixDeferred.await() }
         }
-        while (!producing.permissionRequested) delay(1)
-        producing.setStatus(LocationAuthorizationStatus.DENIED)
-
-        val error = assertFailsWith<LocationServiceError.NotAuthorized> { fixDeferred.await() }
         assertEquals(LocationAuthorizationStatus.DENIED, error.status)
         assertEquals(0, producing.locationCallCount)
     }
