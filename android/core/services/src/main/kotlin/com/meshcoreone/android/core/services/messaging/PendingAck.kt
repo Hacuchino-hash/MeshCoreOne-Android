@@ -34,6 +34,7 @@ internal class DirectSendClaim(
     var timestamp: UInt? = null
     var lastSentInfo: MessageSentInfo? = null
     var acknowledgement: MeshAcknowledgement? = null
+    var retiredWithoutAcknowledgement = false
     var wireFinished = false
     var sendCountCommitted = false
     var resentPublished = false

@@ -256,7 +256,12 @@ class MessageService(
                 ownership.check("expireAcknowledgement")
                 val changed = dataStore.updateMessageStatusUnlessDelivered(key(current.messageID), MessageStatus.FAILED)
                 ownership.check("expireAcknowledgement.saved")
-                synchronized(lock) { pendingAcks.remove(current.messageID) }
+                synchronized(lock) {
+                    pendingAcks.remove(current.messageID)
+                    activeDirectClaims[current.messageID]?.let {
+                        if (it.acknowledgement == null) it.retiredWithoutAcknowledgement = true
+                    }
+                }
                 if (changed) broadcastFailed(current.messageID)
             }
         }
@@ -270,7 +275,12 @@ class MessageService(
             if (pendingAck(id)?.isDelivered != false) return@withLock
             val changed = dataStore.updateMessageStatusUnlessDelivered(key(id), MessageStatus.FAILED)
             ownership.check("failAllPendingMessages.saved")
-            synchronized(lock) { pendingAcks.remove(id) }
+            synchronized(lock) {
+                pendingAcks.remove(id)
+                activeDirectClaims[id]?.let {
+                    if (it.acknowledgement == null) it.retiredWithoutAcknowledgement = true
+                }
+            }
             if (changed) broadcastFailed(id)
         }
     }
@@ -465,6 +475,9 @@ class MessageService(
     private fun completedDirect(claim: DirectSendClaim): MessageSentInfo? = synchronized(lock) {
         if (claim.acknowledgement != null) claim.lastSentInfo else null
     }
+    private fun unacknowledgedRetirement(claim: DirectSendClaim): Boolean = synchronized(lock) {
+        claim.acknowledgement == null && claim.retiredWithoutAcknowledgement
+    }
 
     private suspend fun retryLoop(claim: DirectSendClaim, contact: ContactDTO, stamp: UInt, timeout: Double?): MessageSentInfo? {
         val id = claim.messageID
@@ -475,10 +488,12 @@ class MessageService(
         while (attempts < config.maxAttempts && (!flood || floods < config.maxFloodAttempts)) {
             checkIdentity("retryDirectMessage")
             completedDirect(claim)?.let { return it }
+            if (unacknowledgedRetirement(claim)) return null
             if (attempts > 0) {
                 dataStore.updateMessageRetryStatus(key(id), MessageStatus.RETRYING, attempts - 1, config.maxAttempts - 1)
                 ownership.check("retryDirectMessage.status")
                 completedDirect(claim)?.let { return it }
+                if (unacknowledgedRetirement(claim)) return null
                 events.yield(MessageStatusEvent.Retrying(id, attempts - 1, config.maxAttempts - 1))
             }
             if (attempts == config.floodAfter && !flood) {
@@ -486,12 +501,15 @@ class MessageService(
                     session.resetPath(contact.publicKey)
                     ownership.check("retryDirectMessage.resetPath")
                     completedDirect(claim)?.let { return it }
+                    if (unacknowledgedRetirement(claim)) return null
                     session.getContact(contact.publicKey)?.let {
                         ownership.check("retryDirectMessage.contact")
                         completedDirect(claim)?.let { return it }
+                        if (unacknowledgedRetirement(claim)) return null
                         dataStore.saveContact(token.radioId, it.toFrame())
                         ownership.check("retryDirectMessage.contactSaved")
                         completedDirect(claim)?.let { return it }
+                        if (unacknowledgedRetirement(claim)) return null
                     }
                     events.yield(MessageStatusEvent.RoutingChanged(contact.id, true))
                 } catch (failure: MeshCoreException) { remember("resetPath.$id", failure) }
@@ -499,6 +517,7 @@ class MessageService(
                 flood = true
             }
             completedDirect(claim)?.let { return it }
+            if (unacknowledgedRetirement(claim)) return null
             val attempt = attempts.toUByte()
             val predicted = AckCodeBuilder.expectedAck(stamp, attempt, text, localPublicKey)
             val tracking = trackPendingAck(id, contact.id, predicted, maxOf(timeout ?: config.minTimeout, checkInterval), contact.publicKey)
@@ -510,11 +529,13 @@ class MessageService(
             try {
                 val info = withPoolBackoff(3u) {
                     checkIdentity("retryDirectMessage.wire")
-                    completedDirect(claim) ?: session.sendMessage(contact.publicKey.prefix(6), text, Instant.ofEpochSecond(stamp.toLong()), attempt)
-                }
+                    if (unacknowledgedRetirement(claim)) null
+                    else completedDirect(claim) ?: session.sendMessage(contact.publicKey.prefix(6), text, Instant.ofEpochSecond(stamp.toLong()), attempt)
+                } ?: return null
                 synchronized(lock) { claim.lastSentInfo = info }
                 ownership.check("retryDirectMessage.accepted")
-                if (pendingAck(id)?.isDelivered != false) return info
+                completedDirect(claim)?.let { return it }
+                if (unacknowledgedRetirement(claim)) return null
                 val ackTimeout = timeout ?: maxOf(config.minTimeout, info.suggestedTimeoutMs.toDouble() / 1000.0 * 1.2)
                 mergeSentInfo(id, contact.id, predicted, info, attempt, timeout)
                 val outcome = clock.messagingDeadline(ackTimeout) {
@@ -530,7 +551,11 @@ class MessageService(
                         }
                     }
                 }
-                if (outcome is DeadlineOutcome.Value || pendingAck(id)?.isDelivered != false) return info
+                if (outcome is DeadlineOutcome.Value) {
+                    completedDirect(claim)?.let { return it }
+                }
+                completedDirect(claim)?.let { return it }
+                if (unacknowledgedRetirement(claim)) return null
             } finally {
                 collector.cancelAndJoin()
                 mailbox.cancel()

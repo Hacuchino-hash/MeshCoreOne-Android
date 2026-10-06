@@ -10,10 +10,13 @@ import com.meshcoreone.android.core.protocol.session.SessionClock
 import com.meshcoreone.android.core.protocol.session.SystemSessionClock
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import java.time.Duration
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.selects.select
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -50,6 +53,7 @@ class MessagePollingService(
     private var handlerCount = 0L
     private var handlerFailure: Throwable? = null
     private val failures = linkedMapOf<String, Throwable>()
+    private val consumerInvocations = mutableMapOf<Job, MessageHandlerInvocation>()
     private var teardown: CompletableDeferred<TeardownReport>? = null
     val isAutoFetching: Boolean get() = synchronized(lock) { autoFetch }
     val pendingHandlerCount: Long get() = synchronized(lock) { handlerCount }
@@ -283,7 +287,7 @@ class MessagePollingService(
                             }
                         } ?: throw MessagePollingException(MessagePollingError.PollingFailed,
                             IllegalStateException("Contact handler is not installed"))
-                        handler()
+                        invokeConsumer(handler)
                     }
                     is MeshEvent.ChannelMessageReceived -> {
                         val channel = dataStore.fetchChannel(token.radioId, event.message.channelIndex)
@@ -291,7 +295,7 @@ class MessagePollingService(
                         val handler = synchronized(lock) { channelHandler }
                             ?: throw MessagePollingException(MessagePollingError.PollingFailed,
                                 IllegalStateException("Channel handler is not installed"))
-                        handler(event.message, channel, delivery.context)
+                        invokeConsumer { handler(event.message, channel, delivery.context) }
                     }
                     else -> throw MessagePollingException(MessagePollingError.PollingFailed)
                 }
@@ -326,26 +330,67 @@ class MessagePollingService(
         return true
     }
 
+    private suspend fun invokeConsumer(handler: suspend () -> Unit) {
+        val owner = checkNotNull(currentCoroutineContext()[Job]) { "A polling consumer requires an owned operation" }
+        val invocation = MessageHandlerInvocation(this, owner)
+        synchronized(lock) { consumerInvocations[owner] = invocation }
+        try { withContext(invocation) { handler() } }
+        finally { synchronized(lock) { if (consumerInvocations[owner] === invocation) consumerInvocations.remove(owner) } }
+    }
+
+    private suspend fun joinUnlessConsumerClosing(work: Job, invocation: MessageHandlerInvocation?) {
+        if (invocation == null) { work.join(); return }
+        coroutineScope {
+            val joined = async { work.join() }
+            try {
+                select {
+                    joined.onAwait { }
+                    // An external consumer entering close cannot await the attempt currently invoking it.
+                    invocation.closing.onAwait { }
+                }
+            } finally { joined.cancelAndJoin() }
+        }
+    }
+
+    private fun closeReport(): TeardownReport = synchronized(lock) {
+        val result = failures.values.map { TeardownIssue(LifecycleStage.STOP_SERVICES, it) }.toMutableList()
+        if (pending.isNotEmpty()) result += TeardownIssue(LifecycleStage.STOP_SERVICES,
+            MessagePollingException(MessagePollingError.PollingFailed,
+                handlerFailure ?: CancellationException("Generation ended with an unfinished message handler")))
+        TeardownReport(result.snapshot())
+    }
+
     suspend fun close(): TeardownReport {
+        val consumer = currentCoroutineContext()[MessageHandlerInvocation]?.takeIf { it.service === this }
+        consumer?.closing?.complete(Unit)
         val (receipt, claimed) = synchronized(lock) {
             teardown?.let { it to false } ?: CompletableDeferred<TeardownReport>().also {
                 teardown = it
                 ownership.invalidate()
             }.let { it to true }
         }
-        if (!claimed) return withContext(NonCancellable) { receipt.await() }
+        if (!claimed) {
+            if (consumer != null) return closeReport()
+            return withContext(NonCancellable) { receipt.await() }
+        }
         return withContext(NonCancellable) {
-            synchronized(lock) { polling }?.cancelAndJoin()
-            stopMessageEventMonitoring()
-            clearMessageHandlers()
-            ownership.job.cancelAndJoin()
-            val issues = synchronized(lock) {
-                val result = failures.values.map { TeardownIssue(LifecycleStage.STOP_SERVICES, it) }.toMutableList()
-                if (pending.isNotEmpty()) result += TeardownIssue(LifecycleStage.STOP_SERVICES,
-                    MessagePollingException(MessagePollingError.PollingFailed, handlerFailure))
-                result.snapshot()
+            val work = synchronized(lock) {
+                listOfNotNull(polling, listener).distinct().map { it to consumerInvocations[it] }
             }
-            TeardownReport(issues).also { receipt.complete(it) }
+            work.forEach { it.first.cancel() }
+            lifecycle.withLock { stopAutoLocked() }
+            for ((task, invocation) in work) joinUnlessConsumerClosing(task, invocation)
+            synchronized(lock) { polling = null; listener = null; monitorActive = false; expectedEchoes.clear() }
+            clearMessageHandlers()
+            ownership.job.cancel()
+            if (work.none { it.second?.closing?.isCompleted == true }) ownership.job.join()
+            closeReport().also { receipt.complete(it) }
         }
     }
+}
+
+private class MessageHandlerInvocation(val service: MessagePollingService, val owner: Job) :
+    AbstractCoroutineContextElement(Key) {
+    val closing = CompletableDeferred<Unit>()
+    companion object Key : CoroutineContext.Key<MessageHandlerInvocation>
 }

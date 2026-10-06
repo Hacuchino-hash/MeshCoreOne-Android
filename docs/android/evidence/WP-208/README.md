@@ -45,6 +45,13 @@ failures/errors/skips. The same-WP coherent repair candidate retains128/131,
 adds ten real-session interleaving regressions (46 authored native cases total)
 and five actual Room interleavings (13 authored consumers total). None is
 claimed Kotlin-executed before the serialized producer hook/lock handoff.
+The subsequent direct narrow review identified unacknowledged lookup-retirement
+success and polling-consumer self-close. Seven real-session and five Room
+counterexamples extend the current authored counts to53 native and18 Room;
+all128/131 original identities and both source-disabled equivalents remain.
+Original send/resend family equivalents now use genuine transport ACKs instead
+of seeded isDelivered state. The26 Python reader assertions still pass;
+Kotlin execution remains separately unverified.
 Source accounting reported128 families/131 expanded cases, 32 authored native
 regressions and eight authored Room consumers, followed by three additional
 channel-format/V3/datagram assertions and an immutable ACK-set/blocked-contact
@@ -102,6 +109,25 @@ actual `wp109-invocation.json`, runtime inputs and preflight/Python logs are ret
 No messaging/Room assertion XML exists from this production compile failure;
 zero Kotlin test or acceptance credit is claimed. This first run is historical,
 not proof for subsequent repairs or producer changes.
+
+Historical frozen-review-head run `37403210616`, attempt1 at `7e13dfbb`,
+passed production compilation and failed `:core:data:compileDebugUnitTestKotlin`
+on the absent serialized test-only services edge, with corresponding secondary
+unresolved/inference errors. Official artifact11386322731 is17,171 bytes,
+SHA-256 `51aea4e5392d5f74318cb7dd31f02082df8859855c0bc064e818e5a8681c37e5`.
+All14 safe ZIP members/CRC, the complete compiler log and exact actual Linux
+base/head/source/policy/run/attempt binding are retained before validation.
+It contains zero messaging/Room XML and is not the two-residual repair's proof.
+
+The coordinator's one-file frozen fault producer for UI-304 is exactly
+`MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
+1,969 LF bytes / SHA-256
+`5b0e6332ece1068240a39a9856d87dd809db326793f17197c1dd13c13897cb03`,
+with message7/poll3/queue2 source shapes and unchanged real payload/cause types.
+The worker's verified one-file receipt is retained in its session artifacts as
+`wp208-messaging-faults-producer-freeze.json`. Its live writer grant is removed;
+the file stays byte-frozen. This is not ACK/Room/whole-WP acceptance, a full
+candidate carry, source-reference exception or a new shared build/data hook grant.
 
 Room assertions use real native in-memory/file-backed SQLite on simulated SDK31.
 They cover fresh/recovered counters, cold store reopen, forgotten radios,

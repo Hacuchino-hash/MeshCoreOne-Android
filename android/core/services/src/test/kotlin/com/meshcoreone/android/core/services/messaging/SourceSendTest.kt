@@ -155,14 +155,17 @@ class SourceSendTest {
         },
         original("MessageServiceSendTests", "resendDirectMessage increments sendCount and broadcasts .resent on a successful resend") {
             val h = Harness(this); h.start(); val m = h.message(MessageStatus.DELIVERED)
-            h.service.installPendingAck(h.tracking(m, delivered = true)); val events = h.service.statusEvents()
+            h.transport.acknowledge = true
+            val events = h.service.statusEvents()
             h.service.resendDirectMessage(m.id, h.contact)
-            assertEquals(2L, h.stored(m.id).sendCount); assertEquals(listOf(MessageStatusEvent.Resent(m.id)), statuses(h.service, events))
+            assertEquals(2L, h.stored(m.id).sendCount)
+            assertEquals(listOf(MessageStatusEvent.Resent(m.id)), statuses(h.service, events).filterIsInstance<MessageStatusEvent.Resent>())
             assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size); h.close()
         },
         original("MessageServiceSendTests", "sendPendingDirectMessage does not bump sendCount or broadcast .resent on first send") {
             val h = Harness(this); h.start(); val m = h.message(MessageStatus.PENDING)
-            h.service.installPendingAck(h.tracking(m, delivered = true)); val events = h.service.statusEvents()
+            h.transport.acknowledge = true
+            val events = h.service.statusEvents()
             h.service.sendPendingDirectMessage(m.id, h.contact)
             assertEquals(1L, h.stored(m.id).sendCount); assertFalse(statuses(h.service, events).any { it is MessageStatusEvent.Resent })
             assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size); h.close()

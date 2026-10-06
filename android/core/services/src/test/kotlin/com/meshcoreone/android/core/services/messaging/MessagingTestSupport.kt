@@ -227,6 +227,7 @@ internal class FirmwareTransport : MeshTransport {
     var holdGetReplies = false
     var acknowledge = false
     var ackBeforeAcceptance = false
+    var acceptanceGate: CompletableDeferred<Unit>? = null
     var expectedAckOverride: Bytes? = null
     var suggestedTimeout: UInt = 10u
     var directError: UByte? = null
@@ -259,6 +260,7 @@ internal class FirmwareTransport : MeshTransport {
                 val predicted = Bytes(MessageDigest.getInstance("SHA-256").digest(input)).prefix(4)
                 val ack = expectedAckOverride ?: predicted
                 if (acknowledge && ackBeforeAcceptance) pushAck(ack, 123u)
+                acceptanceGate?.await()
                 mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.MESSAGE_SENT.rawValue).appendUInt8(0u)
                     .append(ack).appendUInt32LE(suggestedTimeout).toBytes())
                 if (acknowledge && !ackBeforeAcceptance) pushAck(ack, 123u)
@@ -294,8 +296,9 @@ internal class Harness(
     val test: TestScope,
     config: MessageServiceConfig = MessageServiceConfig(),
     val store: RecordingStore = RecordingStore(),
+    generation: Long = 1,
 ) {
-    val token = token()
+    val token = token(generation = generation)
     val scope = CoroutineScope(test.coroutineContext)
     val signals = TestSignals(token)
     val clock = TestMessagingClock(test.testScheduler)
