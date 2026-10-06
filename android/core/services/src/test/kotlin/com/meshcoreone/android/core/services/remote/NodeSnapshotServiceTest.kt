@@ -4,6 +4,7 @@ package com.meshcoreone.android.core.services.remote
 import com.meshcoreone.android.core.model.NeighborSnapshotEntry
 import com.meshcoreone.android.core.model.NodeLocationFix
 import com.meshcoreone.android.core.model.NodeStatusMetrics
+import com.meshcoreone.android.core.model.NodeStatusSnapshotDTO
 import com.meshcoreone.android.core.model.SnapshotList
 import com.meshcoreone.android.core.model.TelemetrySnapshotEntry
 import com.meshcoreone.android.core.protocol.bytes.Bytes
@@ -12,6 +13,7 @@ import java.time.Duration
 import kotlin.test.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import org.junit.jupiter.api.TestFactory
 
@@ -307,21 +309,27 @@ class NodeSnapshotServiceTest {
 
     @TestFactory
     fun nativeCases() = nodeConfigNativeCases(
-        "store failures map to empty results and cancellation is rethrown" to {
+        "store failures and store-internal timeouts map to fallbacks; the caller's own cancellation propagates" to {
+            val cancelCaller = java.util.concurrent.atomic.AtomicBoolean(false)
             val failing = object : com.meshcoreone.android.core.contracts.domain.NodeSnapshotPersisting by NodeConfigSnapshotStore(NodeConfigTestClock()) {
                 override suspend fun recordNodeStatusSnapshot(
                     nodePublicKey: Bytes, status: NodeStatusMetrics?, telemetry: SnapshotList<TelemetrySnapshotEntry>?,
                     neighbors: SnapshotList<NeighborSnapshotEntry>?, location: NodeLocationFix?,
                 ) = throw IllegalStateException("disk full")
-                override suspend fun fetchNodeStatusSnapshots(nodePublicKey: Bytes, since: java.time.Instant?) =
-                    throw kotlin.coroutines.cancellation.CancellationException("cancelled")
+                override suspend fun fetchNodeStatusSnapshots(nodePublicKey: Bytes, since: java.time.Instant?): SnapshotList<NodeStatusSnapshotDTO> {
+                    if (cancelCaller.get()) kotlinx.coroutines.currentCoroutineContext().cancel()
+                    throw kotlin.coroutines.cancellation.CancellationException("store-internal timeout")
+                }
                 override suspend fun deleteOldNodeStatusSnapshots(olderThan: java.time.Instant) = throw IllegalStateException("locked")
             }
             val service = NodeSnapshotService(failing, NodeConfigTestClock(), NodeConfigLogger.NONE)
             assertNull(service.recordSnapshot(testPublicKey, status = metrics(3850, 3600u)))
             service.pruneOldSnapshots(java.time.Instant.EPOCH)
-            assertFailsWith<kotlin.coroutines.cancellation.CancellationException> { service.fetchSnapshots(testPublicKey) }
-            assertFailsWith<kotlin.coroutines.cancellation.CancellationException> { service.neighborBaseline(testPublicKey) }
+            // Swift logs every store error and falls back; a timeout raised inside the store is one.
+            assertTrue(service.fetchSnapshots(testPublicKey).isEmpty())
+            cancelCaller.set(true)
+            val cancelled = kotlinx.coroutines.coroutineScope { async { service.fetchSnapshots(testPublicKey) } }
+            assertFailsWith<kotlin.coroutines.cancellation.CancellationException> { cancelled.await() }
         },
     )
 }

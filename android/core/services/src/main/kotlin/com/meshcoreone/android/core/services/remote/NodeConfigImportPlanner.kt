@@ -142,7 +142,9 @@ private fun planChannelWrites(
         if (slot.isConfigured) {
             existingByIndex[slot.index] = ChannelSlotState(slot.name, slot.secret)
             secretToIndex[slot.secret.hexString] = slot.index
-            if (slot.name.startsWith("#")) hashtagNameToIndex[slot.name.utf8Prefix(ProtocolLimits.MAX_USABLE_NAME_BYTES)] = slot.index
+            if (NodeConfigSwiftText.hasCharacterPrefix(slot.name, "#")) {
+                hashtagNameToIndex[NodeConfigSwiftText.canonicalKey(slot.name.utf8Prefix(ProtocolLimits.MAX_USABLE_NAME_BYTES))] = slot.index
+            }
         } else {
             emptyIndices.addLast(slot.index)
         }
@@ -161,23 +163,27 @@ private fun planChannelWrites(
         }
         val secretKey = secretData.hexString
         val lookupName = channel.name.utf8Prefix(ProtocolLimits.MAX_USABLE_NAME_BYTES)
-        val isHashtag = channel.name.startsWith("#")
+        // Swift String keys and comparisons are canonical-equivalence based (see canonicalKey).
+        val hashtagKey = NodeConfigSwiftText.canonicalKey(lookupName)
+        val isHashtag = NodeConfigSwiftText.hasCharacterPrefix(channel.name, "#")
 
         val targetIndex: UByte = secretToIndex[secretKey]
-            ?: hashtagNameToIndex[lookupName]?.takeIf { isHashtag }
+            ?: hashtagNameToIndex[hashtagKey]?.takeIf { isHashtag }
             ?: emptyIndices.removeFirstOrNull()
             ?: throw NodeConfigServiceError.NoAvailableChannelSlot(channel.name)
 
         val planned = plannedByIndex[targetIndex]
-        if (planned != null && planned.name == lookupName && planned.secret == secretData) {
-            if (isHashtag) hashtagNameToIndex[lookupName] = targetIndex
+        if (planned != null && NodeConfigSwiftText.canonicallyEqual(planned.name, lookupName) && planned.secret == secretData) {
+            if (isHashtag) hashtagNameToIndex[hashtagKey] = targetIndex
             secretToIndex[secretKey] = targetIndex
             return@forEachIndexed
         }
         val original = existingByIndex[targetIndex]
-        if (original != null && (original.name != lookupName || original.secret != secretData)) overwrite = true
+        if (original != null && (!NodeConfigSwiftText.canonicallyEqual(original.name, lookupName) || original.secret != secretData)) {
+            overwrite = true
+        }
 
-        if (isHashtag) hashtagNameToIndex[lookupName] = targetIndex
+        if (isHashtag) hashtagNameToIndex[hashtagKey] = targetIndex
         secretToIndex[secretKey] = targetIndex
         plannedByIndex[targetIndex] = ChannelSlotState(lookupName, secretData)
         writes += ConfigImportPlan.ChannelWrite(targetIndex, channel.name, secretData)
@@ -233,7 +239,7 @@ private fun persistedContactFieldsMatch(existing: MeshContact, record: MeshConta
     val width = ProtocolLimits.MAX_USABLE_NAME_BYTES
     if (existing.typeRawValue != record.typeRawValue || existing.flags != record.flags ||
         existing.outPathLength != record.outPathLength ||
-        existing.advertisedName.utf8Prefix(width) != record.advertisedName.utf8Prefix(width) ||
+        !NodeConfigSwiftText.canonicallyEqual(existing.advertisedName.utf8Prefix(width), record.advertisedName.utf8Prefix(width)) ||
         existing.outPath.prefix(existing.pathByteLength) != record.outPath.prefix(record.pathByteLength) ||
         NodeConfigSwiftText.truncatedEpochSeconds(existing.lastModified) != NodeConfigSwiftText.truncatedEpochSeconds(record.lastModified)
     ) return false
