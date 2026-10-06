@@ -33,7 +33,7 @@ class MessagePollingService(
     private val lifecycle = Mutex()
     private val dispatch = Mutex()
     private val pending = ArrayDeque<Delivery>()
-    private val observedDuringPoll = linkedMapOf<MeshEvent, Long>()
+    private val observedDuringPoll = ArrayDeque<MeshEvent>()
     private val expectedEchoes = mutableMapOf<MeshEvent, Long>()
     private var contactHandler: (suspend (ContactMessage, ContactDTO?, DeliveryContext) -> Unit)? = null
     private var channelHandler: (suspend (ChannelMessage, ChannelDTO?, DeliveryContext) -> Unit)? = null
@@ -44,7 +44,9 @@ class MessagePollingService(
     private var pollingActive = false
     private var monitorActive = false
     private var autoFetch = false
-    private var autoPaused = false
+    private var desiredAutoPaused = false
+    private var autoRunning = false
+    private var autoRevision = 0L
     private var handlerCount = 0L
     private var handlerFailure: Throwable? = null
     private val failures = linkedMapOf<String, Throwable>()
@@ -98,10 +100,11 @@ class MessagePollingService(
             stream.collect { event ->
                 checkPolling("messageEvent")
                 val deferred = synchronized(lock) {
-                    if (pollingActive) {
-                        observedDuringPoll[event] = Math.incrementExact(observedDuringPoll[event] ?: 0)
+                    if (takeEcho(event)) true
+                    else if (pollingActive) {
+                        observedDuringPoll.addLast(event)
                         true
-                    } else takeEcho(event)
+                    } else false
                 }
                 if (!deferred) {
                     synchronized(lock) { pending.addLast(Delivery(event, DeliveryContext.Live)) }
@@ -132,30 +135,38 @@ class MessagePollingService(
         lifecycle.withLock {
             checkPolling("startAutoFetch")
             if (synchronized(lock) { autoFetch }) return@withLock
-            session.startAutoMessageFetching()
-            checkPolling("startAutoFetch.started")
-            synchronized(lock) { autoFetch = true; autoPaused = false }
+            synchronized(lock) { autoFetch = true; desiredAutoPaused = false; autoRevision++ }
+            reconcileAutoLocked()
         }
     }
     suspend fun stopAutoFetch() = lifecycle.withLock { stopAutoLocked() }
     private suspend fun stopAutoLocked() {
-        if (!synchronized(lock) { autoFetch }) return
-        session.stopAutoMessageFetching()
-        synchronized(lock) { autoFetch = false; autoPaused = false }
+        synchronized(lock) { autoFetch = false; desiredAutoPaused = false; autoRevision++ }
+        reconcileAutoLocked()
     }
     override suspend fun pauseAutoFetch() = lifecycle.withLock {
         checkPolling("pauseAutoFetch")
-        if (!synchronized(lock) { autoFetch && !autoPaused }) return@withLock
-        session.stopAutoMessageFetching()
-        checkPolling("pauseAutoFetch.stopped")
-        synchronized(lock) { autoPaused = true }
+        synchronized(lock) { desiredAutoPaused = true; autoRevision++ }
+        reconcileAutoLocked()
     }
     override suspend fun resumeAutoFetch() = lifecycle.withLock {
         checkPolling("resumeAutoFetch")
-        if (!synchronized(lock) { autoFetch && autoPaused }) return@withLock
-        session.startAutoMessageFetching()
-        checkPolling("resumeAutoFetch.started")
-        synchronized(lock) { autoPaused = false }
+        synchronized(lock) { desiredAutoPaused = false; autoRevision++ }
+        reconcileAutoLocked()
+    }
+
+    private suspend fun reconcileAutoLocked() {
+        while (true) {
+            val (revision, wanted, running) = synchronized(lock) {
+                Triple(autoRevision, ownership.isCurrent && autoFetch && !desiredAutoPaused && !pollingActive, autoRunning)
+            }
+            if (wanted == running) return
+            if (wanted) session.startAutoMessageFetching() else session.stopAutoMessageFetching()
+            synchronized(lock) { autoRunning = wanted }
+            if (synchronized(lock) {
+                revision == autoRevision && wanted == (ownership.isCurrent && autoFetch && !desiredAutoPaused && !pollingActive)
+            }) return
+        }
     }
 
     suspend fun pollMessage(): MessageResult {
@@ -170,6 +181,7 @@ class MessagePollingService(
     override suspend fun pollAllMessages(): Long {
         checkPolling("pollAllMessages")
         val work = synchronized(lock) {
+            if (teardown != null || ownership.closing) throw MessagePollingException(MessagePollingError.NotConnected)
             polling ?: ownership.scope.async(start = CoroutineStart.LAZY) {
                 drainRadio().also { synchronized(lock) { failures.remove("pollAllMessages") } }
             }.also { task ->
@@ -189,11 +201,11 @@ class MessagePollingService(
     }
 
     private suspend fun drainRadio(): Long {
-        val resume = synchronized(lock) { autoFetch && !autoPaused }
         val anchor = clock.wallClock.instant()
         var count = 0L
+        var released = false
         try {
-            if (resume) pauseAutoFetch()
+            lifecycle.withLock { reconcileAutoLocked() }
             deliverPending()
             while (true) {
                 checkPolling("pollDrain")
@@ -202,28 +214,48 @@ class MessagePollingService(
                     is MessageResult.ContactMessage -> MeshEvent.ContactMessageReceived(result.message)
                     is MessageResult.ChannelMessage -> MeshEvent.ChannelMessageReceived(result.message)
                     is MessageResult.ChannelDatagram -> continue
-                    MessageResult.NoMoreMessages -> return count
+                    MessageResult.NoMoreMessages -> {
+                        finishResidualDeliveries()
+                        released = true
+                        return count
+                    }
                 }
                 synchronized(lock) {
-                    val seen = observedDuringPoll[event] ?: 0
-                    if (seen > 0) {
-                        if (seen == 1L) observedDuringPoll.remove(event) else observedDuringPoll[event] = seen - 1
-                    } else if (monitorActive) expectedEchoes[event] = Math.incrementExact(expectedEchoes[event] ?: 0)
+                    val seen = observedDuringPoll.indexOfFirst { it == event }
+                    if (seen >= 0) {
+                        repeat(seen) { pending.addLast(Delivery(observedDuringPoll.removeFirst(), DeliveryContext.Live)) }
+                        observedDuringPoll.removeFirst()
+                    } else {
+                        transferObserved()
+                        if (monitorActive) expectedEchoes[event] = Math.incrementExact(expectedEchoes[event] ?: 0)
+                    }
                     pending.addLast(Delivery(event, DeliveryContext.InitialSync(anchor)))
                 }
                 count = Math.incrementExact(count)
                 deliverPending()
             }
         } finally {
-            synchronized(lock) {
-                observedDuringPoll.forEach { (event, copies) ->
-                    var left = copies
-                    while (left-- > 0) pending.addLast(Delivery(event, DeliveryContext.Live))
+            if (!released) {
+                synchronized(lock) {
+                    transferObserved()
+                    pollingActive = false
                 }
-                observedDuringPoll.clear()
-                pollingActive = false
             }
-            if (ownership.isCurrent && resume) resumeAutoFetch()
+            withContext(NonCancellable) { lifecycle.withLock { reconcileAutoLocked() } }
+        }
+    }
+
+    private fun transferObserved() {
+        while (observedDuringPoll.isNotEmpty()) pending.addLast(Delivery(observedDuringPoll.removeFirst(), DeliveryContext.Live))
+    }
+
+    private suspend fun finishResidualDeliveries() {
+        while (true) {
+            synchronized(lock) { transferObserved() }
+            deliverPending()
+            if (synchronized(lock) {
+                if (observedDuringPoll.isEmpty() && pending.isEmpty()) { pollingActive = false; true } else false
+            }) return
         }
     }
 

@@ -42,6 +42,7 @@ class EvidenceReaderTest(unittest.TestCase):
             "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-208", "head_sha": "a" * 40,
             "source_sha": READER.SOURCE, "manifest_sha256": READER.MANIFEST, "policy_revision": READER.POLICY,
             "capture_errors": [], "invocation": READER.record(self.output / "invocation.json", self.output),
+            "execution_expected": {"run_id": 123, "run_attempt": 1, "base_sha": READER.BASE, "head_sha": "a" * 40},
             "input_blobs": [{"path": "synthetic/input.kt", "git_blob": "b" * 40, "expected_blob": "b" * 40, "matches_head": True}],
             "raw_junit": {},
         }
@@ -92,7 +93,7 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertEqual(128, len(source["original_families"]))
         self.assertEqual(131, len(source["expanded_originals"]))
         self.assertEqual(34, len(source["primary_inputs"]))
-        self.assertEqual(8, len(source["room_consumers"]))
+        self.assertGreaterEqual(len(source["room_consumers"]), 8)
         self.assertGreater(len(source["native_regressions"]), 0)
 
     def test_missing_full_module_xml_fails(self):
@@ -199,6 +200,17 @@ class EvidenceReaderTest(unittest.TestCase):
     def test_missing_run_id_is_not_historical_or_local_acceptance(self):
         self.invocation["identity"]["run_id"] = 0
         self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_different_valid_base_sha_is_not_the_authorized_base(self):
+        self.invocation["identity"]["binding"]["base_sha"] = "d" * 40
+        self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_different_positive_run_or_attempt_cannot_replace_the_captured_identity(self):
+        for field, value in (("run_id", 124), ("run_attempt", 2)):
+            old = self.invocation["identity"][field]
+            self.invocation["identity"][field] = value
+            self.save_invocation(); self.save_snapshot(); self.rejected()
+            self.invocation["identity"][field] = old
 
     def test_unsafe_xml_declarations_and_malformed_xml_fail(self):
         path = self.output / "junit" / "services" / "TEST-fixture.xml"

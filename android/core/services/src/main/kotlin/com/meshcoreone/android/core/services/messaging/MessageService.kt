@@ -52,10 +52,13 @@ class MessageService(
     private val ownership = MessagingOwnership(token, scope, signals, reporter)
     private val lock = Any()
     private val dmOperations = Mutex()
+    private val pendingOperations = Mutex()
     private val channelOperations = Mutex()
     private val monitoring = Mutex()
     private val mutationLocks = mutableMapOf<UUID, Mutex>()
     private val pendingAcks = linkedMapOf<UUID, PendingAck>()
+    private val directClaims = mutableMapOf<UUID, DirectSendClaim>()
+    private val activeDirectClaims = mutableMapOf<UUID, DirectSendClaim>()
     private val inFlightRetries = mutableSetOf<UUID>()
     private val activeOperations = mutableSetOf<Deferred<*>>()
     private val retainedFailures = linkedMapOf<String, Throwable>()
@@ -192,6 +195,7 @@ class MessageService(
             val found = pendingAcks.values.firstOrNull { code in it.ackCodes && !it.isDelivered } ?: return
             found.copy(isDelivered = true, acknowledgement = MeshAcknowledgement(code, tripTime)).also {
                 pendingAcks[it.messageID] = it
+                activeDirectClaims[it.messageID]?.acknowledgement = it.acknowledgement
                 it.receipt.complete(requireNotNull(it.acknowledgement))
             }
         }
@@ -355,26 +359,65 @@ class MessageService(
     override suspend fun sendMessageWithRetry(
         text: String, contact: ContactDTO, textType: TextType, replyToID: UUID?, timeout: Double,
         onMessageCreated: (suspend (MessageDTO) -> Unit)?,
-    ): MessageDTO = owned("sendMessageWithRetry", dmOperations) {
+    ): MessageDTO {
         require(timeout.isFinite() && timeout >= 0)
         validate(text, contact)
-        val message = outgoing(text, contact, textType, replyToID)
-        dataStore.saveMessage(message)
-        ownership.check("sendMessageWithRetry.saved")
+        val message = owned("saveMessageWithRetry", pendingOperations) {
+            outgoing(text, contact, textType, replyToID).also {
+                dataStore.saveMessage(it)
+                ownership.check("sendMessageWithRetry.saved")
+            }
+        }
+        // A consumer may send again or close the generation; it owns neither the wire lease nor this service's job.
         onMessageCreated?.invoke(message)
         ownership.check("sendMessageWithRetry.created")
-        sendBoundary(message.id, true) {
-            val info = retryLoop(message.id, contact, message.text, message.timestamp, timeout.takeIf { it > 0 })
-            finalizeSend(message.id, contact.id, contact.publicKey, info, contact.outPathLength)
+        return owned("sendMessageWithRetry", dmOperations) {
+            val claim = newDirectClaim(UUID.randomUUID(), message, contact, false).also { it.timestamp = message.timestamp }
+            try {
+                sendBoundary(message.id, true) {
+                    val info = retryLoop(claim, contact, message.timestamp, timeout.takeIf { it > 0 })
+                    finalizeSend(message.id, contact.id, contact.publicKey, info, contact.outPathLength)
+                }
+            } finally { releaseDirectClaim(claim.id) }
         }
     }
 
     override suspend fun sendPendingDirectMessage(messageID: UUID, contact: ContactDTO, preserveTimestamp: Boolean): MessageDTO =
-        queuedDM(messageID, contact, preserveTimestamp, false)
+        ephemeralQueuedDM(messageID, contact, preserveTimestamp, false)
     override suspend fun resendDirectMessage(messageID: UUID, contact: ContactDTO, preserveTimestamp: Boolean): MessageDTO =
-        queuedDM(messageID, contact, preserveTimestamp, true)
+        ephemeralQueuedDM(messageID, contact, preserveTimestamp, true)
 
-    private suspend fun queuedDM(id: UUID, contact: ContactDTO, preserveTimestamp: Boolean, isResend: Boolean): MessageDTO {
+    private suspend fun ephemeralQueuedDM(id: UUID, contact: ContactDTO, preserveTimestamp: Boolean, isResend: Boolean): MessageDTO {
+        val claimID = UUID.randomUUID()
+        try { return queuedDM(id, contact, preserveTimestamp, isResend, claimID) }
+        finally { releaseDirectClaim(claimID) }
+    }
+
+    internal suspend fun sendPendingClaim(
+        claimID: UUID, messageID: UUID, contact: ContactDTO, preserveTimestamp: Boolean, isResend: Boolean,
+    ): MessageDTO = queuedDM(messageID, contact, preserveTimestamp, isResend, claimID)
+
+    internal fun releaseDirectClaim(claimID: UUID) {
+        synchronized(lock) {
+            directClaims.remove(claimID)?.let { claim ->
+                if (activeDirectClaims[claim.messageID] === claim) activeDirectClaims.remove(claim.messageID)
+            }
+        }
+    }
+
+    private fun newDirectClaim(claimID: UUID, row: MessageDTO, contact: ContactDTO, resend: Boolean): DirectSendClaim =
+        synchronized(lock) {
+            directClaims[claimID]?.also {
+                if (it.messageID != row.id || it.contactID != contact.id || it.publicKey != contact.publicKey || it.isResend != resend) {
+                    throw MessageServiceException(MessageServiceError.SendFailed("Pending-send claim identity changed"))
+                }
+            } ?: DirectSendClaim(claimID, row.id, contact.id, contact.publicKey, row.text, resend).also {
+                directClaims[claimID] = it
+                activeDirectClaims[row.id] = it
+            }
+        }
+
+    private suspend fun queuedDM(id: UUID, contact: ContactDTO, preserveTimestamp: Boolean, isResend: Boolean, claimID: UUID): MessageDTO {
         synchronized(lock) {
             if (!inFlightRetries.add(id)) throw MessageServiceException(MessageServiceError.SendFailed("Retry already in progress"))
             failedNotifications.remove(id)
@@ -385,50 +428,76 @@ class MessageService(
                 if (row.contactID != contact.id || contact.radioId != token.radioId) throw MessageServiceException(MessageServiceError.ContactNotFound)
                 validate(row.text, contact)
                 if (!isResend && row.status == MessageStatus.DELIVERED) return@owned row
-                pendingAck(id)?.acknowledgement?.let {
-                    reconcileAcknowledgement(id)
-                    return@owned fetchSaved(id)
-                }
-                val wireTimestamp = if (preserveTimestamp) row.timestamp else timestamp().also {
-                    dataStore.updateMessageTimestamp(key(id), it)
-                    ownership.check("queuedDirectMessage.timestamp")
-                }
+                val claim = newDirectClaim(claimID, row, contact, isResend)
+                val wireTimestamp = synchronized(lock) { claim.timestamp } ?: (
+                    if (preserveTimestamp) row.timestamp else timestamp().also {
+                        dataStore.updateMessageTimestamp(key(id), it)
+                        ownership.check("queuedDirectMessage.timestamp")
+                    }
+                ).also { synchronized(lock) { claim.timestamp = it } }
                 sendBoundary(id, false) {
-                    val info = retryLoop(id, contact, row.text, wireTimestamp, null)
-                    if (isResend && info != null) bookkeeping("dmSendCount.$id") { dataStore.incrementMessageSendCount(key(id)) }
+                    val info = if (synchronized(lock) { claim.wireFinished }) synchronized(lock) { claim.lastSentInfo }
+                        else retryLoop(claim, contact, wireTimestamp, null).also {
+                            synchronized(lock) { claim.lastSentInfo = it; claim.wireFinished = true }
+                        }
+                    if (isResend && info != null && !synchronized(lock) { claim.sendCountCommitted }) {
+                        try {
+                            dataStore.incrementMessageSendCount(key(id))
+                            synchronized(lock) { claim.sendCountCommitted = true }
+                            recovered("dmSendCount.$id")
+                        } catch (failure: PersistenceStoreException) {
+                            remember("dmSendCount.$id", failure)
+                            throw failure
+                        }
+                    }
                     val result = finalizeSend(id, contact.id, contact.publicKey, info, contact.outPathLength)
-                    if (isResend && info != null) events.yield(MessageStatusEvent.Resent(id))
+                    if (isResend && info != null && synchronized(lock) { !claim.resentPublished }) {
+                        events.yield(MessageStatusEvent.Resent(id))
+                        synchronized(lock) { claim.resentPublished = true }
+                    }
                     result
                 }
             }
         } finally { synchronized(lock) { inFlightRetries.remove(id) } }
     }
 
-    private suspend fun retryLoop(id: UUID, contact: ContactDTO, text: String, stamp: UInt, timeout: Double?): MessageSentInfo? {
+    private fun completedDirect(claim: DirectSendClaim): MessageSentInfo? = synchronized(lock) {
+        if (claim.acknowledgement != null) claim.lastSentInfo else null
+    }
+
+    private suspend fun retryLoop(claim: DirectSendClaim, contact: ContactDTO, stamp: UInt, timeout: Double?): MessageSentInfo? {
+        val id = claim.messageID
+        val text = claim.text
         var attempts = 0L
         var floods = 0L
         var flood = false
         while (attempts < config.maxAttempts && (!flood || floods < config.maxFloodAttempts)) {
             checkIdentity("retryDirectMessage")
+            completedDirect(claim)?.let { return it }
             if (attempts > 0) {
                 dataStore.updateMessageRetryStatus(key(id), MessageStatus.RETRYING, attempts - 1, config.maxAttempts - 1)
                 ownership.check("retryDirectMessage.status")
+                completedDirect(claim)?.let { return it }
                 events.yield(MessageStatusEvent.Retrying(id, attempts - 1, config.maxAttempts - 1))
             }
             if (attempts == config.floodAfter && !flood) {
                 try {
                     session.resetPath(contact.publicKey)
                     ownership.check("retryDirectMessage.resetPath")
+                    completedDirect(claim)?.let { return it }
                     session.getContact(contact.publicKey)?.let {
                         ownership.check("retryDirectMessage.contact")
+                        completedDirect(claim)?.let { return it }
                         dataStore.saveContact(token.radioId, it.toFrame())
                         ownership.check("retryDirectMessage.contactSaved")
+                        completedDirect(claim)?.let { return it }
                     }
                     events.yield(MessageStatusEvent.RoutingChanged(contact.id, true))
                 } catch (failure: MeshCoreException) { remember("resetPath.$id", failure) }
                 catch (failure: PersistenceStoreException) { remember("resetPath.$id", failure) }
                 flood = true
             }
+            completedDirect(claim)?.let { return it }
             val attempt = attempts.toUByte()
             val predicted = AckCodeBuilder.expectedAck(stamp, attempt, text, localPublicKey)
             val tracking = trackPendingAck(id, contact.id, predicted, maxOf(timeout ?: config.minTimeout, checkInterval), contact.publicKey)
@@ -440,8 +509,9 @@ class MessageService(
             try {
                 val info = withPoolBackoff(3u) {
                     checkIdentity("retryDirectMessage.wire")
-                    session.sendMessage(contact.publicKey.prefix(6), text, Instant.ofEpochSecond(stamp.toLong()), attempt)
+                    completedDirect(claim) ?: session.sendMessage(contact.publicKey.prefix(6), text, Instant.ofEpochSecond(stamp.toLong()), attempt)
                 }
+                synchronized(lock) { claim.lastSentInfo = info }
                 ownership.check("retryDirectMessage.accepted")
                 if (pendingAck(id)?.isDelivered != false) return info
                 val ackTimeout = timeout ?: maxOf(config.minTimeout, info.suggestedTimeoutMs.toDouble() / 1000.0 * 1.2)
@@ -688,6 +758,8 @@ class MessageService(
             synchronized(lock) {
                 pendingAcks.values.forEach { it.receipt.cancel() }
                 pendingAcks.clear()
+                directClaims.clear()
+                activeDirectClaims.clear()
             }
             events.finish()
             ownership.job.cancelAndJoin()

@@ -23,6 +23,16 @@ SERVICES = Path("android") / "core" / "services"
 MESSAGING = Path("src") / "test" / "kotlin" / "com" / "meshcoreone" / "android" / "core" / "services" / "messaging"
 ROOM = Path("android") / "core" / "data" / "src" / "test" / "kotlin" / "com" / "meshcoreone" / "android" / "core" / "data" / "messaging" / "MessagingRoomIntegrationTest.kt"
 ROOM_CLASS = "com.meshcoreone.android.core.data.messaging.MessagingRoomIntegrationTest"
+ORIGINAL_ROOM_CASES = {
+    "freshAndRecoveredAttemptsUseTheActualCommittedCounterAndWireTimestamp",
+    "warmUpPurgesOnlyLegacyNullAndForgottenRadiosAndPreservesCurrentZeroRows",
+    "coldStoreReopenRecoversTheSameRadioMessageAndPendingSendWithoutRewritingSortDate",
+    "actualHydrationDrainsOneRadioInFIFOOrderAndLeavesTheOtherPartitionUntouched",
+    "actualBackupConsumerBackfillsOnlyNilIncomingKeysAndUsesOutgoingUUIDIdentity",
+    "deliveredManualRetryRowDoesNotEmitAnotherPacketOrLoseItsPersistedStatus",
+    "twoRadioGenerationsDoNotCloseTheProcessStoreOrDuplicateMonitors",
+    "actualClosedRepositoryFailureCannotAdvanceAttemptCountOrSendOnTheWire",
+}
 SHARED = [
     Path("android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/DeduplicationKey.kt"),
     Path("android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/MessagingContracts.kt"),
@@ -126,7 +136,7 @@ def source_accounting(repo=ROOT):
         if expected == 4:
             require({int(ROW.search(name).group(1)) for name, row in originals.items() if row["family"] == identity} == {0, 1, 2, 3},
                     "Duplicate/missing original argument row")
-    require(natives, "Missing native regressions")
+    require(len(natives) >= 32, "Lowered mandatory native regression floor")
     policy_path = SHARED[3]
     old = git(repo, "show", BASE + ":" + policy_path.as_posix()) + "\n"
     now = (repo / policy_path).read_text(encoding="utf-8")
@@ -136,7 +146,8 @@ def source_accounting(repo=ROOT):
     room_text = (repo / ROOM).read_text(encoding="utf-8")
     require("@Ignore" not in room_text and "@Disabled" not in room_text, "Disabled mandatory Room consumer")
     room_cases = re.findall(r"@Test\s+fun\s+(\w+)\(", room_text)
-    require(len(room_cases) == 8 and len(set(room_cases)) == 8, "Missing/duplicate real Room consumer declarations")
+    require(len(room_cases) >= 8 and len(set(room_cases)) == len(room_cases), "Missing/duplicate real Room consumer declarations")
+    require(ORIGINAL_ROOM_CASES.issubset(room_cases), "Removed an original mandatory Room consumer")
     implementation_inputs = [
         path.relative_to(repo).as_posix()
         for path in sorted((repo / SERVICES / "src").rglob("*.kt"), key=lambda value: value.as_posix())
@@ -185,7 +196,7 @@ def capture(output, invocation=None, repo=ROOT):
     require(HEX.fullmatch(head), "Missing exact candidate HEAD")
     metadata = {"schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-208",
                 "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
-                "invocation": None, "raw_junit": {}, "input_blobs": [], "capture_errors": []}
+                "invocation": None, "execution_expected": None, "raw_junit": {}, "input_blobs": [], "capture_errors": []}
     if invocation is not None:
         if invocation.is_file() and not invocation.is_symlink():
             destination = output / "invocation.json"
@@ -223,6 +234,13 @@ def capture(output, invocation=None, repo=ROOT):
         actual = git(repo, "hash-object", "--path=" + name, str(root_lock))
         metadata["input_blobs"].append({"path": name, "git_blob": actual, "expected_blob": expected,
                                        "matches_head": actual == expected, **record(root_lock, repo)})
+    if metadata["invocation"] is not None:
+        try:
+            original = load_json(output / "invocation.json")["identity"]
+            metadata["execution_expected"] = {"run_id": original["run_id"], "run_attempt": original["run_attempt"],
+                                               "base_sha": BASE, "head_sha": head}
+        except (ValueError, OSError, KeyError) as failure:
+            metadata["capture_errors"].append("Malformed retained executor identity: " + str(failure))
     snapshot = output / "raw-capture.json"
     snapshot.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     return metadata
@@ -255,10 +273,14 @@ def validate_capture(output, accounting, require_hosted=True):
         identity = invocation.get("identity")
         require(isinstance(identity, dict) and type(identity.get("run_id")) is int and identity["run_id"] > 0 and
                 type(identity.get("run_attempt")) is int and identity["run_attempt"] > 0, "Missing actual run/attempt")
+        expected_execution = snapshot.get("execution_expected")
+        require(isinstance(expected_execution, dict) and identity["run_id"] == expected_execution.get("run_id") and
+                identity["run_attempt"] == expected_execution.get("run_attempt") and expected_execution.get("base_sha") == BASE and
+                expected_execution.get("head_sha") == snapshot["head_sha"], "Different/stale captured run or attempt")
         binding = identity.get("binding", {})
         require(binding.get("repository") == snapshot["repository"] and binding.get("head_sha") == snapshot["head_sha"] and
                 binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == MANIFEST and
-                binding.get("policy_revision") == POLICY and HEX.fullmatch(binding.get("base_sha", "")), "Stale/malformed run binding")
+                binding.get("policy_revision") == POLICY and binding.get("base_sha") == BASE, "Stale/malformed run binding")
     jvm, jvm_counts = read_junit(output / "junit" / "services")
     native, native_counts = read_junit(output / "junit" / "data", minimum=369)
     messaging = {name for (classname, name) in jvm if classname.startswith(PACKAGE)}

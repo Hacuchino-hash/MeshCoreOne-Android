@@ -4,6 +4,7 @@ package com.meshcoreone.android.core.services.messaging
 
 import com.meshcoreone.android.core.model.SnapshotSet
 import com.meshcoreone.android.core.protocol.bytes.Bytes
+import com.meshcoreone.android.core.protocol.event.MessageSentInfo
 import java.time.Instant
 import java.util.UUID
 import kotlinx.coroutines.CompletableDeferred
@@ -21,3 +22,19 @@ internal data class PendingAck(
 )
 
 internal data class MeshAcknowledgement(val code: Bytes, val tripTime: UInt?)
+
+internal class DirectSendClaim(
+    val id: UUID,
+    val messageID: UUID,
+    val contactID: UUID,
+    val publicKey: Bytes,
+    val text: String,
+    val isResend: Boolean,
+) {
+    var timestamp: UInt? = null
+    var lastSentInfo: MessageSentInfo? = null
+    var acknowledgement: MeshAcknowledgement? = null
+    var wireFinished = false
+    var sendCountCommitted = false
+    var resentPublished = false
+}

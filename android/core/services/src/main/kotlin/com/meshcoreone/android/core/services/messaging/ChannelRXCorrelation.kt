@@ -7,6 +7,7 @@ import com.meshcoreone.android.core.model.RxLogEntryDTO
 import com.meshcoreone.android.core.model.snapshot
 import com.meshcoreone.android.core.model.SnapshotList
 import com.meshcoreone.android.core.protocol.event.PayloadType
+import java.text.Normalizer
 
 object ChannelRXCorrelation {
     fun matching(entries: List<RxLogEntryDTO>, deduplicationKey: String?): SnapshotList<RxLogEntryDTO> {
@@ -16,7 +17,8 @@ object ChannelRXCorrelation {
             val parsed = entry.decodedText?.let(ChannelMessageFormat::parse) ?: return@filter false
             val channel = entry.channelIndex ?: return@filter false
             val timestamp = entry.senderTimestamp ?: return@filter false
-            DeduplicationKey.contentBased(null, channel, parsed.senderName, timestamp, parsed.messageText) == deduplicationKey
+            val candidate = DeduplicationKey.contentBased(null, channel, parsed.senderName, timestamp, parsed.messageText)
+            Normalizer.normalize(candidate, Normalizer.Form.NFC) == Normalizer.normalize(deduplicationKey, Normalizer.Form.NFC)
         }.sortedBy { it.receivedAt }.snapshot()
     }
 }

@@ -6,6 +6,7 @@ package com.meshcoreone.android.core.data.messaging
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.*
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.data.backup.backupEnvelope
 import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
 import com.meshcoreone.android.core.database.MeshCoreDatabase
@@ -89,14 +90,19 @@ class MessagingRoomIntegrationTest {
         store.saveDevice(DeviceDTO(radioId = radio, publicKey = self, nodeName = "Local"))
         store.saveContact(contact)
     }
-    private inner class RadioGeneration(number: Long) {
+    private inner class RadioGeneration(
+        number: Long,
+        persistence: PersistenceStoreProtocol = store,
+        config: com.meshcoreone.android.core.services.messaging.MessageServiceConfig =
+            com.meshcoreone.android.core.services.messaging.MessageServiceConfig(),
+    ) {
         val scope = CoroutineScope(SupervisorJob(process.coroutineContext[Job]) + StandardTestDispatcher(scheduler))
         val token = SessionToken(ProcessEpoch(UUID.fromString("CCCCCCCC-1111-2222-3333-444444444444")), Generation(number), radio)
         val signals = RoomSignals(token)
         val firmware = RoomFirmware()
         val session = MeshCoreSession(firmware, SessionConfiguration(defaultTimeout = 2.0), clock, scope.coroutineContext)
-        val service = MessageService(token, self, session, store, signals, scope, clock = clock)
-        val queue = ChatSendQueueService(token, store, service, MessagingChannelQuery { null },
+        val service = MessageService(token, self, session, persistence, signals, scope, config, clock)
+        val queue = ChatSendQueueService(token, persistence, service, MessagingChannelQuery { null },
             OutgoingChannelReactionIndexer { _, _, _, _, _ -> }, signals, scope, clock = clock)
         suspend fun start() { session.start() }
         suspend fun stop() { queue.shutdown(); service.close(); session.stop(); scope.cancel() }
@@ -229,6 +235,124 @@ class MessagingRoomIntegrationTest {
         assertFalse(g.queue.shutdown().isComplete); g.service.close(); g.session.stop(); g.scope.cancel()
     }
 
+    @Test fun acceptedBlockedInsertFinishesBeforeShutdownAndSuccessorHydration() = runTest(scheduler) {
+        seed()
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val actual = store
+        val blocked = object : PersistenceStoreProtocol by actual {
+            override suspend fun insertPendingSendAssigningSequence(dto: PendingSendDTO): Long {
+                entered.complete(Unit); release.await()
+                return actual.insertPendingSendAssigningSequence(dto)
+            }
+        }
+        val first = RadioGeneration(9, blocked); first.start()
+        val message = first.service.createPendingMessage("accepted before shutdown", contact)
+        val enqueue = backgroundScope.async(start = CoroutineStart.UNDISPATCHED) { first.queue.enqueueDM(DirectMessageEnvelope(message.id, contact.id)) }
+        val closing = async(start = CoroutineStart.UNDISPATCHED) { first.queue.shutdown() }
+        assertFalse(entered.isCompleted); assertFalse(closing.isCompleted)
+        runCurrent(); assertTrue(entered.isCompleted)
+        var hydrated = false
+        val second = RadioGeneration(10)
+        val successor = async { closing.await(); second.start(); second.queue.hydrate(); hydrated = true }
+        runCurrent(); assertFalse(hydrated); assertTrue(store.fetchPendingSends(radio).isEmpty())
+        enqueue.cancelAndJoin()
+        release.complete(Unit); successor.await()
+        assertEquals(1, store.fetchPendingSends(radio).size)
+        second.signals.set(DeviceConnectionState.READY); runCurrent(); second.queue.awaitDrainCompletion()
+        assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        assertEquals(1, second.firmware.sent().size); assertTrue(first.firmware.sent().isEmpty())
+        first.stop(); second.stop()
+    }
+
+    @Test fun acceptedInsertStorageFailureIsIncludedInShutdownInsteadOfBeingLostAfterItReturns() = runTest(scheduler) {
+        seed()
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val actual = store
+        val blocked = object : PersistenceStoreProtocol by actual {
+            override suspend fun insertPendingSendAssigningSequence(dto: PendingSendDTO): Long {
+                entered.complete(Unit); release.await()
+                return actual.insertPendingSendAssigningSequence(dto)
+            }
+        }
+        val g = RadioGeneration(11, blocked); g.start()
+        val message = g.service.createPendingMessage("failing accepted insert", contact)
+        val enqueue = backgroundScope.async { g.queue.enqueueDM(DirectMessageEnvelope(message.id, contact.id)) }
+        runCurrent(); assertTrue(entered.isCompleted)
+        val closing = async { g.queue.shutdown() }; runCurrent(); assertFalse(closing.isCompleted)
+        store.close(); release.complete(Unit)
+        assertFailsWith<ChatSendQueueServiceException> { enqueue.await() }
+        val report = closing.await()
+        assertFalse(report.isComplete)
+        assertTrue(report.issues.any { it.cause is ChatSendQueueServiceException && it.cause.cause is PersistenceStoreException })
+        assertTrue(g.firmware.sent().isEmpty()); g.service.close(); g.session.stop(); g.scope.cancel()
+    }
+
+    @Test fun realAckDuringBlockedRetryStatusPreventsAnotherWireAttempt() = runTest(scheduler) {
+        seed()
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val actual = store
+        val blocked = object : PersistenceStoreProtocol by actual {
+            override suspend fun updateMessageRetryStatus(key: EntityKey, status: MessageStatus, retryAttempt: Long, maxRetryAttempts: Long) {
+                entered.complete(Unit); release.await()
+                actual.updateMessageRetryStatus(key, status, retryAttempt, maxRetryAttempts)
+            }
+        }
+        val g = RadioGeneration(12, blocked, com.meshcoreone.android.core.services.messaging.MessageServiceConfig(maxAttempts = 2, floodAfter = 5))
+        g.start(); g.service.startEventMonitoring(); g.firmware.acknowledge = false
+        val sending = async { g.service.sendMessageWithRetry("Room retry gap", contact) }
+        runCurrent(); advanceTimeBy(13); runCurrent(); assertTrue(entered.isCompleted)
+        g.firmware.pushAck(assertNotNull(g.firmware.lastAck)); runCurrent()
+        release.complete(Unit)
+        assertEquals(MessageStatus.DELIVERED, sending.await().status); assertEquals(1, g.firmware.sent().size)
+        g.stop()
+    }
+
+    @Test fun trueAckAndFinalReadFailureRecoverOneResendClaimWithoutRecountingANewClaim() = runTest(scheduler) {
+        seed()
+        var countWritten = false; var failFinal = true
+        val actual = store
+        val fault = object : PersistenceStoreProtocol by actual {
+            override suspend fun incrementMessageSendCount(key: EntityKey): Long =
+                actual.incrementMessageSendCount(key).also { countWritten = true }
+            override suspend fun fetchMessage(key: EntityKey): MessageDTO? {
+                if (countWritten && failFinal) {
+                    failFinal = false
+                    throw PersistenceStoreException(PersistenceStoreError.FetchFailed("final-read-only"), IllegalStateException("deterministic"))
+                }
+                return actual.fetchMessage(key)
+            }
+        }
+        val message = MessageDTO(radioId = radio, contactID = contact.id, text = "Room resend recovery", timestamp = 100u, status = MessageStatus.SENT)
+        store.saveMessage(message)
+        store.upsertPendingSend(PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id, true), radio).copy(sequence = 1))
+        val g = RadioGeneration(13, fault); g.start(); g.service.startEventMonitoring()
+        g.queue.hydrate(); runCurrent(); g.signals.set(DeviceConnectionState.READY); runCurrent()
+        assertEquals(2L, store.fetchMessage(EntityKey(radio, message.id))?.sendCount); assertEquals(1, g.firmware.sent().size)
+        assertTrue(store.hasPendingSend(EntityKey(radio, message.id)))
+        g.queue.transportDidOpen(); runCurrent(); g.queue.awaitDrainCompletion()
+        assertEquals(2L, store.fetchMessage(EntityKey(radio, message.id))?.sendCount); assertEquals(1, g.firmware.sent().size)
+        advanceTimeBy(1000); g.queue.enqueueDM(DirectMessageEnvelope(message.id, contact.id, true)); runCurrent(); g.queue.awaitDrainCompletion()
+        assertEquals(3L, store.fetchMessage(EntityKey(radio, message.id))?.sendCount); assertEquals(2, g.firmware.sent().size)
+        g.stop()
+    }
+
+    @Test fun persistedCallbackUsesRealRoomAndCanCloseWithoutJoiningItsOwnSend() = runTest(scheduler) {
+        seed()
+        val g = RadioGeneration(14); g.start(); var callbacks = 0
+        withTimeout(2000) {
+            assertFailsWith<com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException> {
+                g.service.sendMessageWithRetry("Room callback close", contact, onMessageCreated = {
+                    callbacks++
+                    assertEquals(MessageStatus.PENDING, store.fetchMessage(EntityKey(radio, it.id))?.status)
+                    assertTrue(g.service.close().isComplete)
+                })
+            }
+        }
+        assertEquals(1, callbacks); assertTrue(g.firmware.sent().isEmpty())
+        assertEquals(contact.id, store.fetchContact(EntityKey(radio, contact.id))?.id)
+        g.queue.shutdown(); g.session.stop(); g.scope.cancel()
+    }
+
     private class RoomSignals(private val token: SessionToken) : ConnectionSignals {
         private val value = MutableStateFlow(snapshot(token, DeviceConnectionState.CONNECTED))
         override val snapshot: kotlinx.coroutines.flow.StateFlow<ConnectionSnapshot> get() = value
@@ -255,6 +379,8 @@ class MessagingRoomIntegrationTest {
     private inner class RoomFirmware : MeshTransport {
         private val mock = MockTransport()
         var error: UByte? = null
+        var acknowledge = true
+        var lastAck: Bytes? = null
         fun sent(): List<Bytes> = mock.sentData.filter { it[0] == CommandCode.SEND_MESSAGE.rawValue }
         override suspend fun isConnected() = mock.isConnected()
         override suspend fun connect() = mock.connect()
@@ -274,14 +400,18 @@ class MessagingRoomIntegrationTest {
                     val input = ByteWriter().appendUInt32LE(data.readUInt32LE(3))
                         .appendUInt8((data[2].toInt() and 3).toUByte()).append(data.slice(13, data.size)).append(self).toBytes()
                     val ack = Bytes(MessageDigest.getInstance("SHA-256").digest(input.toByteArray())).prefix(4)
+                    lastAck = ack
                     mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.MESSAGE_SENT.rawValue).appendUInt8(0u)
                         .append(ack).appendUInt32LE(10u).toBytes())
-                    mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.ACK.rawValue).append(ack).appendUInt32LE(123u).toBytes())
+                    if (acknowledge) pushAck(ack)
                 }
                 CommandCode.GET_CONTACT_BY_KEY -> mock.simulateError(2u)
                 CommandCode.RESET_PATH -> mock.simulateOK()
                 else -> throw AssertionError("Unexpected raw Room-test command")
             }
+        }
+        suspend fun pushAck(ack: Bytes) {
+            mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.ACK.rawValue).append(ack).appendUInt32LE(123u).toBytes())
         }
     }
 }

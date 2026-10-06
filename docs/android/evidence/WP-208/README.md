@@ -39,6 +39,12 @@ These commands inspect source/provenance and the reader. They do not execute Kot
 The first reader run discovered/passed21 tests, then the raw-retention,
 duplicate-JSON and path-traversal additions discovered/passed24 tests, each
 with zero failures/errors/skips.
+The completed immutable-head independent review then added exact-base and
+captured-run/attempt guards:26 Python reader tests discovered/passed with zero
+failures/errors/skips. The same-WP coherent repair candidate retains128/131,
+adds nine real-session interleaving regressions (45 authored native cases total)
+and five actual Room interleavings (13 authored consumers total). None is
+claimed Kotlin-executed before the serialized producer hook/lock handoff.
 Source accounting reported128 families/131 expanded cases, 32 authored native
 regressions and eight authored Room consumers, followed by three additional
 channel-format/V3/datagram assertions and an immutable ACK-set/blocked-contact
@@ -75,7 +81,8 @@ success reader, so dependency-task failures retain their raw evidence.
 The success command is the same reader without `--capture-only`. It requires
 the Linux verify stage, a real run/attempt, exact base/head/source/manifest/policy,
 all 131 expanded original identities, every declared native messaging regression,
-all eight actual Room consumers and the full data suite's existing369 floor.
+all declared actual Room consumers (original8 floor retained) and the full
+data suite's existing369 floor.
 Zero/missing/malformed/skipped/failed/duplicate/stale/changed evidence fails.
 Other services owners' cases are retained and must pass, but are not WP-208 credit.
 
@@ -102,6 +109,14 @@ legacy-null purge versus current zero, FIFO/radio isolation, process-store
 survival, actual closed-store failure, delivered manual-retry suppression and
 conditional incoming nil-key backup backfill without changing valid sort dates.
 These are not physical API31/37, OEM/background/TEE/radio/HIL evidence.
+
+Independent review repair mapping and its unchanged-source rationale are in
+`docs/android/deviations/WP-208.md`. `ReviewInterleavingTest.kt` uses actual
+MeshCoreSession operations and deterministic raw transport barriers, not a
+replacement session. Room fault/barrier roles delegate to the real store;
+the final-read-only fault occurs after a real ACK and real count transaction.
+No original assertion family, source parameter row, mandatory floor or
+source-disabled equivalent is dropped to repair interleavings.
 
 `WP-208-behavior`, `WP-208-boundaries`, and `WP-208-source-test-parity` remain
 **BLOCKED pending exact-candidate Linux execution and independent review**.

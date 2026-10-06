@@ -28,6 +28,8 @@ class ChatSendQueueService(
 ) : ChatSendQueuePort {
     init { require(messageService.token == token) { "Queues must share their message service generation" } }
     private val ownership = MessagingOwnership(token, scope, signals, reporter)
+    private val persistenceJob = SupervisorJob()
+    private val persistenceScope = CoroutineScope(scope.coroutineContext.minusKey(Job) + persistenceJob)
     private val lock = Any()
     private val observation = Mutex()
     private val triggers = BLETransportOpenedSignal()
@@ -37,6 +39,8 @@ class ChatSendQueueService(
     private val completedDMs = mutableSetOf<UUID>()
     private val completedChannels = mutableMapOf<UUID, UInt>()
     private val indexedChannels = mutableSetOf<UUID>()
+    private val persistenceSubmissions = mutableSetOf<Deferred<Unit>>()
+    private val directClaimIDs = mutableMapOf<UUID, UUID>()
     private var hydrated = false
     private var hydration: Deferred<Unit>? = null
     private var connectionTask: Deferred<Unit>? = null
@@ -98,28 +102,44 @@ class ChatSendQueueService(
     fun transportDidOpen() { if (ownership.isReady) triggers.fire() }
 
     override suspend fun enqueueDM(envelope: DirectMessageEnvelope) {
-        persist(PendingSendDTO.fromEnvelope(envelope, token.radioId, newID(), clock.wallClock.instant()))
-        signalDMEnqueued(envelope)
+        submitPersistence(PendingSendDTO.fromEnvelope(envelope, token.radioId, newID(), clock.wallClock.instant())) {
+            if (queued.add(envelope.messageID)) dmQueue.enqueue(envelope)
+        }
     }
     override suspend fun enqueueChannel(envelope: ChannelMessageEnvelope) {
-        persist(PendingSendDTO.fromEnvelope(envelope, token.radioId, newID(), clock.wallClock.instant()))
-        checkQueueLifetime("enqueueChannel.persisted")
-        if (synchronized(lock) { queued.add(envelope.messageID) }) channelQueue.enqueue(envelope)
+        submitPersistence(PendingSendDTO.fromEnvelope(envelope, token.radioId, newID(), clock.wallClock.instant())) {
+            if (queued.add(envelope.messageID)) channelQueue.enqueue(envelope)
+        }
     }
     override suspend fun signalDMEnqueued(envelope: DirectMessageEnvelope) {
         checkQueueLifetime("signalDMEnqueued")
         if (synchronized(lock) { queued.add(envelope.messageID) }) dmQueue.enqueue(envelope)
     }
 
-    private suspend fun persist(dto: PendingSendDTO) {
+    private suspend fun submitPersistence(dto: PendingSendDTO, schedule: () -> Unit) {
         checkQueueLifetime("persistPendingSend")
-        try {
-            dataStore.insertPendingSendAssigningSequence(dto)
-            checkQueueLifetime("persistPendingSend.saved")
-        } catch (failure: PersistenceStoreException) {
-            record("persistPendingSend", failure)
-            throw ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(failure))
+        val task = synchronized(lock) {
+            if (teardown != null || ownership.closing) throw ChatSendQueueServiceException(ChatSendQueueServiceError.NotConnected)
+            persistenceScope.async(start = CoroutineStart.LAZY) {
+                try { dataStore.insertPendingSendAssigningSequence(dto) }
+                catch (failure: PersistenceStoreException) {
+                    record("persistPendingSend.${dto.id}", failure)
+                    throw ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(failure))
+                }
+                synchronized(lock) {
+                    if (!ownership.closing) schedule()
+                }
+            }.also { work ->
+                persistenceSubmissions += work
+                work.invokeOnCompletion { cause ->
+                    if (cause != null) record("persistPendingSend.${dto.id}", cause)
+                    synchronized(lock) { persistenceSubmissions.remove(work) }
+                }
+                work.start()
+            }
         }
+        // Accepted durable submissions outlive observer cancellation, but are joined before generation shutdown returns.
+        task.await()
     }
 
     suspend fun hydrate() {
@@ -196,10 +216,10 @@ class ChatSendQueueService(
             preflightAndBump(dataStore, key(id)).also { ownership.check("dm.bump") }
         } catch (failure: PersistenceStoreException) { park(id, failure) }
         if (attempt == null) { complete(id); return }
+        synchronized(lock) { directClaimIDs[id] = attempt.pendingID }
         try {
             if (!synchronized(lock) { id in completedDMs }) {
-                if (envelope.isResend) messageService.resendDirectMessage(id, contact, attempt.preserveTimestamp)
-                else messageService.sendPendingDirectMessage(id, contact, attempt.preserveTimestamp)
+                messageService.sendPendingClaim(attempt.pendingID, id, contact, attempt.preserveTimestamp, envelope.isResend)
                 ownership.check("dm.completed")
                 synchronized(lock) { completedDMs += id }
             }
@@ -310,6 +330,8 @@ class ChatSendQueueService(
         if (failure != null) ownership.failure("sendQueueDrain", failure)
     }
     private fun complete(id: UUID) {
+        val claim = synchronized(lock) { directClaimIDs.remove(id) }
+        claim?.let(messageService::releaseDirectClaim)
         synchronized(lock) {
             queued.remove(id)
             completedDMs.remove(id)
@@ -332,6 +354,12 @@ class ChatSendQueueService(
         }
         if (!claimed) return withContext(NonCancellable) { receipt.await() }
         return withContext(NonCancellable) {
+            val accepted = synchronized(lock) { persistenceSubmissions.toList() }
+            for (work in accepted) {
+                work.start()
+                try { work.await() }
+                catch (failure: Exception) { record("acceptedPersistenceCompletion", failure) }
+            }
             triggers.finish()
             val pendingHydration = synchronized(lock) { hydration }
             pendingHydration?.cancelAndJoin()
@@ -339,6 +367,7 @@ class ChatSendQueueService(
             dmQueue.shutdown()?.let { record("dmQueueCallback", it) }
             channelQueue.shutdown()?.let { record("channelQueueCallback", it) }
             ownership.job.cancelAndJoin()
+            persistenceJob.cancelAndJoin()
             val report = TeardownReport(synchronized(lock) {
                 failures.values.map { TeardownIssue(LifecycleStage.STOP_SERVICES, it) }.snapshot()
             })
@@ -347,11 +376,12 @@ class ChatSendQueueService(
         }
     }
 
-    data class Attempt(val postBumpCount: Long) { val preserveTimestamp: Boolean get() = postBumpCount > 1 }
+    data class Attempt(val postBumpCount: Long, val pendingID: UUID) { val preserveTimestamp: Boolean get() = postBumpCount > 1 }
     companion object {
         suspend fun preflightAndBump(store: MessagePersisting, key: EntityKey): Attempt? {
             if (!store.hasPendingSend(key)) return null
-            return store.incrementPendingSendAttemptCount(key)?.let(::Attempt)
+            val row = store.fetchPendingSendsForMessage(key).firstOrNull() ?: return null
+            return store.incrementPendingSendAttemptCount(key)?.let { Attempt(it, row.id) }
         }
         fun isTransientDirectMessageError(failure: Throwable): Boolean = isTransientError(failure, 3u)
         fun isTransientChannelMessageError(failure: Throwable): Boolean = isTransientError(failure, 2u)

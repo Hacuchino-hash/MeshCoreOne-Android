@@ -200,6 +200,10 @@ internal class RecordingStore : PersistenceStoreProtocol by unsupportedStore() {
     override suspend fun fetchPendingSends(radioId: RadioId): SnapshotList<PendingSendDTO> {
         access("fetchPendingSends"); return pending.values.filter { it.radioId == radioId }.sortedBy { it.sequence }.snapshot()
     }
+    override suspend fun fetchPendingSendsForMessage(key: EntityKey): SnapshotList<PendingSendDTO> {
+        access("fetchPendingSendsForMessage")
+        return pending.values.filter { it.radioId == key.radioId && it.messageID == key.id }.sortedBy { it.sequence }.snapshot()
+    }
     override suspend fun hasPendingSend(key: EntityKey): Boolean {
         access("hasPendingSend"); return pending.values.any { it.radioId == key.radioId && it.messageID == key.id }
     }
@@ -220,6 +224,7 @@ internal class FirmwareTransport : MeshTransport {
     val mock = MockTransport()
     var beforeReply: (suspend (Bytes) -> Unit)? = null
     var holdMessageReplies = false
+    var holdGetReplies = false
     var acknowledge = false
     var ackBeforeAcceptance = false
     var expectedAckOverride: Bytes? = null
@@ -265,7 +270,7 @@ internal class FirmwareTransport : MeshTransport {
             CommandCode.RESET_PATH -> mock.simulateOK()
             CommandCode.GET_CONTACT_BY_KEY -> mock.simulateError(2u)
             CommandCode.GET_CHANNEL -> mock.simulateError(2u)
-            CommandCode.GET_MESSAGE -> mock.simulateReceive(if (incomingMessages.isEmpty())
+            CommandCode.GET_MESSAGE -> if (!holdGetReplies) mock.simulateReceive(if (incomingMessages.isEmpty())
                 Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
             else -> throw AssertionError("Unexpected deterministic firmware command ${data[0]}")
         }
