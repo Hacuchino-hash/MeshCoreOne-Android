@@ -166,14 +166,17 @@ private fun AdvertisementService.drainRound(roundJob: Job, generation: Long): Dr
 
 /**
  * Invokes the handler in the round's own (cancellable) job so it observes teardown like a Swift child
- * await. Returns null when the round was cancelled under it; a non-cancellation throw counts as FAILED.
+ * await. Returns null when the round was cancelled under it. Any other throw, including a
+ * CancellationException the handler raised itself (a timeout or a foreign Job) while the round is still
+ * live, counts as FAILED: Swift handlers cannot throw, so the round must still roll back, stamp and requeue.
  */
 private suspend fun AdvertisementService.invokeHandler(roundJob: Job, round: DrainedRound): AdvertContactSyncOutcome? =
     try {
         withContext(roundJob) { round.handler(round.fullRefetch) }
     } catch (cancelled: CancellationException) {
-        if (!roundJob.isCancelled) throw cancelled
-        null
+        if (roundJob.isCancelled) return null
+        logger(DebugLogLevel.ERROR, "Advert delta sync handler was cancelled outside the round: ${cancelled.message}")
+        AdvertContactSyncOutcome.FAILED
     } catch (failure: Exception) {
         logger(DebugLogLevel.ERROR, "Advert delta sync handler threw: ${failure.message}")
         AdvertContactSyncOutcome.FAILED

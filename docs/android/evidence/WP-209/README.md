@@ -10,7 +10,7 @@ observed results.
 
 | Command | Observed |
 | --- | --- |
-| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **252 tests, 0 failures, 0 errors, 0 skipped** |
+| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **253 tests, 0 failures, 0 errors, 0 skipped** |
 | `python tools/android-port/portmap.py` | exit 0 |
 | `python tools/android-port/controller/validate.py` | exit 0 |
 
@@ -21,7 +21,7 @@ WP-209's test files run under their exact ids. None are missing.
 | --- | ---: | ---: |
 | ContactService, sync, share utilities | 48 | 83 (incl. 26 native + 3 real-session) |
 | ChannelService, pipeline, flood scope, hashtags | 53 | 84 (incl. 22 native) |
-| AdvertisementService + delta sync | 75 | 85 (incl. 10 native) |
+| AdvertisementService + delta sync | 75 | 86 (incl. 11 native) |
 
 - **Repeat runs:** the advertisement suite passed 7 consecutive times, including forced reruns. The channel suite passed 3 consecutive forced reruns.
 - **Mutation checks:**

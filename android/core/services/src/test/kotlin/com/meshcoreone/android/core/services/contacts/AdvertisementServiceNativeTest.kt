@@ -17,6 +17,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.yield
@@ -118,6 +119,27 @@ class AdvertisementServiceNativeTest {
             startMonitoring(service)
             session.yieldEvent(MeshEvent.Advertisement(key))
             eventually("retried after the throw") { calls.get() >= 2 }
+            awaitIdle(service)
+            assertEquals(2, calls.get())
+            assertEquals(0, service.consecutiveDeltaSyncFailures)
+            assertTrue(service.pendingAdvertKeys.isEmpty())
+            service.stopEventMonitoring()
+        },
+
+        advertNativeCase("handler cancellation raised outside the round counts as a failed round and requeues") {
+            val store = makeStore()
+            val service = makeService(store)
+            val key = advertPublicKey(0x32)
+            store.saveContact(radioId, advertContactFrame(key))
+            val calls = AtomicInteger()
+            service.setDeltaSyncHandler {
+                // A handler-internal timeout or a foreign Job's cancellation, while the round itself is live.
+                if (calls.incrementAndGet() == 1) throw CancellationException("handler-internal timeout")
+                AdvertContactSyncOutcome.SYNCED
+            }
+            startMonitoring(service)
+            session.yieldEvent(MeshEvent.Advertisement(key))
+            eventually("drained keys were requeued and retried") { calls.get() >= 2 }
             awaitIdle(service)
             assertEquals(2, calls.get())
             assertEquals(0, service.consecutiveDeltaSyncFailures)

@@ -231,14 +231,14 @@ class AdvertisementService(
     /** Starts monitoring MeshCore events for advertisement-related notifications. */
     fun startEventMonitoring(radioId: RadioId) {
         val monitor = scope.launch(start = CoroutineStart.LAZY) { monitorEvents(radioId) }
-        val previous = locked {
-            val old = eventMonitorJob
+        locked {
+            // Swift cancels the old monitor before creating the new one; cancel inside the segment so the
+            // new monitor (started when `locked` exits) never overlaps a still-subscribed predecessor.
+            eventMonitorJob?.cancel()
             currentRadioId = radioId
             eventMonitorJob = monitor
             jobsToStart += monitor
-            old
         }
-        previous?.cancel()
     }
 
     private suspend fun monitorEvents(radioId: RadioId) {
@@ -313,15 +313,30 @@ class AdvertisementService(
     }
 
     private fun clearAbandonedDeletionFlush(job: Job) {
-        val abandoned = locked { (deletionFlushJob === job).also { if (it) deletionFlushJob = null } }
-        if (abandoned) synchronized(revivedLock) { revivedDuringDeleteFlush.clear() }
+        locked { releaseDeletionFlushLocked(job) }
+    }
+
+    /**
+     * Swift's flush `defer` clears the revived set and the task in the same actor segment as the final
+     * empty check or the failure requeue; doing both here under the lock keeps that atomicity, and the
+     * owner check stops a finished flush from clearing a successor's revived keys.
+     */
+    private fun AdvertisementServiceState.releaseDeletionFlushLocked(owner: Job) {
+        if (deletionFlushJob !== owner) return
+        deletionFlushJob = null
+        synchronized(revivedLock) { revivedDuringDeleteFlush.clear() }
     }
 
     private suspend fun runDeletionFlush(radioId: RadioId, owner: Job) {
         try {
             while (true) {
                 val keys = locked {
-                    if (pendingDeletedKeys.isEmpty()) null else pendingDeletedKeys.toSet().also { pendingDeletedKeys.clear() }
+                    if (pendingDeletedKeys.isEmpty()) {
+                        releaseDeletionFlushLocked(owner)
+                        null
+                    } else {
+                        pendingDeletedKeys.toSet().also { pendingDeletedKeys.clear() }
+                    }
                 } ?: return
                 val deletedIds = try {
                     dataStore.deleteContacts(radioId, keys.snapshotSet()) {
@@ -333,6 +348,7 @@ class AdvertisementService(
                     locked {
                         pendingDeletedKeys += keys
                         pendingDeletedKeys -= pendingAdvertKeys
+                        releaseDeletionFlushLocked(owner)
                     }
                     logger(DebugLogLevel.ERROR, "Overwrite oldest: deferred delete flush failed: ${failure.message}")
                     return
@@ -344,8 +360,8 @@ class AdvertisementService(
                 eventBroadcaster.yield(AdvertisementEvent.ContactUpdated)
             }
         } finally {
-            synchronized(revivedLock) { revivedDuringDeleteFlush.clear() }
-            locked { if (deletionFlushJob === owner) deletionFlushJob = null }
+            // Normal exits already released under the lock; this covers an unexpected throw.
+            locked { releaseDeletionFlushLocked(owner) }
         }
     }
 
