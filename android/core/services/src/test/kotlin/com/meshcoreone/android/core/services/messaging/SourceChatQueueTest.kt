@@ -7,6 +7,7 @@ import com.meshcoreone.android.core.contracts.domain.errors.*
 import com.meshcoreone.android.core.model.*
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
+import com.meshcoreone.android.core.protocol.event.ChannelInfo
 import com.meshcoreone.android.core.protocol.model.CommandCode
 import java.util.UUID
 import kotlin.test.*
@@ -73,11 +74,12 @@ class SourceChatQueueTest {
         },
         original("ChatSendQueueServiceTests", "channel drain treats deviceError(2) as terminal when fetchChannel confirms the channel is gone") {
             val h = failingChannel(this); val m = h.message(MessageStatus.PENDING, 0u); h.pending(m, 7, true)
+            h.transport.channelReplies[0u] = ChannelInfo(0u, "", Bytes(ByteArray(16)))
             val q = h.queue(query = MessagingChannelQuery { index ->
-                try { h.session.getChannel(index) }
-                catch (failure: MeshCoreException.DeviceError) { if (failure.code == 2.toUByte()) null else throw failure }
+                val info = h.session.getChannel(index)
+                if (info.name.isEmpty() && info.secret.all { it == 0.toUByte() }) null else info
             })
-            startDrain(h, q); q.awaitDrainCompletion()
+            startDrain(h, q); withTimeout(10_000) { q.awaitDrainCompletion() }
             assertEquals(MessageStatus.FAILED, h.stored(m.id).status); assertTrue(h.store.fetchPendingSends(RADIO).isEmpty())
             assertEquals(1, h.sends(CommandCode.GET_CHANNEL).size); q.shutdown(); h.close()
         },

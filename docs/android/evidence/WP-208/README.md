@@ -208,6 +208,24 @@ values, not unchecked casts or family removal. There is zero services JUnit
 from this compile failure. The successful Room result is historical to its
 exact head, **not final new-head or whole-WP proof**.
 
+First owning JVM execution `37413477570`/attempt1 at `2d212bfc` retained
+actual XML for96 cases:94 passed, one failed, one worker-crash skipped; the
+remaining mandatory cases did not execute and the full verdict correctly fails.
+Artifact11390047740, 217,090 bytes / SHA-256
+`4d1ee7b6f04447ca8f982f6f3bff147928c216e1b3015426c5c345d9ef72b546`,
+passed126 bounded member/CRC checks before reading. Complete partial services
+XML, data XML, raw-finalizer inputs and failure stack are retained.
+
+The typed stale-poll NotConnected observer failure is now captured and asserted
+at that observer, not leaked as an expected failing background child. The last
+source channel-deletion case crashed its worker with OOM after its fake returned
+generic ERROR to the merged protocol's channel-specific response matcher.
+The corrected actual-session harness replies with the real empty-name/zero-key
+CHANNEL_INFO frame; its injected source-backed configuration rule recognizes
+that unconfigured slot. The native equivalence is bounded and retains all original
+failed-status/pending-row/no-extra-send assertions; no protocol matcher, heap,
+timeout budget, mandatory skipped policy or original source is changed.
+
 The coordinator's one-file frozen fault producer for UI-304 is exactly
 `MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
 1,969 LF bytes / SHA-256

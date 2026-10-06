@@ -249,9 +249,13 @@ class NativeMessagingTest {
             p.setContactMessageHandler { _, _, _ -> calls++ }
             h.store.before = { if (it == "fetchContactByPrefix") gate.await() }
             h.transport.incomingMessages += contactPacket("obsolete")
-            val polling = backgroundScope.async { p.pollAllMessages() }; runCurrent()
+            val polling = backgroundScope.async {
+                try { p.pollAllMessages(); null }
+                catch (failure: MessagePollingException) { failure }
+            }
+            runCurrent()
             h.signals.set(token(generation = 2), DeviceConnectionState.READY); gate.complete(Unit)
-            assertFailsWith<MessagePollingException> { polling.await() }; assertEquals(0, calls)
+            assertEquals(MessagePollingError.NotConnected, assertNotNull(polling.await()).error); assertEquals(0, calls)
             assertFalse(p.close().isComplete); h.close()
         },
         native("pendingHandlerWaitUsesItsRealDeadlineAndCancellationDoesNotCancelDelivery") {

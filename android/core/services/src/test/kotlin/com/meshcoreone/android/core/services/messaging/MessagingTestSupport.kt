@@ -234,6 +234,7 @@ internal class FirmwareTransport : MeshTransport {
     var suggestedTimeout: UInt = 10u
     var directError: UByte? = null
     var channelError: UByte? = null
+    val channelReplies = mutableMapOf<UByte, ChannelInfo>()
     val incomingMessages = ArrayDeque<Bytes>()
     val sentData: List<Bytes> get() = mock.sentData
     var disconnectCalls = 0
@@ -273,7 +274,12 @@ internal class FirmwareTransport : MeshTransport {
             }
             CommandCode.RESET_PATH -> mock.simulateOK()
             CommandCode.GET_CONTACT_BY_KEY -> mock.simulateError(2u)
-            CommandCode.GET_CHANNEL -> mock.simulateError(2u)
+            CommandCode.GET_CHANNEL -> {
+                val channel = channelReplies[data[1]]
+                if (channel == null) mock.simulateError(2u)
+                else mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.CHANNEL_INFO.rawValue).appendUInt8(channel.index)
+                    .append(Bytes.utf8(channel.name).paddedOrTruncated(32)).append(channel.secret).toBytes())
+            }
             CommandCode.GET_MESSAGE -> if (!holdGetReplies) mock.simulateReceive(if (incomingMessages.isEmpty())
                 Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
             else -> throw AssertionError("Unexpected deterministic firmware command ${data[0]}")
