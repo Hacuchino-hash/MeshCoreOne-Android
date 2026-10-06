@@ -1,4 +1,4 @@
-// AndroidOnly: WP-210 Swift Foundation string/number conversions (Int(_:), Double(_:), CharacterSet trims, Character counts) reproduced for the CLI parsers.
+// AndroidOnly: WP-210 Swift Foundation string/number conversions (Int(_:), Double(_:), CharacterSet trims, Character counts) reproduced for the CLI parsers and admin audit logs.
 package com.meshcoreone.android.core.services.remote
 
 import java.util.regex.Pattern
@@ -44,6 +44,14 @@ internal object RemoteSwiftText {
         val characters = ArrayList<String>(limit)
         while (characters.size < limit && matcher.find()) characters += matcher.group()
         return characters
+    }
+
+    /** Swift `String.count`: the number of extended grapheme clusters in [text]. */
+    fun characterCount(text: String): Int {
+        val matcher = GRAPHEME.matcher(text)
+        var count = 0
+        while (matcher.find()) count += 1
+        return count
     }
 
     private fun isWhitespace(character: Char): Boolean =

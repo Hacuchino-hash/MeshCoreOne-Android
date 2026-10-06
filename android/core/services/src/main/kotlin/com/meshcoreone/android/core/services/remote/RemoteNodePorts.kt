@@ -92,8 +92,9 @@ interface RemoteNodePasswordStore {
 enum class RemoteAuditTarget(val rawValue: String) { REPEATER("REPEATER"), ROOM("ROOM") }
 
 /**
- * The `CommandAuditLogger` calls RemoteNodeService makes. Implemented by the WP-212 audit-logger port;
- * every method defaults to a no-op so the service runs before that port lands.
+ * The `CommandAuditLogger` calls RemoteNodeService and the repeater/room admin services make.
+ * Implemented by the WP-212 audit-logger port; every method defaults to a no-op so the services run
+ * before that port lands. Swift `Int` counts are `Int` here; `messageLength` is a Swift `Character` count.
  */
 interface RemoteCommandAuditLog {
     suspend fun logLoginRequest(target: RemoteAuditTarget, publicKey: Bytes, pathLength: UByte) {}
@@ -101,8 +102,15 @@ interface RemoteCommandAuditLog {
     suspend fun logLoginFailed(target: RemoteAuditTarget, publicKey: Bytes, reason: String) {}
     suspend fun logLogout(target: RemoteAuditTarget, publicKey: Bytes) {}
     suspend fun logStatusRequest(target: RemoteAuditTarget, publicKey: Bytes) {}
+    suspend fun logStatusResponse(target: RemoteAuditTarget, publicKey: Bytes, batteryMv: UShort?, uptimeSec: UInt?) {}
     suspend fun logTelemetryRequest(target: RemoteAuditTarget, publicKey: Bytes) {}
+    suspend fun logTelemetryResponse(target: RemoteAuditTarget, publicKey: Bytes, pointCount: Int) {}
     suspend fun logCLICommand(publicKey: Bytes, command: String) {}
+    suspend fun logCLIResponse(publicKey: Bytes, response: String) {}
+    suspend fun logNeighborsRequest(publicKey: Bytes, count: UByte, offset: UShort) {}
+    suspend fun logNeighborsResponse(publicKey: Bytes, totalCount: Int, returnedCount: Int) {}
+    suspend fun logRoomMessagePosted(publicKey: Bytes, messageLength: Int) {}
+    suspend fun logRoomMessageReceived(roomPublicKey: Bytes, authorPrefix: Bytes, messageLength: Int) {}
     suspend fun logKeepAlive(target: RemoteAuditTarget, publicKey: Bytes) {}
 
     companion object {

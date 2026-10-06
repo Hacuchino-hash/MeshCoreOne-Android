@@ -121,7 +121,7 @@ class RemoteNodeService(
 
     // MARK: - Events
 
-    private val eventBroadcaster = RemoteEventBroadcaster()
+    private val eventBroadcaster = RemoteEventBroadcaster<RemoteNodeEvent>()
 
     /**
      * Returns a fresh stream of remote-node session events. Registration happens in this call, so
@@ -387,15 +387,19 @@ class RemoteNodeService(
     }
 }
 
-/** Swift `EventBroadcaster<RemoteNodeEvent>`: synchronous registration, unbounded multicast buffers. */
-private class RemoteEventBroadcaster {
+/**
+ * Swift `EventBroadcaster<T>` (WP-207 ports the shared one into core:runtime, which this module may not
+ * depend on): synchronous registration, unbounded multicast buffers. Shared by RemoteNodeService and
+ * RoomServerService.
+ */
+internal class RemoteEventBroadcaster<T> {
     private val lock = Any()
-    private val subscribers = LinkedHashMap<Long, Channel<RemoteNodeEvent>>()
+    private val subscribers = LinkedHashMap<Long, Channel<T>>()
     private var nextId = 0L
     private var finished = false
 
-    fun subscribe(): Flow<RemoteNodeEvent> {
-        val channel = Channel<RemoteNodeEvent>(Channel.UNLIMITED)
+    fun subscribe(): Flow<T> {
+        val channel = Channel<T>(Channel.UNLIMITED)
         val id = synchronized(lock) {
             if (finished) {
                 channel.close()
@@ -414,7 +418,7 @@ private class RemoteEventBroadcaster {
         }
     }
 
-    fun yield(event: RemoteNodeEvent) {
+    fun yield(event: T) {
         synchronized(lock) { subscribers.values.forEach { it.trySend(event) } }
     }
 

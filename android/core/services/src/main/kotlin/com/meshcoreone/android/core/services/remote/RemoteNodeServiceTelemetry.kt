@@ -57,7 +57,7 @@ suspend fun RemoteNodeService.requestOwnerInfo(session: EntityKey, timeout: Dura
 }
 
 /** Outer timeout → `.timeout`; mesh timeout → `.timeout`; other mesh errors → `.sessionError`; the rest propagate. */
-private inline fun <T> mappingBinaryErrors(operation: () -> T): T = try {
+internal inline fun <T> mappingBinaryErrors(operation: () -> T): T = try {
     operation()
 } catch (_: RemoteOperationTimeoutError) {
     throw RemoteNodeError.Timeout()

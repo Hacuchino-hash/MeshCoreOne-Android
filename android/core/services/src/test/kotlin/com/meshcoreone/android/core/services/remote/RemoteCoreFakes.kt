@@ -1,4 +1,4 @@
-// AndroidOnly: WP-210 Hand-written session, store and password fakes for RemoteNodeService tests, mirroring the Swift MockMeshCoreSession stubs.
+// AndroidOnly: WP-210 Hand-written session, store and password fakes for RemoteNodeService and admin-service tests, mirroring the Swift MockMeshCoreSession stubs.
 package com.meshcoreone.android.core.services.remote
 
 import com.meshcoreone.android.core.contracts.domain.ContactSaveResult
@@ -43,6 +43,13 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
     data class SendLoginInvocation(val destination: Bytes, val password: String)
     data class SendCommandInvocation(val destination: Bytes, val command: String, val timestamp: Instant)
     data class SendKeepAliveInvocation(val publicKey: Bytes, val syncSince: UInt)
+    data class RequestNeighboursInvocation(
+        val publicKey: Bytes, val count: UByte, val offset: UShort, val orderBy: UByte, val pubkeyPrefixLength: UByte,
+    )
+    data class SendMessageWithRetryInvocation(
+        val destination: Bytes, val text: String, val timestamp: Instant, val maxAttempts: Long, val floodAfter: Long,
+        val maxFloodAttempts: Long, val timeout: Double?,
+    )
 
     private val lock = Any()
     private val subscriptions = LinkedHashMap<Long, Pair<EventFilter?, Channel<MeshEvent>>>()
@@ -56,6 +63,9 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
     private val resetPaths = mutableListOf<Bytes>()
     private val messageTimeouts = mutableListOf<Double?>()
     private val statusCalls = mutableListOf<Pair<Bytes, ContactType>>()
+    private val neighbourCalls = mutableListOf<RequestNeighboursInvocation>()
+    private val messageRetryCalls = mutableListOf<SendMessageWithRetryInvocation>()
+    private val pathDiscoveryCalls = mutableListOf<Bytes>()
 
     private val loginResults = ArrayDeque<Result<MessageSentInfo>>()
     private val statusResults = ArrayDeque<Result<StatusResponse>>()
@@ -73,6 +83,12 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
     @Volatile var requestStatusGate: CompletableDeferred<StatusResponse>? = null
     @Volatile var requestTelemetryResult: Result<TelemetryResponse> = Result.failure(RemoteCoreNotStubbed("requestTelemetry"))
     @Volatile var requestOwnerInfoResult: Result<OwnerInfoResponse> = Result.failure(RemoteCoreNotStubbed("requestOwnerInfo"))
+    /** Answers `requestNeighbours`; unset means not stubbed. */
+    @Volatile var requestNeighboursHandler: (suspend (RequestNeighboursInvocation) -> NeighboursResponse)? = null
+    /** Answers `sendMessageWithRetry`; unset means not stubbed. */
+    @Volatile var sendMessageWithRetryHandler: (suspend (SendMessageWithRetryInvocation) -> MessageSentInfo?)? = null
+    /** Answers `sendPathDiscovery`; unset means not stubbed. */
+    @Volatile var sendPathDiscoveryHandler: (suspend (Bytes) -> MessageSentInfo)? = null
 
     val sendLoginInvocations: List<SendLoginInvocation> get() = synchronized(lock) { loginCalls.toList() }
     val sendCommandInvocations: List<SendCommandInvocation> get() = synchronized(lock) { commandCalls.toList() }
@@ -83,6 +99,9 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
     val getMessageTimeouts: List<Double?> get() = synchronized(lock) { messageTimeouts.toList() }
     val requestStatusInvocations: List<Pair<Bytes, ContactType>> get() = synchronized(lock) { statusCalls.toList() }
     val eventSubscriptionCount: Int get() = synchronized(lock) { subscriptions.size }
+    val requestNeighboursInvocations: List<RequestNeighboursInvocation> get() = synchronized(lock) { neighbourCalls.toList() }
+    val sendMessageWithRetryInvocations: List<SendMessageWithRetryInvocation> get() = synchronized(lock) { messageRetryCalls.toList() }
+    val sendPathDiscoveryInvocations: List<Bytes> get() = synchronized(lock) { pathDiscoveryCalls.toList() }
 
     fun setSendLoginResults(results: List<Result<MessageSentInfo>>) = synchronized(lock) {
         loginResults.clear(); loginResults.addAll(results)
@@ -166,7 +185,12 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
 
     override suspend fun requestNeighbours(
         publicKey: Bytes, count: UByte, offset: UShort, orderBy: UByte, pubkeyPrefixLength: UByte,
-    ): NeighboursResponse = throw RemoteCoreNotStubbed("requestNeighbours")
+    ): NeighboursResponse {
+        val invocation = RequestNeighboursInvocation(publicKey, count, offset, orderBy, pubkeyPrefixLength)
+        synchronized(lock) { neighbourCalls += invocation }
+        val handler = requestNeighboursHandler ?: throw RemoteCoreNotStubbed("requestNeighbours")
+        return handler(invocation)
+    }
 
     override suspend fun getMessage(timeout: Double?): MessageResult {
         synchronized(lock) { messageTimeouts += timeout }
@@ -177,9 +201,18 @@ class RemoteCoreFakeSession(private val clock: RemoteCoreTestClock) : RemoteNode
     override suspend fun sendMessageWithRetry(
         destination: Bytes, text: String, timestamp: Instant, maxAttempts: Long, floodAfter: Long,
         maxFloodAttempts: Long, timeout: Double?,
-    ): MessageSentInfo? = throw RemoteCoreNotStubbed("sendMessageWithRetry")
+    ): MessageSentInfo? {
+        val invocation = SendMessageWithRetryInvocation(destination, text, timestamp, maxAttempts, floodAfter, maxFloodAttempts, timeout)
+        synchronized(lock) { messageRetryCalls += invocation }
+        val handler = sendMessageWithRetryHandler ?: throw RemoteCoreNotStubbed("sendMessageWithRetry")
+        return handler(invocation)
+    }
 
-    override suspend fun sendPathDiscovery(destination: Bytes): MessageSentInfo = throw RemoteCoreNotStubbed("sendPathDiscovery")
+    override suspend fun sendPathDiscovery(destination: Bytes): MessageSentInfo {
+        synchronized(lock) { pathDiscoveryCalls += destination }
+        val handler = sendPathDiscoveryHandler ?: throw RemoteCoreNotStubbed("sendPathDiscovery")
+        return handler(destination)
+    }
 
     // MARK: ContactSessionOps
 
@@ -226,6 +259,7 @@ class RemoteCoreFakeStore : RemoteNodeStore {
     fun session(key: EntityKey): RemoteNodeSessionDTO? = synchronized(lock) { sessions[key] }
     fun contact(radioId: RadioId, publicKey: Bytes): ContactDTO? = synchronized(lock) { contacts[radioId to publicKey] }
     val sessionCount: Int get() = synchronized(lock) { sessions.size }
+    val allContacts: List<ContactDTO> get() = synchronized(lock) { contacts.values.toList() }
 
     fun saveContact(dto: ContactDTO) = synchronized(lock) { contacts[dto.radioId to dto.publicKey] = dto }
 
