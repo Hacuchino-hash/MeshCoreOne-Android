@@ -188,6 +188,53 @@ class ManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(PortError, "translation"):
             self.validate(data, exclusions)
 
+    def amendment(self, **overrides):
+        entry = {
+            "path": "MeshCore/Tests/MeshCoreTests/Session/MeshCoreSessionCommandCorrelationTests.swift",
+            "original_blob_sha": "714887f7ab5dae5c1ef9324502c8dc44b2b736ff",
+            "approved_blob_sha": "9ff64d684a9ea56cdcfebabe0288c7b8b2141e4f",
+            "adr": "docs/android/adr/003-frozen-swift-pin-exception-flaky-correlation-test.md",
+            "reason": "Fixes a genuine task-ordering race; test-only.",
+        }
+        entry.update(overrides)
+        return {"schema_version": 1, "reference_sha": REFERENCE_SHA, "entries": [entry]}
+
+    def test_real_correlation_test_amendment_passes_baseline_and_adr_checks(self):
+        validate_manifest(
+            base_manifest().data, base_manifest().exclusions, REPO,
+            verify_checkout=False, amendments=self.amendment(),
+        )
+
+    def test_amendment_outside_tests_directory_fails(self):
+        with self.assertRaisesRegex(PortError, "test-only path"):
+            validate_manifest(
+                base_manifest().data, base_manifest().exclusions, REPO,
+                verify_checkout=False, amendments=self.amendment(path="MC1/MC1App.swift"),
+            )
+
+    def test_amendment_with_wrong_original_blob_fails(self):
+        with self.assertRaisesRegex(PortError, "baseline drift"):
+            validate_manifest(
+                base_manifest().data, base_manifest().exclusions, REPO,
+                verify_checkout=False, amendments=self.amendment(original_blob_sha="0" * 40),
+            )
+
+    def test_amendment_with_missing_adr_fails(self):
+        with self.assertRaisesRegex(PortError, "missing its ADR"):
+            validate_manifest(
+                base_manifest().data, base_manifest().exclusions, REPO,
+                verify_checkout=False, amendments=self.amendment(adr="docs/android/adr/999-does-not-exist.md"),
+            )
+
+    def test_amendment_reference_sha_drift_fails(self):
+        amendments = self.amendment()
+        amendments["reference_sha"] = "0" * 40
+        with self.assertRaisesRegex(PortError, "Reference pin changed"):
+            validate_manifest(
+                base_manifest().data, base_manifest().exclusions, REPO,
+                verify_checkout=False, amendments=amendments,
+            )
+
     def test_duplicate_json_keys_nonfinite_unknown_fields_and_wrong_types_fail(self):
         for text in ('{"a":1,"a":2}', '{"a":NaN}', "{broken"):
             with self.subTest(text=text), self.assertRaises(PortError):

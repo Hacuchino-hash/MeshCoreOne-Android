@@ -263,7 +263,16 @@ struct AdvertisementServiceTests {
 
     // 0x8F while commit is held: no local row yet, so only the rollback key is set.
     await session.yieldEvent(.contactDeleted(publicKey: key))
-    try? await Task.sleep(for: .milliseconds(40))
+    // Release only after the service has taken the 0x8F: the key is recorded for rollback and
+    // has left the deferred-delete queue, so the delete path has already looked up the (still
+    // absent) row. A fixed sleep let a slow runner handle 0x8F after the handler re-saved the
+    // contact, which then deleted it and cascaded its messages.
+    let deleteHandled = await waitUntil {
+      let recordedForRollback = await service.contactsDeletedDuringSync.contains(key)
+      let stillQueued = await service.pendingDeletedKeys.contains(key)
+      return recordedForRollback && !stillQueued
+    }
+    #expect(deleteHandled)
     await hold.release()
 
     let roundDone = await waitUntil { await service.deltaSyncTask == nil }
@@ -1762,9 +1771,10 @@ struct AdvertisementServiceTests {
     await startMonitoring(service, session: session)
     await service.setDeltaSyncHandler(nil)
     await session.yieldEvent(.advertisement(publicKey: key))
-    try? await Task.sleep(for: .milliseconds(40))
+    // Wait for the 0x80 to be recorded instead of sleeping: a slow runner had not processed it after 40 ms.
+    let recorded = await waitUntil { await service.pendingAdvertKeys.contains(key) }
+    #expect(recorded)
     #expect(await recorder.callCount == 0)
-    #expect(await service.pendingAdvertKeys.contains(key))
 
     await installHandler(service, recorder: recorder)
     let ran = await waitUntil { await recorder.callCount >= 1 }
