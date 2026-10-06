@@ -317,7 +317,9 @@ class ConnectionManager(
                                 owner.ownsPhysical = false
                             }
                             lastFailure = failure
-                            if (!isRetained(owner)) closeGeneration(owner, true, failure)
+                            // Swift's cleanupResources leaves state at .connecting between retries; only a terminal
+                            // failure publishes DISCONNECTED (finishFailedSubmission), so observers do not flicker.
+                            if (!isRetained(owner)) closeGeneration(owner, true, failure, publishDisconnected = false)
                             requireRevision(claimedRevision)
                             val classified = platform.classifyFailure(failure)
                             if (classified is LinkFailure.AuthenticationFailed && deviceId != null) surfaceAuthenticationFailure(deviceId)
@@ -998,6 +1000,7 @@ class ConnectionManager(
 
     private suspend fun closeGeneration(
         owner: RadioGeneration, disconnectPhysical: Boolean, primary: Throwable? = null,
+        publishDisconnected: Boolean = true,
     ): TeardownReport {
         synchronized(lock) {
             if (primary != null && provenForeignAdmission(primary, owner)) {
@@ -1010,7 +1013,9 @@ class ConnectionManager(
                 active = null
                 deviceValue = null
                 repeatRanges = SnapshotList.empty()
-                if (revision == owner.revision) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                if (publishDisconnected && revision == owner.revision) {
+                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                }
             }
         }
         val serviceWork = synchronized(owner.lock) {
