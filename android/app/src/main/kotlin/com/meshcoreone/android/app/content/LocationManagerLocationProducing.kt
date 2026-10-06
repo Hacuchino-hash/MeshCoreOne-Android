@@ -111,22 +111,6 @@ class LocationManagerLocationProducing(
     override suspend fun requestLocation(): GeoCoordinate {
         val manager = locationManager
             ?: throw LocationServiceError.RequestFailed("LocationManager system service unavailable")
-        // Real, inline permission re-check immediately guarding the call below: lint's
-        // MissingPermission detector requires this exact shape (not merely a call to our own
-        // currentStatus() helper, which it cannot see through) to recognize the call site as
-        // guarded. This is also a genuine correctness guard, not only a lint placation: the
-        // grant this adapter observed when core:services' LocationService checked
-        // authorizationStatus before invoking this producer could have been revoked by the user
-        // (Settings) in the intervening time, since Android permissions are revocable at any
-        // moment, not just at request time.
-        val fineGranted = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        val coarseGranted = context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        if (!fineGranted && !coarseGranted) {
-            mutableStatus.value = LocationAuthorizationStatus.DENIED
-            throw LocationServiceError.NotAuthorized(LocationAuthorizationStatus.DENIED)
-        }
         val provider = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             LocationManager.FUSED_PROVIDER
         } else {
@@ -136,6 +120,26 @@ class LocationManagerLocationProducing(
             throw LocationServiceError.RequestFailed("location provider disabled")
         }
         return suspendCancellableCoroutine { continuation ->
+            // Real, inline permission re-check immediately guarding the call below: lint's
+            // MissingPermission detector requires the guard in the exact same lexical scope as
+            // the call it protects (an earlier check in an enclosing function, across this
+            // lambda boundary, is not recognized). This is also a genuine correctness guard, not
+            // only a lint placation: the grant this adapter observed when core:services'
+            // LocationService checked authorizationStatus before invoking this producer could
+            // have been revoked by the user (Settings) in the intervening time, since Android
+            // permissions are revocable at any moment, not just at request time.
+            if (
+                context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED &&
+                context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                mutableStatus.value = LocationAuthorizationStatus.DENIED
+                continuation.resumeWith(
+                    Result.failure(LocationServiceError.NotAuthorized(LocationAuthorizationStatus.DENIED)),
+                )
+                return@suspendCancellableCoroutine
+            }
             val cancellationSignal = CancellationSignal()
             continuation.invokeOnCancellation { cancellationSignal.cancel() }
             try {
