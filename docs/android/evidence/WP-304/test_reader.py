@@ -29,6 +29,47 @@ class ReaderTests(unittest.TestCase):
         binding = patch.object(reader, "source_bindings", return_value={"one": {"method": "C#method", "disposition": "native"}})
         binding.start()
         self.addCleanup(binding.stop)
+
+    def test_only_direct_class_level_junit_methods_are_declared(self):
+        text = "package sample\nclass NativeTest {\n@Test fun first() = assertTrue(true)\n@Test fun second() {}\n}"
+        self.assertEqual({"sample.NativeTest#first", "sample.NativeTest#second"}, reader.native_test_methods(text))
+
+    def test_nested_test_inside_another_method_or_composable_lambda_is_rejected(self):
+        for body in (
+            "@Test fun outer() { @Test fun inner() {} }",
+            "@Test fun outer() { content { @Test fun inner() {} } }",
+        ):
+            with self.subTest(body=body), self.assertRaisesRegex(EvidenceError, "direct class-level"):
+                reader.native_test_methods("package sample\nclass NativeTest {\n" + body + "\n}")
+
+    def test_comments_raw_strings_characters_and_interpolations_do_not_manufacture_methods(self):
+        text = '''package sample
+class NativeTest {
+    /* outer /* @Test fun fake() {} */ { } */
+    val raw = """@Test fun fake() { }"""
+    val quoted = "\\\" @Test fun fake() {}"
+    val character = '}'
+    val interpolated = "${listOf("inner").size}"
+    // @Test fun fake() {}
+    @Test fun real() {}
+}'''
+        self.assertEqual({"sample.NativeTest#real"}, reader.native_test_methods(text))
+
+    def test_unbalanced_or_unterminated_native_test_source_fails_instead_of_counting_annotations(self):
+        for body in ("@Test fun method() {", 'val text = "unterminated\n@Test fun method() {}',
+                "/* unterminated", "val text = \"${run { 1}\""):
+            with self.subTest(body=body), self.assertRaises(EvidenceError):
+                reader.native_test_methods("package sample\nclass NativeTest {\n" + body)
+
+    def test_orphan_parameterized_and_top_level_native_test_annotations_fail(self):
+        for text in (
+            "package sample\nclass NativeTest { @Test val value = 1 }",
+            "package sample\nclass NativeTest { @Test fun method(value: Int) {} }",
+            "package sample\nclass NativeTest {}\n@Test fun outside() {}",
+        ):
+            with self.subTest(text=text), self.assertRaises(EvidenceError):
+                reader.native_test_methods(text)
+
     def test_pending_source_policy_cannot_be_credited_as_ported_case(self):
         expected = {"source": {"method": "C#method", "disposition": "pending-WP-208"}}
         reader.verify_source_receipt("source", "pending-WP-208", "C#method", "POLICY_CASE", expected, {"C#method"})

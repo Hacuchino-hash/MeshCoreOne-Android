@@ -1,7 +1,8 @@
 # WP-304 candidate evidence
 
-**Status: authored candidate; native execution, generated owned locks and
-producer-specific dispatch parity remain unverified. No macro acceptance.**
+**Status: coherent source repair and independently admitted generated owned
+lock; native execution and remaining producer dispatch parity are unverified.
+No macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its
@@ -44,6 +45,9 @@ verified, not inferred from issue closure or session state.
 | Ordinary Linux scaffold run37358730009 attempt1/head723e1 | Failed before provisioning/JVM: ten owned files mixed PortedFrom and AndroidOnly dispositions; complete official artifact/log ZIPs retained before repair validation |
 | Actual repository `port_map(load_manifest(...))` after owned header repair | Passed450 current native paths/43 UI paths; original source headers retained, no validator/policy weakening |
 | `git diff --check` | Passed at authored checkpoints |
+| `python -B android\core\ui\verification\dependency_proposal.py --self-test --workflow-check` after exact context amendment | Passed41 regressions; closed26-pair admission, same-config incumbent/unknown-context/version/metadata/write guards and seven compile alignments retained |
+| `python -B docs\android\evidence\WP-304\collect_evidence.py --static --self-test` after discovery and messaging repair | Passed23 reader regressions;197 direct class-level declarations,130 families/158 scenarios accounted,21 pending producer families; **not native execution** |
+| `python -B docs\android\evidence\WP-304\generate_source_map.py` | Passed exact frozen88-input map in its actual default check mode |
 
 The declaration count grows as native flow/API evidence is authored; it is not
 an executed suite count. No iOS, physical radio, Android device/TalkBack,
@@ -190,6 +194,54 @@ dependency/provider admission is inferred.
 
 ## Explicit blockers and adaptations
 
+The coordinator independently replayed actual b3run37400389283/artifact
+11385132030 and admitted only26 literal new test-context memberships.
+[`dependency-context-admission.json`](dependency-context-admission.json) binds
+the full retained official ZIP and historical FAILED result. The owned reader
+retains every same-configuration source/prior component and rejects production
+or other-context/version use, even when a coordinate has an existing checksum.
+An already-admitted identical owned membership remains idempotent; this never
+permits replacing an incumbent or adding a second same-artifact version.
+
+Parent then explicitly admitted byte persistence of the actual54,192-byte
+generated local lock, SHA256
+`d453654da31f2c5ebcb6866679918ef004d0035d68b89988fc03d51c1c8bda18`,
+Git blob`4a53800cec13823aa260df1fe399ef446f804f96`. The absent destination was
+populated mechanically from the shared generated file after unchanged build/
+ROOT seed/catalog/metadata/convention guards.38 final configurations preserve
+37 real resolved graphs plus original empty `androidApis`,1472 external rows
+and40 actual seven-pin alignment edges. No unchanged Gradle rerun, manual lock
+record or replacement hosted/native PASS was used for this admission.
+
+The two new relative-time methods and two recovery Compose methods were found
+nested inside other functions. All four are now direct class-level JUnit
+methods; the reader rejects nested/orphan annotations using bounded lexical
+scope instead of counting text. The197 declaration count is still not a test
+execution count. Source-generated L10nR and native UiR IDs are distinct so the
+postcommit copy no longer references the wrong resource module.
+
+One additional WP-208 frozen carry now supplies only
+`MessagingFaults.kt`, exact Git blob
+`d6f96917b135f12d3fa62c0e5c456aac709257bc`, canonical-LF1969bytes/SHA256
+`5b0e6332ece1068240a39a9856d87dd809db326793f17197c1dd13c13897cb03`.
+The original2436-byte reviewed patch was applied without type/body edits.
+Windows checkout CRLF bytes are recorded separately; they are not claimed to
+have the canonical file's raw hash. Seven Message/three Polling/two Queue cases
+now dispatch through their actual neutral fault types, preserve payload/cause
+identity and suppress source raw send reasons. Queue persistence recursively
+wraps a real message/session/protocol or real storage failure. The original
+English fallback is exposed through an explicitly documented typed native
+accessor, separate from localized visible copy and the frozen exception's
+diagnostic constructor. No message/ACK/Room/queue service implementation or
+UI-to-services edge was carried; producer execution remains separate.
+
+Twenty-one source families still have uncredited producer bindings. In
+particular, the combined nine-wrapper original now exercises the three real
+available Message/Polling/Settings wrappers, not nine direct protocol stand-ins;
+its other six wrappers keep the whole family blocked. Protected main723/PR40
+adoption is held by the coordinator; source/schema exceptions are not adopted
+on the own source-pinned7e lineage.
+
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):
 real native storage distinctions/adapters, exact committed-preference marker/
@@ -203,7 +255,8 @@ The reader now binds receipts to actual executed current test methods and emits
 `WP304_POLICY_CASE` for unavailable producer chains rather than crediting them
 as `WP304_CASE` equivalents. It retains native JUnit/PNG evidence then fails
 original parity if pending bindings remain. The130/158 floor is complete
-accounting, not a claim that26 pending families were ported or executed.
+accounting, not a claim that the remaining21 pending families were ported or
+executed. Earlier26-family snapshots remain historical, not rewritten.
 
 The admitted seven new unit-test compile memberships use only existing exact
 unit-runtime source Core1.16.0/Lifecycle2.9.4 coordinates. Their actual

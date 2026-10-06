@@ -36,6 +36,8 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -44,6 +46,7 @@ import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
@@ -62,7 +65,9 @@ import com.meshcoreone.android.core.designsystem.ThemeRegistry
 import com.meshcoreone.android.core.l10n.generated.AppChatsStrings as C
 import com.meshcoreone.android.core.l10n.generated.AppContactsStrings
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
+import com.meshcoreone.android.core.l10n.generated.AppMapStrings as M
 import com.meshcoreone.android.core.l10n.generated.AppOnboardingStrings as O
+import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
 import com.meshcoreone.android.core.model.DeviceDTO
 import com.meshcoreone.android.core.model.NotificationLevel
 import com.meshcoreone.android.core.model.RadioId
@@ -272,7 +277,9 @@ class SharedUiComposeTest {
             { adds++ }, { state.value = state.value.copy(addDialogVisible = false) })
         content { MeshCoreTheme(motionScale = 0f) { RegionManagementView(state.value, actions) } }
         resize(360)
+        compose.onNodeWithText("invalid region").assertIsFocused()
         compose.onNodeWithText(resources.getString(C.chatsChannelInfoRegionAddSelected)).performClick()
+        compose.onNodeWithText("invalid region").assertIsFocused()
         compose.runOnIdle { assertEquals(RegionValidationError.InvalidCharacters, state.value.validationError); assertEquals(0, adds) }
         capture("dialog", dialog = true)
         compose.runOnUiThread {
@@ -344,61 +351,6 @@ class SharedUiComposeTest {
                     UiText.Resource(O.wifiConnectionConnectionDetailsHeader),
                     UiText.Resource(O.wifiConnectionConnectionDetailsFooter))
             }
-
-            @Test fun font200RtlStorageRecoveryHasRealTypedMetadataAndNativeBackDismissesWithoutRetry() {
-                val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(
-                    StorageFailure(StorageProblem.DeviceLocked, StorageOperation.WRITE)))
-                var unlocked = 0
-                content {
-                    CompositionLocalProvider(LocalDensity provides Density(1f, 2f), LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        MeshCoreTheme(highContrast = true, motionScale = 0f) {
-                            sample()
-                            PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(unlockDevice = { unlocked++ }))
-                        }
-                    }
-                }
-                resize(360)
-                compose.onNodeWithText(resources.getString(R.string.ui_storage_locked), substring = true).assertIsDisplayed()
-                capture("storage-recovery-font200-rtl", dialog = true)
-                compose.runOnUiThread {
-                    val dialog = assertNotNull(ShadowDialog.getLatestDialog())
-                    dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
-                    dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
-                }
-                compose.runOnIdle { assertNull(error.value); assertEquals(0, unlocked) }
-            }
-
-            @Test fun committedPreferenceDialogUsesOnlyTheActualMarkerCompletionActionAndKeepsTheReceipt() {
-                val receipt = CommittedBackupReceipt(BackupContract.modelArrayKeys.associateWith { CommittedBackupCounts(1, 0, 0, 0) },
-                    false, emptyMap())
-                val storage = StorageFailure(StorageProblem.OwnerClosed, StorageOperation.WRITE)
-                val marker = object : Exception("consumer-marker-fixture", storage), CommittedBackupPreferenceFailure {
-                    override val committedReceipt = receipt
-                    override val preferenceFailure: Throwable = storage
-                }
-                val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(marker))
-                var importRetries = 0
-                var completed: CommittedBackupPreferenceFailure? = null
-                content {
-                    MeshCoreTheme(motionScale = 0f) {
-                        sample()
-                        PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(
-                            retry = { importRetries++ }, completeBackupPreferences = { completed = it },
-                        ))
-                    }
-                }
-                resize(360)
-                compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).assertIsDisplayed()
-                    .assertHeightIsAtLeast(49.dp)
-                capture("committed-preference-only", dialog = true)
-                compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).performClick()
-                compose.runOnIdle {
-                    assertNull(error.value)
-                    assertEquals(0, importRetries)
-                    assertSame(marker, completed)
-                    assertEquals(receipt, completed?.committedReceipt)
-                }
-            }
         }
         resize(360)
         compose.onNodeWithText("radio.local").performTextReplacement("192,168,1,50")
@@ -409,6 +361,154 @@ class SharedUiComposeTest {
         compose.runOnIdle { assertEquals(WiFiField.PORT, state.value.focusedField); assertEquals("5000", state.value.port) }
         compose.onNodeWithText("5000").performImeAction()
         compose.runOnIdle { assertEquals(1, submissions) }
+    }
+
+    @Test fun font200RtlStorageRecoveryHasRealTypedMetadataAndNativeBackDismissesWithoutRetry() {
+        val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(
+            StorageFailure(StorageProblem.DeviceLocked, StorageOperation.WRITE)))
+        var unlocked = 0
+        content {
+            CompositionLocalProvider(LocalDensity provides Density(1f, 2f), LocalLayoutDirection provides LayoutDirection.Rtl) {
+                MeshCoreTheme(highContrast = true, motionScale = 0f) {
+                    sample()
+                    PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(unlockDevice = { unlocked++ }))
+                }
+            }
+        }
+        resize(360)
+        compose.onNodeWithText(resources.getString(R.string.ui_storage_locked), substring = true).assertIsDisplayed()
+        capture("storage-recovery-font200-rtl", dialog = true)
+        compose.runOnUiThread {
+            val dialog = assertNotNull(ShadowDialog.getLatestDialog())
+            dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
+            dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
+        }
+        compose.runOnIdle { assertNull(error.value); assertEquals(0, unlocked) }
+    }
+
+    @Test fun committedPreferenceDialogUsesOnlyTheActualMarkerCompletionActionAndKeepsTheReceipt() {
+        val receipt = CommittedBackupReceipt(BackupContract.modelArrayKeys.associateWith { CommittedBackupCounts(1, 0, 0, 0) },
+            false, emptyMap())
+        val storage = StorageFailure(StorageProblem.OwnerClosed, StorageOperation.WRITE)
+        val marker = object : Exception("consumer-marker-fixture", storage), CommittedBackupPreferenceFailure {
+            override val committedReceipt = receipt
+            override val preferenceFailure: Throwable = storage
+        }
+        val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(marker))
+        var importRetries = 0
+        var completed: CommittedBackupPreferenceFailure? = null
+        content {
+            MeshCoreTheme(motionScale = 0f) {
+                sample()
+                PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(
+                    retry = { importRetries++ }, completeBackupPreferences = { completed = it },
+                ))
+            }
+        }
+        resize(360)
+        compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).assertIsDisplayed()
+            .assertHeightIsAtLeast(49.dp)
+        capture("committed-preference-only", dialog = true)
+        compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).performClick()
+        compose.runOnIdle {
+            assertNull(error.value)
+            assertEquals(0, importRetries)
+            assertSame(marker, completed)
+            assertEquals(receipt, completed?.committedReceipt)
+        }
+    }
+
+    @Test fun mapMenusDismissAfterSelectionAndDispatchOnlyTheSelectedAction() {
+        val calls = mutableListOf<String>()
+        val state = MapControlsState(false, false, true, true,
+            SnapshotList.of(MapControlChoice("base", UiText.Verbatim("Fixture base map"), true)),
+            SnapshotList.of(MapControlChoice("favorite", UiText.Verbatim("Fixture favorites"), false)))
+        val actions = MapControlsActions({ calls += "center" }, { calls += "style:$it" },
+            { calls += "filter:$it" }, { calls += "north:$it" }, { calls += "labels:$it" },
+            { calls += "clustering:$it" })
+        content { MeshCoreTheme(motionScale = 0f) { MapControlsToolbar(state, actions) } }
+        resize(360)
+        compose.onNodeWithContentDescription(resources.getString(M.mapControlsFilter)).performClick()
+        compose.onNodeWithText("Fixture favorites").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Fixture favorites").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf("filter:favorite"), calls) }
+        compose.onNodeWithContentDescription(resources.getString(M.mapControlsMapOptions)).performClick()
+        compose.onNodeWithText(resources.getString(M.mapControlsShowLabels)).performClick()
+        compose.onNodeWithText("Fixture base map").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf("filter:favorite", "labels:false"), calls) }
+    }
+
+    @Test fun unloadedSectionFailureShowsInlineRetryWithoutAnotherHeaderReload() {
+        val state = mutableStateOf(ExpandableSectionState(true, false, false, true))
+        var loads = 0
+        content {
+            MeshCoreTheme(motionScale = 0f) {
+                ExpandableSettingsSection(UiText.Verbatim("Fixture section"), MeshSymbol.SETTINGS,
+                    state.value, {}, { loads++ }) {}
+            }
+        }
+        resize(360)
+        compose.onNodeWithContentDescription("Fixture section").assertDoesNotExist()
+        compose.onNodeWithText(resources.getString(L.commonTryAgain)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, loads)
+            state.value = ExpandableSectionState(true, true, false, false)
+        }
+        compose.onNodeWithText(resources.getString(L.commonTryAgain)).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Fixture section").assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(2, loads) }
+    }
+
+    @Test fun radioAndNotificationActionsExposeSourceHintsSelectedStateAndCallerCallbacks() {
+        val radio = mutableStateOf(RadioStatusState(DeviceConnectionState.DISCONNECTED, null))
+        val selection = mutableStateOf(NotificationLevel.ALL)
+        val adverts = mutableListOf<Boolean>()
+        content {
+            MeshCoreTheme(motionScale = 0f) {
+                Column {
+                    BLEStatusIndicatorView(radio.value, RadioStatusActions({}, {}, { adverts.add(it) }, {}))
+                    NotificationLevelPicker(selection.value, { selection.value = it })
+                }
+            }
+        }
+        resize(360)
+        val radioLabel = resources.getString(S.bleStatusAccessibilityLabel)
+        val disconnected = compose.onNodeWithContentDescription(radioLabel).fetchSemanticsNode().config
+        assertEquals(resources.getString(S.bleStatusStatusDisconnected), disconnected[SemanticsProperties.StateDescription])
+        assertEquals(resources.getString(S.bleStatusAccessibilityHintDisconnected), disconnected[SemanticsActions.OnClick].label)
+        compose.runOnIdle { radio.value = RadioStatusState(DeviceConnectionState.READY, device) }
+        val connected = compose.onNodeWithContentDescription(radioLabel).fetchSemanticsNode().config
+        assertEquals(resources.getString(S.bleStatusAccessibilityHintConnected), connected[SemanticsActions.OnClick].label)
+        compose.onNodeWithContentDescription(radioLabel).performClick()
+        val zeroHop = compose.onNodeWithText(resources.getString(S.bleStatusSendZeroHopAdvert))
+        assertEquals(resources.getString(S.bleStatusSendZeroHopAdvertHint), zeroHop.fetchSemanticsNode().config[SemanticsActions.OnClick].label)
+        zeroHop.performClick()
+        compose.runOnIdle { assertEquals(listOf(false), adverts) }
+        val muted = compose.onNodeWithText(resources.getString(C.chatsNotificationLevelMuted))
+        assertEquals(resources.getString(C.chatsNotificationLevelHint), muted.fetchSemanticsNode().config[SemanticsActions.OnClick].label)
+        muted.performClick()
+        muted.assertIsSelected()
+        compose.runOnIdle { assertEquals(NotificationLevel.MUTED, selection.value) }
+    }
+
+    @Test fun overlayShowsTheIncomingStateOnTheFirstVisibleFrameAndRemovesHiddenActions() {
+        val state = mutableStateOf<StatusPillState>(StatusPillState.Hidden)
+        var taps = 0
+        content { MeshCoreTheme(motionScale = 1f) { SyncingPillOverlay(state.value, { taps++ }) { Text("Fixture content") } } }
+        resize(360)
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle { state.value = StatusPillState.Syncing }
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithText(resources.getString(L.commonStatusSyncing)).assertExists()
+        compose.mainClock.advanceTimeBy(320)
+        compose.runOnIdle { state.value = StatusPillState.Disconnected }
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithText(resources.getString(L.commonStatusDisconnected)).performClick()
+        compose.runOnIdle { assertEquals(1, taps); state.value = StatusPillState.Hidden }
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithText(resources.getString(L.commonStatusDisconnected)).assertDoesNotExist()
+        compose.mainClock.advanceTimeBy(320)
+        compose.mainClock.autoAdvance = true
     }
 
     private fun capture(id: String, dialog: Boolean = false) {

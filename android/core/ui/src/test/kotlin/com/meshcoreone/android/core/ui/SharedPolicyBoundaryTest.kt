@@ -6,6 +6,12 @@ import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingError
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingException
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.StorageFailure
@@ -20,6 +26,10 @@ import com.meshcoreone.android.core.model.ProtocolLimits
 import com.meshcoreone.android.core.model.RadioId
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiReceiveException
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
+import java.io.IOException
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -40,6 +50,11 @@ class SharedPolicyBoundaryTest {
     @Test fun regionAsciiByteLimitWhitespacePrivateAndDuplicateRulesMatchTheSource() {
         assertEquals(RegionValidationError.Empty, RegionNameValidator.validate(" \t ", emptyList()))
         assertEquals(RegionValidationError.InvalidCharacters, RegionNameValidator.validate("region\n", emptyList()))
+        for (separator in listOf('\u2028', '\u2029')) {
+            assertEquals(RegionValidationError.InvalidCharacters, RegionNameValidator.validate("region$separator", emptyList()))
+            assertEquals("region$separator", RegionNameValidator.normalized("region$separator"))
+        }
+        assertEquals("region", RegionNameValidator.normalized("\u00a0\tregion\u2003"))
         assertEquals(RegionValidationError.InvalidCharacters, RegionNameValidator.validate("\u4e2d\u6587", emptyList()))
         assertEquals(RegionValidationError.InvalidCharacters, RegionNameValidator.validate("\$private", emptyList()))
         assertTrue("\$private".isPrivateRegion)
@@ -50,10 +65,16 @@ class SharedPolicyBoundaryTest {
         assertEquals(RegionValidationError.Duplicate, RegionNameValidator.validate(" region ", listOf("region")))
         assertNull(RegionNameValidator.validate("Region", listOf("region")))
         assertEquals("region", RegionNameValidator.normalized(" region "))
+        assertNull(regionValidationCopy(RegionValidationError.Empty))
+        assertEquals(resources.getString(com.meshcoreone.android.core.l10n.generated.AppChatsStrings.chatsChannelInfoRegionInvalidName),
+            assertNotNull(regionValidationCopy(RegionValidationError.InvalidCharacters)).resolve(resources))
     }
 
     @Test fun regionSearchUsesNumericLocaleOrderingAndDiscoverySelectionIsStableNotIndexBased() {
         assertEquals(listOf("region2", "region10"), filteredRegions(listOf("region10", "region2"), "", java.util.Locale.US))
+        assertEquals(listOf("home", "Home"), filteredRegions(listOf("Home", "home"), "", java.util.Locale.US))
+        assertEquals(filteredRegions(listOf("Home", "home"), "", java.util.Locale.US),
+            filteredRegions(listOf("home", "Home"), "", java.util.Locale.US))
         assertEquals(listOf("M\u00fcnchen"), filteredRegions(listOf("M\u00fcnchen", "Berlin"), "mun", java.util.Locale.US))
         val discovery = RegionDiscoveryState.from(listOf("z", "a", "z"))
         assertEquals(listOf("a", "z", "z"), discovery.sortedRegions)
@@ -142,6 +163,95 @@ class SharedPolicyBoundaryTest {
         }
         assertTrue(mapper.message(AppBackupException(AppBackupError.UnsupportedVersion(Long.MAX_VALUE, 1)))
             .resolve(resources).contains(Long.MAX_VALUE.toString()))
+    }
+
+    @Test fun wifiInputAndDisconnectedFailuresUseActionableRecoveryAndReceiveFailureHidesProtocolDiagnostics() {
+        val mapper = UiErrorMapper(reporter = UiErrorReporter {})
+        val cases = listOf(
+            WiFiTransportError.InvalidHost to UiRecovery.FIX_INPUT,
+            WiFiTransportError.InvalidPort to UiRecovery.FIX_INPUT,
+            WiFiTransportError.NotConfigured to UiRecovery.FIX_INPUT,
+            WiFiTransportError.NotConnected to UiRecovery.CONNECT,
+            WiFiTransportError.ConnectionTimeout to UiRecovery.RETRY,
+            WiFiTransportError.SendTimeout to UiRecovery.RETRY,
+            WiFiTransportError.ConnectionFailed("source reason") to UiRecovery.RETRY,
+            WiFiTransportError.SendFailed("source reason") to UiRecovery.RETRY,
+        )
+        for ((fault, recovery) in cases) {
+            val failure = WiFiTransportException(fault)
+            val presented = mapper.present(failure)
+            assertSame(failure, presented.originalFailure)
+            assertEquals(recovery, presented.content.recovery)
+            assertEquals(mapper.wifiError(fault).resolve(resources), presented.content.message.resolve(resources))
+        }
+        val cause = IOException("native-private-diagnostic")
+        val receive = WiFiReceiveException(cause)
+        val presented = mapper.present(receive)
+        assertSame(receive, presented.originalFailure)
+        assertSame(cause, presented.originalFailure.cause)
+        assertEquals(UiRecovery.CONNECT, presented.content.recovery)
+        assertEquals(resources.getString(AppLocalizableStrings.errorMeshCoreConnectionLostNoDetail),
+            presented.content.message.resolve(resources))
+        assertFalse(presented.content.message.resolve(resources).contains("wifi.receive_failed"))
+        assertFalse(presented.content.message.resolve(resources).contains("native-private-diagnostic"))
+        assertEquals("Connection to device was lost.", MeshCoreException.ConnectionLost(Exception()).sourceEnglishDescription())
+    }
+
+    @Test fun nativeBackupSizePresentationKeepsTheFrozenIntegerMibPolicyRatherThanInventingDecimalCopy() {
+        val copy = UiErrorMapper(reporter = UiErrorReporter {})
+            .message(AppBackupException(AppBackupError.FileTooLarge(10_500_000, 10 * 1_048_576L)))
+        val formatted = assertIs<UiText.Format>(copy)
+        assertEquals(listOf(UiFormatArgument.Integer(10), UiFormatArgument.Integer(10)), formatted.arguments)
+    }
+
+    @Test fun actualMessagingFaultFamiliesKeepTheirPayloadsCausesAndNestedCentralDelegation() {
+        val mapper = UiErrorMapper(reporter = UiErrorReporter {})
+        val protocol = MeshCoreException.Timeout()
+        val messages = listOf(
+            MessageServiceError.NotConnected to AppLocalizableStrings.errorMessageServiceNotConnected,
+            MessageServiceError.ContactNotFound to AppLocalizableStrings.errorMessageServiceContactNotFound,
+            MessageServiceError.ChannelNotFound to AppLocalizableStrings.errorMessageServiceChannelNotFound,
+            MessageServiceError.SendFailed("private-message-reason") to AppLocalizableStrings.errorMessageServiceSendFailed,
+            MessageServiceError.InvalidRecipient to AppLocalizableStrings.errorMessageServiceInvalidRecipient,
+            MessageServiceError.MessageTooLong to AppLocalizableStrings.errorMessageServiceMessageTooLong,
+            MessageServiceError.SessionError(protocol) to AppLocalizableStrings.errorMeshCoreTimeout,
+        )
+        for ((fault, resource) in messages) {
+            val cause = if (fault is MessageServiceError.SessionError) protocol else IOException("private-native-cause")
+            val failure = MessageServiceException(fault, cause)
+            val presented = mapper.present(failure)
+            assertSame(fault, failure.error)
+            assertSame(failure, presented.originalFailure)
+            assertSame(cause, presented.originalFailure.cause)
+            assertEquals(resources.getString(resource), presented.content.message.resolve(resources))
+            assertFalse(presented.content.message.resolve(resources).contains("private-message-reason"))
+            assertFalse(presented.content.message.resolve(resources).contains("private-native-cause"))
+            if (fault is MessageServiceError.SendFailed) {
+                assertEquals("Send failed: private-message-reason", failure.sourceEnglishDescription())
+            }
+        }
+        for ((fault, resource) in listOf(
+            MessagePollingError.NotConnected to AppLocalizableStrings.errorMessagePollingNotConnected,
+            MessagePollingError.PollingFailed to AppLocalizableStrings.errorMessagePollingPollingFailed,
+            MessagePollingError.SessionError(protocol) to AppLocalizableStrings.errorMeshCoreTimeout,
+        )) {
+            val failure = MessagePollingException(fault)
+            assertEquals(resources.getString(resource), mapper.message(failure).resolve(resources))
+            if (fault is MessagePollingError.SessionError) assertSame(protocol, failure.cause)
+        }
+        val message = MessageServiceException(MessageServiceError.SessionError(protocol))
+        val queue = ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(message))
+        assertSame(message, queue.cause)
+        assertSame(protocol, message.cause)
+        assertEquals(AppLocalizableStrings.errorChatSendQueuePersistFailed(resources,
+            resources.getString(AppLocalizableStrings.errorMeshCoreTimeout)), mapper.message(queue).resolve(resources))
+        val storage = StorageFailure(StorageProblem.DeviceLocked, StorageOperation.WRITE)
+        val failedPersistence = ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(storage))
+        assertSame(storage, failedPersistence.cause)
+        assertEquals(AppLocalizableStrings.errorChatSendQueuePersistFailed(resources,
+            mapper.message(storage).resolve(resources)), mapper.message(failedPersistence).resolve(resources))
+        val cancelled = ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(CancellationException("cancelled write")))
+        assertFailsWith<CancellationException> { mapper.present(cancelled) }
     }
 
     @Test fun allEightFrozenDeviceSettingsCasesDispatchAndOnlySourceEligibleFaultsRecommendRetry() {

@@ -12,7 +12,7 @@ sealed interface RegionValidationError {
 
 object RegionNameValidator {
     fun normalized(name: String): String = name.trim {
-        it == '\t' || Character.isSpaceChar(it)
+        it == '\t' || Character.getType(it) == Character.SPACE_SEPARATOR.toInt()
     }
 
     fun validate(name: String, existingRegions: Collection<String>): RegionValidationError? {

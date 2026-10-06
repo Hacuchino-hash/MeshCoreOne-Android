@@ -56,4 +56,18 @@ class AvatarCropGeometryTest : SourceCaseProof() {
         assertFailsWith<IllegalArgumentException> { AvatarCropGeometry(0.0, CropSize.ZERO) }
         assertEquals(1.0, AvatarCropGeometry.cropSize(CropSize(20.0, 20.0), false))
     }
+
+    @Test fun nativePointerDeltasAccumulateBeforeRecompositionAndExternalResizeRemainsAuthoritative() {
+        val initial = AvatarCropGeometry(100.0, CropSize(100.0, 100.0), 2.0)
+        val gestures = CropGestureAccumulator(initial)
+        val first = gestures.transform(initial, 1.5, CropOffset(10.0, 5.0))
+        val second = gestures.transform(initial, 1.0, CropOffset(10.0, 5.0))
+        assertEquals(3.0, first.scale)
+        assertEquals(CropOffset(10.0, 5.0), first.offset)
+        assertEquals(3.0, second.scale)
+        assertEquals(CropOffset(20.0, 10.0), second.offset)
+        val resized = second.resized(50.0)
+        assertEquals(resized.panBy(CropOffset(1.0, 2.0)),
+            gestures.transform(resized, 1.0, CropOffset(1.0, 2.0)))
+    }
 }

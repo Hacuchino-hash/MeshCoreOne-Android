@@ -33,6 +33,7 @@ import com.meshcoreone.android.core.designsystem.WCAGContrast
 import com.meshcoreone.android.core.designsystem.accessibleForeground
 import com.meshcoreone.android.core.designsystem.toComposeColor
 import com.meshcoreone.android.core.designsystem.toThemeColor
+import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings
 import kotlin.test.*
 import kotlin.math.abs
@@ -139,5 +140,32 @@ class SharedColorComposeTest {
                 assertTrue(abs(((pixel ushr shift) and 255) - ((expectedArgb ushr shift) and 255)) <= 1)
             }
         }
+    }
+
+    @Test fun disconnectedRadioActuallyPaintsASlashInsteadOfOnlyChangingItsColor() {
+        controller.get().setContent {
+            MeshCoreTheme(motionScale = 0f) {
+                Surface(color = Color.White) {
+                    Row(Modifier.padding(16.dp)) {
+                        RadioConnectionIcon(DeviceConnectionState.READY, Color.Black, "Ready",
+                            Modifier.testTag("ready-radio"))
+                        RadioConnectionIcon(DeviceConnectionState.DISCONNECTED, Color.Black, "Disconnected",
+                            Modifier.testTag("disconnected-radio"))
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        val bitmap = compose.runOnUiThread {
+            val view = controller.get().window.decorView
+            Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888).also { view.draw(Canvas(it)) }
+        }
+        fun pixel(tag: String): Int {
+            val bounds = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInWindow
+            return bitmap.getPixel((bounds.left + bounds.width * 0.75f).toInt(),
+                (bounds.top + bounds.height * 0.75f).toInt())
+        }
+        assertEquals(android.graphics.Color.WHITE, pixel("ready-radio"))
+        assertTrue(android.graphics.Color.red(pixel("disconnected-radio")) < 64)
     }
 }

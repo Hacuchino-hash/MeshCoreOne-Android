@@ -14,6 +14,7 @@ from dependency_proposal import (
     validate_settings_bookkeeping, retain_settings_bookkeeping,
     seed_initial_owned_lock,
     COMPILE_ALIGNMENT, validate_compile_alignment,
+    TEST_CONTEXT_INPUT, TEST_CONTEXT_SHA, approved_test_context_memberships,
 )
 from controller.errors import PortError
 
@@ -46,6 +47,69 @@ def metadata(*coordinates):
 
 
 class DependencyProposalTests(unittest.TestCase):
+    def context_fixture(self, configuration, coordinate):
+        previous = coordinate.rsplit(":", 1)[0] + ":previous-vetted"
+        seed = f"{previous}=originalToolClasspath\nempty=androidApis\n"
+        generated = seed + f"{coordinate}={configuration}\n"
+        configs = f"originalToolClasspath\n{configuration}\n"
+        graph = ("module\tconfiguration\tkind\tcomponent\n"
+            f":core:ui\toriginalToolClasspath\tselected\t{previous}\n"
+            f":core:ui\t{configuration}\tselected\t{coordinate}\n")
+        return seed, generated, graph, configs, metadata(previous, coordinate), previous
+
+    def test_closed_parent_data_has_exact_original_hash_and_26_literal_context_pairs(self):
+        self.assertEqual(TEST_CONTEXT_SHA, hashlib.sha256((ROOT / TEST_CONTEXT_INPUT).read_bytes()).hexdigest())
+        pairs = approved_test_context_memberships()
+        self.assertEqual(26, len(pairs))
+        self.assertIn(("debugUnitTestCompileClasspath", "org.bouncycastle:bcprov-jdk18on:1.85"), pairs)
+        self.assertNotIn(("debugUnitTestRuntimeClasspath", "org.bouncycastle:bcprov-jdk18on:1.85"), pairs)
+
+    def test_each_of_the_26_new_context_pairs_preserves_the_original_other_configuration(self):
+        for configuration, coordinate in sorted(approved_test_context_memberships()):
+            with self.subTest(configuration=configuration, coordinate=coordinate):
+                seed, generated, graph, configs, verified, previous = self.context_fixture(configuration, coordinate)
+                result = validate_delta(seed, None, generated, graph, configs, verified)
+                self.assertEqual([{"configuration": configuration, "coordinate": coordinate}],
+                    result["new_test_context_memberships"])
+                self.assertEqual({previous}, parse_lock(generated)["originalToolClasspath"])
+
+    def test_previously_admitted_exact_owned_membership_is_retained_without_readmission_or_replacement(self):
+        configuration, coordinate = "debugUnitTestCompileClasspath", "com.google.guava:guava:33.6.0-jre"
+        seed, generated, graph, configs, verified, _ = self.context_fixture(configuration, coordinate)
+        result = validate_delta(seed, generated, generated, graph, configs, verified)
+        self.assertEqual([], result["new_test_context_memberships"])
+
+    def test_allowed_coordinate_in_production_or_an_unapproved_test_context_still_fails(self):
+        coordinate = "org.bouncycastle:bcprov-jdk18on:1.85"
+        for configuration in ("debugRuntimeClasspath", "debugCompileClasspath",
+                "debugUnitTestRuntimeClasspath", "debugUnitTestLintChecksClasspath", "otherTestClasspath"):
+            seed, generated, graph, configs, verified, _ = self.context_fixture(configuration, coordinate)
+            with self.subTest(configuration=configuration), self.assertRaises(PortError):
+                validate_delta(seed, None, generated, graph, configs, verified)
+
+    def test_checksums_do_not_admit_an_unknown_context_version(self):
+        seed, generated, graph, configs, _, previous = self.context_fixture(
+            "debugUnitTestCompileClasspath", "com.google.guava:guava:33.6.0-jre")
+        changed = "com.google.guava:guava:33.6.1-jre"
+        with self.assertRaises(PortError):
+            validate_delta(seed, None, generated.replace("com.google.guava:guava:33.6.0-jre", changed),
+                graph.replace("com.google.guava:guava:33.6.0-jre", changed), configs, metadata(previous, changed))
+
+    def test_even_an_allowed_pair_cannot_remove_or_add_a_version_beside_a_same_config_incumbent(self):
+        configuration, coordinate = "debugUnitTestCompileClasspath", "com.google.guava:guava:33.6.0-jre"
+        seed, generated, graph, configs, verified, previous = self.context_fixture(configuration, coordinate)
+        existing = seed + f"{previous}={configuration}\n"
+        existing = existing.replace(f"{previous}=originalToolClasspath\n", "")
+        existing = existing.replace(f"{previous}={configuration}", f"{previous}=originalToolClasspath,{configuration}")
+        for baseline in ("seed", "prior"):
+            for retain_previous in (False, True):
+                proposed = generated.replace(f"{previous}=originalToolClasspath",
+                    f"{previous}=originalToolClasspath,{configuration}") if retain_previous else generated
+                actual = graph + (f":core:ui\t{configuration}\tselected\t{previous}\n" if retain_previous else "")
+                with self.subTest(baseline=baseline, retained=retain_previous), self.assertRaises(PortError):
+                    validate_delta(existing if baseline == "seed" else seed,
+                        existing if baseline == "prior" else None, proposed, actual, configs, verified)
+
     def alignment_fixture(self):
         seed = "\n".join(artifact + ":" + version + "=debugUnitTestRuntimeClasspath" for artifact, version in COMPILE_ALIGNMENT.items())
         graph = "artifact\tsourceConfiguration\tsourceCoordinate\tconfiguration\trequested\tselected\n"

@@ -64,7 +64,8 @@
   },
   "module_local_lock": "Allowed only after actual separately authorized scoped Linux generation; no handwritten records or silent incumbent version changes.",
   "producer_seams_authorized": false,
-  "native_execution_authorized": false,
+  "initial_native_execution_authorized": false,
+  "native_execution_authorized": true,
   "linux_dependency_proposal_amendment": {
     "received_at": "2026-10-05T14:23:19.109-05:00",
     "workflow_path": ".github/workflows/android-shared-ui-dependency-generation.yml",
@@ -117,6 +118,30 @@
     ],
     "scope": "Validate unique exact existing ROOT unit-runtime seed before constraint; retain actual requested/selected alignment edges. No new coordinate admission, metadata/catalog/ROOT write, other-configuration pin or Activity version update."
   },
+  "exact_test_context_amendment": {
+    "authority": "Parent independently downloaded and replayed actual b3d31 artifact11385132030, then explicitly admitted only its twenty-six non-replacing configuration/coordinate pairs.",
+    "source_candidate": "b3d31d937afb6f0ff9aeb615fce901267d7e04f6",
+    "run_id": 37400389283,
+    "run_attempt": 1,
+    "data_path": "android/core/ui/verification/test-context-memberships.json",
+    "data_sha256": "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d",
+    "pair_counts": {"debugUnitTestCompileClasspath": 10, "debugUnitTestRuntimeClasspath": 8, "debugUnitTestLintChecksClasspath": 8},
+    "scope": "Closed literal pairs only. A new membership requires no same-artifact seed/prior member in that configuration. An already-admitted exact owned membership may remain unchanged; no incumbent replacement or second version is allowed. Every source/prior member, actual graph, configuration, checksum and seven compile alignments remain mandatory.",
+    "historical_hosted_result": "FAILED; authorized pure-data re-evaluation is not a replacement hosted/native result."
+  },
+  "approved_owned_lock_persistence": {
+    "authority": "Parent independently verified all3328 prior inputs,25 mandatory producer blobs,1472 external selected rows and38 final configurations under the exact context amendment; explicitly granted byte-only persistence.",
+    "source_candidate": "b3d31d937afb6f0ff9aeb615fce901267d7e04f6",
+    "artifact_id": 11385132030,
+    "artifact_zip_sha256": "dc7781c46041d630c19334203ba8d86ab90d6546408e468ad804ad74ce62f869",
+    "target": "android/core/ui/gradle.lockfile",
+    "destination_was_absent": true,
+    "bytes": 54192,
+    "sha256": "d453654da31f2c5ebcb6866679918ef004d0035d68b89988fc03d51c1c8bda18",
+    "git_blob": "4a53800cec13823aa260df1fe399ef446f804f96",
+    "scope": "Mechanical copy of the explicitly shared generated file after unchanged dependency-descriptor and ROOT seed guards; no record editing, ROOT write, metadata/catalog update or native success claim.",
+    "following_execution": "Publish the coherent owned code/reader/lock repair to the existing ordinary PR for normal Ubuntu Linux native verification; no unchanged generator retry or Windows JVM."
+  },
   "committed_preference_projection_amendment": {
     "authority": "Parent inspected actual ImportResult and explicitly leased exactly three producer projection/assertion paths.",
     "paths": [
@@ -142,6 +167,23 @@
     "scope": "Byte-exact 2+6 neutral fault definitions only. No type edits, producer test or whole-WP carry, services/data/UI edges, fake failures or native parity claim.",
     "freeze": "Read-only after this exact carry; subsequent type changes require a separate actual-bug receipt."
   },
+  "frozen_messaging_carry": {
+    "authority": "Parent withdrew WP-208 live type ownership and serialized this one-path carry-only grant.",
+    "producer_work_package": "WP-208",
+    "producer_head_prefix": "7e13",
+    "producer_base": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
+    "path": "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt",
+    "destination_was_absent": true,
+    "patch_bytes": 2436,
+    "patch_sha256": "a933f5e83603b96c65731da9e8ebac096aaf6cbcc4d859091526426513298b05",
+    "verified_git_blob": "d6f96917b135f12d3fa62c0e5c456aac709257bc",
+    "canonical_lf_bytes": 1969,
+    "canonical_lf_sha256": "5b0e6332ece1068240a39a9856d87dd809db326793f17197c1dd13c13897cb03",
+    "windows_working_bytes": 2005,
+    "windows_working_sha256": "404f47d070a3e282a55ebaa356ac74d4da5e3b09fb0f3f8a6388c8b603ee347b",
+    "scope": "Unmodified seven Message/three Polling/two Queue neutral faults only. Actual typed UI mappings/cause recursion, original reason suppression and separate typed English-description accessor; no MessageService/poll/queue implementation, model/helper/other contract or UI-to-services edge.",
+    "freeze": "Read-only after exact carry; producer ACK/Room/native acceptance remains separate."
+  },
   "second_main_reconciliation": {
     "authority": "Parent explicitly requested only the own branch reconcile with actual origin/main before final proof.",
     "actual_base_sha": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
@@ -152,6 +194,11 @@
     ],
     "scope": "Landed runtime/TCP fixture/README successors; pinned source, policy, catalog and ROOT UI seed unchanged."
   },
-  "execution_boundary": "No Windows JVM/Gradle, WSL installs, shared-cache bootstrap or global setup. Exact scoped Linux generation/testing requires a separate grant.",
-  "scope": "Authorship receipt and readiness only; not source parity, native execution, gate acceptance, merge authority, fleet activation or whole-app completion."
+  "protected_main_hold": {
+    "observed_main": "7237727fe498e87261cc9b321051567a86279fef",
+    "merged_pr": 40,
+    "scope": "Parent explicitly holds adoption/merge while reviewing protected source exceptions. Continue owned implementation on the source-pinned7e lineage; no source/schema/amendment adoption or reference advance."
+  },
+  "execution_boundary": "No Windows JVM/Gradle, WSL installs, shared-cache bootstrap or global setup. Exact approved scoped Linux proposal and following ordinary Ubuntu native verification only.",
+  "scope": "Bounded authorship, explicitly admitted dependency data and execution permission only; not source parity, an executed native pass, gate acceptance, self-merge, fleet activation or whole-app completion."
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import java.time.Clock
@@ -38,9 +39,12 @@ fun ConversationTimestamp(
     referenceDate: Instant? = null,
     style: TextStyle = MaterialTheme.typography.bodySmall,
 ) {
-    val resources = LocalContext.current.resources
+    LocalConfiguration.current
+    val context = LocalContext.current
+    val resources = context.resources
     val now = referenceDate ?: currentMinute(clock)
-    val formatter = TimestampFormatting(resourceLocale(resources), clock.zone)
+    val formatter = TimestampFormatting(resourceLocale(resources), clock.zone,
+        use24HourClock = android.text.format.DateFormat.is24HourFormat(context))
     Text(formatter.conversationTimestamp(date, now), modifier, style = style,
         color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
@@ -52,6 +56,7 @@ fun RelativeTimestampText(
     modifier: Modifier = Modifier,
     referenceDate: Instant? = null,
 ) {
+    LocalConfiguration.current
     val resources = LocalContext.current.resources
     val now = referenceDate ?: currentMinute(clock)
     Text(TimestampFormatting(resourceLocale(resources), clock.zone).relativeTimestamp(date, now, resources),

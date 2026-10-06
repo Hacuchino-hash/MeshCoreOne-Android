@@ -4,7 +4,6 @@
 package com.meshcoreone.android.core.ui
 
 import android.content.res.Resources
-import android.icu.text.DateFormat
 import android.icu.text.DateTimePatternGenerator
 import android.icu.text.DisplayContext
 import android.icu.text.RelativeDateTimeFormatter
@@ -25,6 +24,7 @@ class TimestampFormatting(
     private val locale: Locale,
     private val zone: ZoneId,
     private val calendar: Chronology = Chronology.ofLocale(locale),
+    private val use24HourClock: Boolean? = null,
 ) {
     private fun relativeFormatter() = RelativeDateTimeFormatter.getInstance(
         ULocale.forLocale(locale), null, RelativeDateTimeFormatter.Style.SHORT,
@@ -33,8 +33,11 @@ class TimestampFormatting(
 
     fun relative(date: Instant, now: Instant): String {
         val component = relativeComponent(date, now)
-        return relativeFormatter().format(component.amount.toDouble(), component.unit)
+        return relativeFormatter().formatNumeric(component.amount.toDouble(), component.unit)
     }
+
+    private fun displayTimeZone() =
+        android.icu.util.TimeZone.getTimeZone(java.util.TimeZone.getTimeZone(zone).id)
 
     fun relativeComponent(date: Instant, now: Instant): RelativeTimeComponent {
         val earlier = calendar.zonedDateTime(minOf(date, now), zone)
@@ -64,7 +67,7 @@ class TimestampFormatting(
     fun abbreviatedDate(date: Instant): String {
         val pattern = DateTimePatternGenerator.getInstance(locale).getBestPattern("MMMd")
         val formatter = SimpleDateFormat(pattern, locale)
-        formatter.timeZone = android.icu.util.TimeZone.getTimeZone(zone.id)
+        formatter.timeZone = displayTimeZone()
         return formatter.format(Date.from(date))
     }
 
@@ -84,12 +87,17 @@ class TimestampFormatting(
         val dateDay = calendar.zonedDateTime(date, zone).toLocalDate()
         val nowDay = calendar.zonedDateTime(now, zone).toLocalDate()
         return when (dateDay) {
-            nowDay -> DateFormat.getTimeInstance(DateFormat.SHORT, locale).also {
-                it.timeZone = android.icu.util.TimeZone.getTimeZone(zone.id)
+            nowDay -> SimpleDateFormat(DateTimePatternGenerator.getInstance(locale).getBestPattern(
+                when (use24HourClock) { true -> "Hm"; false -> "hm"; null -> "jm" },
+            ), locale).also {
+                it.timeZone = displayTimeZone()
             }.format(Date.from(date))
-            nowDay.minus(1, ChronoUnit.DAYS) -> relativeFormatter().format(
-                -1.0, RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY,
-            )
+            nowDay.minus(1, ChronoUnit.DAYS) -> {
+                val component = relativeComponent(date, now)
+                RelativeDateTimeFormatter.getInstance(ULocale.forLocale(locale), null,
+                    RelativeDateTimeFormatter.Style.LONG, DisplayContext.CAPITALIZATION_NONE)
+                    .format(component.amount.toDouble(), component.unit)
+            }
             else -> abbreviatedDate(date)
         }
     }

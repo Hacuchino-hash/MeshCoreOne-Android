@@ -6,6 +6,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
@@ -71,12 +73,15 @@ class ErrorLocalizationTest : SourceCaseProof() {
             assertTrue(description.isNotEmpty()); assertFalse(description.contains("ProtocolError"))
         }
     }
-    @ProducerBindingPending("WP-208")
+    @NativeAdaptation("native-typed-description-accessor")
     @OriginalCase("ErrorLocalizationTests::MessageServiceError.sessionError passes through MeshCoreError description()")
-    @Test fun messageDelegationPolicy() = prove {
-        val error = MeshCoreException.DeviceError(3u)
-        assertEquals("Device storage is full.", error.sourceEnglishDescription())
-        assertEquals(mapper.deviceError(3u).resolve(resources), mapper.message(error).resolve(resources))
+    @Test fun messageConcreteDelegationKeepsTheOriginalProtocolCauseAndLocalizedCopy() = prove {
+        val underlying = MeshCoreException.DeviceError(3u)
+        val failure = MessageServiceException(MessageServiceError.SessionError(underlying))
+        assertSame(underlying, failure.cause)
+        assertEquals("Device storage is full.", failure.sourceEnglishDescription())
+        assertEquals(mapper.deviceError(3u).resolve(resources), mapper.message(failure).resolve(resources))
+        assertFalse(mapper.message(failure).resolve(resources).contains("SessionError"))
     }
     @ProducerBindingPending("WP-209")
     @OriginalCase("ErrorLocalizationTests::ChannelServiceError.sessionError passes through MeshCoreError description()")

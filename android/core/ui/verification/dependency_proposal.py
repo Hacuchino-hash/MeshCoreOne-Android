@@ -45,6 +45,8 @@ TASK = ":core:ui:resolveSharedUiDependencies"
 GRAPH = "android/core/ui/build/reports/wp304/dependency-graphs.tsv"
 CONFIGURATIONS = "android/core/ui/build/reports/wp304/resolution-configurations.txt"
 ALIGNMENT = "android/core/ui/build/reports/wp304/unit-compile-alignment.tsv"
+TEST_CONTEXT_INPUT = "android/core/ui/verification/test-context-memberships.json"
+TEST_CONTEXT_SHA = "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d"
 COMPILE_ALIGNMENT = {
     "androidx.core:core": "1.16.0",
     "androidx.core:core-ktx": "1.16.0",
@@ -58,8 +60,9 @@ VM = "-Xms64m -Xmx512m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC -XX:ActiveProc
 REQUIRED_INPUTS = {
     WORKFLOW, "android/core/ui/verification/dependency_proposal.py",
     "android/core/ui/verification/test_dependency_proposal.py",
-    "android/core/ui/build.gradle.kts", ROOT_LOCK,
+    "android/core/ui/build.gradle.kts", ROOT_LOCK, TEST_CONTEXT_INPUT,
     "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt",
     "docs/android/evidence/WP-304/collect_evidence.py",
     "docs/android/evidence/WP-304/retain_raw.py",
     "docs/android/evidence/WP-304/source_inventory.py",
@@ -165,6 +168,21 @@ def parse_graph(text, expected):
         for name, values in configurations.items()}
 
 
+def approved_test_context_memberships():
+    path = ROOT / TEST_CONTEXT_INPUT
+    require(path.is_file() and not path.is_symlink(), "missing/linked approved test-context data")
+    require(sha(path.read_bytes()) == TEST_CONTEXT_SHA, "approved test-context data changed")
+    value = load_json(path)
+    rows = value["allowed_new_test_context_memberships"]
+    pairs = {(row["configuration"], row["coordinate"]) for row in rows}
+    require(len(rows) == len(pairs) == 26 and {
+        name: sum(configuration == name for configuration, _ in pairs)
+        for name in ("debugUnitTestCompileClasspath", "debugUnitTestRuntimeClasspath", "debugUnitTestLintChecksClasspath")
+    } == {"debugUnitTestCompileClasspath": 10, "debugUnitTestRuntimeClasspath": 8, "debugUnitTestLintChecksClasspath": 8},
+        "missing/extra approved test-context membership")
+    return pairs
+
+
 def validate_delta(seed_text, prior_text, generated_text, graph_text, config_text, verification):
     expected = config_text.splitlines()
     require(expected and len(expected) == len(set(expected))
@@ -176,6 +194,7 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
     require(set(after) == set(expected) | set(before), "lock contains an unexecuted configuration or omitted prior state")
     require(set(seed) <= set(after), "original seed configurations missing: " + ", ".join(sorted(set(seed) - set(after))))
     admitted = admitted_coordinates(verification)
+    approved_contexts = approved_test_context_memberships()
     seed_versions = {}
     for values in seed.values():
         for coordinate in values:
@@ -183,7 +202,7 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
             seed_versions.setdefault(name, set()).add(version)
     for name, values in before.items():
         require(name in after and values <= after[name], "removed prior owned component/configuration")
-    delta = []
+    delta, context_admissions = [], []
     for name, values in after.items():
         require(values <= admitted, "unadmitted coordinate/version in " + name + ": " + ", ".join(sorted(values - admitted)))
         if name in graph:
@@ -193,12 +212,21 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
         require(seed.get(name, set()) <= values if name in expected else True, "incumbent seed component/configuration removed")
         for coordinate in values:
             artifact, version = coordinate.rsplit(":", 1)
-            require(artifact not in seed_versions or version in seed_versions[artifact], "incumbent version changed")
+            if artifact in seed_versions and version not in seed_versions[artifact]:
+                source_members = {member for member in seed.get(name, set()) if member.rsplit(":", 1)[0] == artifact}
+                prior_members = {member for member in before.get(name, set()) if member.rsplit(":", 1)[0] == artifact}
+                require((name, coordinate) in approved_contexts and not source_members
+                    and prior_members in (set(), {coordinate}),
+                    "incumbent version changed outside exact non-replacing test-context membership: " + name + " " + coordinate)
+                if not prior_members:
+                    context_admissions.append({"configuration": name, "coordinate": coordinate})
         delta.append({"configuration": name, "before": sorted(before.get(name, set())),
             "seed": sorted(seed.get(name, set())), "after": sorted(values),
             "added_vs_prior": sorted(values - before.get(name, set())),
             "added_vs_seed": sorted(values - seed.get(name, set()))})
-    return {"configuration_count": len(after), "selected_component_rows": sum(len(x) for x in graph.values()), "configurations": delta}
+    return {"configuration_count": len(after), "selected_component_rows": sum(len(x) for x in graph.values()),
+        "configurations": delta, "test_context_data": {"path": TEST_CONTEXT_INPUT, "sha256": TEST_CONTEXT_SHA},
+        "new_test_context_memberships": sorted(context_admissions, key=lambda row: (row["configuration"], row["coordinate"]))}
 
 def validate_compile_alignment(seed_text, alignment_text):
     seed = parse_lock(seed_text).get("debugUnitTestRuntimeClasspath", set())

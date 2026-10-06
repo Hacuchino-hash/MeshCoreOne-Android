@@ -26,18 +26,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.stateDescription
@@ -89,11 +93,16 @@ fun BLEStatusIndicatorView(state: RadioStatusState, actions: RadioStatusActions,
     }
     val status = uiString(UiText.Resource(state.connection.statusResource))
     val label = uiString(UiText.Resource(S.bleStatusAccessibilityLabel))
+    val hint = uiString(UiText.Resource(if (state.device != null) S.bleStatusAccessibilityHintConnected
+        else S.bleStatusAccessibilityHintDisconnected))
+    val zeroHopHint = uiString(UiText.Resource(S.bleStatusSendZeroHopAdvertHint))
+    val floodHint = uiString(UiText.Resource(S.bleStatusSendFloodAdvertHint))
     val color = tokens.roles.radioColor(role).toComposeColor()
     Box(modifier) {
         IconButton(onClick = { menuExpanded = true }, modifier = Modifier.sharedTouchTarget().semantics {
             stateDescription = status
-        }) { Icon(MeshSymbol.RADIO.vector, label, tint = color) }
+            onClick(label = hint, action = null)
+        }) { RadioConnectionIcon(state.connection, color, label) }
         DropdownMenu(menuExpanded, onDismissRequest = { menuExpanded = false }) {
             val device = state.device
             if (device == null) {
@@ -124,17 +133,36 @@ fun BLEStatusIndicatorView(state: RadioStatusState, actions: RadioStatusActions,
                 DropdownMenuItem(text = { Text(uiString(UiText.Resource(S.bleStatusSendZeroHopAdvert))) },
                     onClick = { menuExpanded = false; actions.sendAdvert(false) },
                     enabled = radioActionEnabled(state.connection, state.isSendingAdvert),
-                    modifier = Modifier.sharedTouchTarget().radioDisabledHint(state.connection))
+                    modifier = Modifier.sharedTouchTarget().radioDisabledHint(state.connection)
+                        .semantics { onClick(label = zeroHopHint, action = null) })
                 DropdownMenuItem(text = { Text(uiString(UiText.Resource(S.bleStatusSendFloodAdvert))) },
                     onClick = { menuExpanded = false; actions.sendAdvert(true) },
                     enabled = radioActionEnabled(state.connection, state.isSendingAdvert),
-                    modifier = Modifier.sharedTouchTarget().radioDisabledHint(state.connection))
+                    modifier = Modifier.sharedTouchTarget().radioDisabledHint(state.connection)
+                        .semantics { onClick(label = floodHint, action = null) })
                 HorizontalDivider()
                 DropdownMenuItem(text = { Text(uiString(UiText.Resource(S.advancedSettingsTitle))) },
                     onClick = { menuExpanded = false; actions.openAdvancedSettings() }, modifier = Modifier.sharedTouchTarget())
             }
         }
     }
+}
+
+@Composable
+internal fun RadioConnectionIcon(
+    connection: DeviceConnectionState,
+    tint: Color,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    Icon(MeshSymbol.RADIO.vector, label, modifier.drawWithContent {
+        drawContent()
+        if (connection == DeviceConnectionState.DISCONNECTED) {
+            drawLine(tint, Offset(size.width / 6, size.height / 6),
+                Offset(size.width * 5 / 6, size.height * 5 / 6),
+                strokeWidth = 1.8.dp.toPx(), cap = StrokeCap.Round)
+        }
+    }, tint = tint)
 }
 
 @Composable
@@ -243,13 +271,14 @@ fun SyncingPillOverlay(
     content: @Composable () -> Unit,
 ) {
     var displayedState by remember { mutableStateOf<StatusPillState>(StatusPillState.Hidden) }
-    LaunchedEffect(state) { if (state != StatusPillState.Hidden) displayedState = state }
+    val contentState = if (state == StatusPillState.Hidden) displayedState else state
+    SideEffect { if (state != StatusPillState.Hidden) displayedState = state }
     val duration = LocalMeshTheme.current.duration(300)
     Box(modifier) {
         content()
         AnimatedVisibility(state != StatusPillState.Hidden, Modifier.align(Alignment.TopCenter).padding(top = 8.dp),
             enter = fadeIn(tween(duration)), exit = fadeOut(tween(duration))) {
-            SyncingPillView(displayedState,
+            SyncingPillView(contentState,
                 modifier = if (state == StatusPillState.Hidden) Modifier.clearAndSetSemantics {} else Modifier,
                 onDisconnectedTap = if (state == StatusPillState.Hidden) null else onDisconnectedTap)
         }

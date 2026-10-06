@@ -11,6 +11,12 @@ import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingError
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingException
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
@@ -28,7 +34,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31], qualifiers = "en-rUS")
 class ErrorDispatchCoverageTest : SourceCaseProof() {
-    @ProducerBindingPending("WP-205-206-207-208-209-210-214")
+    @ProducerBindingPending("WP-205-206-207-209-210-214")
     @OriginalCase("ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()")
     @Test fun everyOriginalLocalizedErrorHasCopyAccountingOrTheOriginalControlFlowAllowlist() = prove {
         val root = File(requireNotNull(System.getProperty("repositoryDirectory")))
@@ -57,6 +63,9 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
             "KeyGenerationError" to (KeyGenerationFailure.ReservedPrefix() to L.errorKeyGenerationReservedPrefix),
             "DeviceServiceError" to (DeviceServiceException(DeviceServiceError.DeviceNotFound) to L.errorDeviceServiceDeviceNotFound),
             "SettingsServiceError" to (SettingsServiceException(SettingsServiceError.NotConnected) to L.errorSettingsNotConnected),
+            "MessageServiceError" to (MessageServiceException(MessageServiceError.NotConnected) to L.errorMessageServiceNotConnected),
+            "MessagePollingError" to (MessagePollingException(MessagePollingError.NotConnected) to L.errorMessagePollingNotConnected),
+            "ChatSendQueueServiceError" to (ChatSendQueueServiceException(ChatSendQueueServiceError.NotConnected) to L.errorChatSendQueueNotConnected),
         )
         for ((source, pair) in actualBindings) {
             assertTrue(source in discovered)
@@ -64,7 +73,8 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
         }
         val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling - setOf("ProtocolError", "KeychainError")
         assertTrue(nativeMissing.isNotEmpty(), "Unavailable producer families must not be silently credited as native dispatch")
-        assertTrue(nativeMissing.containsAll(setOf("MessageServiceError", "ChatSendQueueServiceError", "RemoteNodeError")))
+        assertTrue(nativeMissing.containsAll(setOf("ChannelServiceError", "RemoteNodeError", "SyncCoordinatorError")))
+        assertFalse(nativeMissing.any { it in setOf("MessageServiceError", "MessagePollingError", "ChatSendQueueServiceError") })
         assertTrue(discovered.isNotEmpty())
     }
 }

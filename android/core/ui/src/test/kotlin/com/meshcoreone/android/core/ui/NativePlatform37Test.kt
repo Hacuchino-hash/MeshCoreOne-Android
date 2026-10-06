@@ -58,6 +58,24 @@ class NativePlatform37Test {
         assertEquals(AvatarImageState.Absent, cache.decode(null))
     }
 
+    @Test fun nativeNullableBitmapCopyFailureIsReportedAsAnImageFailureInsteadOfCrashingOrEnteringTheCache() {
+        val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(android.graphics.Color.BLUE)
+        val raw = ByteArrayOutputStream().use {
+            assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+            Bytes(it.toByteArray())
+        }
+        val failures = mutableListOf<Throwable>()
+        var attempts = 0
+        val cache = AvatarImageCache(reporter = UiErrorReporter(failures::add),
+            copyDecodedBitmap = { attempts++; null })
+        val first = assertIs<AvatarImageState.Failed>(cache.decode(raw))
+        val second = assertIs<AvatarImageState.Failed>(cache.decode(raw))
+        assertEquals(2, attempts)
+        assertEquals(listOf(first.failure, second.failure), failures)
+        assertIs<java.io.IOException>(first.failure)
+    }
+
     @Test fun sourceCropDecodeLimitBoundsTheActualNativeBitmapAllocation() {
         val source = Bitmap.createBitmap(2048, 1024, Bitmap.Config.ARGB_8888)
         source.eraseColor(android.graphics.Color.MAGENTA)

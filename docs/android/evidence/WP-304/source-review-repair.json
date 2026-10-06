@@ -2,12 +2,13 @@
   "schema_version": 1,
   "work_package": "WP-304",
   "reviewed_original_candidate": "41e9e9757842fee022c11007ea363ac82285c72d",
-  "status": "coherent-source-repair-authored-not-native-or-parity-accepted",
+  "status": "coherent-source-repair-and-dependency-data-admitted-native-unverified",
   "findings": {
     "pending_producer_dispatch": {
       "status": "BLOCKED for unavailable producers, not credited equivalents",
       "change": "Method-bound WP304_POLICY_CASE receipts are separate from native WP304_CASE. The reader retains native outputs then fails acceptance on remaining producer bindings. Actual available fault constructors are exercised by coverage; names/copy catalogs cannot close native dispatch coverage.",
-      "source_floor": {"accounted_families": 130, "accounted_scenarios": 158}
+      "source_floor": {"accounted_families": 130, "accounted_scenarios": 158},
+      "later_messaging_binding": "Exact frozen WP-208 blob d6f96917b135f12d3fa62c0e5c456aac709257bc now binds seven Message/three Polling/two Queue cases. Real Queue(Persist(Message(Session(MeshCore)))) and persistence/cancellation causes are asserted; raw SendFailed reason remains metadata but is suppressed in visible copy. Twenty-one original families remain pending, including six still-unavailable session wrappers in the combined family."
     },
     "storage_failure": {
       "change": "Actual StorageProblem/StorageOperation/native four-family copy, safe recovery and cause identity retained; typed adapters precede the default storage presentation. No provider secret/alias copy or manufactured Apple OSStatus."
@@ -21,7 +22,7 @@
       "evidence": "Authored actual TextLayoutResult/semantic foreground-background and native signal pixel assertions across effective themes; not executed yet."
     },
     "relative_time": {
-      "change": "Injected calendar/zone, integral nearest-unit precision and year/month/week/day selection; original under60-second/seven-day special branches remain. Deterministic90-second/hour/day/week/month/year/DST component assertions authored.",
+      "change": "Injected calendar/zone, integral nearest-unit precision and numeric year/month/week/day selection; original under60-second/seven-day special branches remain. Conversation previous-day named components, real system24-hour input and fixed-offset zone formatting are preserved. Deterministic90-second/hour/day/week/month/year/DST component assertions are now direct class-level JUnit methods.",
       "source_oracle_or_native_execution": "UNVERIFIED"
     },
     "emitted_state_colors": {
@@ -30,6 +31,13 @@
   },
   "tip_boundaries": "Actual DataStore locked WRITE, real filesystem write failure/durable reopen, consumer cancellation during serialized update and close during in-flight write assertions added. Native executions and failure PNG/Back/font evidence remain unverified.",
   "producer_type_carry": "Frozen WP-211 DeviceSettingsFaults blob b2a6b84a3846c016184e06772da4800700e3e8af remains unchanged; later real binding is not part of the original41e review acceptance.",
-  "classpath": "Seven explicit test-compile constraints derive only from existing unique source unit-runtime seed and retain requested/selected graph edges; no new root metadata/catalog admission.",
+  "classpath": "Seven exact source-runtime compile pins plus only the coordinator's twenty-six closed non-replacing test-context pairs. Existing actual54,192-byte Linux generated lock was independently replayed and byte-admitted; no ROOT metadata/catalog/provider update or historical hosted PASS.",
+  "introduced_defects_repaired": {
+    "resource_namespace": "Source-generated resources use L10nR; module-owned postcommit copy uses UiR explicitly.",
+    "junit_scope": "Two relative-time methods and two Compose recovery methods moved from local functions to direct class-level JUnit methods. Bounded comment/literal/interpolation/delimiter-aware declaration validation rejects nested/orphan/unsupported annotations; actual XML must still match every declared method.",
+    "current_declarations": 197,
+    "executed_native_methods": 0
+  },
+  "other_confirmed_owned_repairs": "Region whitespace is Zs plus tab, empty input has no fabricated error message and focus is requested within dialog composition. Native map menus dismiss after action, initial pill content is nonempty, failed unloaded sections have no duplicate header reload, nullable bitmap-copy failures are typed/reported and crop pointer deltas accumulate. Existing source hints/selected state and a native disconnected slash have consumer/pixel assertions. Backup integer-MiB display is preserved because both frozen source paths use integer division.",
   "native_hardware_license_signing_or_macro_acceptance": false
 }

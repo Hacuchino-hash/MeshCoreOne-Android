@@ -75,6 +75,7 @@ fun MapControlsToolbar(
                     Modifier.semantics { if (state.filterActive) stateDescription = filterDescription })
                 DropdownMenu(filtersOpen, { filtersOpen = false }) {
                     for (choice in state.filterChoices) ControlChoice(choice) {
+                        filtersOpen = false
                         actions.selectFilter(choice.id)
                     }
                 }
@@ -90,14 +91,17 @@ fun MapControlsToolbar(
                 }
                 HorizontalDivider()
                 ControlChoice(MapControlChoice("labels", UiText.Resource(M.mapControlsShowLabels), state.showLabels)) {
+                    optionsOpen = false
                     actions.setShowLabels(!state.showLabels)
                 }
                 state.clusteringEnabled?.let { clustering ->
                     ControlChoice(MapControlChoice("clustering", UiText.Resource(M.mapControlsClusterNodes), clustering)) {
+                        optionsOpen = false
                         actions.setClusteringEnabled(!clustering)
                     }
                 }
                 ControlChoice(MapControlChoice("north", UiText.Resource(M.mapControlsLockNorth), state.isNorthLocked)) {
+                    optionsOpen = false
                     actions.setNorthLocked(!state.isNorthLocked)
                 }
             }

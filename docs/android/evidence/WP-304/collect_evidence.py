@@ -63,6 +63,108 @@ def png_shape(raw):
     return dimensions
 
 
+def kotlin_code(text):
+    require(len(text) <= 2 * 1024 * 1024, "Excessive native test source")
+    masked = list(text)
+
+    def comment_end(position):
+        if text.startswith("//", position):
+            end = text.find("\n", position)
+            return len(text) if end < 0 else end
+        depth, cursor = 1, position + 2
+        while cursor < len(text) and depth:
+            if text.startswith("/*", cursor):
+                depth += 1
+                cursor += 2
+            elif text.startswith("*/", cursor):
+                depth -= 1
+                cursor += 2
+            else:
+                cursor += 1
+        require(depth == 0, "Unterminated native test comment")
+        return cursor
+
+    def interpolation_end(position, nesting):
+        require(nesting <= 64, "Excessive native test interpolation")
+        depth, cursor = 1, position
+        while cursor < len(text):
+            if text.startswith(("//", "/*"), cursor):
+                cursor = comment_end(cursor)
+            elif text[cursor] in "\"'`":
+                cursor = literal_end(cursor, nesting + 1)
+            elif text[cursor] == "{":
+                depth += 1
+                cursor += 1
+            elif text[cursor] == "}":
+                depth -= 1
+                cursor += 1
+                if depth == 0:
+                    return cursor
+            else:
+                cursor += 1
+        require(False, "Unterminated native test interpolation")
+
+    def literal_end(position, nesting=0):
+        delimiter = '"""' if text.startswith('"""', position) else text[position]
+        cursor = position + len(delimiter)
+        while cursor < len(text):
+            if text.startswith(delimiter, cursor):
+                return cursor + len(delimiter)
+            if delimiter in {'"', "'"} and text[cursor] == "\\":
+                cursor += 2
+            elif delimiter in {'"', '"""'} and text.startswith("${", cursor):
+                cursor = interpolation_end(cursor + 2, nesting + 1)
+            else:
+                require(delimiter == '"""' or text[cursor] != "\n", "Unterminated native test literal")
+                cursor += 1
+        require(False, "Unterminated native test literal")
+
+    position = 0
+    while position < len(text):
+        if text.startswith(("//", "/*"), position):
+            end = comment_end(position)
+        elif text[position] in "\"'`":
+            end = literal_end(position)
+        else:
+            position += 1
+            continue
+        for index in range(position, end):
+            if masked[index] != "\n":
+                masked[index] = " "
+        position = end
+    return "".join(masked)
+
+
+def native_test_methods(text):
+    code = kotlin_code(text)
+    tests = list(re.finditer(r"@Test\s+fun\s+(\w+)\s*\(\s*\)", code))
+    require(len(re.findall(r"@(?:[\w.]+\.)?Test\b", code)) == len(tests),
+        "Unsupported/orphan native JUnit annotation")
+    package = re.search(r"(?m)^package\s+([\w.]+)", code)
+    classes = list(re.finditer(r"(?m)^class\s+(\w+)\b", code))
+    if tests:
+        require(package and len(classes) == 1, "Ambiguous native test class")
+        opening = code.find("{", classes[0].end())
+        require(opening >= 0, "Missing native test class body")
+    positions = {match.start(): match for match in tests}
+    stack, methods = [], set()
+    closing = {")": "(", "]": "[", "}": "{"}
+    for index, character in enumerate(code):
+        if index in positions:
+            require(stack == [("{", opening)], "Native @Test must be a direct class-level JUnit method: "
+                + positions[index][1] + " at line " + str(text.count("\n", 0, index) + 1))
+            method = package[1] + "." + classes[0][1] + "#" + positions[index][1]
+            require(method not in methods, "Duplicate native test declaration")
+            methods.add(method)
+        if character in "([{":
+            stack.append((character, index))
+        elif character in ")]}":
+            require(stack and stack[-1][0] == closing[character], "Unbalanced native test delimiter")
+            stack.pop()
+    require(not stack, "Unclosed native test delimiter")
+    return methods
+
+
 def declarations():
     _, cases = inventory()
     paths = sorted((ROOT / "android" / "core" / "ui" / "src" / "test" / "kotlin").rglob("*.kt"))
@@ -74,15 +176,9 @@ def declarations():
             require(identifier in cases and identifier not in identities, "Unknown/duplicate original declaration")
             require(int(parameters or 1) == cases[identifier]["scenarios"], "Wrong source parameter expansion")
             identities[identifier] = path.relative_to(ROOT).as_posix()
-        package = re.search(r"(?m)^package\s+([\w.]+)", text)
-        classes = re.findall(r"(?m)^class\s+(\w+)", text)
-        tests = re.findall(r"@Test\s+(?:fun\s+)?(\w+)\s*\(", text)
-        if tests:
-            require(package and len(classes) == 1, "Ambiguous native test class")
-            for method in tests:
-                identity = package[1] + "." + classes[0] + "#" + method
-                require(identity not in methods, "Duplicate native test declaration")
-                methods.add(identity)
+        declared = native_test_methods(text)
+        require(not methods.intersection(declared), "Duplicate native test declaration")
+        methods.update(declared)
     require(set(identities) == set(cases), "Missing owned original family declarations")
     require(methods, "Zero declared native tests")
     return cases, methods

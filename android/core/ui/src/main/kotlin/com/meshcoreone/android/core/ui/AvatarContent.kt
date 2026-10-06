@@ -80,6 +80,7 @@ sealed interface AvatarImageState {
 class AvatarImageCache(
     maximumBytes: Int = 32 * 1024 * 1024,
     private val reporter: UiErrorReporter = AndroidUiErrorReporter,
+    private val copyDecodedBitmap: (Bitmap) -> Bitmap? = { it.copy(Bitmap.Config.ARGB_8888, false) },
 ) {
     private val cache = object : LruCache<Bytes, Bitmap>(maximumBytes) {
         override fun sizeOf(key: Bytes, value: Bitmap): Int = value.allocationByteCount
@@ -99,7 +100,7 @@ class AvatarImageCache(
                         maxOf(1, (info.size.height * factor).toInt()))
                 }
             }
-            val immutable = requireNotNull(decoded.copy(Bitmap.Config.ARGB_8888, false))
+            val immutable = copyDecodedBitmap(decoded) ?: throw IOException("Unable to copy the decoded avatar bitmap")
             cache.put(data, immutable)
             AvatarImageState.Ready(immutable.asImageBitmap())
         } catch (failure: IOException) {

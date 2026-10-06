@@ -101,12 +101,11 @@ fun AvatarCropView(
                     }
                     val pan = size * AvatarCropGeometry.PAN_STEP_FRACTION
                     Canvas(Modifier.fillMaxSize().pointerInput(image) {
+                        val accumulator = CropGestureAccumulator(latestGeometry)
                         detectTransformGestures { _, translation, zoom, _ ->
-                            val current = latestGeometry
-                            val transform = current.liveTransform(zoom.toDouble(), CropOffset(
+                            latestChange(accumulator.transform(latestGeometry, zoom.toDouble(), CropOffset(
                                 translation.x.toDouble() / density, translation.y.toDouble() / density,
-                            ))
-                            latestChange(current.copy(scale = transform.scale, offset = transform.offset))
+                            )))
                         }
                     }.semantics {
                         contentDescription = preview

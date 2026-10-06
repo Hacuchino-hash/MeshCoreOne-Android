@@ -9,13 +9,19 @@ import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingError
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingException
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.datastore.StorageOperation
 import com.meshcoreone.android.core.datastore.StorageProblem
-import com.meshcoreone.android.core.l10n.R
+import com.meshcoreone.android.core.l10n.R as L10nR
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
 import com.meshcoreone.android.core.model.AppBackupError
@@ -27,6 +33,8 @@ import com.meshcoreone.android.core.protocol.event.MeshTransportError
 import com.meshcoreone.android.core.protocol.model.ErrorCode
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiReceiveException
+import com.meshcoreone.android.core.ui.R as UiR
 import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.UUID
@@ -107,7 +115,7 @@ class UiErrorMapper(
         if (error is CommittedBackupPreferenceFailure) {
             val preferenceCopy = message(error.preferenceFailure, visited)
             return UiErrorMapping(generatedText("WP-304.Backup.RowsCommittedPreferencesIncomplete") {
-                it.getString(R.string.ui_backup_preferences_incomplete) + "\n" + preferenceCopy.resolve(it)
+                it.getString(UiR.string.ui_backup_preferences_incomplete) + "\n" + preferenceCopy.resolve(it)
             }, UiRecovery.COMPLETE_BACKUP_PREFERENCES, error.committedReceipt)
         }
         adapters.firstNotNullOfOrNull { adapter -> adapter.presentation(error) { message(it, visited) } }?.let { return it }
@@ -141,7 +149,26 @@ class UiErrorMapper(
                     ErrorCopy.static("BLEError", "characteristicNotFound")
             }
             is WiFiTransportException -> wifiError(error.error)
+            is WiFiReceiveException -> ErrorCopy.meshConnectionLost(null)
             is PersistenceStoreException -> persistenceError(error.error)
+            is MessageServiceException -> when (val fault = error.error) {
+                MessageServiceError.NotConnected -> ErrorCopy.static("MessageServiceError", "notConnected")
+                MessageServiceError.ContactNotFound -> ErrorCopy.static("MessageServiceError", "contactNotFound")
+                MessageServiceError.ChannelNotFound -> ErrorCopy.static("MessageServiceError", "channelNotFound")
+                is MessageServiceError.SendFailed -> ErrorCopy.static("MessageServiceError", "sendFailed")
+                MessageServiceError.InvalidRecipient -> ErrorCopy.static("MessageServiceError", "invalidRecipient")
+                MessageServiceError.MessageTooLong -> ErrorCopy.static("MessageServiceError", "messageTooLong")
+                is MessageServiceError.SessionError -> message(fault.underlying, visited)
+            }
+            is MessagePollingException -> when (val fault = error.error) {
+                MessagePollingError.NotConnected -> ErrorCopy.static("MessagePollingError", "notConnected")
+                MessagePollingError.PollingFailed -> ErrorCopy.static("MessagePollingError", "pollingFailed")
+                is MessagePollingError.SessionError -> message(fault.underlying, visited)
+            }
+            is ChatSendQueueServiceException -> when (val fault = error.error) {
+                ChatSendQueueServiceError.NotConnected -> ErrorCopy.static("ChatSendQueueServiceError", "notConnected")
+                is ChatSendQueueServiceError.PersistFailed -> ErrorCopy.queuePersistFailed(message(fault.underlying, visited))
+            }
             is DeviceServiceException -> when (val fault = error.error) {
                 DeviceServiceError.DeviceNotFound -> ErrorCopy.static("DeviceServiceError", "deviceNotFound")
                 is DeviceServiceError.PersistenceFailed -> ErrorCopy.devicePersistenceFailed(fault.reason)
@@ -204,15 +231,15 @@ class UiErrorMapper(
     private fun backupError(error: AppBackupError, visited: MutableSet<Throwable>): UiText = when (error) {
         AppBackupError.InvalidFile -> UiText.Resource(S.settingsBackupErrorInvalidFile)
         is AppBackupError.FileTooLarge -> formattedText(
-            R.string.l10n_app_settings_settings_backup_error_file_too_large,
+            L10nR.string.l10n_app_settings_settings_backup_error_file_too_large,
             UiFormatArgument.Integer(error.actualBytes / 1_048_576), UiFormatArgument.Integer(error.maxBytes / 1_048_576),
         )
         is AppBackupError.DecompressedTooLarge -> formattedText(
-            R.string.l10n_app_settings_settings_backup_error_decompressed_too_large,
+            L10nR.string.l10n_app_settings_settings_backup_error_decompressed_too_large,
             UiFormatArgument.Integer(error.maxBytes / 1_048_576),
         )
         is AppBackupError.UnsupportedVersion -> formattedText(
-            R.string.l10n_app_settings_settings_backup_error_unsupported_version,
+            L10nR.string.l10n_app_settings_settings_backup_error_unsupported_version,
             UiFormatArgument.Integer(error.found), UiFormatArgument.Integer(error.maxSupported),
         )
         AppBackupError.CorruptedManifest -> UiText.Resource(S.settingsBackupErrorCorruptedManifest)
@@ -250,7 +277,15 @@ class UiErrorMapper(
         is KeyGenerationFailure.InvalidPrefix, is KeyGenerationFailure.ReservedPrefix -> UiRecovery.FIX_INPUT
         is MeshCoreException.DataTooLarge -> UiRecovery.REDUCE_PAYLOAD
         is StorageFailure -> UiRecovery.RECOVER_STORAGE
-        is MeshCoreException.Timeout, is WiFiTransportException -> UiRecovery.RETRY
+        is WiFiTransportException -> when (error.error) {
+            WiFiTransportError.InvalidHost, WiFiTransportError.InvalidPort,
+            WiFiTransportError.NotConfigured -> UiRecovery.FIX_INPUT
+            WiFiTransportError.NotConnected -> UiRecovery.CONNECT
+            is WiFiTransportError.ConnectionFailed, WiFiTransportError.ConnectionTimeout,
+            is WiFiTransportError.SendFailed, WiFiTransportError.SendTimeout -> UiRecovery.RETRY
+        }
+        is WiFiReceiveException -> UiRecovery.CONNECT
+        is MeshCoreException.Timeout -> UiRecovery.RETRY
         else -> UiRecovery.INSPECT_FAILURE
     }
 }

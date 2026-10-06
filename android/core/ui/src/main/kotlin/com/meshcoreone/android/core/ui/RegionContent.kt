@@ -70,18 +70,23 @@ data class RegionManagementActions(
 
 fun filteredRegions(regions: List<String>, search: String, locale: Locale): SnapshotList<String> {
     val collator = Collator.getInstance(locale)
-    collator.strength = Collator.PRIMARY
+    collator.strength = Collator.TERTIARY
     if (collator is RuleBasedCollator) collator.numericCollation = true
-    val sorted = regions.sortedWith { left, right -> collator.compare(left, right) }
+    val sorted = regions.sortedWith { left, right ->
+        val comparison = collator.compare(left, right)
+        if (comparison != 0) comparison else left.compareTo(right)
+    }
     if (search.isEmpty()) return sorted.snapshot()
     require(collator is RuleBasedCollator) { "The platform locale has no substring collation rules" }
+    collator.strength = Collator.PRIMARY
     return sorted.filter { region ->
         StringSearch(search, java.text.StringCharacterIterator(region), collator).first() != StringSearch.DONE
     }.snapshot()
 }
 
-fun regionValidationCopy(error: RegionValidationError): UiText = when (error) {
-    RegionValidationError.Empty, RegionValidationError.InvalidCharacters -> UiText.Resource(C.chatsChannelInfoRegionInvalidName)
+fun regionValidationCopy(error: RegionValidationError): UiText? = when (error) {
+    RegionValidationError.Empty -> null
+    RegionValidationError.InvalidCharacters -> UiText.Resource(C.chatsChannelInfoRegionInvalidName)
     is RegionValidationError.TooLong -> generatedText("Chats.ChannelInfo.Region.nameTooLong") {
         C.chatsChannelInfoRegionNameTooLong(it, error.maxBytes)
     }
@@ -146,13 +151,15 @@ private fun RegionAddDialog(state: RegionManagementState, actions: RegionManagem
         title = { Text(uiString(UiText.Resource(C.chatsChannelInfoRegionAddRegionTitle))) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val validationCopy = state.validationError?.let(::regionValidationCopy)
                 OutlinedTextField(state.newRegionName, actions.newNameChanged,
                     Modifier.fillMaxWidth().focusRequester(focus),
                     label = { Text(uiString(UiText.Resource(C.chatsChannelInfoRegionAddRegionPlaceholder))) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
-                    isError = state.validationError != null,
-                    supportingText = state.validationError?.let { error -> { Text(uiString(regionValidationCopy(error))) } },
+                    isError = validationCopy != null,
+                    supportingText = validationCopy?.let { copy -> { Text(uiString(copy)) } },
                 )
+                LaunchedEffect(focus) { focus.requestFocus() }
             }
         },
         confirmButton = {
@@ -174,7 +181,6 @@ private fun RegionAddDialog(state: RegionManagementState, actions: RegionManagem
             }
         },
     )
-    LaunchedEffect(Unit) { focus.requestFocus() }
 }
 
 data class RegionDiscoveryState(val sortedRegions: SnapshotList<String>, val selectedRegions: SnapshotSet<String>) {

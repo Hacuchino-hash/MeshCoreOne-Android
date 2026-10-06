@@ -58,33 +58,74 @@ class RelativeTimestampTest : SourceCaseProof() {
             assertTrue(TimestampFormatting(locale, zone).relative(previousDay, current).isNotEmpty())
         }
 
-        @Test fun relativeComponentsAreIntegralAndChooseMinutesHoursDaysWeeksMonthsAndYears() {
-            val reference = Instant.parse("2024-01-15T12:00:00Z")
-            val vectors = listOf(
-                Triple(reference.minusSeconds(90), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
-                Triple(reference.plusSeconds(90), 2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
-                Triple(reference.minusSeconds(5_400), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
-                Triple(reference.minusSeconds(129_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
-                Triple(reference.minusSeconds(1_209_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.WEEK),
-                Triple(Instant.parse("2023-12-15T12:00:00Z"), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MONTH),
-                Triple(reference.minusSeconds(400L * 86400), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.YEAR),
-            )
-            for ((date, amount, unit) in vectors) {
-                assertEquals(RelativeTimeComponent(amount, unit), formatter.relativeComponent(date, reference))
-            }
-            assertFalse(formatter.relative(reference.minusSeconds(90), reference).contains("1.5"))
-        }
+    }
 
-        @Test fun calendarDayLengthAcrossDstUsesTheInjectedZoneRatherThanFixed86400SecondDays() {
-            val source = Instant.parse("2024-03-09T17:00:00Z")
-            val later = Instant.parse("2024-03-10T16:00:00Z")
-            val local = TimestampFormatting(Locale.US, ZoneId.of("America/New_York"))
-            assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
-                local.relativeComponent(source, later))
-            assertEquals(RelativeTimeComponent(-23, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
-                formatter.relativeComponent(source, later))
-            val autumn = local.relativeComponent(Instant.parse("2024-11-02T16:00:00Z"), Instant.parse("2024-11-03T17:00:00Z"))
-            assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY), autumn)
+    @Test fun relativeComponentsAreIntegralAndChooseMinutesHoursDaysWeeksMonthsAndYears() {
+        val reference = Instant.parse("2024-01-15T12:00:00Z")
+        val vectors = listOf(
+            Triple(reference.minusSeconds(90), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
+            Triple(reference.plusSeconds(90), 2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
+            Triple(reference.minusSeconds(5_400), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+            Triple(reference.minusSeconds(129_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+            Triple(reference.minusSeconds(1_209_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.WEEK),
+            Triple(Instant.parse("2023-12-15T12:00:00Z"), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MONTH),
+            Triple(reference.minusSeconds(400L * 86400), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.YEAR),
+        )
+        for ((date, amount, unit) in vectors) {
+            assertEquals(RelativeTimeComponent(amount, unit), formatter.relativeComponent(date, reference))
         }
+        assertFalse(formatter.relative(reference.minusSeconds(90), reference).contains("1.5"))
+    }
+
+    @Test fun calendarDayLengthAcrossDstUsesTheInjectedZoneRatherThanFixed86400SecondDays() {
+        val source = Instant.parse("2024-03-09T17:00:00Z")
+        val later = Instant.parse("2024-03-10T16:00:00Z")
+        val local = TimestampFormatting(Locale.US, ZoneId.of("America/New_York"))
+        assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+            local.relativeComponent(source, later))
+        assertEquals(RelativeTimeComponent(-23, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+            formatter.relativeComponent(source, later))
+        val autumn = local.relativeComponent(Instant.parse("2024-11-02T16:00:00Z"), Instant.parse("2024-11-03T17:00:00Z"))
+        assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY), autumn)
+    }
+
+    @Test fun numericRelativeTextDoesNotBecomeNamedYesterdayAndKeepsIntegralNativeUnits() {
+        val expected = android.icu.text.RelativeDateTimeFormatter.getInstance(
+            android.icu.util.ULocale.forLocale(Locale.US), null,
+            android.icu.text.RelativeDateTimeFormatter.Style.SHORT, android.icu.text.DisplayContext.CAPITALIZATION_NONE)
+        for ((seconds, amount, unit) in listOf(
+            Triple(90L, -2.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
+            Triple(5_400L, -2.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+            Triple(86_400L, -1.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+        )) {
+            assertEquals(expected.formatNumeric(amount, unit), formatter.relative(now.minusSeconds(seconds), now))
+        }
+        assertNotEquals(expected.format(-1.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+            formatter.relative(now.minusSeconds(86_400), now))
+    }
+
+    @Test fun conversationPreviousDayUsesNamedRelativeComponentsRatherThanAlwaysYesterday() {
+        val current = Instant.parse("2024-04-16T08:00:00Z")
+        val lastNight = Instant.parse("2024-04-15T22:00:00Z")
+        val expected = android.icu.text.RelativeDateTimeFormatter.getInstance(
+            android.icu.util.ULocale.forLocale(Locale.US), null,
+            android.icu.text.RelativeDateTimeFormatter.Style.LONG, android.icu.text.DisplayContext.CAPITALIZATION_NONE)
+        assertEquals(expected.format(-10.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+            formatter.conversationTimestamp(lastNight, current))
+        assertEquals(expected.format(-1.0, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+            formatter.conversationTimestamp(current.minusSeconds(86_400), current))
+    }
+
+    @Test fun conversationClockHonorsExplicit24HourChoiceAndFixedOffsetWithoutFallingBackToGmt() {
+        val date = Instant.parse("2024-01-15T15:05:00Z")
+        assertEquals("15:05", TimestampFormatting(Locale.US, ZoneOffset.UTC, use24HourClock = true)
+            .conversationTimestamp(date, date.plusSeconds(60)))
+        val twelveHour = TimestampFormatting(Locale.US, ZoneOffset.UTC, use24HourClock = false)
+            .conversationTimestamp(date, date.plusSeconds(60))
+        assertTrue(twelveHour.startsWith("3:05"), twelveHour)
+        assertTrue(twelveHour.contains("PM"), twelveHour)
+        val offset = TimestampFormatting(Locale.US, ZoneOffset.ofHoursMinutes(5, 45), use24HourClock = true)
+        assertEquals("20:50", offset.conversationTimestamp(date, date.plusSeconds(60)))
+        assertEquals("Jan 16", offset.abbreviatedDate(Instant.parse("2024-01-15T20:00:00Z")))
     }
 }

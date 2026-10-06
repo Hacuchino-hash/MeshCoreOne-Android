@@ -15,6 +15,8 @@ PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
 FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt"
 FROZEN_FAULT_BLOB = "b2a6b84a3846c016184e06772da4800700e3e8af"
+FROZEN_MESSAGING_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt"
+FROZEN_MESSAGING_BLOB = "d6f96917b135f12d3fa62c0e5c456aac709257bc"
 COMMITTED_PRODUCER_INPUTS = (
     "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/CommittedBackupPreferenceFailure.kt",
     "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/AppBackupService.kt",
@@ -84,6 +86,9 @@ def inventory():
     fault = ROOT.joinpath(*FROZEN_FAULT_PATH.split("/"))
     require(fault.is_file() and git("hash-object", "--", str(fault)).decode().strip() == FROZEN_FAULT_BLOB,
         "Frozen producer Device/Settings fault carry missing or changed")
+    messaging = ROOT.joinpath(*FROZEN_MESSAGING_PATH.split("/"))
+    require(messaging.is_file() and git("hash-object", "--", str(messaging)).decode().strip() == FROZEN_MESSAGING_BLOB,
+        "Frozen producer Message/Polling/Queue fault carry missing or changed")
     catalog = unique_json(ROOT / "docs" / "android" / "test-cases.json")
     require(catalog["source_sha"] == PIN, "Original case pin drift")
     owned_paths = {row["path"] for row in inputs}
@@ -145,7 +150,7 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
-    for relative in (FROZEN_FAULT_PATH, *COMMITTED_PRODUCER_INPUTS):
+    for relative in (FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS):
         path = ROOT.joinpath(*relative.split("/"))
         require(path.is_file(), "Missing actual frozen/projection producer input")
         raw = path.read_bytes()

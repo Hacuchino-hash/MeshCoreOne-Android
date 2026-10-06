@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.expand
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
@@ -99,7 +100,7 @@ fun ExpandableSettingsSection(
                     Text(resolved, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
                 }
                 SectionReloadButton(state.isLoading, state.isExpanded && state.isLoaded,
-                    state.isExpanded && state.hasError, false, title, onLoad)
+                    false, false, title, onLoad)
             }
             if (state.isExpanded) {
                 content()
@@ -155,6 +156,7 @@ fun NotificationLevelPicker(
 ) {
     val group = uiString(UiText.Resource(AppChatsStrings.chatsNotificationLevelLabel))
     val description = uiString(UiText.Resource(selection.accessibilityResource))
+    val hint = uiString(UiText.Resource(AppChatsStrings.chatsNotificationLevelHint))
     Column(modifier.fillMaxWidth().semantics {
         contentDescription = group
         stateDescription = description
@@ -165,7 +167,7 @@ fun NotificationLevelPicker(
                 FilterChip(
                     selected = level == selection,
                     onClick = { onSelectionChange(level) },
-                    modifier = Modifier.sharedTouchTarget(),
+                    modifier = Modifier.sharedTouchTarget().semantics { onClick(label = hint, action = null) },
                     label = { Text(uiString(UiText.Resource(level.labelResource))) },
                     leadingIcon = {
                         Icon(when (level) {
