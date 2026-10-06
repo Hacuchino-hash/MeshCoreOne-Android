@@ -226,6 +226,18 @@ that unconfigured slot. The native equivalence is bounded and retains all origin
 failed-status/pending-row/no-extra-send assertions; no protocol matcher, heap,
 timeout budget, mandatory skipped policy or original source is changed.
 
+Run `37414658172`/attempt1 at `120a108d` executed all184 owning JVM identities:
+183 passed, one failed, zero errors/skips. The full XML and real failure
+`expected attemptCount3, actual1` identify the per-envelope channel counter
+fixture: its helper persisted the requested attemptCount2 but returned the
+pre-copy DTO with default0, which the next explicit sequence upsert wrote back.
+The helper now returns the exact persisted immutable DTO; the original expected
+counter/assertion is unchanged. Official artifact11390613449 is221,280 bytes,
+SHA-256 `0ba6d39ba9cad6a5107e56de0d0972cd617bdfd14bc79282444a1d937cec69d1`,
+all129 safe members/CRC verified before reading. This is a genuine complete
+failed JVM run, not183-of184 partial acceptance; final repaired-head JVM and
+Room/root proof remain required.
+
 The coordinator's one-file frozen fault producer for UI-304 is exactly
 `MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
 1,969 LF bytes / SHA-256

@@ -370,8 +370,9 @@ internal class Harness(
             DirectMessageEnvelope(message.id, CONTACT, isResend), RADIO, enqueuedAt = clock.wallClock.instant())
         else PendingSendDTO.fromEnvelope(ChannelMessageEnvelope(message.id, channelIndex, isResend,
             message.text, message.timestamp, "Test"), RADIO, enqueuedAt = clock.wallClock.instant())
-        store.upsertPendingSend(dto.copy(sequence = 1, attemptCount = attempt))
-        return dto
+        val persisted = dto.copy(sequence = 1, attemptCount = attempt)
+        store.upsertPendingSend(persisted)
+        return persisted
     }
 }
 
