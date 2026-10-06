@@ -16,6 +16,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(project(":core:runtime"))
+    testImplementation(project(":core:services"))
 }
 dependencyLocking {
     lockFile.set(layout.projectDirectory.file("gradle.lockfile"))
