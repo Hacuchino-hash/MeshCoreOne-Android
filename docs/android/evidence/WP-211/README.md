@@ -3,6 +3,87 @@
 This is implementation evidence for one manually coordinated WP, not a fleet
 activation, completed app graph, hardware result, license approval or merge gate.
 
+## Verified native implementation
+
+The complete owning implementation **executed successfully** at candidate
+`3dc80c565cdfab72d4b08e5ea28d9834f2df1b88`, base
+`7e2835bad2c03dfb5a088063655f9fc4dbafd00f`, actual Linux run
+**37397209851 / attempt1**. Both `Android scaffold` and its independent
+`android-ci` artifact aggregator passed for that exact head. The incumbent
+declared command was
+`python tools/android-port/controller/ci.py run --stage verify`, exercising
+`verifyScaffoldTests verifyRoomSchema validateModuleGraph
+runtimeDependencyInventory resolveScaffoldDependencies` with strict
+verification, forced execution, no build cache and pinned isolated Linux
+preflight. The admitted `:core:data:verifyDeviceSettingsTests` actually ran
+both `:core:services:test` and `:core:data:testDebugUnitTest`, then the exact
+owning collector with the real `meshCliInvocationFile`.
+
+| Actual owning partition | Discovered / passed | Failed / errors / skipped |
+| --- | --- | --- |
+| Original-expanded services JVM cases | 213 /213 | 0 /0 /0 |
+| Additional services JVM regressions | 88 /88 | 0 /0 /0 |
+| Original real Room cases | 7 /7 | 0 /0 /0 |
+| Additional real Room consumers | 5 /5 | 0 /0 /0 |
+| **All owning cases** | **313 /313** | **0 /0 /0** |
+
+All **163 original families /220 expanded cases** are mapped to actual
+executed names, including the four OCV parameter axes15/15/15/16. The actual
+full services module has301 cases; the full data module has381 cases
+(369 incumbent +12 owning consumers). Those module totals are retained and
+reported separately, not credited as extra original device/settings parity.
+The nine verbatim owning JVM suites include RegionalAreas30 originals,
+RadioPreset76 originals, OCV61 parameter rows, verified settings, actual
+protocol roles, discovery, typed errors, cancellation and generation cases.
+All seven KnownRegion originals and five factory/device/settings consumers
+executed against the real in-memory Room repository.
+
+The complete25059690-byte artifact `scaffold-37397209851-1`,
+id11383883680, published SHA-256
+`092dd7b206563e2c272da0686863b6ae39e6787eb1a4b6ea504b973b105a57f0`
+was retained **before** independently inspecting its raw reports/input
+identities. The exact owning evidence is under
+`wp211-native/full-1791248782120/`:
+
+| Actual retained artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| `retention.json` |157387 | `dade5cbd0bec942dac33208bafe3a4061431ce4d666aa72a7e583d845aa72da0` |
+| `verified.json` |278188 | `eebf7a21cdea1385d725ff2bbf0b2080900383d01db83c3a9191dce2da58107b` |
+| `actual-invocation.json` |619 | `b86c86ae5c9b9804933fd3c3149dcd242f32463053efae618d641e55253e6f6d` |
+
+The owning reader retained **43 complete verbatim XML reports** (nine
+services +34 data), all24 primary source blobs, the eight-file producer
+freeze, **429 actual compiled source/build/lock/reader input identities**,
+and exact source/base/head/policy/lease/host/run/attempt **before validation**.
+Inspection reparsed all complete raw suites, checked every declared/expanded
+owning name exactly once, rejected failure/error/skip nodes and verified
+all report byte counts/SHA-256 values. Every compiled checkout blob equals
+the immutable candidate Git blob, and every actual Linux input SHA-256
+matches that Git object's bytes; Windows CRLF checkout bytes were not
+substituted for actual Linux compiled-input hashes.
+
+Acceptance evidence for `WP-211-behavior`, `WP-211-boundaries` and
+`WP-211-source-test-parity` is the exact owning `verified.json`, its linked
+raw suites/current input map and this documented source/native partition.
+Formal independent parity/protected-path/merge acceptance remains the
+coordinator's exact-head decision, not a gate published by this worker.
+The source pin/manifest/planned states/goldens are unchanged; the app is
+still incomplete and physical API/OEM/HIL/license/signing/release gates
+are not supplied by these JVM/Room assertions.
+
+The **native-proven current data carrier** at that head is
+`android/core/data/build.gradle.kts` blob
+`46814c322a33ac236aab4666e38dab03c714a0c8`, actual Linux LF SHA-256
+`2b1bd6299ea8e149506ba51bf43d3c28a007b6aeb5724b7372e49a207ce2a74d`,
+and unchanged `android/core/data/gradle.lockfile` blob
+`af40912627e2ca3c03445d5d43164a53c676294c`, LF SHA-256
+`9e33b19e97d8b8f20f95f7b83dc744c5403082615bd434546dcad43751eb0c10`.
+Both match the exact actual compiled-input map. The two carried services
+build/strict-lock blobs remain frozen3a6ecda9/60657033 after the coordinator
+restored WP-218 ownership; the eight geographic/fault files are unchanged.
+No further edits to these native-proven data carrier files are planned
+before the coordinator's serialized carry/ownership decision.
+
 ## Immutable receipt and inputs
 
 - Coordinator receipt: `autonomous-WP-211-d147865c`, active on 2026-10-05.
