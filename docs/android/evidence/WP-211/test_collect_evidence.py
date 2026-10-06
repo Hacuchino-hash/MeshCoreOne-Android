@@ -214,13 +214,21 @@ class NativeHookTests(unittest.TestCase):
         self.assertIn('tasks.withType<Test>().configureEach {\n'
                       '    if (name == "testDebugUnitTest") finalizedBy(retainDeviceSettingsRoomEvidence)\n}', text)
         self.assertNotIn('tasks.named("testDebugUnitTest")', text)
-        self.assertIn('mustRunAfter("testDebugUnitTest")', text)
+        self.assertIn('mustRunAfter(":core:services:test", "testDebugUnitTest")', text)
         self.assertIn('"--retain-only"', text)
         self.assertIn('.resolve("room-completion-$deviceSettingsAttempt")', text)
         self.assertIn('.resolve("full-$deviceSettingsAttempt")', text)
         self.assertIn('deviceSettingsInvocation.map { File(it).parentFile.resolve("wp211-native")', text)
         self.assertIn("import java.io.File", text)
         self.assertNotIn("java.io.File(", text)
+
+    def test_actual_services_runner_failure_also_retains_raw_junit_without_editing_the_services_build(self):
+        text = (reader.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text(encoding="utf-8")
+        self.assertIn('project(":core:services").tasks.withType<Test>().configureEach {\n'
+                      '    if (name == "test") finalizedBy(retainDeviceSettingsRoomEvidence)\n}', text)
+        self.assertIn('mustRunAfter(":core:services:test", "testDebugUnitTest")', text)
+        self.assertNotIn('project(":core:services").tasks.named("test")', text)
+        self.assertNotIn('project(":core:services").dependencies', text)
 
     def test_standalone_linux_executor_forwards_exact_actual_invocation_and_private_retention_path(self):
         text = (reader.OUT / "run_linux_verification.py").read_text(encoding="utf-8")

@@ -97,8 +97,8 @@ val deviceSettingsAttempt = System.currentTimeMillis().toString()
 
 val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
     group = "verification"
-    description = "Retain verbatim service/Room reports and immutable inputs even after an actual Room runner failure."
-    mustRunAfter("testDebugUnitTest")
+    description = "Retain verbatim service/Room reports and immutable inputs after either actual runner succeeds or fails."
+    mustRunAfter(":core:services:test", "testDebugUnitTest")
     workingDir(repository)
     commandLine(buildList {
         addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--retain-only", "--output",
@@ -109,6 +109,9 @@ val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
 
 tasks.withType<Test>().configureEach {
     if (name == "testDebugUnitTest") finalizedBy(retainDeviceSettingsRoomEvidence)
+}
+project(":core:services").tasks.withType<Test>().configureEach {
+    if (name == "test") finalizedBy(retainDeviceSettingsRoomEvidence)
 }
 
 val verifyDeviceSettingsTests by tasks.registering(Exec::class) {

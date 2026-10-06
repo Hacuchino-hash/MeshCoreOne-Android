@@ -155,7 +155,7 @@ produced these outcomes:
 
 | Command | Actual result |
 | --- | --- |
-| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 25 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 26 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
 | `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 88 native JVM declarations and 12 real Room declarations; `native_execution=false` |
 | `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, ten county keys, all 28 regular/three repeat preset fields/order/availability/priorities/hash sizes, and 2+6 fault declarations; `native_tests_run=false` |
 | `git --no-pager diff --check` | Passed for the authored changes |
@@ -302,6 +302,18 @@ was retained before inspection. Its805-byte exact configuration-failure log
 SHA-256 is
 `49111739242d230c4976541e6146beee111a4b4b92d5e375039640aa331e9e13`.
 No native case executed in that failing configuration.
+
+After the exact services dependency carry, the existing admitted data reader
+hook also lazily finalizes the actual **services `test`** runner. The shared
+raw-retention task is ordered after both real runners when both are scheduled,
+so it captures any failed services XML, not merely the Room reports which
+may have completed first. It does not create another test/dependency graph
+or edit the services build; both finalizer links use lazy `Test.configureEach`
+and exact task names. Standalone data tasks do not acquire a services-test
+dependency from a `mustRunAfter` ordering constraint. The full verifier
+continues to fail on any failed/skipped/missing/duplicate owning case.
+The bounded standalone executor retains prerequisite/compiler failures even
+when a real Test runner cannot start; those do not count as301/12 success.
 
 Raw-retention now writes the complete compiled-input map, source blobs and
 freeze data **before** parsing or validating the execution identity, and
