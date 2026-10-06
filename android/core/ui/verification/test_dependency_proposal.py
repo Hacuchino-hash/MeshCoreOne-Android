@@ -79,6 +79,33 @@ class DependencyProposalTests(unittest.TestCase):
         result = validate_delta(seed, generated, generated, graph, configs, verified)
         self.assertEqual([], result["new_test_context_memberships"])
 
+    def test_actual_admitted_owned_bytes_retain_38_configs_including_original_empty_android_apis(self):
+        raw = (ROOT / OWNER_LOCK).read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(54192, len(raw))
+        self.assertEqual("d453654da31f2c5ebcb6866679918ef004d0035d68b89988fc03d51c1c8bda18",
+            hashlib.sha256(raw).hexdigest())
+        configurations = parse_lock(raw.decode("utf8"))
+        self.assertEqual(38, len(configurations))
+        self.assertIn("androidApis", configurations)
+        self.assertEqual(set(), configurations["androidApis"])
+
+    def test_losing_actual_empty_android_apis_fails_even_when_every_external_component_is_identical(self):
+        text = (ROOT / OWNER_LOCK).read_text(encoding="utf8")
+        before = parse_lock(text)
+        changed = text.replace("empty=androidApis,", "empty=", 1)
+        after = parse_lock(changed)
+        self.assertEqual(set().union(*before.values()), set().union(*after.values()))
+        self.assertEqual(set(before) - {"androidApis"}, set(after))
+        roster = "\n".join(sorted(after)) + "\n"
+        graph = "module\tconfiguration\tkind\tcomponent\n"
+        for configuration, coordinates in sorted(after.items()):
+            graph += f":core:ui\t{configuration}\tselected\tproject :core:ui\n"
+            graph += "".join(f":core:ui\t{configuration}\tselected\t{coordinate}\n"
+                for coordinate in sorted(coordinates))
+        with self.assertRaises(PortError):
+            validate_delta((ROOT / ROOT_LOCK).read_text(encoding="utf8"), None,
+                changed, graph, roster, (ROOT / "android/gradle/verification-metadata.xml").read_bytes())
+
     def test_allowed_coordinate_in_production_or_an_unapproved_test_context_still_fails(self):
         coordinate = "org.bouncycastle:bcprov-jdk18on:1.85"
         for configuration in ("debugRuntimeClasspath", "debugCompileClasspath",

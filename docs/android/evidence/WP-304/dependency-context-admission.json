@@ -41,5 +41,18 @@
     "root_ui_blob": "566089f945f40442b8c0980aabee409c1de2c6da",
     "handwritten_records": false
   },
+  "external_conflict_restoration": {
+    "own_code_commit": "28c3c47bf5f9956b5e2d857f07aa1a9d23edfd4f",
+    "external_commit": "1a153020913b30d764f075bb6183bec2bbf7d249",
+    "external_lock_bytes": 54180,
+    "external_lock_sha256": "82e44d217aee2f99f50abc029de16dbe2b84abb2440a63654e62ee934dc7c676",
+    "external_lock_blob": "2cb1a68d2abf84f2b19c15f4392165930a8ceaaf",
+    "difference": "Only the twelve-byte androidApis, substring was omitted; external component sets are identical but configuration state drops38 to37.",
+    "observed_origin": "External same-branch commit says root-wide resolveScaffoldDependencies --write-locks; it is not an owned scoped generation result or admitted variant.",
+    "authority": "Parent explicitly required exact whole-file mechanical restoration and preservation of other changes.",
+    "preserved_history": "Both own28c3c47 code and external1a153 commit retained by normal merge; no force/reset/blind main adoption.",
+    "selected_result": "Original admitted54192/d453/blob4a bytes copied again from the actual parent proposal; no handwritten empty record.",
+    "reader_regression": "Actual38-configuration file and empty androidApis asserted; missing configuration is rejected even when every selected external component is identical."
+  },
   "scope": "Explicit coordinator data admission only. Historical failures, source floor, palettes, goldens, metadata, protected main hold and actual native/producer acceptance remain unchanged."
 }

@@ -46,6 +46,7 @@ verified, not inferred from issue closure or session state.
 | Actual repository `port_map(load_manifest(...))` after owned header repair | Passed450 current native paths/43 UI paths; original source headers retained, no validator/policy weakening |
 | `git diff --check` | Passed at authored checkpoints |
 | `python -B android\core\ui\verification\dependency_proposal.py --self-test --workflow-check` after exact context amendment | Passed41 regressions; closed26-pair admission, same-config incumbent/unknown-context/version/metadata/write guards and seven compile alignments retained |
+| Same declared helper command after serialized external-lock restoration | Passed43 regressions, including the actual admitted38-configuration file and rejection of the observed12-byte empty-SDK drop despite identical external component sets |
 | `python -B docs\android\evidence\WP-304\collect_evidence.py --static --self-test` after discovery and messaging repair | Passed23 reader regressions;197 direct class-level declarations,130 families/158 scenarios accounted,21 pending producer families; **not native execution** |
 | `python -B docs\android\evidence\WP-304\generate_source_map.py` | Passed exact frozen88-input map in its actual default check mode |
 
@@ -212,6 +213,18 @@ ROOT seed/catalog/metadata/convention guards.38 final configurations preserve
 37 real resolved graphs plus original empty `androidApis`,1472 external rows
 and40 actual seven-pin alignment edges. No unchanged Gradle rerun, manual lock
 record or replacement hosted/native PASS was used for this admission.
+
+Publication of own code28c3c47 was first rejected because external same-branch
+commit1a153 added a different local lock. Its only difference was removal of
+`androidApis,` from the empty record:54,180bytes/SHA25682e44d21,37 rather than38
+configurations. The external commit states a root-wide resolver; no actual
+scoped generation evidence was supplied for that variant. It was not produced
+by this CLI session's migration/helper. Parent then explicitly required exact
+whole-file restoration while preserving other changes. A normal merge keeps
+both histories and resolves only the known add/add lock conflict by copying
+the original admitted generated file. Two regressions bind the real38-state
+file and ensure a components-only comparison cannot hide the missing SDK state.
+No force/reset, manually written empty record or protected-main adoption occurs.
 
 The two new relative-time methods and two recovery Compose methods were found
 nested inside other functions. All four are now direct class-level JUnit

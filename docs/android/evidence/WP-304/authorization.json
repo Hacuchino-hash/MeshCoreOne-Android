@@ -142,6 +142,20 @@
     "scope": "Mechanical copy of the explicitly shared generated file after unchanged dependency-descriptor and ROOT seed guards; no record editing, ROOT write, metadata/catalog update or native success claim.",
     "following_execution": "Publish the coherent owned code/reader/lock repair to the existing ordinary PR for normal Ubuntu Linux native verification; no unchanged generator retry or Windows JVM."
   },
+  "serialized_external_lock_restoration": {
+    "authority": "After inspecting the external1a153 variant, parent explicitly required restoration of the exact previously admitted generated file while preserving other actual changes.",
+    "own_code_commit": "28c3c47bf5f9956b5e2d857f07aa1a9d23edfd4f",
+    "external_same_branch_commit": "1a153020913b30d764f075bb6183bec2bbf7d249",
+    "common_parent": "b3d31d937afb6f0ff9aeb615fce901267d7e04f6",
+    "external_changed_paths": ["android/core/ui/gradle.lockfile"],
+    "external_bytes": 54180,
+    "external_sha256": "82e44d217aee2f99f50abc029de16dbe2b84abb2440a63654e62ee934dc7c676",
+    "external_blob": "2cb1a68d2abf84f2b19c15f4392165930a8ceaaf",
+    "actual_difference": "External commit removed only androidApis, from the empty record, losing one original configuration while preserving all external component sets.",
+    "observed_origin": "External commit metadata states root resolveScaffoldDependencies --write-locks. It was not this CLI session's scoped resolver/migration; no bound generation graph/input artifact was supplied for that external variant.",
+    "resolution": "Normal own-branch merge preserves both histories; only the known add/add local-lock conflict is resolved by copying the complete approved54192/d453 file, not by writing an empty record.",
+    "other_inputs": "ROOT47512/blob566089, metadata, descriptors, source7e lineage and both frozen fault producers unchanged; protected main723 adoption remains held."
+  },
   "committed_preference_projection_amendment": {
     "authority": "Parent inspected actual ImportResult and explicitly leased exactly three producer projection/assertion paths.",
     "paths": [
