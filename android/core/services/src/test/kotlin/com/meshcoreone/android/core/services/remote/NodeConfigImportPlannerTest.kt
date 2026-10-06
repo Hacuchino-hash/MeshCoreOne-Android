@@ -459,4 +459,49 @@ class NodeConfigImportPlannerTest {
             }
         },
     )
+
+    /** Oracle: swiftc on macOS 26 — `"#caf\u{E9}" == "#cafe\u{301}"` is true and `"#\u{301}abc".hasPrefix("#")` is false. */
+    @TestFactory
+    fun canonicalNameCases() = nodeConfigNativeCases(
+        "a decomposed device hashtag name folds onto its slot like Swift's canonical String equality" to {
+            val result = plan(
+                channelSections,
+                channels = listOf(ChannelConfig("#caf\u00E9", validChannelSecretB)),
+                existingChannels = slots(slot(3, "#cafe\u0301", secretBytesA)),
+            )
+            assertEquals(listOf(3.toUByte()), result.channelWrites.map { it.index })
+            assertTrue(result.channelsOverwriteExisting)
+        },
+        "a canonically equal name with the same secret is a no-op" to {
+            val result = plan(
+                channelSections,
+                channels = listOf(ChannelConfig("#caf\u00E9", validChannelSecretA)),
+                existingChannels = slots(slot(3, "#cafe\u0301", secretBytesA)),
+            )
+            assertTrue(result.channelWrites.isEmpty())
+            assertFalse(result.channelsOverwriteExisting)
+        },
+        "a hash followed by a combining mark is not a hashtag, so it never folds by name" to {
+            val result = plan(
+                channelSections,
+                channels = listOf(ChannelConfig("#\u0301abc", validChannelSecretB)),
+                existingChannels = slots(slot(3, "#\u0301abc", secretBytesA)),
+            )
+            assertEquals(1, result.channelWrites.size)
+            assertNotEquals(3.toUByte(), result.channelWrites.single().index)
+            assertFalse(result.channelsOverwriteExisting)
+        },
+        "compatibility-equivalent names stay distinct, as in Swift" to {
+            val result = plan(
+                channelSections,
+                channels = listOf(ChannelConfig("#\uFB01re", validChannelSecretB)),
+                existingChannels = slots(slot(3, "#fire", secretBytesA)),
+            )
+            assertNotEquals(3.toUByte(), result.channelWrites.single().index)
+        },
+        "the node-name gate compares canonically" to {
+            assertFalse(nodeNameNeedsWrite("Caf\u00E9", nodeConfigSelfInfo(name = "Cafe\u0301")))
+            assertTrue(nodeNameNeedsWrite("Cafe", nodeConfigSelfInfo(name = "Cafe\u0301")))
+        },
+    )
 }

@@ -50,7 +50,7 @@ internal data class ConfigImportWriters(
 
 /** Compares the truncated name the device stores, so a longer name with the same stored bytes skips. */
 internal fun nodeNameNeedsWrite(name: String, current: SelfInfo): Boolean =
-    name.utf8Prefix(ProtocolLimits.MAX_USABLE_NAME_BYTES) != current.name
+    !NodeConfigSwiftText.canonicallyEqual(name.utf8Prefix(ProtocolLimits.MAX_USABLE_NAME_BYTES), current.name)
 
 /** Compares the scaled integers the device persists, not raw doubles. */
 internal fun locationNeedsWrite(position: ConfigImportPlan.Coordinate, current: SelfInfo): Boolean =

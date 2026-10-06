@@ -17,6 +17,8 @@ import java.time.Clock
 import java.time.Instant
 import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 /**
  * Node status snapshots with throttled capture. Stateless apart from its collaborators: the
@@ -74,10 +76,17 @@ class NodeSnapshotService(
         }
     }
 
-    private inline fun <T> recovering(failure: String, fallback: T, block: () -> T): T = try {
+    /**
+     * Swift logs every store error and falls back. The caller's own cancellation still propagates; a
+     * CancellationException the store raised itself (an internal timeout) while the caller is active is
+     * an ordinary failure.
+     */
+    private suspend inline fun <T> recovering(failure: String, fallback: T, block: () -> T): T = try {
         block()
     } catch (error: CancellationException) {
-        throw error
+        currentCoroutineContext().ensureActive()
+        logger.error("$failure: $error")
+        fallback
     } catch (error: Exception) {
         logger.error("$failure: $error")
         fallback

@@ -16,6 +16,8 @@ import java.time.Instant
 import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import org.junit.jupiter.api.TestFactory
 
 class NodeConfigServiceFlowTest {
@@ -26,6 +28,7 @@ class NodeConfigServiceFlowTest {
         val settings: NodeConfigFakeSettings,
         val session: NodeConfigFakeSession = NodeConfigFakeSession(),
         saveFailure: Exception? = null,
+        cancelCallerOnSave: Boolean = false,
     ) {
         private val lock = Any()
         private val channelWrites = mutableListOf<Pair<RadioId, String>>()
@@ -37,6 +40,7 @@ class NodeConfigServiceFlowTest {
             session, settings,
             { radioId, index, name, _ -> synchronized(lock) { channelWrites += radioId to "$index:$name" } },
             NodeConfigContactSaver { radioId, frame ->
+                if (cancelCallerOnSave) kotlinx.coroutines.currentCoroutineContext().cancel()
                 saveFailure?.let { throw it }
                 synchronized(lock) { saved += radioId to frame }
             },
@@ -127,15 +131,22 @@ class NodeConfigServiceFlowTest {
             assertTrue("importPrivateKey:64" in harness.settings.calls)
             assertFalse(harness.settings.calls.any { it.startsWith("setNodeName") }, "An unchanged name is not rewritten")
         },
-        "a local contact-save failure is logged while cancellation during the save propagates" to {
+        "a local contact-save failure or store-internal timeout is logged; the import's own cancellation propagates" to {
             val failing = Harness(NodeConfigFakeSettings(deviceInfo()), saveFailure = IllegalStateException("db"))
             val config = MeshCoreNodeConfig(contacts = SnapshotList.of(contactConfig("cd".repeat(32), "C")))
             failing.service.importConfig(config, ConfigSections(contacts = true), RadioId(UUID.randomUUID()))
             assertEquals(1, failing.session.addedContacts.size)
-            val cancelled = Harness(NodeConfigFakeSettings(deviceInfo()), saveFailure = CancellationException("stop"))
-            assertFailsWith<CancellationException> {
-                cancelled.service.importConfig(config, ConfigSections(contacts = true), RadioId(UUID.randomUUID()))
+            // Swift logs every save error; a CancellationException the store raised while the import is live is one.
+            val timedOut = Harness(NodeConfigFakeSettings(deviceInfo()), saveFailure = CancellationException("store timeout"))
+            timedOut.service.importConfig(config, ConfigSections(contacts = true), RadioId(UUID.randomUUID()))
+            assertEquals(1, timedOut.session.addedContacts.size)
+            val cancelled = Harness(
+                NodeConfigFakeSettings(deviceInfo()), saveFailure = CancellationException("stop"), cancelCallerOnSave = true,
+            )
+            val importing = kotlinx.coroutines.coroutineScope {
+                async { cancelled.service.importConfig(config, ConfigSections(contacts = true), RadioId(UUID.randomUUID())) }
             }
+            assertFailsWith<CancellationException> { importing.await() }
         },
         "a malformed section rejects the whole import before any device write" to {
             val harness = Harness(NodeConfigFakeSettings(deviceInfo()))

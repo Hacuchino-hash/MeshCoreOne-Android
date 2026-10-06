@@ -5,6 +5,7 @@ import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
+import java.text.Normalizer
 import java.time.Instant
 import java.util.regex.Pattern
 import kotlin.math.abs
@@ -26,6 +27,23 @@ internal object NodeConfigSwiftText {
     private const val MAX_SIGNIFICANT_DIGITS = 17
     private const val EXPONENTIAL_LOWER_EXPONENT = -3
     private val exponentialUpperMagnitude = Math.scalb(1.0, 53)
+
+    /**
+     * Swift `String` equality and `Dictionary<String, _>` hashing use canonical equivalence (composed
+     * `é` equals `e` + U+0301; ligatures stay distinct), which NFC normalization decides exactly.
+     */
+    fun canonicalKey(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFC)
+
+    fun canonicallyEqual(a: String, b: String): Boolean = a == b || canonicalKey(a) == canonicalKey(b)
+
+    /**
+     * Swift `hasPrefix` for a one-character prefix compares whole Characters: `"#" + U+0301` is a
+     * single Character, so it does not start with `#` in Swift.
+     */
+    fun hasCharacterPrefix(text: String, prefix: String): Boolean {
+        val matcher = grapheme.matcher(text)
+        return matcher.find() && matcher.start() == 0 && canonicallyEqual(matcher.group(), prefix)
+    }
 
     /** Swift `Character.count`-style length: extended grapheme clusters, not UTF-16 units. */
     fun graphemeCount(text: String): Int {

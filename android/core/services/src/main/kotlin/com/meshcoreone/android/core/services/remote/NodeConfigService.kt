@@ -141,14 +141,16 @@ class NodeConfigService(
     /**
      * The device add is the irreversible change; the local row is an idempotent upsert the next sync
      * reconciles, so a save failure is logged rather than masking that the contact landed.
-     * Cancellation during the save is rethrown, never swallowed.
+     * Cancellation of this import is rethrown, never swallowed; a CancellationException the store raised
+     * itself (an internal timeout) while the import is still active is an ordinary failure, as in Swift.
      */
     private suspend fun addContact(radioId: RadioId, contact: MeshContact) {
         session.addContact(contact)
         try {
             contactSaver.saveContact(radioId, contact.nodeConfigContactFrame())
         } catch (error: CancellationException) {
-            throw error
+            currentCoroutineContext().ensureActive()
+            logger.error("Contact added to device but local save failed; next sync will reconcile: $error")
         } catch (error: Exception) {
             logger.error("Contact added to device but local save failed; next sync will reconcile: ${error.message}")
         }
