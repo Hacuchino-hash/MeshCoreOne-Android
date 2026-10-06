@@ -1,7 +1,7 @@
 # WP-304 candidate evidence
 
 **Status: independently admitted generated owned lock and genuine partial
-native execution; latest9f run191/197 passed, six harness failures remain.
+native execution; latest615e run196/197 passed, one focused-dialog failure remains.
 Twenty-one producer families are uncredited. No macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
@@ -343,6 +343,32 @@ or a success verdict, including invalid forwarding failures. Only the
 overwrite are rejected. This repair is authored and Python-tested, not yet
 proven by a new native run or a complete ten-state artifact. No global
 environment allowlist, shared executor or workflow changed.
+
+The actual615e Linux proposal37514521387 passed and retained the identical
+54,192/d453 owned state:38 configurations,37 executions,1472 external rows,
+40 alignment edges and zero new admissions. All3339 original input hashes
+were unchanged; only validated ignored empty catalog bookkeeping was added.
+[`generation-615e126-success.json`](generation-615e126-success.json) binds
+the complete12-member official ZIP and logs. It is dependency data proof only.
+
+Actual615e native37514521564 then executed197 UI methods,196 passed and one
+failed, with zero errors/skips. The real artifact now includes18 standalone
+XML reports,92 exact current input bindings, the actual forwarded invocation
+and nine hash/CRC/dimension-verified native PNGs. Compact/expanded dark,
+large-font CJK/RTL and storage-recovery images were visually inspected;
+they are real shared UI, not a label or theme picker. The dialog state is
+missing because the focused region fixture timed out at `waitForIdle`.
+[`native-615e126-failure.json`](native-615e126-failure.json) retains the
+complete105-member official artifact and23-member logs without relabeling it.
+
+Reading the exact admitted Compose1.10.6 idling implementation confirmed that
+its recomposition/frame pump is gated by `mainClock.autoAdvance`. The focused
+input fixture had no timing assertion but unnecessarily froze that clock.
+The bounded follow-up restores/asserts its normal automatic clock, preserving
+actual attachment/focus, invalid input, zero add calls, Back and required PNG.
+The timed pill test remains manually clocked and measured. No production UI,
+60s timeout, source requirement, golden or dependency changes. Fresh actual
+native proof and the tenth PNG remain required.
 
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):

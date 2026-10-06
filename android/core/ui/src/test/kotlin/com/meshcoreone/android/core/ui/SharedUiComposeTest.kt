@@ -342,7 +342,7 @@ class SharedUiComposeTest {
     }
 
     @Test fun nativeRegionDialogKeepsInvalidInputFocusAndBackCancelsWithoutAnAction() {
-        compose.mainClock.autoAdvance = false
+        assertTrue(compose.mainClock.autoAdvance)
         val state = mutableStateOf(RegionManagementState(SnapshotList.of("known"),
             addDialogVisible = true, newRegionName = "invalid region"))
         var adds = 0
@@ -367,7 +367,6 @@ class SharedUiComposeTest {
         nativeFrame()
         compose.runOnIdle { assertEquals(0, adds) }
         compose.runOnIdle { assertFalse(state.value.addDialogVisible) }
-        compose.mainClock.autoAdvance = true
     }
 
     @Test fun claimedTipRendersPassiveReadableCopyAndAnExplicitDismissControl() = runBlocking {
