@@ -160,7 +160,7 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
     require(expected and len(expected) == len(set(expected))
         and all(CONFIGURATION_NAME.fullmatch(name) for name in expected), "missing/zero/malformed configuration roster")
     seed = parse_lock(seed_text)
-    before = parse_lock(prior_text) if prior_text is not None else {}
+    before = parse_lock(prior_text) if prior_text is not None else seed
     after = parse_lock(generated_text)
     graph = parse_graph(graph_text, expected)
     require(set(after) == set(expected) | set(before), "lock contains an unexecuted configuration or omitted prior state")
@@ -314,6 +314,39 @@ def validate_writes(before, after, changes, settings_before=None, settings_after
     require(all(line[3:] == OWNER_LOCK and line[:2] in {"??", " M", "M "} for line in changes), "unknown/untracked candidate write")
 
 
+def seed_initial_owned_lock(repository, output):
+    source = repository / ROOT_LOCK
+    target = repository / OWNER_LOCK
+    require(source.is_file() and not source.is_symlink() and not target.is_symlink(), "linked/missing seed or owned lock")
+    raw = source.read_bytes()
+    require(len(raw) == 47512 and sha(raw) == ROOT_LOCK_SHA, "frozen ROOT UI seed bytes changed")
+    if target.exists():
+        require(target.is_file(), "invalid existing owned lock path")
+        prior = target.read_bytes()
+        parse_lock(prior.decode("utf8"))
+        return prior, {
+            "seeded_from_root": False,
+            "preexisting_prior": {"bytes": len(prior), "sha256": sha(prior)},
+            "resolution_baseline": "preexisting-owned-state",
+        }
+    require(target.parent.is_dir() and not any(parent.is_symlink() for parent in target.parents), "invalid owned target directory")
+    shutil.copyfile(source, target)
+    require(target.read_bytes() == raw, "initial owned seed bytes differ from actual frozen ROOT file")
+    shutil.copyfile(target, output / "seeded-owned-gradle.lockfile")
+    return None, {
+        "seeded_from_root": True,
+        "preexisting_prior": None,
+        "resolution_baseline": "byte-exact-frozen-ROOT-state",
+        "source_path": ROOT_LOCK,
+        "source_blob": ROOT_LOCK_BLOB,
+        "source_bytes": len(raw),
+        "source_sha256": sha(raw),
+        "target_path": OWNER_LOCK,
+        "target_seed_bytes": len(raw),
+        "target_seed_sha256": sha(raw),
+    }
+
+
 def run(root):
     require(platform.system() == "Linux" and platform.machine() == "x86_64", "only admitted ephemeral Linux x64")
     require(platform.python_version() == toolchain_lock()["python"], "wrong pinned Python")
@@ -351,8 +384,9 @@ def run(root):
         require(git(ROOT, "rev-parse", "HEAD:" + ROOT_LOCK).decode().strip() == ROOT_LOCK_BLOB
             and sha(seed.read_bytes().replace(b"\r\n", b"\n")) == ROOT_LOCK_SHA, "frozen ROOT UI seed changed")
         existing = ROOT / OWNER_LOCK
-        prior = existing.read_bytes() if existing.exists() else None
+        prior, migration = seed_initial_owned_lock(ROOT, output)
         record["inputs_before"] = before
+        record["initial_owned_state_migration"] = migration
         record["prior_owned_lock"] = None if prior is None else {"bytes": len(prior), "sha256": sha(prior),
             "git_blob": git(ROOT, "rev-parse", "HEAD:" + OWNER_LOCK).decode().strip()}
         write_json(output / "before.json", record)

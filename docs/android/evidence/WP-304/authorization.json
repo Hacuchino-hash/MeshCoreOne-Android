@@ -91,6 +91,17 @@
     "other_inputs": "Every other before/after snapshot entry remains byte-identical; OWNER_LOCK exclusion and exact porcelain guard remain unchanged.",
     "configuration_grammar": "Only bounded ASCII Gradle names with hyphen/underscore added; real roster/graph/lock/seed/version/metadata checks remain mandatory."
   },
+  "initial_owned_state_migration_amendment": {
+    "authority": "Parent explicitly admitted mechanical migration of genuine prior generated ROOT UI state before the scoped Linux resolver.",
+    "condition": "Only when android/core/ui/gradle.lockfile is absent. Never replace existing owned state, including later runs.",
+    "source_path": "android/gradle/dependency-locks/core-ui.lockfile",
+    "source_blob": "566089f945f40442b8c0980aabee409c1de2c6da",
+    "source_bytes": 47512,
+    "source_sha256": "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96",
+    "target_path": "android/core/ui/gradle.lockfile",
+    "scope": "Byte-exact initial source-state copy in the ephemeral proposal job only. Actual Gradle write-locks produces final state. No handwritten empty records, private AGP configuration changes, ROOT write or byte persistence approval.",
+    "validation": "Keep preexisting_prior=null separate from seeded_from_root=true. Final state contains executed roster plus exact prior/seed state; every unexecuted source configuration remains identical."
+  },
   "frozen_device_settings_carry": {
     "authority": "Parent serialized carry-only one-file grant after producer removed the path from live writes.",
     "producer_work_package": "WP-211",

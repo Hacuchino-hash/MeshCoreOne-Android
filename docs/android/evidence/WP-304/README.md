@@ -144,7 +144,7 @@ inputs strictly. This file is never committed.
 The same coherent helper repair shares one bounded configuration-name grammar
 across lock/roster/graph readers, accepting actual `kotlin-extension` and
 `unified-test-platform-gradle-work-action` names without omitting either
-configuration or artifact.28 generator regressions and16 source-reader
+configuration or artifact.32 generator regressions and16 source-reader
 regressions pass;130/158 original accounting is unchanged. Attempt3 remains
 failed. A diagnostic readback reached a later strict metadata blocker for seven
 actual unit-compile coordinates; no metadata/version exception or hand-edited
@@ -163,11 +163,24 @@ raw198-byte settings bookkeeping, and then correctly failed for missing original
 complete18,093-byte logs SHA256
 `965631aabd22cbf7c670dca87b86705627764038b5dd29d9e0c4b65a8fd70b52`.
 See [`generation-b667-failure.json`](generation-b667-failure.json).
-The bounded resolver now realizes its actual owned `parseDebugLocalResources`
-SDK configuration before capturing the roster, rather than dropping the
-original empty SDK configuration. The declared command/budget/ROOT lock/
-incumbent/version/metadata guards remain unchanged. Further strict classpath
-admission issues may still block the data proposal; no lock is auto-persisted.
+An intermediate fea repair realized the actual owned resource task; its result
+is separate and does not establish final generated-state acceptance.
+
+The coordinator then admitted the smaller explicit initial-state migration:
+only if the owned lock is absent, copy the exact frozen47,512-byte ROOT UI
+file into the owned target before actual Gradle resolution. This is genuine
+already-generated source state, not a manufactured `empty=androidApis` record.
+The raw ROOT and seeded-owned bytes/hashes are retained separately, with
+`preexisting_prior=null` and `seeded_from_root=true`; an existing owned lock
+is never replaced. Actual write-locks produces the final38-configuration
+union when37 current configurations execute and one original empty SDK
+configuration remains unexecuted. The reader verifies every unexecuted prior
+configuration exactly and rejects omission/mutation. No private AGP resolvable
+flag, extra resource-task dependency, ROOT write, metadata exception or
+automatic persistence is used.32 generator tests cover initial exact copy,
+existing-state preservation, corrupt/partial input, empty SDK retention and
+strict prior-state boundaries. Further actual classpath admission issues may
+still block the data proposal.
 
 The ROOT lock stays at blob`566089f945f40442b8c0980aabee409c1de2c6da`,
 canonical-LF47,512 bytes/SHA256

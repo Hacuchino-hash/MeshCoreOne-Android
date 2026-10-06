@@ -6,11 +6,13 @@ import hashlib
 from pathlib import Path
 import tempfile
 import unittest
+import subprocess
 
 from dependency_proposal import (
     BRANCH, OWNER_LOCK, ROOT_LOCK, SETTINGS_BOOKKEEPING, CONFIGURATION_NAME, VM, command, parse_lock, parse_graph, validate_budget,
     validate_command, validate_delta, validate_identity, validate_workflow, validate_writes, ROOT, WORKFLOW,
     validate_settings_bookkeeping, retain_settings_bookkeeping,
+    seed_initial_owned_lock,
 )
 from controller.errors import PortError
 
@@ -192,13 +194,71 @@ class DependencyProposalTests(unittest.TestCase):
                 "\n".join(line for line in GRAPH.splitlines() if "\tandroidApis\t" not in line) + "\n",
                 CONFIGS.replace("androidApis\n", ""), metadata("g:old:1", "g:new:2"))
 
-    def test_owned_resolver_realizes_the_actual_resource_sdk_configuration_before_roster_capture(self):
-        text = (ROOT / "android" / "core" / "ui" / "build.gradle.kts").read_text(encoding="utf8")
-        resolver = text.split("val resolveSharedUiDependencies by tasks.registering {", 1)[1]
-        self.assertIn('dependsOn("parseDebugLocalResources")', resolver)
-        self.assertIn('val ownedConfigurations = configurations.filter { it.isCanBeResolved }', resolver)
-        self.assertNotIn('dependsOn(":app:', resolver)
-        self.assertNotIn('dependsOn(":core:data:', resolver)
+    def test_initial_migration_retains_unexecuted_genuine_seed_sdk_state_exactly(self):
+        generated = GENERATED
+        roster = CONFIGS.replace("androidApis\n", "")
+        graph = "\n".join(line for line in GRAPH.splitlines() if "\tandroidApis\t" not in line) + "\n"
+        value = validate_delta(SEED, None, generated, graph, roster, metadata("g:old:1", "g:new:2"))
+        self.assertEqual(3, value["configuration_count"])
+        row = next(item for item in value["configurations"] if item["configuration"] == "androidApis")
+        self.assertEqual([], row["before"])
+        self.assertEqual([], row["after"])
+
+    def test_unexecuted_prior_sdk_state_cannot_gain_coordinates_or_change_membership(self):
+        roster = CONFIGS.replace("androidApis\n", "")
+        graph = "\n".join(line for line in GRAPH.splitlines() if "\tandroidApis\t" not in line) + "\n"
+        with self.assertRaises(PortError):
+            validate_delta(SEED, GENERATED, GENERATED.replace("empty=androidApis", "g:sdk:2=androidApis"),
+                graph, roster, metadata("g:old:1", "g:new:2", "g:sdk:2"))
+
+    def seed_fixture(self, root):
+        (root / "android" / "gradle" / "dependency-locks").mkdir(parents=True)
+        (root / "android" / "core" / "ui").mkdir(parents=True)
+        raw = subprocess.check_output(["git", "-C", str(ROOT), "show", "HEAD:" + ROOT_LOCK])
+        (root / ROOT_LOCK).write_bytes(raw)
+        output = root / "proposal"
+        output.mkdir()
+        return raw, output
+
+    def test_absent_owned_lock_is_seeded_only_from_exact_prior_generated_root_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw, output = self.seed_fixture(root)
+            prior, record = seed_initial_owned_lock(root, output)
+            self.assertIsNone(prior)
+            self.assertTrue(record["seeded_from_root"])
+            self.assertIsNone(record["preexisting_prior"])
+            self.assertEqual(raw, (root / OWNER_LOCK).read_bytes())
+            self.assertEqual(raw, (output / "seeded-owned-gradle.lockfile").read_bytes())
+            self.assertEqual(raw, (root / ROOT_LOCK).read_bytes())
+
+    def test_existing_owned_state_is_preserved_not_replaced_by_old_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, output = self.seed_fixture(root)
+            existing = GENERATED.encode()
+            (root / OWNER_LOCK).write_bytes(existing)
+            prior, record = seed_initial_owned_lock(root, output)
+            self.assertEqual(existing, prior)
+            self.assertFalse(record["seeded_from_root"])
+            self.assertEqual(existing, (root / OWNER_LOCK).read_bytes())
+            self.assertFalse((output / "seeded-owned-gradle.lockfile").exists())
+
+    def test_corrupt_root_or_partial_existing_owned_state_is_not_silently_replaced(self):
+        for partial in (False, True):
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                raw, output = self.seed_fixture(root)
+                if partial:
+                    (root / OWNER_LOCK).write_bytes(b"partial=unknown=state\n")
+                else:
+                    (root / ROOT_LOCK).write_bytes(raw + b"# changed source\n")
+                with self.assertRaises(PortError):
+                    seed_initial_owned_lock(root, output)
+                if partial:
+                    self.assertEqual(b"partial=unknown=state\n", (root / OWNER_LOCK).read_bytes())
+                else:
+                    self.assertFalse((root / OWNER_LOCK).exists())
 
     def test_only_local_ui_lock_change_is_admitted(self):
         before = {ROOT_LOCK: {"sha256": "a"}}
