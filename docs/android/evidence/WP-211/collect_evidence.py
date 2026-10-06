@@ -163,6 +163,24 @@ def source_map():
     return primary, families, native, room_methods
 
 
+def partition_counts(families, native, room_methods):
+    jvm_originals = sum(len(case["rows"]) if case["rows"] else 1
+                        for case in families.values() if case["runner"] == "services")
+    room_originals = {case["method"] for case in families.values() if case["runner"] == "room"}
+    require(jvm_originals == 213 and len(room_originals) == 7,
+            "Frozen original JVM/Room partition changed")
+    require(room_originals <= room_methods, "Original Room methods missing from the actual owning suite")
+    return {
+        "original_jvm_expanded": jvm_originals,
+        "original_room_expanded": len(room_originals),
+        "native_device_regressions": len(native),
+        "native_room_regressions": len(room_methods - room_originals),
+        "declared_device_jvm": jvm_originals + len(native),
+        "declared_room": len(room_methods),
+        "declared_owned_total": jvm_originals + len(native) + len(room_methods),
+    }
+
+
 def junit(directory, prefix):
     files = sorted(directory.glob("TEST-*.xml"))
     require(files, "Missing complete actual JUnit directory: " + str(directory))
@@ -298,6 +316,7 @@ def validate_retained(output, invocation_file=None):
     require(metadata["producer_freeze"] == frozen_producers(), "Retained producer freeze is stale")
     require(not metadata["missing_directories"], "Missing actual mandatory JUnit")
     _, families, native, room_methods = source_map()
+    partitions = partition_counts(families, native, room_methods)
     services = junit(output / "junit" / "services", "com.meshcoreone.android.core.services.")
     data = junit(output / "junit" / "data", "com.meshcoreone.android.core.data.")
     own_records = [name for classname, name in services if classname.startswith(DEVICE)]
@@ -322,9 +341,14 @@ def validate_retained(output, invocation_file=None):
     metadata.update({
         "scope": "Actual complete service/Room assertions and source dispositions; not human, hardware, license or gate acceptance",
         "counts": {"original_families": len(families), "original_expanded": 220,
+                   "original_jvm_expanded": partitions["original_jvm_expanded"],
+                   "original_room_expanded": partitions["original_room_expanded"],
                    "device_jvm_discovered": len(own_names), "room_discovered": len(room_methods),
+                   "owned_discovered": len(own_names) + len(room_methods),
                    "module_services_discovered": len(services), "module_data_discovered": len(data),
-                   "native_device_regressions": len(native), "failed": 0, "errors": 0, "skipped": 0},
+                   "native_device_regressions": len(native),
+                   "native_room_regressions": partitions["native_room_regressions"],
+                   "failed": 0, "errors": 0, "skipped": 0},
         "original_families": families, "native_regressions": native,
     })
     (output / "verified.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
@@ -342,7 +366,8 @@ def main():
     if args.check_source_map:
         _, families, native, room = source_map()
         print(json.dumps({"source_families": len(families), "expanded": 220, "native_declarations": len(native),
-                          "room_declarations": len(room), "native_execution": False}))
+                          "room_declarations": len(room), **partition_counts(families, native, room),
+                          "native_execution": False}))
         return
     if args.check_retained:
         result = validate_retained(args.check_retained, args.invocation_file)

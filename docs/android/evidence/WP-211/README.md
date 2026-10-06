@@ -155,7 +155,7 @@ produced these outcomes:
 
 | Command | Actual result |
 | --- | --- |
-| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 24 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
+| `python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -q` | 25 reader/producer/freeze/native-hook regression tests passed; synthetic XML/static catalog/hook checks only, no native parity credit |
 | `python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map` | All 163 frozen families / 220 expanded cases mapped; 88 native JVM declarations and 12 real Room declarations; `native_execution=false` |
 | `python -B .\docs\android\evidence\WP-211\verify_producers.py` | Exact 51 US / 8 AU subdivision rows, 36 countries, ten county keys, all 28 regular/three repeat preset fields/order/availability/priorities/hash sizes, and 2+6 fault declarations; `native_tests_run=false` |
 | `git --no-pager diff --check` | Passed for the authored changes |
@@ -310,6 +310,51 @@ retention. A malformed/stale invocation or stale compiled input still fails
 the strict validation; it cannot prevent the raw failure artifacts/current
 input identities from being preserved. The synthetic malformed-invocation
 regression proves that ordering without claiming native test execution.
+
+The source and final raw-JUnit readers explicitly derive the owning partition:
+**213 original-expanded JVM +88 native JVM =301**, and **seven original
+Room +five native Room =12**, **313 owning cases total**. Ordinary services/
+data module totals are reported separately and never substitute for those
+exact names, source families or expanded parameter rows. The source-only
+command labels these numbers as declarations with `native_execution=false`.
+
+Actual lazy-hook head `330a0f651c67065cb511c44be735ec9a4d4c8e04` resolves
+both owned configuration errors. Linux consumer run **37390320148 / attempt1**
+passed protocol/core-testing guards and the actual data producer tasks;
+the full381 data cases include **12/12 device/settings Room cases**, zero
+failure/error/skip. Artifact `wp203-producer-37390320148-1`, id11380733765,
+size88307 bytes, published digest
+`sha256:73d095919673a00b4125d6aad9721c2cd9720d7b35d194160d794b61fa6792c4`
+was retained before inspection; its exact Room XML SHA-256 is
+`c0d77b48b069adf3b43c081ad92f70255500a09feec13dc0870d5d5b40ec883b`.
+The runner log shows the actual owned `--retain-only` finalizer completed.
+
+The matching scaffold run **37390320547 / attempt1** now reaches the
+remaining services test-classpath blocker. Importantly, its actual artifact
+contains the owned **wp211-native/room-completion** snapshot despite that
+failure: all34 verbatim data XML reports, primary source blobs, full compiled
+input maps, eight-file producer freeze, exact source/base/head/run37390320547/
+attempt1/Linux binding and `missing_directories` identifying absent services
+JUnit. It does not contain a fabricated `verified.json`.
+Artifact `scaffold-37390320547-1`, id11381121770, size146088 bytes,
+published digest
+`sha256:f5bb93b8d9c5b95bcbb23478141d5f73be44133ba70b3c588ff965dd955420fe`
+was retained before validation; compiler log SHA-256
+`56c4e691203614647b0d56828aa44553efc4999697de08b340733baefc53dcc0`.
+Its separately retained root-run Room XML SHA-256 is
+`8367b571313f3a7457fea5aba8f8b5d1e70942160da7d9241d4f5502124cd578`.
+
+This supplies concrete **file-bound native configuration/finalizer proof**
+for the admitted data build blob `b09e7706c7767b125c558d365db6beee1a00497e`
+(LF SHA-256
+`fe85ec1d1721906eae8a736e07be9430c3a7e6c933b33bc22d9ea0feed0bfcab`)
+and unchanged local lock blob `af40912627e2ca3c03445d5d43164a53c676294c`
+(LF SHA-256
+`9e33b19e97d8b8f20f95f7b83dc744c5403082615bd434546dcad43751eb0c10`).
+Both match the actual root-run compiled-input records. It is not full WP-211
+acceptance or permission to alter/carry another producer. The coordinator
+may serialize those exact existing files to a disjoint consumer after its
+explicit freeze; no future messaging cases/task guards are anticipated here.
 
 Static declaration counts are not executed services-JVM counts; the limited
 actual Room consumer result above is recorded separately. The services module needs the

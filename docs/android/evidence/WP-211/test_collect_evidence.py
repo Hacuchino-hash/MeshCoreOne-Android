@@ -180,6 +180,23 @@ class IdentityReaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Reviewed producer blob drift"):
                 reader.frozen_producers()
 
+    def test_owned_partitions_derive_301_jvm_and_12_room_without_baseline_module_count_credit(self):
+        _, families, native, room = reader.source_map()
+        self.assertEqual(
+            {
+                "original_jvm_expanded": 213, "original_room_expanded": 7,
+                "native_device_regressions": 88, "native_room_regressions": 5,
+                "declared_device_jvm": 301, "declared_room": 12, "declared_owned_total": 313,
+            },
+            reader.partition_counts(families, native, room),
+        )
+        missing = room - {case["method"] for case in families.values() if case["runner"] == "room"}
+        with self.assertRaisesRegex(ValueError, "Original Room methods missing"):
+            reader.partition_counts(families, native, missing)
+        dropped = {identity: case for identity, case in families.items() if case["runner"] != "room"}
+        with self.assertRaisesRegex(ValueError, "Frozen original JVM/Room partition"):
+            reader.partition_counts(dropped, native, room)
+
 
 class NativeHookTests(unittest.TestCase):
     def test_the_admitted_hook_runs_both_actual_test_tasks_and_keeps_earlier_hooks(self):
