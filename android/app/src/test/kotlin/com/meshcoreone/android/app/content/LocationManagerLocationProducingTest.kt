@@ -31,6 +31,12 @@ class LocationManagerLocationProducingTest {
         val adapter = LocationManagerLocationProducing(context)
 
         val deferred = async { adapter.requestLocation() }
+        // `runTest`'s StandardTestDispatcher only *queues* `async`'s body rather than running it
+        // inline, so without draining the scheduler here, `simulateLocation` below would fire
+        // before `requestLocation()` ever reaches its real `getCurrentLocation` registration --
+        // the fix would be delivered to no pending consumer and `deferred.await()` would hang.
+        // `runCurrent()` genuinely executes the adapter up to its real suspension point first.
+        testScheduler.runCurrent()
         val fix = Location(LocationManager.FUSED_PROVIDER).apply {
             latitude = 37.7749
             longitude = -122.4194
