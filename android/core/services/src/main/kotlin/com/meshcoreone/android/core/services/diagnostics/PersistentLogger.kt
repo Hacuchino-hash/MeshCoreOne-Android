@@ -17,7 +17,7 @@ fun interface DebugLogRecorder {
  * `debug` is log-only.
  *
  * Android has no `os.Logger`: the default sink is [JavaUtilLoggingSink] because `core:services`
- * is a pure JVM module that cannot reference `android.util.Log`; Android forwards
+ * is a pure JVM module that cannot reference Android's `Log`; Android forwards
  * `java.util.logging` to logcat. The sink, clock and recorder are injectable for tests.
  *
  * Thread-safe and stateless like the Swift `Sendable` struct: it may be called from any thread.

@@ -9,7 +9,7 @@ import java.util.logging.Logger
 /**
  * Non-persistent platform log output, the Android stand-in for Apple's `os.Logger`.
  *
- * `core:services` is a pure JVM module (no `android.util.Log`), so the default sink is
+ * `core:services` is a pure JVM module (no Android's `Log`), so the default sink is
  * [JavaUtilLoggingSink]. On Android the runtime installs a `java.util.logging` handler that
  * forwards to logcat, so records still reach the device log; on the JVM they reach the
  * configured JUL handlers. Tests inject a recording sink instead.

@@ -37,7 +37,7 @@ class DebugLogBuffer(
     private val scope: CoroutineScope,
     private val clock: DebugLogClock = SystemDebugLogClock,
     private val platformSink: DebugLogPlatformSink = JavaUtilLoggingSink,
-) {
+) : DebugLogFlushing {
     private val lock = Any()
     private var buffer: List<DebugLogEntryDTO> = emptyList()
     private var flushJob: Job? = null
@@ -72,7 +72,7 @@ class DebugLogBuffer(
         job?.start()
     }
 
-    suspend fun flush() {
+    override suspend fun flush() {
         synchronized(lock) { cancelScheduledFlushLocked() }
         flushBuffer()
     }
