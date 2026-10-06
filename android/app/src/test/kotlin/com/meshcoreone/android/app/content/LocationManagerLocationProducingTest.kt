@@ -28,6 +28,9 @@ class LocationManagerLocationProducingTest {
     @Test
     fun `requestLocation resolves to the real coordinate delivered by the platform fix`() = runTest {
         shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
+        shadowOf(context as android.app.Application).grantPermissions(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+        )
         val adapter = LocationManagerLocationProducing(context)
 
         val deferred = async { adapter.requestLocation() }
@@ -51,9 +54,23 @@ class LocationManagerLocationProducingTest {
     @Test
     fun `requestLocation fails with a typed error when the provider is disabled`() = runTest {
         shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, false)
+        shadowOf(context as android.app.Application).grantPermissions(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+        )
         val adapter = LocationManagerLocationProducing(context)
 
         assertFailsWith<LocationServiceError.RequestFailed> { adapter.requestLocation() }
+    }
+
+    @Test
+    fun `requestLocation fails with NotAuthorized when no location permission is granted`() = runTest {
+        shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
+        val adapter = LocationManagerLocationProducing(context)
+
+        val error = assertFailsWith<LocationServiceError.NotAuthorized> { adapter.requestLocation() }
+
+        assertEquals(LocationAuthorizationStatus.DENIED, error.status)
+        assertEquals(LocationAuthorizationStatus.DENIED, adapter.authorizationStatus.value)
     }
 
     @Test
