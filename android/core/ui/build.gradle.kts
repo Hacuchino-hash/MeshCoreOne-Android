@@ -117,6 +117,7 @@ tasks.named("check") { dependsOn(verifySharedUiTests) }
 val resolveSharedUiDependencies by tasks.registering {
     group = "verification"
     description = "Resolve only owned UI configurations, preserving every frozen incumbent version; no ROOT or consumer lock writes."
+    dependsOn("parseDebugLocalResources")
     notCompatibleWithConfigurationCache("Inspects exactly the current owned module configurations")
     doLast {
         val output = layout.buildDirectory.file("reports/wp304/dependency-graphs.tsv").get().asFile

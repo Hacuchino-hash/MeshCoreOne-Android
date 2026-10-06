@@ -192,6 +192,14 @@ class DependencyProposalTests(unittest.TestCase):
                 "\n".join(line for line in GRAPH.splitlines() if "\tandroidApis\t" not in line) + "\n",
                 CONFIGS.replace("androidApis\n", ""), metadata("g:old:1", "g:new:2"))
 
+    def test_owned_resolver_realizes_the_actual_resource_sdk_configuration_before_roster_capture(self):
+        text = (ROOT / "android" / "core" / "ui" / "build.gradle.kts").read_text(encoding="utf8")
+        resolver = text.split("val resolveSharedUiDependencies by tasks.registering {", 1)[1]
+        self.assertIn('dependsOn("parseDebugLocalResources")', resolver)
+        self.assertIn('val ownedConfigurations = configurations.filter { it.isCanBeResolved }', resolver)
+        self.assertNotIn('dependsOn(":app:', resolver)
+        self.assertNotIn('dependsOn(":core:data:', resolver)
+
     def test_only_local_ui_lock_change_is_admitted(self):
         before = {ROOT_LOCK: {"sha256": "a"}}
         validate_writes(before, before.copy(), ["?? " + OWNER_LOCK])
