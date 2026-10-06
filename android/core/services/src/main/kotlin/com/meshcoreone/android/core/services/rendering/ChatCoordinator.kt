@@ -136,6 +136,25 @@ class ChatCoordinator internal constructor(
     /** Generation stamp of the most recent [bindWriter]; a writer with an older stamp is stale. */
     internal val writerGeneration: ULong get() = synchronized(lock) { writerGenerationValue }
 
+    /**
+     * Runs [block] under the coordinator lock only while [generation] is still the bound writer's, so a
+     * writer's staleness check and the write it guards are one step (Swift does both on the main actor).
+     * Returns null when the writer is stale. The lock is reentrant, so [block] may call the mutations.
+     */
+    internal fun <T> ifWriterGeneration(generation: ULong, block: () -> T): T? =
+        synchronized(lock) { if (generation != writerGenerationValue) null else block() }
+
+    /** Swift's view-model callbacks cannot throw; a throwing Kotlin callback is logged, never propagated. */
+    private fun runCallback(name: String, callback: () -> Unit) {
+        try {
+            callback()
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            logger.severe("$name callback failed: $error")
+        }
+    }
+
     /** Debug seam (Swift `#if DEBUG`): when set, populate throws this after the entry spinner clear. */
     @Volatile
     var testPopulateFetchError: Throwable? = null
@@ -426,7 +445,7 @@ class ChatCoordinator internal constructor(
                 logger.warning("applyReloadedIDs: fetch returned nil for known id $id")
             }
         }
-        renderItemRebuilder?.let { rebuilder -> refreshedIDs.forEach(rebuilder) }
+        renderItemRebuilder?.let { rebuilder -> refreshedIDs.forEach { id -> runCallback("renderItemRebuilder") { rebuilder(id) } } }
         if (inconsistencyDetected) hardReset("fetch returned nil for in-memory message")
     }
 
@@ -471,7 +490,7 @@ class ChatCoordinator internal constructor(
             val unfilteredCount = window.messages.size.toLong()
             replaceAll(hidingOutgoingReactions(window.messages))
             updateRenderState { it.with(hasMoreMessages = window.hasMore, totalFetchedCount = unfilteredCount) }
-            renderStateInvalidated?.invoke()
+            renderStateInvalidated?.let { runCallback("renderStateInvalidated", it) }
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (error: Exception) {
@@ -527,16 +546,20 @@ class ChatCoordinator internal constructor(
     }
 
     private suspend fun applyRebuiltItems(built: List<MessageItem>, capturedID: ULong, postApply: (() -> Unit)?) {
-        if (!currentCoroutineContext().isActive) return
+        val self = currentCoroutineContext()[Job]
+        if (self?.isActive == false) return
         val (applied, invalidated) = synchronized(lock) {
+            // A build superseded by a newer rebuildItems is the Swift cancelled task: it neither applies nor
+            // invalidates. Checked under the lock so a concurrent rebuild can't slip in between.
+            if (buildItemsTaskValue !== self) return
             val new = renderState.with(items = built.snapshot(), itemIndexByID = built.indexByID { it.id })
             setRenderStateLocked(new, capturedID) to renderStateInvalidatedValue
         }
         if (!applied) {
-            invalidated?.invoke()
+            invalidated?.let { runCallback("renderStateInvalidated", it) }
             return
         }
-        postApply?.invoke()
+        postApply?.let { runCallback("postApply", it) }
     }
 
     // endregion

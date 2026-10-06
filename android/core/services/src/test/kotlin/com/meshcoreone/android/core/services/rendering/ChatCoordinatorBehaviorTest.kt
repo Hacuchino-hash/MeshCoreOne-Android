@@ -164,6 +164,30 @@ class ChatCoordinatorBehaviorTest {
                 assertFalse(coordinator.reloadInFlight)
             }
         },
+        native("a throwing renderItemRebuilder is contained: every refreshed id is offered and later reloads still run") {
+            runRendering {
+                val store = RenderingInMemoryMessageStore()
+                val first = dmMessage("first", 70)
+                val second = dmMessage("second", 71)
+                listOf(first, second).forEach { store.saveMessage(it) }
+                val coordinator = renderingCoordinator(dmID, store)
+                coordinator.append(first)
+                coordinator.append(second)
+                val offered = CopyOnWriteArrayList<UUID>()
+                coordinator.renderItemRebuilder = { id ->
+                    offered.add(id)
+                    if (id == first.id) throw IllegalStateException("view model gone")
+                }
+                coordinator.enqueueReload(setOf(first.id, second.id))
+                coordinator.coalescedReloadTask?.join()
+                assertEquals(setOf(first.id, second.id), offered.toSet(), "one throwing call must not skip the rest")
+                assertFalse(coordinator.reloadInFlight)
+                offered.clear()
+                coordinator.enqueueReload(second.id)
+                coordinator.coalescedReloadTask?.join()
+                assertEquals(listOf(second.id), offered.toList(), "the shared scope must still run later reloads")
+            }
+        },
         native("cancelling a not-yet-started drain clears the in-flight flag so later events reschedule") {
             runRendering {
                 val coordinator = renderingCoordinator(dmID)

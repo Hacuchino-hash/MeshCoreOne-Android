@@ -34,16 +34,15 @@ class ChatTimelineWriter internal constructor(
      * Runs [body] only while this writer is current. A dropped prime write is expected teardown noise; a
      * dropped interactive write almost always means a missed rebind, so it is logged as a warning.
      */
-    private inline fun ifCurrent(operation: String, body: () -> Unit) {
-        if (!isCurrent) {
+    private inline fun ifCurrent(operation: String, crossinline body: () -> Unit) {
+        // The staleness check and the write run as one locked step on the coordinator.
+        if (coordinator.ifWriterGeneration(generation) { body() } == null) {
             if (role == ChatWriterRole.INTERACTIVE) {
                 coordinator.logger.warning("stale interactive writer dropped $operation; missed rebind?")
             } else {
                 coordinator.logger.info("stale ${role.name.lowercase()} writer dropped $operation")
             }
-            return
         }
-        body()
     }
 
     fun replaceAll(newMessages: List<MessageDTO>) = ifCurrent("replaceAll") { coordinator.replaceAll(newMessages) }

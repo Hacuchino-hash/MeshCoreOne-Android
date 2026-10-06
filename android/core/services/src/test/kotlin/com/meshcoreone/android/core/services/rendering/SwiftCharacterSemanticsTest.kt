@@ -97,6 +97,27 @@ class SwiftCharacterSemanticsTest {
 
     private fun native(name: String, body: () -> Unit) = DynamicTest.dynamicTest("WP-213::$name", body)
 
+    /** Expected values printed by swiftc + Foundation (macOS 26.5.1): `a.caseInsensitiveCompare(b) == .orderedSame`. */
+    @TestFactory
+    fun foundationCaseInsensitiveCases(): List<DynamicTest> = listOf(
+        DynamicTest.dynamicTest("WP-213::caseInsensitiveEquals matches Foundation for Turkish i, sharp s, ligatures and final sigma") {
+            listOf(
+                Triple("IŞIK", "Işık", false), Triple("STRAẞE", "straße", true), Triple("STRASSE", "straße", true),
+                Triple("ı", "i", false), Triple("I", "ı", false), Triple("ẞ", "ß", true), Triple("İ", "i", false),
+                Triple("İstanbul", "istanbul", false), Triple("ǅ", "ǆ", true), Triple("ǅ", "Ǆ", true), Triple("ﬁre", "FIRE", true),
+                Triple("ΣΊΣΥΦΟΣ", "σίσυφος", true), Triple("ς", "σ", true), Triple("Ünïcode", "ÜNÏCODE", true),
+                Triple("cafe\u0301", "CAFÉ", true), Triple("Ⓐbc", "ⓐBC", true), Triple("Node-1", "NODE-1", true),
+                Triple("\u212A", "k", true), Triple("Å", "å", true), Triple("µ", "μ", true), Triple("ſ", "s", true),
+                Triple("ﬀ", "ff", true), Triple("Ꭰ", "ꭰ", true),
+            ).forEach { (a, b, expected) -> assertEquals(expected, SwiftText.caseInsensitiveEquals(a, b), "${escape(a)} vs ${escape(b)}") }
+            assertTrue(MentionUtilities.containsSelfMention("hi @[STRAẞE]", "straße"))
+            assertTrue(!MentionUtilities.containsSelfMention("hi @[IŞIK]", "Işık"))
+        },
+        DynamicTest.dynamicTest("WP-213::the Foundation case-fold table has the generated entry count") {
+            assertEquals(1552, FoundationCaseFold.size)
+        },
+    )
+
     private fun escape(text: String): String = text.codePoints().toArray().joinToString("") { codePoint ->
         if (codePoint in 0x20..0x7E) codePoint.toChar().toString() else "\\u{%X}".format(codePoint)
     }

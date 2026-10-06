@@ -78,11 +78,8 @@ internal object SwiftText {
         return builder.toString()
     }
 
-    /** Foundation `caseInsensitiveCompare(_:) == .orderedSame`: full case folding over canonical forms. */
-    fun caseInsensitiveEquals(first: String, second: String): Boolean = caseFold(first) == caseFold(second)
-
-    private fun caseFold(text: String): String =
-        canonical(canonical(text).uppercase(Locale.ROOT).lowercase(Locale.ROOT))
+    /** Foundation `caseInsensitiveCompare(_:) == .orderedSame`, via Foundation's own folding table. */
+    fun caseInsensitiveEquals(first: String, second: String): Boolean = FoundationCaseFold.equal(first, second)
 
     /** Swift `Dictionary<String, V>` lookup, which hashes and compares keys by canonical equivalence. */
     fun <V> canonicalLookup(table: Map<String, V>, key: String): V? {
