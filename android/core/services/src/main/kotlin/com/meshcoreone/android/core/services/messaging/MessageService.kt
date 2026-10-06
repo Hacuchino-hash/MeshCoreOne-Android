@@ -444,6 +444,7 @@ class MessageService(
                         try {
                             dataStore.incrementMessageSendCount(key(id))
                             synchronized(lock) { claim.sendCountCommitted = true }
+                            ownership.check("queuedDirectMessage.sendCount")
                             recovered("dmSendCount.$id")
                         } catch (failure: PersistenceStoreException) {
                             remember("dmSendCount.$id", failure)
@@ -555,9 +556,11 @@ class MessageService(
     internal suspend fun finalizeSend(
         messageID: UUID, contactID: UUID, publicKey: Bytes, sentInfo: MessageSentInfo?, initialPathLength: UByte,
     ): MessageDTO {
+        ownership.check("finalizeSend")
         val tracking = pendingAck(messageID)
         if (tracking?.acknowledgement != null) reconcileAcknowledgement(messageID)
         else mutation(messageID).withLock {
+            ownership.check("finalizeSend.transition")
             val current = pendingAck(messageID)
             if (current == null || current.isDelivered) synchronized(lock) { pendingAcks.remove(messageID) }
             else if (sentInfo != null) {

@@ -42,7 +42,7 @@ with zero failures/errors/skips.
 The completed immutable-head independent review then added exact-base and
 captured-run/attempt guards:26 Python reader tests discovered/passed with zero
 failures/errors/skips. The same-WP coherent repair candidate retains128/131,
-adds nine real-session interleaving regressions (45 authored native cases total)
+adds ten real-session interleaving regressions (46 authored native cases total)
 and five actual Room interleavings (13 authored consumers total). None is
 claimed Kotlin-executed before the serialized producer hook/lock handoff.
 Source accounting reported128 families/131 expanded cases, 32 authored native

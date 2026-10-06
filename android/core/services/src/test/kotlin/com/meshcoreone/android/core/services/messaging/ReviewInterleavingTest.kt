@@ -160,6 +160,15 @@ class ReviewInterleavingTest {
             assertNotEquals(DeduplicationKey.contentBased(null, 0u, "\u00E9", 42u, "\u00E9"),
                 DeduplicationKey.contentBased(null, 0u, "\u00E9", 42u, "e\u0301"))
         },
+        native("generationChangeAfterCommittedResendCountCannotPublishOrFinalizeIntoASuccessor") {
+            val h = Harness(this); h.start(); h.service.startEventMonitoring(); h.transport.acknowledge = true
+            val message = h.message(MessageStatus.SENT); val events = h.service.statusEvents()
+            h.store.before = { if (it == "incrementMessageSendCount") h.signals.set(token(generation = 2), DeviceConnectionState.READY) }
+            assertFailsWith<MessageServiceException> { h.service.resendDirectMessage(message.id, h.contact) }
+            assertEquals(2L, h.stored(message.id).sendCount)
+            assertFalse(statuses(h.service, events).any { it is MessageStatusEvent.Resent })
+            assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size); h.close()
+        },
     )
     private fun contactPacket(text: String): Bytes = ByteWriter().appendUInt8(ResponseCode.CONTACT_MESSAGE_RECEIVED.rawValue)
         .append(TARGET.prefix(6)).appendUInt8(0u).appendUInt8(0u).appendUInt32LE(42u).append(Bytes.utf8(text)).toBytes()
