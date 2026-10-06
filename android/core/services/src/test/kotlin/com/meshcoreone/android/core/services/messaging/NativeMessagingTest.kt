@@ -269,6 +269,58 @@ class NativeMessagingTest {
             assertFailsWith<MessagePollingException> { p.pollAllMessages() }; assertEquals(1, p.undeliveredCount)
             assertFalse(p.close().isComplete); assertFalse(p.hasMessageHandlersWired); h.close()
         },
+        native("channelFormatPreservesFirstColonEmptyBodyAndWhitespaceNotNewlines") {
+            assertNull(ChannelMessageFormat.parse("no separator"))
+            assertNull(ChannelMessageFormat.parse(": body"))
+            assertEquals(ChannelMessageFormat.Parsed("Alice", ""), ChannelMessageFormat.parse("Alice:"))
+            assertEquals(ChannelMessageFormat.Parsed("Alice", "one: two"), ChannelMessageFormat.parse(" Alice : one: two "))
+            assertEquals(ChannelMessageFormat.Parsed("Alice", "\nbody\n"), ChannelMessageFormat.parse("\tAlice\u3000: \nbody\n "))
+        },
+        native("rawChannelV3KeepsSignedSNRHighTimestampAndGenuineAbsentMetadata") {
+            val h = Harness(this); h.start(); val p = poller(h); var received = 0
+            p.setChannelMessageHandler { message, channel, context ->
+                received++
+                assertNull(channel); assertEquals(-2.5, message.snr)
+                assertEquals(UInt.MAX_VALUE.toLong(), message.senderTimestamp.epochSecond)
+                assertEquals("Alice: \u6F22\u5B57", message.text)
+                assertIs<DeliveryContext.InitialSync>(context)
+            }
+            h.transport.incomingMessages += ByteWriter().appendUInt8(ResponseCode.CHANNEL_MESSAGE_RECEIVED_V3.rawValue)
+                .appendInt8(-10).appendUInt16LE(0u).appendUInt8(3u).appendUInt8(0u).appendUInt8(0u)
+                .appendUInt32LE(UInt.MAX_VALUE).append(Bytes.utf8("Alice: \u6F22\u5B57")).toBytes()
+            assertEquals(1L, p.pollAllMessages()); assertEquals(1, received); p.close(); h.close()
+        },
+        native("rawDatagramsDrainWithoutBecomingVisibleMessageCountOrHandlerCalls") {
+            val h = Harness(this); h.start(); val p = poller(h); var visible = 0
+            p.setContactMessageHandler { _, _, _ -> visible++ }
+            p.setChannelMessageHandler { _, _, _ -> visible++ }
+            h.transport.incomingMessages += ByteWriter().appendUInt8(ResponseCode.CHANNEL_DATA_RECEIVED.rawValue)
+                .appendInt8(-4).appendUInt16LE(0u).appendUInt8(0u).appendUInt8(0u)
+                .appendUInt16LE(0xFF80u).appendUInt8(2u).append(Bytes.of(0x80, 0xFF)).toBytes()
+            assertEquals(0L, p.pollAllMessages()); assertEquals(0, visible)
+            assertEquals(2, h.sends(CommandCode.GET_MESSAGE).size); p.close(); h.close()
+        },
+        native("ackSetKeepsWholeImmutableByteValuesAndBlockedContactMetadataStaysRadioScoped") {
+            val h = Harness(this); h.start(); val message = h.message()
+            val first = Bytes.of(0x80, 0xFF, 1, 2); val second = Bytes.of(0xFF, 0x80, 3, 4)
+            h.service.trackPendingAck(message.id, CONTACT, first, 30.0)
+            h.service.trackPendingAck(message.id, CONTACT, second, 30.0)
+            assertEquals(setOf(first, second), assertNotNull(h.service.pendingAck(message.id)).ackCodes)
+            val p = poller(h); var delivered = 0
+            h.store.contacts[EntityKey(RADIO, CONTACT)] = h.contact.copy(isBlocked = true)
+            h.store.contacts[EntityKey(PEER_RADIO, CONTACT)] = h.contact.copy(radioId = PEER_RADIO, isBlocked = false)
+            p.setContactMessageHandler { wire, contact, _ ->
+                delivered++
+                assertEquals(TARGET.prefix(6), wire.senderPublicKeyPrefix)
+                assertEquals(RADIO, contact?.radioId)
+                assertEquals(TARGET, contact?.publicKey)
+                assertTrue(assertNotNull(contact).isBlocked)
+            }
+            h.transport.incomingMessages += contactPacket("blocked sender metadata")
+            assertEquals(1L, p.pollAllMessages()); assertEquals(1, delivered)
+            assertFalse(assertNotNull(h.store.contacts[EntityKey(PEER_RADIO, CONTACT)]).isBlocked)
+            p.close(); h.close()
+        },
     )
     private fun poller(h: Harness) = MessagePollingService(h.token, h.session, h.store, h.signals, h.scope, h.clock,
         MessagingIssueReporter { h.diagnostics += it })

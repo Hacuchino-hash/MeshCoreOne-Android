@@ -175,7 +175,7 @@ class MessageService(
         }
         val prior = pendingAcks[messageID]
         val value = prior?.copy(
-            ackCodes = (prior.ackCodes + ackCode).snapshotSet(), sentAt = clock.wallClock.instant(), timeout = timeout,
+            ackCodes = (prior.ackCodes + listOf(ackCode)).snapshotSet(), sentAt = clock.wallClock.instant(), timeout = timeout,
         ) ?: PendingAck(messageID, contactID, SnapshotSet(listOf(ackCode)), clock.wallClock.instant(), timeout,
             publicKey = publicKey)
         pendingAcks[messageID] = value

@@ -40,7 +40,10 @@ The first reader run discovered/passed21 tests, then the raw-retention,
 duplicate-JSON and path-traversal additions discovered/passed24 tests, each
 with zero failures/errors/skips.
 Source accounting reported128 families/131 expanded cases, 32 authored native
-regressions and eight authored Room consumers. Frozen overlay/schema/ownership
+regressions and eight authored Room consumers, followed by three additional
+channel-format/V3/datagram assertions and an immutable ACK-set/blocked-contact
+radio-identity assertion (36 authored native regressions total).
+Frozen overlay/schema/ownership
 validators passed. Initial portmap validation rejected mixed `PortedFrom` and
 `AndroidOnly` dispositions; the headers were corrected and the unchanged
 validator passed. These results are not Kotlin execution evidence.
@@ -75,6 +78,23 @@ all 131 expanded original identities, every declared native messaging regression
 all eight actual Room consumers and the full data suite's existing369 floor.
 Zero/missing/malformed/skipped/failed/duplicate/stale/changed evidence fails.
 Other services owners' cases are retained and must pass, but are not WP-208 credit.
+
+The first hosted root run `37397264183`, attempt1 at authored head
+`8bbad096d903b8789b47a4bdbe5ed563cfb83783`, failed actual production compilation:
+`MessageService.kt:178:24` supplied `SnapshotSet<Any>` where `SnapshotSet<Bytes>`
+was required. `Bytes` is itself iterable, so `set + bytes` selected the iterable
+overload rather than adding one immutable byte value. The repair adds an explicit
+`listOf(ackCode)` element collection without casts, empty fallbacks or loss of
+prior codes; the whole-byte/blocked-contact/radio assertion guards its consumers.
+
+Official failed artifact `11384056484`, `scaffold-37397264183-1`, is 16,028 bytes,
+SHA-256 `3a982051a2e754f6d035c5ef7b61a4f6c73379538d540d839c7d0399de13bf6e`.
+All14 bounded ZIP members passed path/type/size/CRC validation before extraction
+as data to the owning session's artifact folder. Complete `gradle-verify.log`,
+actual `wp109-invocation.json`, runtime inputs and preflight/Python logs are retained.
+No messaging/Room assertion XML exists from this production compile failure;
+zero Kotlin test or acceptance credit is claimed. This first run is historical,
+not proof for subsequent repairs or producer changes.
 
 Room assertions use real native in-memory/file-backed SQLite on simulated SDK31.
 They cover fresh/recovered counters, cold store reopen, forgotten radios,
