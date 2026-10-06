@@ -1,0 +1,45 @@
+{
+  "receipt": "autonomous-WP-208-7e2835ba",
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "work_package": "WP-208",
+  "owner": "services-porter",
+  "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+  "native_session": "85e5b646-9f73-48d8-b1e1-9f1491402a49",
+  "app_session": "82439824-b1ff-40f5-a70f-9bbed92ae380",
+  "original_managed_branch": "cbattlegear-supreme-guacamole",
+  "current_managed_branch": "cbattlegear-supreme-guacamole",
+  "rename": "NoTool; no raw branch rename",
+  "initial_head": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
+  "initial_parents": [
+    "19ebc49442d2efaeed9ba030937a266da953b4b7",
+    "129a90b3ce1991ce98f1a05a13f32cc02c634fb2"
+  ],
+  "initial_status": "clean, including zero untracked files",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "source_tree": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
+  "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+  "policy_revision": "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a",
+  "wp207_merged_pr": 26,
+  "wp207_merge_sha": "d147865c15d09b7e9f9956db3e8a0a10e54d5134",
+  "wp207_verified_ancestor": true,
+  "primary_source_blobs_verified": 34,
+  "write_paths": [
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/messaging/",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/messaging/",
+    "docs/android/deviations/WP-208.md",
+    "docs/android/evidence/WP-208/",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/MessagingContracts.kt",
+    "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/DeduplicationKey.kt",
+    "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/repository/RepositoryPolicies.kt",
+    "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/messaging/MessagingRoomIntegrationTest.kt"
+  ],
+  "repository_policy_amendment": {
+    "base_blob": "7f3d9bbf01284939d1c29f30b33b913693f8ea99",
+    "scope": "RepositoryDeduplicationKey delegation only; every non-dedup line is unchanged"
+  },
+  "services_build_and_root_services_lock_owner": "WP-218",
+  "data_build_and_module_lock_owner": "WP-211",
+  "local_execution": "BLOCKED: documented preflight exit 2, missing ANDROID_CI_STATE; no JVM executed",
+  "scope": "Manual bounded WP-208 authorship receipt, not fleet activation, formal acceptance or merge authority"
+}

@@ -1,0 +1,287 @@
+// PortedFrom: MC1Services/Tests/MC1ServicesTests/Services/ChatSendQueueServiceAttemptCountTests.swift@db14559b39d32322b06477c6ae676112f583db50
+// PortedFrom: MC1Services/Tests/MC1ServicesTests/Services/ChatSendQueueServiceTests.swift@db14559b39d32322b06477c6ae676112f583db50
+// Native adaptation: WP-208 actual Room/process-store and real-session consumers on simulated SDK31, not HIL.
+package com.meshcoreone.android.core.data.messaging
+
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import com.meshcoreone.android.core.contracts.domain.*
+import com.meshcoreone.android.core.data.backup.backupEnvelope
+import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
+import com.meshcoreone.android.core.database.MeshCoreDatabase
+import com.meshcoreone.android.core.model.*
+import com.meshcoreone.android.core.protocol.bytes.ByteWriter
+import com.meshcoreone.android.core.protocol.bytes.Bytes
+import com.meshcoreone.android.core.protocol.config.SessionConfiguration
+import com.meshcoreone.android.core.protocol.event.ConnectionState
+import com.meshcoreone.android.core.protocol.model.CommandCode
+import com.meshcoreone.android.core.protocol.model.ResponseCode
+import com.meshcoreone.android.core.protocol.session.MeshCoreSession
+import com.meshcoreone.android.core.protocol.session.SessionClock
+import com.meshcoreone.android.core.protocol.transport.MeshTransport
+import com.meshcoreone.android.core.protocol.transport.mock.MockTransport
+import com.meshcoreone.android.core.services.messaging.ChatSendQueueService
+import com.meshcoreone.android.core.services.messaging.MessageService
+import java.security.MessageDigest
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.UUID
+import java.util.concurrent.Executor
+import kotlin.test.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [31])
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
+@OptIn(ExperimentalCoroutinesApi::class)
+class MessagingRoomIntegrationTest {
+    private val scheduler = TestCoroutineScheduler()
+    private val process = CoroutineScope(SupervisorJob() + StandardTestDispatcher(scheduler))
+    private val radio = RadioId(UUID.fromString("AAAAAAAA-1111-2222-3333-444444444444"))
+    private val other = RadioId(UUID.fromString("BBBBBBBB-1111-2222-3333-444444444444"))
+    private val self = Bytes(ByteArray(32) { 1 })
+    private val target = Bytes(ByteArray(32) { 0x22 })
+    private val base = Instant.parse("2026-10-05T12:00:00Z")
+    private val clock = object : SessionClock {
+        override val now: Duration get() = scheduler.currentTime.milliseconds
+        override val wallClock: Clock = object : Clock() {
+            override fun getZone(): ZoneId = ZoneOffset.UTC
+            override fun withZone(zone: ZoneId): Clock = this
+            override fun instant(): Instant = base.plusMillis(scheduler.currentTime)
+        }
+        override suspend fun sleepFor(duration: Duration) { delay(duration) }
+    }
+    private lateinit var db: MeshCoreDatabase
+    private lateinit var store: RoomPersistenceStore
+    private lateinit var contact: ContactDTO
+    private fun database(name: String? = null): MeshCoreDatabase {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val builder = if (name == null) Room.inMemoryDatabaseBuilder(context, MeshCoreDatabase::class.java)
+            else Room.databaseBuilder(context, MeshCoreDatabase::class.java, name)
+        val immediate = Executor { it.run() }
+        return builder.allowMainThreadQueries().setQueryExecutor(immediate).setTransactionExecutor(immediate).build()
+    }
+    @Before fun open() {
+        db = database()
+        store = RoomPersistenceStore(db, process, clock.wallClock)
+        contact = ContactDTO(radioId = radio, publicKey = target, name = "Peer", lastHeardTimestamp = 0u)
+    }
+    @After fun close() {
+        try { runBlocking { store.close() } }
+        finally { process.cancel(); db.close() }
+    }
+    private suspend fun seed() {
+        store.saveDevice(DeviceDTO(radioId = radio, publicKey = self, nodeName = "Local"))
+        store.saveContact(contact)
+    }
+    private inner class RadioGeneration(number: Long) {
+        val scope = CoroutineScope(SupervisorJob(process.coroutineContext[Job]) + StandardTestDispatcher(scheduler))
+        val token = SessionToken(ProcessEpoch(UUID.fromString("CCCCCCCC-1111-2222-3333-444444444444")), Generation(number), radio)
+        val signals = RoomSignals(token)
+        val firmware = RoomFirmware()
+        val session = MeshCoreSession(firmware, SessionConfiguration(defaultTimeout = 2.0), clock, scope.coroutineContext)
+        val service = MessageService(token, self, session, store, signals, scope, clock = clock)
+        val queue = ChatSendQueueService(token, store, service, MessagingChannelQuery { null },
+            OutgoingChannelReactionIndexer { _, _, _, _, _ -> }, signals, scope, clock = clock)
+        suspend fun start() { session.start() }
+        suspend fun stop() { queue.shutdown(); service.close(); session.stop(); scope.cancel() }
+    }
+
+    @Test fun freshAndRecoveredAttemptsUseTheActualCommittedCounterAndWireTimestamp() = runTest(scheduler) {
+        seed()
+        val first = RadioGeneration(1); first.start()
+        val fresh = first.service.createPendingMessage("fresh", contact)
+        store.updateMessageTimestamp(EntityKey(radio, fresh.id), 100u)
+        val row = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(fresh.id, contact.id), radio)
+        store.upsertPendingSend(row.copy(sequence = 1))
+        first.signals.set(DeviceConnectionState.CONNECTED)
+        first.queue.hydrate(); runCurrent()
+        assertEquals(0L, store.fetchPendingSends(radio).single().attemptCount)
+        first.firmware.error = 3u
+        first.signals.set(DeviceConnectionState.READY); runCurrent(); advanceTimeBy(3501); runCurrent()
+        assertEquals(1L, store.fetchPendingSends(radio).single().attemptCount)
+        val stamp = assertNotNull(store.fetchMessage(EntityKey(radio, fresh.id))).timestamp
+        assertNotEquals(100u, stamp)
+        first.stop()
+        val second = RadioGeneration(2); second.start(); second.firmware.error = 3u
+        second.signals.set(DeviceConnectionState.CONNECTED); second.queue.hydrate(); runCurrent()
+        second.signals.set(DeviceConnectionState.READY); runCurrent(); advanceTimeBy(3501); runCurrent()
+        assertEquals(2L, store.fetchPendingSends(radio).single().attemptCount)
+        assertEquals(stamp, second.firmware.sent().first().readUInt32LE(3))
+        assertEquals(stamp, assertNotNull(store.fetchMessage(EntityKey(radio, fresh.id))).timestamp)
+        second.stop()
+    }
+
+    @Test fun warmUpPurgesOnlyLegacyNullAndForgottenRadiosAndPreservesCurrentZeroRows() = runTest(scheduler) {
+        seed()
+        val message = MessageDTO(radioId = radio, contactID = contact.id, text = "pending", timestamp = 100u)
+        store.saveMessage(message)
+        val current = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio)
+        store.upsertPendingSend(current.copy(sequence = 1))
+        store.upsertPendingSend(current.copy(id = UUID.randomUUID(), sequence = 2, attemptCount = null))
+        store.upsertPendingSend(current.copy(id = UUID.randomUUID(), radioId = other, sequence = 1))
+        store.warmUp()
+        assertEquals(listOf(current.copy(sequence = 1)), store.fetchPendingSends(radio))
+        assertTrue(store.fetchPendingSends(other).isEmpty())
+    }
+
+    @Test fun coldStoreReopenRecoversTheSameRadioMessageAndPendingSendWithoutRewritingSortDate() = runTest(scheduler) {
+        val name = "wp208-${UUID.randomUUID()}.db"
+        store.close(); db.close(); db = database(name); store = RoomPersistenceStore(db, process, clock.wallClock)
+        seed()
+        val sort = base.minusSeconds(86400)
+        val message = MessageDTO(radioId = radio, contactID = contact.id, text = "cold", timestamp = 100u,
+            createdAt = base.minusSeconds(100), sortDate = sort)
+        store.saveMessage(message)
+        val pending = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio).copy(sequence = 1, attemptCount = 1)
+        store.upsertPendingSend(pending)
+        store.close(); db.close(); db = database(name); store = RoomPersistenceStore(db, process, clock.wallClock)
+        store.warmUp()
+        assertEquals(pending, store.fetchPendingSends(radio).single())
+        assertEquals(sort, assertNotNull(store.fetchMessage(EntityKey(radio, message.id))).sortDate)
+        val g = RadioGeneration(3); g.start(); g.firmware.error = 3u
+        g.signals.set(DeviceConnectionState.CONNECTED); g.queue.hydrate(); runCurrent()
+        g.signals.set(DeviceConnectionState.READY); runCurrent(); advanceTimeBy(3501); runCurrent()
+        assertEquals(100u, g.firmware.sent().first().readUInt32LE(3))
+        assertEquals(sort, assertNotNull(store.fetchMessage(EntityKey(radio, message.id))).sortDate); g.stop()
+    }
+
+    @Test fun actualHydrationDrainsOneRadioInFIFOOrderAndLeavesTheOtherPartitionUntouched() = runTest(scheduler) {
+        seed(); store.saveDevice(DeviceDTO(radioId = other, publicKey = target, nodeName = "Other"))
+        val g = RadioGeneration(4); g.start()
+        for ((sequence, text) in listOf(3L to "three", 1L to "one", 2L to "two")) {
+            val m = MessageDTO(radioId = radio, contactID = contact.id, text = text, timestamp = 100u)
+            store.saveMessage(m); store.upsertPendingSend(PendingSendDTO.fromEnvelope(
+                DirectMessageEnvelope(m.id, contact.id), radio).copy(sequence = sequence))
+        }
+        val foreign = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(UUID.randomUUID(), contact.id), other).copy(sequence = 1)
+        store.upsertPendingSend(foreign)
+        g.signals.set(DeviceConnectionState.READY); g.queue.hydrate(); runCurrent(); g.queue.awaitDrainCompletion()
+        assertEquals(listOf("one", "two", "three"), g.firmware.sent().map { it.slice(13, it.size).toByteArray().toString(Charsets.UTF_8) })
+        assertTrue(store.fetchPendingSends(radio).isEmpty()); assertEquals(listOf(foreign), store.fetchPendingSends(other))
+        g.stop()
+    }
+
+    @Test fun actualBackupConsumerBackfillsOnlyNilIncomingKeysAndUsesOutgoingUUIDIdentity() = runTest(scheduler) {
+        seed()
+        val incoming = MessageDTO(radioId = radio, contactID = contact.id, text = "e\u0301", timestamp = UInt.MAX_VALUE,
+            direction = MessageDirection.INCOMING, status = MessageStatus.DELIVERED, sortDate = base.minusSeconds(123))
+        val emptyKey = incoming.copy(id = UUID.randomUUID(), deduplicationKey = "")
+        val outgoing = incoming.copy(id = UUID.randomUUID(), direction = MessageDirection.OUTGOING, deduplicationKey = null)
+        for (message in listOf(incoming, emptyKey, outgoing)) store.saveMessage(message)
+        val exported = db.backupEnvelope("test", "test", base).messages.associateBy { it.id }
+        assertEquals(DeduplicationKey.contentBased(contact.id, null, null, UInt.MAX_VALUE, "e\u0301"), exported[incoming.id]?.deduplicationKey)
+        assertEquals("", exported[emptyKey.id]?.deduplicationKey); assertNull(exported[outgoing.id]?.deduplicationKey)
+        assertNull(assertNotNull(store.fetchMessage(EntityKey(radio, incoming.id))).deduplicationKey)
+        assertEquals(incoming.sortDate, exported[incoming.id]?.sortDate)
+        assertEquals("out-${outgoing.id.canonicalString()}", com.meshcoreone.android.core.data.backup.messageBackupKey(outgoing))
+    }
+
+    @Test fun deliveredManualRetryRowDoesNotEmitAnotherPacketOrLoseItsPersistedStatus() = runTest(scheduler) {
+        seed()
+        val message = MessageDTO(radioId = radio, contactID = contact.id, text = "already delivered",
+            timestamp = 100u, status = MessageStatus.DELIVERED)
+        store.saveMessage(message)
+        val dto = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio)
+        store.replacePendingSendForRetry(message.id, dto)
+        val g = RadioGeneration(5); g.start(); g.queue.hydrate(); runCurrent(); g.queue.awaitDrainCompletion()
+        assertTrue(g.firmware.sent().isEmpty()); assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        assertTrue(store.fetchPendingSends(radio).isEmpty()); g.stop()
+    }
+
+    @Test fun twoRadioGenerationsDoNotCloseTheProcessStoreOrDuplicateMonitors() = runTest(scheduler) {
+        seed()
+        val first = RadioGeneration(6); first.start(); first.service.startEventMonitoring(); first.service.startEventMonitoring()
+        val message = first.service.sendDirectMessage("one physical generation", contact)
+        runCurrent(); assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        first.stop()
+        val second = RadioGeneration(7); second.start(); second.service.startEventMonitoring()
+        assertEquals(message.id, store.fetchMessage(EntityKey(radio, message.id))?.id)
+        assertEquals(contact.id, store.fetchContact(EntityKey(radio, contact.id))?.id)
+        val another = second.service.sendDirectMessage("successor", contact); runCurrent()
+        assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, another.id))?.status); second.stop()
+    }
+
+    @Test fun actualClosedRepositoryFailureCannotAdvanceAttemptCountOrSendOnTheWire() = runTest(scheduler) {
+        seed()
+        val g = RadioGeneration(8); g.start()
+        val message = g.service.createPendingMessage("storage failure", contact)
+        store.upsertPendingSend(PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio).copy(sequence = 1))
+        g.signals.set(DeviceConnectionState.CONNECTED); g.queue.hydrate(); runCurrent()
+        store.close()
+        g.signals.set(DeviceConnectionState.READY); runCurrent()
+        assertTrue(g.firmware.sent().isEmpty())
+        assertFalse(g.queue.shutdown().isComplete); g.service.close(); g.session.stop(); g.scope.cancel()
+    }
+
+    private class RoomSignals(private val token: SessionToken) : ConnectionSignals {
+        private val value = MutableStateFlow(snapshot(token, DeviceConnectionState.CONNECTED))
+        override val snapshot: kotlinx.coroutines.flow.StateFlow<ConnectionSnapshot> get() = value
+        private val channels = mutableListOf<kotlinx.coroutines.channels.Channel<ConnectionSnapshot>>()
+        fun set(rung: DeviceConnectionState) {
+            val next = snapshot(token, rung); value.value = next
+            channels.forEach { it.trySend(next).getOrThrow() }
+        }
+        override suspend fun subscribeTransitions(): ConnectionSubscription {
+            val channel = kotlinx.coroutines.channels.Channel<ConnectionSnapshot>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+            channels += channel
+            return object : ConnectionSubscription {
+                override val initial = value.value
+                override val transitions: Flow<ConnectionSnapshot> = flow { try { for (next in channel) emit(next) } finally { close() } }
+                override fun close() { channels.remove(channel); channel.cancel() }
+            }
+        }
+        companion object {
+            fun snapshot(token: SessionToken, state: DeviceConnectionState) =
+                ConnectionSnapshot(state, ConnectionState.Connected, null, ConnectionIntent.WantsConnection(), token, null)
+        }
+    }
+
+    private inner class RoomFirmware : MeshTransport {
+        private val mock = MockTransport()
+        var error: UByte? = null
+        fun sent(): List<Bytes> = mock.sentData.filter { it[0] == CommandCode.SEND_MESSAGE.rawValue }
+        override suspend fun isConnected() = mock.isConnected()
+        override suspend fun connect() = mock.connect()
+        override suspend fun disconnect() = mock.disconnect()
+        override suspend fun receivedData() = mock.receivedData()
+        override suspend fun supportsWriteWithoutResponse() = false
+        override suspend fun supportsPipelinedReads() = false
+        override suspend fun send(data: Bytes) {
+            mock.send(data)
+            when (CommandCode.fromRawValue(data[0])) {
+                CommandCode.APP_START -> mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.SELF_INFO.rawValue)
+                    .appendUInt8(1u).appendUInt8(22u).appendUInt8(22u).append(self)
+                    .appendInt32LE(0).appendInt32LE(0).appendUInt8(0u).appendUInt8(0u).appendUInt8(0u)
+                    .appendUInt32LE(915_000u).appendUInt32LE(125_000u).appendUInt8(7u).appendUInt8(5u).append(Bytes.utf8("Test")).toBytes())
+                CommandCode.SEND_MESSAGE -> {
+                    error?.let { mock.simulateError(it); return }
+                    val input = ByteWriter().appendUInt32LE(data.readUInt32LE(3))
+                        .appendUInt8((data[2].toInt() and 3).toUByte()).append(data.slice(13, data.size)).append(self).toBytes()
+                    val ack = Bytes(MessageDigest.getInstance("SHA-256").digest(input.toByteArray())).prefix(4)
+                    mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.MESSAGE_SENT.rawValue).appendUInt8(0u)
+                        .append(ack).appendUInt32LE(10u).toBytes())
+                    mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.ACK.rawValue).append(ack).appendUInt32LE(123u).toBytes())
+                }
+                CommandCode.GET_CONTACT_BY_KEY -> mock.simulateError(2u)
+                CommandCode.RESET_PATH -> mock.simulateOK()
+                else -> throw AssertionError("Unexpected raw Room-test command")
+            }
+        }
+    }
+}
