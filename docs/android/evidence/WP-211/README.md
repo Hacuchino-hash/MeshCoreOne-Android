@@ -499,6 +499,33 @@ complete raw retention and exact owning-family/parameter evidence. No
 `--write-locks` task, local Windows JVM or shared tool installation is run
 by this carry.
 
+The first actual dependency-enabled head
+`f28478081399aae0ddc2e2e1ac6136d24bd277ed`, Linux scaffold run
+**37396394964 / attempt1**, compiled the production services and reached
+the test compiler with the real coroutines-test classpath. It reported
+exactly one remaining owned error: the nullable OCV callback history
+assertion compared an inferred non-null String list with `List<String?>`.
+The assertion now explicitly preserves the nullable source history type
+on both sides; it still checks exact values/order, including no added null,
+and does not change source behavior, expectations or the88-native floor.
+No frozen producer file or carried services build/lock bytes changed.
+
+Complete143070-byte artifact `scaffold-37396394964-1`, id11382394891,
+published digest
+`sha256:2718525df41561cebffbf46ef292cf15fbe6aa06f929e813f3dfeee880cd4f94`
+was retained before inspecting the exact compiler log, SHA-256
+`f4b8108de80bac79b475ac183ad9a06c856e21be3a7108638149da98a7aaeb34`.
+The actual raw snapshot identifies absent services JUnit; no owning JVM
+assertion had executed at that failing compilation.
+The separate same-head actual consumer artifact
+`wp203-producer-37396394741-1`, id11382689636, size88351 bytes,
+published digest
+`sha256:7d3b87293a7813678e610966fdfb6255414e7dbd929d4af185f09b8608655055`
+was likewise retained in full; its exact device/settings Room XML SHA-256
+is `e56110f7991f108347ac2bd2d8b67c3351e8c47fd4d0fbaa38ec1c89ffaa9c06`.
+Those limited Room results are not rolled forward to the next repaired
+head or substituted for all301 JVM/12 Room current owning assertions.
+
 The source `BatteryInfo+Display` voltage/linear/OCV-interpolation helpers and
 their original percentage assertions are primary-owned by **WP-304**;
 `BatteryMonitor` polling/threshold lifecycle is **WP-303**. This WP retains

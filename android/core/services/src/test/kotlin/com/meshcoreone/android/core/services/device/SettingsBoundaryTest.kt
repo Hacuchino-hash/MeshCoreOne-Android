@@ -561,7 +561,7 @@ class SettingsBoundaryTest {
                     if (it.event.ocvPreset == "liIon") service.updateOCVSettings(device.id, "liFePO4", null)
                 }
                 service.updateOCVSettings(device.id, "liIon", null)
-                assertEquals(listOf("liIon", "liFePO4"), seen)
+                assertEquals(listOf<String?>("liIon", "liFePO4"), seen.toList())
                 assertEquals("liFePO4", rows.rows.getValue(device.id).ocvPreset)
             } finally { fixture.close() }
         },
