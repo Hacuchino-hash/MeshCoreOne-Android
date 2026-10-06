@@ -30,4 +30,4 @@ two `ErrorLocalizationTests` cases for `RoomServerError` and `BinaryProtocolErro
 - **Mutation checks:** each was broken on purpose, the named test failed, and the code was restored.
   - Status broadcast before save; skipped path reset before retry (12 failures); a 21st path-discovery poll; room-connection recovery only for non-duplicates.
   - Unguarded audit logger (login aborted); posting without `ATOMIC` (pending row stranded); unguarded binary push handler (monitoring stopped); CLI slot handover on cancellation.
-- **Independent reviews:** read-only reviews of the core, config and admin ports against the Swift. Every confirmed finding was fixed with a regression case. The plausible ones that remain are documented in `deviations/WP-210.md`.
+- **Independent reviews:** read-only reviews of the core, config and admin ports against the Swift. Every confirmed finding was fixed. Fixes a test can reproduce deterministically have regression cases. The CLI retry-id race and the monitor restart order don't, and are described in `deviations/WP-210.md`.
