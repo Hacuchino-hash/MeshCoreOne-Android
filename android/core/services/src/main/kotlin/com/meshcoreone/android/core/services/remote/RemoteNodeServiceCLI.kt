@@ -59,12 +59,10 @@ private suspend fun RemoteNodeService.performCLICommand(
     try {
         // Reboot has no reply; path-reset+resend would fire a second reboot.
         if (isFireAndForgetCLI(wireCommand)) {
-            return performCLIExchange(
-                remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout, requestID,
-            )
+            return performCLIExchange(remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout)
         }
         return performWithDirectPathFloodRecovery(remoteSession.radioId, remoteSession.publicKey, "remoteCLI") {
-            performCLIExchange(remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout, requestID)
+            performCLIExchange(remoteSession.publicKey, destinationPrefix, wireCommand, acceptsAnyResponse, timeout)
         }
     } finally {
         releaseCLISlot(destinationPrefix)
@@ -87,8 +85,10 @@ private suspend fun RemoteNodeService.performCLIExchange(
     command: String,
     acceptsAnyResponse: Boolean,
     timeout: Duration,
-    requestID: UUID,
 ): String {
+    // A fresh id per attempt: the path-recovery retry must not be matched (and failed) by the first
+    // attempt's late completion handler, which runs after that attempt already timed out.
+    val requestID = UUID.randomUUID()
     val wirePrefix = makeCLIWirePrefix()
     val pending = RemoteNodeService.PendingCLIRequest(requestID, command, wirePrefix, acceptsAnyResponse)
     synchronized(lock) { pendingCLIRequests[destinationPrefix] = pending }

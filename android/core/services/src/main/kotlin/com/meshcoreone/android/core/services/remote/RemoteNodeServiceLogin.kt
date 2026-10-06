@@ -111,7 +111,14 @@ private suspend fun RemoteNodeService.runLoginExchange(
 
     val timeout = RemoteOperationTimeoutPolicy.loginTimeout(sentInfo, pathLength)
     logger.info { "login: send succeeded, starting $timeout timeout for prefix ${prefix.hexString}" }
-    onTimeoutKnown?.invoke(maxOf(1L, ceil(timeout.toDouble(DurationUnit.SECONDS)).toLong()))
+    // Swift's callback cannot throw; a throwing Kotlin callback must not abort the login it reports on.
+    try {
+        onTimeoutKnown?.invoke(maxOf(1L, ceil(timeout.toDouble(DurationUnit.SECONDS)).toLong()))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (error: Exception) {
+        logger.warning { "login: onTimeoutKnown callback failed: $error" }
+    }
 
     // Retransmit while waiting for loginSuccess, spaced at least one firmware-suggested RTT so
     // multi-hop paths are not flooded mid-flight.
