@@ -1,4 +1,4 @@
-// Appended to MC1Services/Sources/MC1Services/Models/NodeConfig.swift (lines 1-239, pure Foundation)
+// Not compiled in the repo (.txt keeps it out of SwiftLint). Appended to MC1Services/Sources/MC1Services/Models/NodeConfig.swift (lines 1-239, pure Foundation)
 // by run.sh. Prints Foundation's real JSONEncoder/JSONDecoder behavior for the node config format so
 // the Kotlin NodeConfigJson port can be checked against iOS ground truth.
 typealias C = MeshCoreNodeConfig

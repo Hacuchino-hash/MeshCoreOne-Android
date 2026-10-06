@@ -5,6 +5,6 @@ set -eu
 dir=$(dirname "$0")
 work=$(mktemp -d)
 sed -n 1,239p MC1Services/Sources/MC1Services/Models/NodeConfig.swift > "$work/main.swift"
-cat "$dir/oracle-main.swift" >> "$work/main.swift"
+cat "$dir/oracle-main.swift.txt" >> "$work/main.swift"
 swiftc -O "$work/main.swift" -o "$work/oracle"
 "$work/oracle"
