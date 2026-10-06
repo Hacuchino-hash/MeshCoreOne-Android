@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
+import java.io.ByteArrayOutputStream
 
 plugins { id("mesh.jvm.library") }
 dependencies {
@@ -100,19 +101,53 @@ tasks.register("resolveContentDependencies") {
 // the last redraw of each overwritten line survives, so the TestListener above (whose
 // logger.error(...) calls are routed through that same live console) can silently lose all but
 // the final one or two of several genuine failures -- confirmed in CI run 37403142503, where 8
-// core:services test failures were reported in aggregate but only 2 ever reached the log. This
-// Exec task starts only after the Test task has fully finished (finalizedBy), as a fresh
-// subprocess whose own stdout is a separate, sequentially-flushed stream not subject to that
-// redraw, and reads the actual already-produced TEST-*.xml reports directly. It never changes
-// the test task's result; it is diagnostic-only.
+// core:services test failures were reported in aggregate but only 2 ever reached the log.
+//
+// A first fix attempt ran this script as a plain Exec task (finalizedBy'd after the Test task
+// completes) relying on its subprocess stdout being a fresh, separate stream -- but CI run
+// 37404888269 showed the SAME loss pattern even there: the script reported 9 raw failed/skipped
+// nodes, yet only 3 full blocks survived in both `gh run view --log` and the official untruncated
+// per-step log file. Root cause: Gradle's `Exec` task redirects child-process stdout through
+// Gradle's OWN logging/console pipeline by default (not a raw, independent terminal stream), so
+// it remains subject to the same rich-console redraw loss as the live TestListener output.
+//
+// The reliable channel, confirmed intact byte-for-byte in every run so far (including this one),
+// is Gradle's own end-of-build "* What went wrong" / "Execution failed for task ..." exception
+// summary -- printed once, after all live rich-console redrawing has stopped, and never observed
+// truncated or clobbered. This task therefore captures the script's stdout/stderr into an
+// in-memory buffer (bypassing Gradle's console during execution) and, if the script discovered
+// any raw failed/skipped nodes, throws a GradleException carrying the FULL captured text as its
+// message, so the complete list reaches that reliable channel. It never changes `:core:services:
+// test`'s own result (finalizedBy does not affect the finalized task's outcome); it only makes
+// this task itself fail loudly, which is purely diagnostic plumbing, not a feature/behavior gate.
 val repository = rootProject.projectDir.parentFile
 val printServicesFailureDiagnostics by tasks.registering(Exec::class) {
     group = "verification"
-    description = "Print bounded actual raw core:services failures after test; never changes its result."
+    description = "Print bounded actual raw core:services failures after test; never changes test's result."
     workingDir(repository)
     commandLine("python", "-B", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-218").resolve("print_failures.py").absolutePath)
     providers.gradleProperty("wp218EvidenceDirectory").orNull?.let { args("--output", it) }
+    val captured = ByteArrayOutputStream()
+    standardOutput = captured
+    errorOutput = captured
+    isIgnoreExitValue = true
+    doLast {
+        val text = captured.toString(Charsets.UTF_8)
+        val reportedNodes = Regex("""Actual failed/skipped core:services JUnit nodes printed: (\d+)""")
+            .find(text)?.groupValues?.get(1)?.toIntOrNull()
+        if (reportedNodes == null || executionResult.get().exitValue != 0) {
+            throw GradleException(
+                "WP218 printServicesFailureDiagnostics: diagnostic printer itself failed or " +
+                    "produced an unrecognized summary; raw captured output follows:\n$text")
+        }
+        if (reportedNodes > 0) {
+            throw GradleException(
+                "WP218_SERVICES_RAW_FAILURES ($reportedNodes actual raw failed/skipped " +
+                    "core:services JUnit nodes; diagnostic-only, does not change " +
+                    "core:services:test's own already-reported result):\n$text")
+        }
+    }
 }
 tasks.named("test") { finalizedBy(printServicesFailureDiagnostics) }
 
