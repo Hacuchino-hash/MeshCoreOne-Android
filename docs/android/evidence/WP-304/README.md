@@ -309,6 +309,18 @@ issues, while actual DataStore cleanup removed the blocked temporary obstacle.
 The next bounded repair retains every assertion and the first-frame/focus/
 typed filesystem failure requirements; it does not extend the idle timeout.
 
+Actualc754a2 native37417500006 then ran197 methods with195 passes and two
+remaining failures: native dialog lifecycle/layout and the test's animation
+startup-frame model. Real font200/RTL dialog/Back and actual filesystem IO/
+reopen assertions passed. [`native-c754a2-failure.json`](native-c754a2-failure.json)
+binds the complete official artifact/logs. The follow-up supplies and asserts
+real activity/dialog focus and attachment, lays out the active dialog, and
+distinguishes recomposition from the first nonzero animation frame according to
+the official MainTestClock contract. It does not wait for300ms or drop first-
+visible-state/hidden-action checks. Produced PNG/XML/input bytes now copy into
+the existing pipeline artifact's `wp304-native` subtree before verdict, rather
+than remaining only in ignored module output or encoded log receipts.
+
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):
 real native storage distinctions/adapters, exact committed-preference marker/

@@ -24,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -127,8 +128,13 @@ class SharedUiComposeTest {
     @Before fun attachNativeWindow() {
         controller = Robolectric.buildActivity(ComponentActivity::class.java).setup().visible()
         controller.get().actionBar?.hide()
+        controller.windowFocusChanged(true)
+        assertTrue(controller.get().window.decorView.hasWindowFocus())
     }
-    @After fun disposeNativeWindow() { controller.pause().stop().destroy() }
+    @After fun disposeNativeWindow() {
+        controller.windowFocusChanged(false)
+        controller.pause().stop().destroy()
+    }
     private fun content(block: @Composable () -> Unit) { controller.get().setContent(content = block) }
 
     @Suppress("DEPRECATION")
@@ -156,6 +162,16 @@ class SharedUiComposeTest {
             view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY))
             view.layout(0, 0, width, height)
+            val dialog = ShadowDialog.getLatestDialog()
+            if (dialog?.isShowing == true) {
+                val dialogView = assertNotNull(dialog.window).decorView
+                assertTrue(dialogView.isAttachedToWindow)
+                dialogView.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.AT_MOST),
+                    View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.AT_MOST))
+                dialogView.layout(0, 0, dialogView.measuredWidth, dialogView.measuredHeight)
+                dialogView.dispatchWindowFocusChanged(true)
+                assertTrue(dialogView.hasWindowFocus())
+            }
         }
         if (!compose.mainClock.autoAdvance) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
@@ -318,6 +334,7 @@ class SharedUiComposeTest {
             val dialog = assertNotNull(ShadowDialog.getLatestDialog())
             dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
             dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
+            assertNotNull(dialog.window).decorView.dispatchWindowFocusChanged(false)
         }
         compose.mainClock.advanceTimeBy(32)
         compose.runOnIdle { assertEquals(0, adds) }
@@ -535,12 +552,27 @@ class SharedUiComposeTest {
     @Test fun overlayShowsTheIncomingStateOnTheFirstVisibleFrameAndRemovesHiddenActions() {
         val state = mutableStateOf<StatusPillState>(StatusPillState.Hidden)
         var taps = 0
-        content { MeshCoreTheme(motionScale = 1f) { SyncingPillOverlay(state.value, { taps++ }) { Text("Fixture content") } } }
+        var composedState: StatusPillState = StatusPillState.Hidden
+        var composedWindowFocused = false
+        content {
+            val incoming = state.value
+            val windowFocused = LocalWindowInfo.current.isWindowFocused
+            SideEffect { composedState = incoming; composedWindowFocused = windowFocused }
+            MeshCoreTheme(motionScale = 1f) {
+                SyncingPillOverlay(incoming, { taps++ }) { Text("Fixture content") }
+            }
+        }
         resize(360)
+        compose.runOnIdle { assertTrue(composedWindowFocused) }
         compose.mainClock.autoAdvance = false
         compose.runOnIdle { state.value = StatusPillState.Syncing }
         compose.mainClock.advanceTimeByFrame()
+        compose.runOnIdle { assertEquals(StatusPillState.Syncing, composedState) }
+        compose.mainClock.advanceTimeByFrame()
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
         compose.onNodeWithText(resources.getString(L.commonStatusSyncing)).assertExists()
+        println("WP304_FIRST_VISIBLE_FRAME|frames=3|animationPlaytimeMillis=16|state=Syncing")
         compose.mainClock.advanceTimeBy(320)
         compose.runOnIdle { state.value = StatusPillState.Disconnected }
         compose.mainClock.advanceTimeByFrame()

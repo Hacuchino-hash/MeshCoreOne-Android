@@ -165,6 +165,35 @@ class NativeTest {
             self.assertEqual("raw-retained-unvalidated", result["result"])
             self.assertEqual(hashlib.sha256(raw).hexdigest(), result["reports"][0]["sha256"])
 
+    def test_actual_produced_png_and_failed_xml_are_copied_to_pipeline_artifact_before_verdict(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, images = root / "source", root / "images"
+            source.mkdir(); images.mkdir()
+            xml = b'<testsuite tests="1" failures="1" errors="0" skipped="0"><testcase classname="C" name="method"><failure>actual retained failure</failure></testcase></testsuite>'
+            image = png()
+            (source / "TEST-failure.xml").write_bytes(xml)
+            (images / "compact-light.png").write_bytes(image)
+            with patch.object(retain_raw, "native_inputs", return_value={"input": {}}), patch.object(retain_raw, "git", return_value=b"b" * 40):
+                result = retain_raw.retain(source, root / "raw", images=images, pipeline_output=root / "pipeline")
+            target = root / "pipeline" / "wp304-native"
+            self.assertEqual(xml, (target / "junit" / "TEST-failure.xml").read_bytes())
+            self.assertEqual(image, (target / "ui" / "compact-light.png").read_bytes())
+            self.assertEqual(hashlib.sha256(image).hexdigest(), result["images"][0]["sha256"])
+            self.assertEqual("raw-retained-unvalidated", json.loads((target / "raw-retention.json").read_text())["result"])
+
+    def test_pipeline_retention_rejects_repository_output_or_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"; source.mkdir()
+            (source / "TEST-one.xml").write_bytes(b'<testsuite/>')
+            for destination in (reader.ROOT, root / "pipeline"):
+                if destination != reader.ROOT:
+                    (destination / "wp304-native").mkdir(parents=True)
+                with patch.object(retain_raw, "native_inputs", return_value={}), patch.object(retain_raw, "git", return_value=b"b" * 40):
+                    with self.assertRaises(EvidenceError):
+                        retain_raw.retain(source, root / "raw", pipeline_output=destination)
+
     def test_missing_junit_writes_blocked_binding_not_a_success(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

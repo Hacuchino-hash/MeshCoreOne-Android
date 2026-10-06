@@ -98,6 +98,7 @@ val retainSharedUiRaw by tasks.registering(Exec::class) {
     workingDir(repository)
     commandLine("python", rawRetainer.absolutePath,
         "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
+        "--images", layout.buildDirectory.dir("reports/wp304/ui").get().asFile.absolutePath,
         "--output", layout.buildDirectory.dir("reports/wp304/raw").get().asFile.absolutePath,
         "--emit")
 }
