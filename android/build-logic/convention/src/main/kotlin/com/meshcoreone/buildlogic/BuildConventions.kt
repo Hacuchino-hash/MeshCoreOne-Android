@@ -18,6 +18,7 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.process.CommandLineArgumentProvider
 
 internal fun Project.library(alias: String) =
@@ -74,6 +75,12 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
         extensions.configure<KotlinJvmProjectExtension> {
             jvmToolchain(21)
             compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+        }
+        // These modules also run on Android (minSdk 31), where no lint checks them. Compiling main sources
+        // against the JDK 17 API makes Java 18+ calls a compile error and keeps members such as
+        // List.removeFirst/getFirst (Java 21, absent before API 35) from shadowing Kotlin's extensions.
+        tasks.withType<KotlinCompile>().named { it == "compileKotlin" }.configureEach {
+            compilerOptions.freeCompilerArgs.add("-Xjdk-release=17")
         }
         extensions.configure<org.gradle.api.plugins.JavaPluginExtension> {
             sourceCompatibility = JavaVersion.VERSION_17
