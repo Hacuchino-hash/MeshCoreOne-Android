@@ -436,6 +436,57 @@ testRuntimeClasspath contain coroutines-test and coroutines-test-jvm1.10.2.
 This is a read-only identity observation, not authorization to carry either
 shared file or evidence of a successful WP-211 resolver/test command.
 
+## Exact services build/lock carry receipt
+
+The coordinator's **2026-10-06T00:51:05Z carry-only receipt** temporarily
+froze/revoked WP-218's live writes to exactly these two files and authorized
+verbatim transport into this candidate, not edits or whole-branch/content
+cherry-picking. The clean carry base is
+`b7ff06abb60a83b25b18163e773e404f42ed3ad6`. Initial HEAD and checkout matched
+the prescribed baseline blobs:
+
+| Path | Before | Frozen producer carried |
+| --- | --- | --- |
+| `android/core/services/build.gradle.kts` | `be1f2078fa953a24c53583795cf6486a6248c016` | `3a6ecda9eb8b3d3db315b91746276222692e1174` |
+| `android/gradle/dependency-locks/core-services.lockfile` | `37a4527c1da244e28cc2c7a6049c9ee538fa11b8` | `6065703315850927e5836e9af4845b873735638a` |
+
+The exact parent-provided **source-data** patch was inspected, not executed
+as a private build script: `wp218-services-producer-fdcc/services-build-and-lock.patch`,
+7803 bytes, SHA-256
+`fa7bb0a7cb644c318d7f069ed97407965ea0f2642b2ce99b1b90a1cf25d76cd8`.
+Only its two specified diffs were applied, and both resulting Git blobs
+match the frozen producer exactly. The actual normalized LF outputs are:
+
+- services build:5430 bytes, SHA-256
+  `2b2f6c97b7e82d7f221a0edebbe9842e598188949eafd7f7156b3329e360ec2e`;
+- root services lock:5629 bytes, SHA-256
+  `b4580aeb5fd7020a3880ba69af3a169ee7d77ccdb0cc5c9a17983a8955443286`.
+
+Original producer checkpoint:
+`fdcc387db1654f465505b636aefd0b3efe606601`, unchanged through
+`10cc0be762a49d7c08b23c87abbed4a1bd633688`; author **Cameron Battagler
+<cameronb@hey.com>**, coauthor **Copilot App
+<223556219+Copilot@users.noreply.github.com>**. The carry commit preserves
+that source attribution and the required Copilot trailer. WP-218 remains
+the producer/behavior owner; this is not154 content-family execution credit.
+Existing producer comments are retained verbatim, including their historical
+proposal wording, rather than independently revised by this carry-only worker.
+
+Both carried files are **frozen again immediately after the carry**, with
+no further WP-211 edit permission. The coordinator restores WP-218's live
+ownership after receiving the exact commit/blob receipt. No content classes,
+full service graph, dependency/provider/version verification metadata or
+other root/lock fields were copied or regenerated. The eight original
+regional/fault source/test/helper freeze blobs remain unchanged.
+
+The pinned coroutines-test1.10.2 and already reviewed serialization-json1.7.3
+now exist in the actual declaration/four-classpath lock graph. Their presence
+unblocks compilation but is **not** a passing JVM/native result. Full301
+device-JVM and12 Room assertions still require current-head Linux execution,
+complete raw retention and exact owning-family/parameter evidence. No
+`--write-locks` task, local Windows JVM or shared tool installation is run
+by this carry.
+
 The source `BatteryInfo+Display` voltage/linear/OCV-interpolation helpers and
 their original percentage assertions are primary-owned by **WP-304**;
 `BatteryMonitor` polling/threshold lifecycle is **WP-303**. This WP retains
