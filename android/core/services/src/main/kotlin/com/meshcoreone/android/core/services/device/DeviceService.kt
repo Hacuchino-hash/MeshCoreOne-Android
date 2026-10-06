@@ -27,7 +27,8 @@ class DeviceService(
 
     fun setDeviceUpdateCallback(callback: suspend (SessionEvent<DeviceDTO>) -> Unit) {
         context.requireCurrent()
-        synchronized(callbackLock) { onDeviceUpdated = callback }
+        // Re-check under the lock the close handler takes, so a close between the two cannot leave a stale callback.
+        synchronized(callbackLock) { context.requireCurrent(); onDeviceUpdated = callback }
     }
 
     fun clearDeviceUpdateCallback() {

@@ -6,6 +6,7 @@ import com.meshcoreone.android.core.contracts.domain.SessionToken
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -42,8 +43,9 @@ class DeviceSettingsContext(
         }
 
     fun requireCurrent() {
-        job.ensureActive()
-        if (closed.get()) throw SettingsServiceException(SettingsServiceError.NotConnected)
+        // A closed or cancelled connection context is a typed NotConnected for callers, never a bare
+        // CancellationException: that would silently end a still-active UI coroutine with no retryable error.
+        if (closed.get() || !job.isActive) throw SettingsServiceException(SettingsServiceError.NotConnected)
         requireSnapshot()
     }
 
@@ -76,6 +78,10 @@ class DeviceSettingsContext(
         }
         try {
             return task.await()
+        } catch (cancelled: CancellationException) {
+            // Our own caller's cancellation still propagates; a context closed under a live caller is NotConnected.
+            currentCoroutineContext().ensureActive()
+            throw SettingsServiceException(SettingsServiceError.NotConnected)
         } finally {
             task.cancel()
         }
