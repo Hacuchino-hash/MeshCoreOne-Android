@@ -182,7 +182,8 @@
     },
     {
       "implementation_paths": [
-        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/StorageErrorPresentation.kt"
       ],
       "kind": "production",
       "original_cases": {},

@@ -1,5 +1,8 @@
 // AndroidOnly: WP-304 Shared native UI, real preference claims and owned fail-closed verification.
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputDirectory
@@ -47,6 +50,25 @@ seedText.lineSequence().filter { it.isNotBlank() && !it.startsWith("#") }.forEac
 }
 configurations.configureEach {
     seedByConfiguration[name]?.let { incumbent -> resolutionStrategy.force(*incumbent.toTypedArray()) }
+}
+val admittedUnitCompileAlignment = linkedMapOf(
+    "androidx.core:core" to "1.16.0",
+    "androidx.core:core-ktx" to "1.16.0",
+    "androidx.lifecycle:lifecycle-livedata-core" to "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel" to "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-android" to "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-ktx" to "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-savedstate" to "2.9.4",
+).map { (artifact, version) ->
+    val source = seedByConfiguration["debugUnitTestRuntimeClasspath"].orEmpty()
+        .filter { it.substringBeforeLast(":") == artifact }
+    check(source.size == 1 && source.single() == "$artifact:$version") {
+        "Admitted unit-compile alignment lacks its exact unique incumbent runtime seed: $artifact"
+    }
+    source.single()
+}
+configurations.named("debugUnitTestCompileClasspath") {
+    resolutionStrategy.force(*admittedUnitCompileAlignment.toTypedArray())
 }
 
 val sharedUiPlatformSdk37 = configurations.create("sharedUiPlatformSdk37") {
@@ -137,6 +159,19 @@ val resolveSharedUiDependencies by tasks.registering {
                     writer.println("${project.path}\t${configuration.name}\tunresolved\t${it.attempted.displayName}")
                     writer.println("${project.path}\t${configuration.name}\tfailure\t${it.failure.message?.replace('\n', ' ')?.replace('\t', ' ')}")
                 }
+            }
+        }
+        val alignment = layout.buildDirectory.file("reports/wp304/unit-compile-alignment.tsv").get().asFile
+        val compileGraph = configurations.getByName("debugUnitTestCompileClasspath").incoming.resolutionResult
+        alignment.printWriter().use { writer ->
+            writer.println("artifact\tsourceConfiguration\tsourceCoordinate\tconfiguration\trequested\tselected")
+            for (dependency in compileGraph.allDependencies.filterIsInstance<ResolvedDependencyResult>()) {
+                val requested = dependency.requested as? ModuleComponentSelector ?: continue
+                val artifact = "${requested.group}:${requested.module}"
+                val source = admittedUnitCompileAlignment.singleOrNull { it.substringBeforeLast(":") == artifact } ?: continue
+                val selected = dependency.selected.id as? ModuleComponentIdentifier
+                    ?: throw GradleException("Admitted compile alignment selected a non-module component")
+                writer.println("$artifact\tdebugUnitTestRuntimeClasspath\t$source\tdebugUnitTestCompileClasspath\t${requested.displayName}\t${selected.displayName}")
             }
         }
         if (failed) throw GradleException("Owned shared UI resolution failed; complete graph retained at ${output.name}")

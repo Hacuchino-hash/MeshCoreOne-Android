@@ -104,16 +104,19 @@ fun RegionManagementView(state: RegionManagementState, actions: RegionManagement
             Text(uiString(UiText.Resource(C.chatsChannelInfoRegionNoRegions)), style = MaterialTheme.typography.titleMedium)
             Text(uiString(UiText.Resource(C.chatsChannelInfoRegionNoRegionsDescription)))
         } else {
-            for (region in regions) Surface(shape = MaterialTheme.shapes.medium) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
-                    Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
-                        Text(region)
-                        if (region.isPrivateRegion) Text(uiString(UiText.Resource(C.chatsChannelInfoRegionPrivate)),
-                            style = MaterialTheme.typography.bodySmall)
-                    }
-                    TextButton(onClick = { actions.removeRegion(region) }, modifier = Modifier.sharedTouchTarget()) {
-                        Text(uiString(UiText.Resource(AppContactsStrings.contactsCommonDelete)),
-                            color = MaterialTheme.colorScheme.error)
+            for (region in regions) {
+                val background = sharedPaintedSurface()
+                Surface(shape = MaterialTheme.shapes.medium, color = background) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
+                            Text(region)
+                            if (region.isPrivateRegion) Text(uiString(UiText.Resource(C.chatsChannelInfoRegionPrivate)),
+                                style = MaterialTheme.typography.bodySmall)
+                        }
+                        TextButton(onClick = { actions.removeRegion(region) }, modifier = Modifier.sharedTouchTarget()) {
+                            Text(uiString(UiText.Resource(AppContactsStrings.contactsCommonDelete)),
+                                color = sharedErrorForeground(background))
+                        }
                     }
                 }
             }

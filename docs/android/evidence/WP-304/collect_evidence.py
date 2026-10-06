@@ -88,8 +88,42 @@ def declarations():
     return cases, methods
 
 
+def source_bindings():
+    bindings = {}
+    directory = ROOT / "android" / "core" / "ui" / "src" / "test" / "kotlin"
+    for path in sorted(directory.rglob("*.kt")):
+        text = path.read_text(encoding="utf8")
+        package = re.search(r"(?m)^package\s+([\w.]+)", text)
+        classes = re.findall(r"(?m)^class\s+(\w+)", text)
+        if not package or len(classes) != 1:
+            continue
+        pattern = r'((?:\s*@(OriginalCase|ProducerBindingPending|NativeAdaptation)\([^\n]*\)\s*)+)@Test\s+fun\s+(\w+)\s*\('
+        for match in re.finditer(pattern, text):
+            annotations, method = match[1], match[3]
+            source = re.search(r'@OriginalCase\("([^"]+)"', annotations)
+            if source is None:
+                continue
+            identifier = source[1]
+            pending = re.search(r'@ProducerBindingPending\("([^"]+)"\)', annotations)
+            adaptation = re.search(r'@NativeAdaptation\("([^"]+)"\)', annotations)
+            disposition = "pending-" + pending[1] if pending else "native-adaptation-" + adaptation[1] if adaptation else "native"
+            require(identifier not in bindings, "Duplicate method-bound source identity")
+            bindings[identifier] = {"method": package[1] + "." + classes[0] + "#" + method, "disposition": disposition}
+    cases, _ = declarations()
+    require(set(bindings) == set(cases), "Missing method-bound source declarations")
+    return bindings
+
+
+def verify_source_receipt(identifier, disposition, method, kind, expected, observed):
+    require(identifier in expected and expected[identifier] == {"method": method, "disposition": disposition},
+        "Source receipt is not bound to its actual current method/disposition")
+    require(method in observed, "Source receipt method was not executed")
+    require((kind == "POLICY_CASE") == disposition.startswith("pending-"), "Pending copy policy was credited as a ported equivalent")
+
+
 def collect(junit, output=None):
     cases, expected_methods = declarations()
+    expected_bindings = source_bindings()
     reports = sorted(junit.glob("TEST-*.xml"))
     require(reports, "No produced native JUnit")
     observed, families, captures, bindings = set(), {}, {}, {}
@@ -112,12 +146,14 @@ def collect(junit, output=None):
             status = next((kind for kind in ("failure", "error", "skipped") if node.find(kind) is not None), None)
             counters[{"failure": "failed", "error": "errors", "skipped": "skipped"}.get(status, "passed")] += 1
         text = "\n".join(node.text or "" for node in tree.iter("system-out"))
-        for encoded, rows, binding in re.findall(r"WP304_CASE\|([A-Za-z0-9+/=]+)\|(\d+)\|([a-zA-Z0-9-]+)", text):
+        for kind, encoded, rows, binding, method in re.findall(
+                r"WP304_(CASE|POLICY_CASE)\|([A-Za-z0-9+/=]+)\|(\d+)\|([a-zA-Z0-9-]+)\|([\w.]+#\w+)", text):
             identifier = base64.b64decode(encoded, validate=True).decode("utf8")
             require(identifier in cases and identifier not in families, "Unknown/duplicate executed source family")
             require(int(rows) == cases[identifier]["scenarios"], "Missing source parameter assertions")
             families[identifier] = int(rows)
             require(binding == "native" or binding.startswith(("pending-WP-", "native-adaptation-")), "Unknown source binding disposition")
+            verify_source_receipt(identifier, binding, method, kind, expected_bindings, observed)
             bindings[identifier] = binding
         for identifier, width, height, sha, encoded in re.findall(
                 r"WP304_PNG\|([a-z0-9-]+)\|(\d+)\|(\d+)\|([0-9a-f]{64})\|([A-Za-z0-9+/=]+)", text):
@@ -135,13 +171,16 @@ def collect(junit, output=None):
     require(counters["discovered"] > 0 and counters["passed"] == counters["discovered"]
         and not any(counters[key] for key in ("failed", "errors", "skipped")), "Failed/error/skipped/zero native tests")
     require(set(families) == set(cases) and sum(families.values()) == 158, "Missing executed original UI/parameter assertion families")
-    required = {"compact-light", "expanded-dark-hc", "resize", "font200-cjk-rtl", "failure-retry", "dialog", "tips", "crop"}
+    required = {"compact-light", "expanded-dark-hc", "resize", "font200-cjk-rtl", "failure-retry", "dialog", "tips", "crop",
+        "storage-recovery-font200-rtl", "committed-preference-only"}
     require(required <= captures.keys(), "Missing required meaningful native PNG states")
     record = {
         "schema_version": 1, "work_package": "WP-304",
         "scope": "Native UI/source-presentation assertions only; missing producer bindings still block macro parity.",
         "observed_head_sha": git("rev-parse", "HEAD").decode().strip(), "source_sha": PIN,
-        "counts": counters, "original_families": len(families), "source_parameter_scenarios": sum(families.values()),
+        "counts": counters, "accounted_source_families": len(families), "accounted_source_scenarios": sum(families.values()),
+        "ported_source_families": sum(not value.startswith("pending-") for value in bindings.values()),
+        "ported_source_scenarios": sum(families[key] for key, value in bindings.items() if not value.startswith("pending-")),
         "reports": records, "captures": captures, "inputs": native_inputs(),
         "source_binding_dispositions": bindings,
         "producer_binding_blockers": {key: value for key, value in bindings.items() if value.startswith("pending-")},
@@ -150,6 +189,7 @@ def collect(junit, output=None):
     if output is not None:
         output.mkdir(parents=True, exist_ok=True)
         (output / "native-evidence.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf8")
+    require(not record["producer_binding_blockers"], "Native tests retained, but original producer bindings remain BLOCKED; copy policy is not parity")
     return record
 
 
@@ -179,8 +219,10 @@ def main():
             self_tests()
         if args.static:
             cases, methods = declarations()
-            print(json.dumps({"result": "static-valid-not-executed", "source_families": len(cases),
-                "source_scenarios": 158, "declared_native_methods": len(methods)}))
+            scopes = source_bindings()
+            print(json.dumps({"result": "static-accounted-not-executed-not-parity", "accounted_source_families": len(cases),
+                "accounted_source_scenarios": 158, "declared_native_methods": len(methods),
+                "pending_producer_families": sum(value["disposition"].startswith("pending-") for value in scopes.values())}))
         if args.check:
             require(args.junit is not None, "Missing actual JUnit directory")
             print(json.dumps(collect(args.junit, args.output), sort_keys=True))

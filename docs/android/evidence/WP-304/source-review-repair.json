@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "work_package": "WP-304",
+  "reviewed_original_candidate": "41e9e9757842fee022c11007ea363ac82285c72d",
+  "status": "coherent-source-repair-authored-not-native-or-parity-accepted",
+  "findings": {
+    "pending_producer_dispatch": {
+      "status": "BLOCKED for unavailable producers, not credited equivalents",
+      "change": "Method-bound WP304_POLICY_CASE receipts are separate from native WP304_CASE. The reader retains native outputs then fails acceptance on remaining producer bindings. Actual available fault constructors are exercised by coverage; names/copy catalogs cannot close native dispatch coverage.",
+      "source_floor": {"accounted_families": 130, "accounted_scenarios": 158}
+    },
+    "storage_failure": {
+      "change": "Actual StorageProblem/StorageOperation/native four-family copy, safe recovery and cause identity retained; typed adapters precede the default storage presentation. No provider secret/alias copy or manufactured Apple OSStatus."
+    },
+    "committed_preferences": {
+      "change": "Exact three-path producer seam exposes immutable twelve-kind receipt and SAME real preference failure. Existing exception/constructor/cause and completePreferences API preserved. UI marker forces preference-only recovery and excludes generic import retry; real Room test preserves rows/drains and verifies completion/idempotency.",
+      "native_execution": "UNVERIFIED"
+    },
+    "actual_surface_contrast": {
+      "change": "Semantic error/destructive/status foregrounds fit the actual painted Material surface, including inherited tonal elevation; no palette, source System exception or golden changed.",
+      "evidence": "Authored actual TextLayoutResult/semantic foreground-background and native signal pixel assertions across effective themes; not executed yet."
+    },
+    "relative_time": {
+      "change": "Injected calendar/zone, integral nearest-unit precision and year/month/week/day selection; original under60-second/seven-day special branches remain. Deterministic90-second/hour/day/week/month/year/DST component assertions authored.",
+      "source_oracle_or_native_execution": "UNVERIFIED"
+    },
+    "emitted_state_colors": {
+      "change": "Strong green/medium yellow/weak red and pill primary/orange/red text plus green ready icon have actual source seeds, surface-fitted emitted values and native pixel tests; all-red rendering can no longer pass a label-count proxy."
+    }
+  },
+  "tip_boundaries": "Actual DataStore locked WRITE, real filesystem write failure/durable reopen, consumer cancellation during serialized update and close during in-flight write assertions added. Native executions and failure PNG/Back/font evidence remain unverified.",
+  "producer_type_carry": "Frozen WP-211 DeviceSettingsFaults blob b2a6b84a3846c016184e06772da4800700e3e8af remains unchanged; later real binding is not part of the original41e review acceptance.",
+  "classpath": "Seven explicit test-compile constraints derive only from existing unique source unit-runtime seed and retain requested/selected graph edges; no new root metadata/catalog admission.",
+  "native_hardware_license_signing_or_macro_acceptance": false
+}

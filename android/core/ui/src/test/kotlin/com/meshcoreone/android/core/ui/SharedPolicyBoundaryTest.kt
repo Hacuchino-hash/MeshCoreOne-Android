@@ -108,7 +108,7 @@ class SharedPolicyBoundaryTest {
         assertFailsWith<CancellationException> { mapper.present(cancellation) }
         assertEquals(1, reported.size)
         val storage = StorageFailure(StorageProblem.FormerKeyMissing, StorageOperation.READ)
-        assertEquals(UiRecovery.RECOVER_STORAGE, mapper.present(storage).content.recovery)
+        assertEquals(UiRecovery.RESTORE_SECURE_DATA, mapper.present(storage).content.recovery)
         assertSame(storage, reported.last())
         val unknown = IllegalStateException("unknown synthetic failure")
         assertEquals(UiRecovery.INSPECT_FAILURE, mapper.present(unknown).content.recovery)
@@ -119,7 +119,8 @@ class SharedPolicyBoundaryTest {
         val b = Exception("b")
         a.initCause(b); b.initCause(a)
         val adapter = TypedUiErrorAdapter(Exception::class.java) { error, underlying ->
-            error.cause?.let { ErrorCopy.queuePersistFailed(underlying(it)) } ?: UiText.Verbatim(requireNotNull(error.message))
+            UiErrorMapping(error.cause?.let { ErrorCopy.queuePersistFailed(underlying(it)) }
+                ?: UiText.Verbatim(requireNotNull(error.message)), UiRecovery.INSPECT_FAILURE)
         }
         val mapper = UiErrorMapper(listOf(adapter), UiErrorReporter {})
         val text = mapper.message(a).resolve(resources)

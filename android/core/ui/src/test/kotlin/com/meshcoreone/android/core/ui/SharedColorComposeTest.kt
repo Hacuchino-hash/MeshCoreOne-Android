@@ -1,0 +1,143 @@
+// AndroidOnly: WP-304 Actual emitted Material foreground/background and native signal pixels across all effective source theme tiers.
+package com.meshcoreone.android.core.ui
+
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.dp
+import com.meshcoreone.android.core.designsystem.AppColorSchemePreference
+import com.meshcoreone.android.core.designsystem.ColorScheme
+import com.meshcoreone.android.core.designsystem.MeshCoreTheme
+import com.meshcoreone.android.core.designsystem.MeshSymbol
+import com.meshcoreone.android.core.designsystem.ThemeColor
+import com.meshcoreone.android.core.designsystem.ThemeRegistry
+import com.meshcoreone.android.core.designsystem.WCAGContrast
+import com.meshcoreone.android.core.designsystem.accessibleForeground
+import com.meshcoreone.android.core.designsystem.toComposeColor
+import com.meshcoreone.android.core.designsystem.toThemeColor
+import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings
+import kotlin.test.*
+import kotlin.math.abs
+import org.junit.After
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [31], qualifiers = "en-rUS-w840dp-h900dp-mdpi")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+class SharedColorComposeTest {
+    @get:Rule val compose = createEmptyComposeRule()
+    private lateinit var controller: ActivityController<ComponentActivity>
+    @Before fun openNativeWindow() { controller = Robolectric.buildActivity(ComponentActivity::class.java).setup().visible() }
+    @After fun closeNativeWindow() { controller.pause().stop().destroy() }
+
+    @Test fun sectionErrorsAndActualPillTextClearThePaintedSurfaceOnEveryEffectiveScheme() {
+        val theme = mutableStateOf(ThemeRegistry.default)
+        val preference = mutableStateOf(AppColorSchemePreference.LIGHT)
+        val high = mutableStateOf(false)
+        val states = listOf(StatusPillState.Connecting, StatusPillState.Syncing, StatusPillState.Ready,
+            StatusPillState.Disconnected, StatusPillState.Failed(UiText.Verbatim("Fixture failure")))
+        controller.get().setContent {
+            MeshCoreTheme(theme.value, preference.value, highContrast = high.value, motionScale = 0f) {
+                Column {
+                    ExpandableSettingsSection(UiText.Verbatim("Fixture section"), MeshSymbol.SETTINGS,
+                        ExpandableSectionState(true, false, false, true), {}, {}, Modifier.testTag("section")) {}
+                    for ((index, state) in states.withIndex()) SyncingPillView(state, Modifier.testTag("pill-$index"))
+                }
+            }
+        }
+        for (current in ThemeRegistry.allThemes) {
+            for (scheme in ColorScheme.entries.filter { current.preferredColorScheme == null || it == current.preferredColorScheme }) {
+                for (contrast in listOf(false, true)) {
+                    compose.runOnIdle {
+                        theme.value = current
+                        preference.value = if (scheme == ColorScheme.DARK) AppColorSchemePreference.DARK else AppColorSchemePreference.LIGHT
+                        high.value = contrast
+                    }
+                    val surface = compose.onNodeWithTag("section").fetchSemanticsNode().config[SharedPaintedSurface]
+                    val text = controller.get().getString(AppLocalizableStrings.commonErrorFailedToLoad)
+                    val layouts = mutableListOf<TextLayoutResult>()
+                    compose.onNodeWithText(text).assertIsDisplayed()
+                        .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
+                    val foreground = layouts.single().layoutInput.style.color
+                    assertTrue(WCAGContrast.contrastRatio(foreground.toThemeColor(), surface.toThemeColor()) >= WCAGContrast.floor(contrast))
+                    for ((index, state) in states.withIndex()) {
+                        val actual = compose.onNodeWithTag("pill-$index").fetchSemanticsNode().config
+                        val background = actual[SharedPaintedSurface]
+                        val emitted = actual[SharedEmittedForeground]
+                        val icon = actual[SharedEmittedIcon]
+                        assertTrue(WCAGContrast.contrastRatio(emitted.toThemeColor(), background.toThemeColor()) >= WCAGContrast.floor(contrast))
+                        assertTrue(WCAGContrast.contrastRatio(icon.toThemeColor(), background.toThemeColor()) >= WCAGContrast.floor(contrast))
+                        state.textColorRole.sourceSeed?.let { raw ->
+                            assertEquals(accessibleForeground(raw, background.toThemeColor(), WCAGContrast.floor(contrast)).toComposeColor(), emitted)
+                        }
+                        state.iconColorRole.sourceSeed?.let { raw ->
+                            assertEquals(accessibleForeground(raw, background.toThemeColor(), WCAGContrast.floor(contrast)).toComposeColor(), icon)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test fun nativeSignalPixelsActuallyUseSourceGreenYellowAndRedNotOnlySemanticLabels() {
+        val background = Color.White
+        controller.get().setContent {
+            MeshCoreTheme(highContrast = false, motionScale = 0f) {
+                Surface(color = background) {
+                    Row(Modifier.padding(16.dp)) {
+                        for (tier in RSSITuning.SignalTier.entries) SignalBars(tier,
+                            Modifier.testTag("signal-${tier.rawValue}"), paintedSurface = background)
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        val bitmap = compose.runOnUiThread {
+            val view = controller.get().window.decorView
+            Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888).also { view.draw(Canvas(it)) }
+        }
+        val seeds = mapOf(
+            RSSITuning.SignalTier.WEAK to ThemeColor.hex(0xFF3B30),
+            RSSITuning.SignalTier.MEDIUM to ThemeColor.hex(0xFFCC00),
+            RSSITuning.SignalTier.STRONG to ThemeColor.hex(0x34C759),
+        )
+        for ((tier, seed) in seeds) {
+            val node = compose.onNodeWithTag("signal-${tier.rawValue}").fetchSemanticsNode()
+            val actual = node.config[SharedEmittedForeground]
+            val expected = accessibleForeground(seed, ThemeColor.WHITE, 4.5).toComposeColor()
+            assertEquals(expected, actual)
+            val bounds = node.boundsInWindow
+            val pixel = bitmap.getPixel((bounds.left + bounds.width / 8).toInt(), (bounds.bottom - bounds.height / 6).toInt())
+            val expectedArgb = expected.toArgb()
+            for (shift in listOf(0, 8, 16)) {
+                assertTrue(abs(((pixel ushr shift) and 255) - ((expectedArgb ushr shift) and 255)) <= 1)
+            }
+        }
+    }
+}

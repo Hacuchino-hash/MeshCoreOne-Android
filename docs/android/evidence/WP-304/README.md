@@ -190,6 +190,28 @@ dependency/provider admission is inferred.
 
 ## Explicit blockers and adaptations
 
+The independent full41e source review requested six concrete fixes. The coherent
+authored response is in [`source-review-repair.json`](source-review-repair.json):
+real native storage distinctions/adapters, exact committed-preference marker/
+receipt and Room consumer assertions, actual-painted-surface contrast, integral
+calendar/zone relative components, emitted status colors/native pixels and real
+DataStore write/cancel/close tests. All native proof is still pending.31 truthful
+native error/recovery resource keys cover all twelve source locales without
+editing source/global/generated localization.
+
+The reader now binds receipts to actual executed current test methods and emits
+`WP304_POLICY_CASE` for unavailable producer chains rather than crediting them
+as `WP304_CASE` equivalents. It retains native JUnit/PNG evidence then fails
+original parity if pending bindings remain. The130/158 floor is complete
+accounting, not a claim that26 pending families were ported or executed.
+
+The admitted seven new unit-test compile memberships use only existing exact
+unit-runtime source Core1.16.0/Lifecycle2.9.4 coordinates. Their actual
+requested/selected resolution edges are retained in
+`unit-compile-alignment.tsv`; missing/ambiguous source or selected-version
+inconsistency blocks. No Core1.9/Lifecycle2.8 unvetted artifact, ROOT/catalog/
+metadata edit or Activity1.8.2 update is introduced.
+
 See [`WP-304 deviations`](../../deviations/WP-304.md). Pending producer-binding
 annotations are copy-policy evidence only. They must become actual typed
 consumer/dispatcher evidence or receive independently reviewed native

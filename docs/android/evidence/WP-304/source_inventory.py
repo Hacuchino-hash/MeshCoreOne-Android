@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[4]
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
@@ -14,6 +15,11 @@ PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
 FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt"
 FROZEN_FAULT_BLOB = "b2a6b84a3846c016184e06772da4800700e3e8af"
+COMMITTED_PRODUCER_INPUTS = (
+    "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/CommittedBackupPreferenceFailure.kt",
+    "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/AppBackupService.kt",
+    "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/BackupTransactionTest.kt",
+)
 FAMILY_SCENARIOS = {
     "MC1ServicesTests": 2, "ErrorLocalizationTests": 30,
     "BatteryInfoDisplayTests": 18, "BatteryPercentageCalculationTests": 6,
@@ -98,7 +104,32 @@ def inventory():
         suites[Path(entry["path"]).stem] = count
     require(len(cases) == 130 and sum(case["scenarios"] for case in cases.values()) == 158, "Changed original source floor")
     require(suites == FAMILY_SCENARIOS, "Changed original suite/parameter accounting")
+    validate_native_resources()
     return inputs, cases
+
+
+def validate_native_resources():
+    directory = ROOT / "android" / "core" / "ui" / "src" / "main" / "res"
+    expected = {"values", "values-de", "values-es", "values-fr", "values-it", "values-ko", "values-nl",
+        "values-pl", "values-pt", "values-ru", "values-uk", "values-b+zh+Hans"}
+    files = sorted(directory.glob("values*/native_errors.xml"))
+    require({path.parent.name for path in files} == expected and len(files) == 12, "Missing/extra native error locale")
+    names = None
+    for path in files:
+        raw = path.read_bytes()
+        require(b"<!DOCTYPE" not in raw.upper() and b"<!ENTITY" not in raw.upper(), "Unsafe native resource XML")
+        rows = list(ET.fromstring(raw))
+        keys = [row.get("name") for row in rows]
+        require(all(keys) and len(keys) == len(set(keys)) and all(row.tag == "string" and row.text for row in rows),
+            "Missing/duplicate/empty native copy")
+        if names is None:
+            names = set(keys)
+        require(set(keys) == names, "Native locale fallback would hide a missing error distinction")
+        for row in rows:
+            placeholders = re.findall(r"%\d+\$[a-z]", row.text)
+            require(placeholders == (["%1$d"] if row.get("name") in {"ui_storage_unsupported_version", "ui_storage_too_large"} else []),
+                "Native resource parameter mismatch")
+    return {"locales": len(files), "keys_per_locale": len(names)}
 
 
 def native_inputs():
@@ -114,10 +145,12 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
-    fault = ROOT.joinpath(*FROZEN_FAULT_PATH.split("/"))
-    raw = fault.read_bytes()
-    result[FROZEN_FAULT_PATH] = {
-        "working_blob": git("hash-object", "--", str(fault)).decode().strip(),
-        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-    }
+    for relative in (FROZEN_FAULT_PATH, *COMMITTED_PRODUCER_INPUTS):
+        path = ROOT.joinpath(*relative.split("/"))
+        require(path.is_file(), "Missing actual frozen/projection producer input")
+        raw = path.read_bytes()
+        result[relative] = {
+            "working_blob": git("hash-object", "--", str(path)).decode().strip(),
+            "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+        }
     return result

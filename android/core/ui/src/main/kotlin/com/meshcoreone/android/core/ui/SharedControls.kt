@@ -74,7 +74,10 @@ fun ExpandableSettingsSection(
 ) {
     val resolved = uiString(title)
     val expansionDescription = expandedDescription(state.isExpanded)
-    Surface(modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium) {
+    val background = sharedPaintedSurface()
+    val errorColor = sharedErrorForeground(background)
+    Surface(modifier.fillMaxWidth().semantics { sharedPaintedSurface = background },
+        shape = MaterialTheme.shapes.medium, color = background) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Row(Modifier.weight(1f).sharedTouchTarget().clickable(role = Role.Button) {
@@ -102,7 +105,8 @@ fun ExpandableSettingsSection(
                 content()
                 if (state.hasError && !state.isLoaded) {
                     Text(uiString(UiText.Resource(AppLocalizableStrings.commonErrorFailedToLoad)),
-                        color = MaterialTheme.colorScheme.error)
+                        modifier = Modifier.semantics { sharedEmittedForeground = errorColor },
+                        color = errorColor)
                     TextButton(onClick = onLoad, enabled = !state.isLoading, modifier = Modifier.sharedTouchTarget()) {
                         Text(uiString(UiText.Resource(AppLocalizableStrings.commonTryAgain)))
                     }

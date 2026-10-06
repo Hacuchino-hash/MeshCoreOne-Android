@@ -13,11 +13,15 @@ import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.datastore.StorageFailure
+import com.meshcoreone.android.core.datastore.StorageOperation
+import com.meshcoreone.android.core.datastore.StorageProblem
 import com.meshcoreone.android.core.l10n.R
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
 import com.meshcoreone.android.core.model.AppBackupError
 import com.meshcoreone.android.core.model.AppBackupException
+import com.meshcoreone.android.core.model.CommittedBackupPreferenceFailure
+import com.meshcoreone.android.core.model.CommittedBackupReceipt
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.protocol.event.MeshTransportError
 import com.meshcoreone.android.core.protocol.model.ErrorCode
@@ -28,27 +32,43 @@ import java.util.IdentityHashMap
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
 
-enum class UiRecovery { RETRY, CONNECT, ENABLE_BLUETOOTH, GRANT_BLUETOOTH, FIX_INPUT, REDUCE_PAYLOAD, RECOVER_STORAGE, INSPECT_FAILURE }
-data class UiErrorState(val id: UUID, val code: String, val message: UiText, val recovery: UiRecovery)
+enum class UiRecovery {
+    RETRY, CONNECT, ENABLE_BLUETOOTH, GRANT_BLUETOOTH, FIX_INPUT, REDUCE_PAYLOAD, RECOVER_STORAGE,
+    UNLOCK_DEVICE, RESTORE_SECURE_DATA, COMPLETE_BACKUP_PREFERENCES, INSPECT_FAILURE,
+}
+data class UiErrorState(
+    val id: UUID, val code: String, val message: UiText, val recovery: UiRecovery,
+    val committedBackupReceipt: CommittedBackupReceipt? = null,
+    val storageIssue: UiStorageIssue? = null,
+)
+data class UiStorageIssue(val operation: StorageOperation, val problem: StorageProblem)
 data class PresentedUiError(val originalFailure: Throwable, val content: UiErrorState)
+data class UiErrorMapping(
+    val message: UiText,
+    val recovery: UiRecovery,
+    val committedBackupReceipt: CommittedBackupReceipt? = null,
+)
 
 fun interface UiErrorReporter { fun report(failure: Throwable) }
 
 object AndroidUiErrorReporter : UiErrorReporter {
     override fun report(failure: Throwable) {
-        Log.e("MeshCoreOne.UI", failure.javaClass.name)
+        val code = if (failure is StorageFailure) {
+            "${failure.javaClass.name}:${failure.operation}:${failure.problem.javaClass.simpleName}"
+        } else failure.javaClass.name
+        Log.e("MeshCoreOne.UI", code)
     }
 }
 
 interface UiErrorAdapter {
-    fun copy(error: Throwable, underlyingCopy: (Throwable) -> UiText): UiText?
+    fun presentation(error: Throwable, underlyingCopy: (Throwable) -> UiText): UiErrorMapping?
 }
 
 class TypedUiErrorAdapter<T : Throwable>(
     private val type: Class<T>,
-    private val render: (T, (Throwable) -> UiText) -> UiText,
+    private val render: (T, (Throwable) -> UiText) -> UiErrorMapping,
 ) : UiErrorAdapter {
-    override fun copy(error: Throwable, underlyingCopy: (Throwable) -> UiText): UiText? =
+    override fun presentation(error: Throwable, underlyingCopy: (Throwable) -> UiText): UiErrorMapping? =
         if (type.isInstance(error)) render(type.cast(error), underlyingCopy) else null
 }
 
@@ -59,21 +79,40 @@ class UiErrorMapper(
     private val adapters = adapters.toList()
 
     fun present(error: Throwable, id: UUID = UUID.randomUUID()): PresentedUiError {
-        if (error is CancellationException) throw error
+        val mapped = mapping(error, Collections.newSetFromMap(IdentityHashMap<Throwable, Boolean>()))
         reporter.report(error)
-        return PresentedUiError(error, UiErrorState(id, error.javaClass.name, message(error), recovery(error)))
+        val code = if (error is StorageFailure) {
+            "${error.javaClass.name}:${error.operation}:${error.problem.javaClass.simpleName}"
+        } else error.javaClass.name
+        val storage = when (error) {
+            is StorageFailure -> error
+            is CommittedBackupPreferenceFailure -> error.preferenceFailure as? StorageFailure
+            else -> null
+        }
+        return PresentedUiError(error, UiErrorState(id, code, mapped.message, mapped.recovery, mapped.committedBackupReceipt,
+            storage?.let { UiStorageIssue(it.operation, it.problem) }))
     }
 
     fun message(error: Throwable): UiText =
         message(error, Collections.newSetFromMap(IdentityHashMap<Throwable, Boolean>()))
 
-    private fun message(error: Throwable, visited: MutableSet<Throwable>): UiText {
+    private fun message(error: Throwable, visited: MutableSet<Throwable>): UiText = mapping(error, visited).message
+
+    private fun mapping(error: Throwable, visited: MutableSet<Throwable>): UiErrorMapping {
         if (error is CancellationException) throw error
         if (!visited.add(error)) {
             reporter.report(error)
-            return UiText.Resource(L.commonErrorFailedToLoad)
+            return UiErrorMapping(UiText.Resource(L.commonErrorFailedToLoad), UiRecovery.INSPECT_FAILURE)
         }
-        return when (error) {
+        if (error is CommittedBackupPreferenceFailure) {
+            val preferenceCopy = message(error.preferenceFailure, visited)
+            return UiErrorMapping(generatedText("WP-304.Backup.RowsCommittedPreferencesIncomplete") {
+                it.getString(R.string.ui_backup_preferences_incomplete) + "\n" + preferenceCopy.resolve(it)
+            }, UiRecovery.COMPLETE_BACKUP_PREFERENCES, error.committedReceipt)
+        }
+        adapters.firstNotNullOfOrNull { adapter -> adapter.presentation(error) { message(it, visited) } }?.let { return it }
+        if (error is StorageFailure) return storageErrorPresentation(error)
+        val copy = when (error) {
             is MeshCoreException -> when (error) {
                 is MeshCoreException.Timeout -> ErrorCopy.static("MeshCoreError", "timeout")
                 is MeshCoreException.DeviceError -> deviceError(error.code)
@@ -123,11 +162,10 @@ class UiErrorMapper(
                 is KeyGenerationFailure.InvalidKey -> ErrorCopy.static("KeyGenerationError", "invalidKey")
                 is KeyGenerationFailure.InvalidPrefix -> UiText.Resource(S.regenerateIdentityPrefixFooter)
             }
-            is StorageFailure -> UiText.Resource(L.commonErrorFailedToLoad)
-            else -> adapters.firstNotNullOfOrNull { adapter -> adapter.copy(error) { message(it, visited) } }
-                ?: error.localizedMessage?.takeIf { it.isNotBlank() }?.let(UiText::Verbatim)
+            else -> error.localizedMessage?.takeIf { it.isNotBlank() }?.let(UiText::Verbatim)
                 ?: UiText.Resource(L.commonErrorFailedToLoad)
         }
+        return UiErrorMapping(copy, recovery(error))
     }
 
     fun deviceError(code: UByte): UiText = ErrorCode.fromRawValue(code)?.let(::protocolError) ?: ErrorCopy.unknownDevice(code)

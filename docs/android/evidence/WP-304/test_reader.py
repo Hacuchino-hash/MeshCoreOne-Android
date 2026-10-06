@@ -25,6 +25,22 @@ def png(width=1, height=1):
 
 
 class ReaderTests(unittest.TestCase):
+    def setUp(self):
+        binding = patch.object(reader, "source_bindings", return_value={"one": {"method": "C#method", "disposition": "native"}})
+        binding.start()
+        self.addCleanup(binding.stop)
+    def test_pending_source_policy_cannot_be_credited_as_ported_case(self):
+        expected = {"source": {"method": "C#method", "disposition": "pending-WP-208"}}
+        reader.verify_source_receipt("source", "pending-WP-208", "C#method", "POLICY_CASE", expected, {"C#method"})
+        with self.assertRaises(EvidenceError):
+            reader.verify_source_receipt("source", "pending-WP-208", "C#method", "CASE", expected, {"C#method"})
+
+    def test_source_receipt_requires_exact_current_method_binding_and_actual_execution(self):
+        expected = {"source": {"method": "C#method", "disposition": "native"}}
+        reader.verify_source_receipt("source", "native", "C#method", "CASE", expected, {"C#method"})
+        for method, observed in (("C#other", {"C#other"}), ("C#method", set())):
+            with self.assertRaises(EvidenceError):
+                reader.verify_source_receipt("source", "native", method, "CASE", expected, observed)
     def test_valid_png_has_verified_shape(self):
         self.assertEqual((1, 1), reader.png_shape(png()))
 
@@ -69,13 +85,13 @@ class ReaderTests(unittest.TestCase):
             path = Path(directory)
             (path / "TEST-zero.xml").write_text('<testsuite tests="0" failures="0" errors="0" skipped="0"/>')
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "Missing/ambiguous native suite"):
                     reader.collect(path)
 
     def test_missing_reports_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "No produced native JUnit"):
                     reader.collect(Path(directory))
 
     def test_counter_mismatch_rejected(self):
@@ -83,7 +99,7 @@ class ReaderTests(unittest.TestCase):
             path = Path(directory)
             (path / "TEST-one.xml").write_text('<testsuite tests="2" failures="0" errors="0" skipped="0"><testcase classname="C" name="method"/></testsuite>')
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "JUnit counter/outcome mismatch"):
                     reader.collect(path)
 
     def test_duplicate_methods_rejected(self):
@@ -92,7 +108,7 @@ class ReaderTests(unittest.TestCase):
             case = '<testcase classname="C" name="method"/>'
             (path / "TEST-one.xml").write_text('<testsuite tests="2" failures="0" errors="0" skipped="0">' + case * 2 + '</testsuite>')
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "Duplicate/unexpected executed native test"):
                     reader.collect(path)
 
     def test_failed_raw_xml_is_preserved_before_validation(self):
@@ -112,7 +128,7 @@ class ReaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with patch.object(retain_raw, "native_inputs", return_value={}), patch.object(retain_raw, "git", return_value=b"b" * 40):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "No produced JUnit"):
                     retain_raw.retain(root / "absent", root / "raw")
             result = json.loads((root / "raw" / "raw-retention.json").read_text())
             self.assertEqual("blocked-no-produced-junit", result["result"])
@@ -123,7 +139,7 @@ class ReaderTests(unittest.TestCase):
             path = Path(directory)
             (path / "TEST-one.xml").write_text('<testsuite tests="1" failures="1" errors="0" skipped="0"><testcase classname="C" name="method"><failure>stack</failure></testcase></testsuite>')
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "Failed/error/skipped/zero native tests"):
                     reader.collect(path)
 
     def test_skipped_junit_never_validates_as_pass(self):
@@ -131,7 +147,7 @@ class ReaderTests(unittest.TestCase):
             path = Path(directory)
             (path / "TEST-one.xml").write_text('<testsuite tests="1" failures="0" errors="0" skipped="1"><testcase classname="C" name="method"><skipped/></testcase></testsuite>')
             with patch.object(reader, "declarations", return_value=({"one": {"scenarios": 1}}, {"C#method"})):
-                with self.assertRaises(EvidenceError):
+                with self.assertRaisesRegex(EvidenceError, "Failed/error/skipped/zero native tests"):
                     reader.collect(path)
 
 

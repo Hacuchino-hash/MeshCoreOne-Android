@@ -60,7 +60,7 @@ fun SwipeActionsContainer(
                 for (action in actions) DropdownMenuItem(
                     text = {
                         Text(requireNotNull(names[action.id]), color = if (action.destructive)
-                            MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+                            sharedErrorForeground(sharedPaintedSurface()) else MaterialTheme.colorScheme.onSurface)
                     },
                     enabled = action.enabled,
                     onClick = { open = false; onAction(action.id) },

@@ -19,22 +19,29 @@ class SyncingPillTest : SourceCaseProof() {
     @Test fun connecting() = prove {
         assertEquals(resources.getString(L.commonStatusConnecting), StatusPillState.Connecting.text.resolve(resources))
         assertEquals(MeshSymbol.SYNC, StatusPillState.Connecting.symbol); assertFalse(StatusPillState.Connecting.isFailure)
+        assertEquals(SharedStatusColorRole.PRIMARY, StatusPillState.Connecting.textColorRole)
+        assertEquals(SharedStatusColorRole.PRIMARY, StatusPillState.Connecting.iconColorRole)
     }
     @OriginalCase("SyncingPillViewTests::Syncing state shows correct text and icon()")
     @Test fun syncing() = prove {
         assertEquals(resources.getString(L.commonStatusSyncing), StatusPillState.Syncing.text.resolve(resources))
         assertEquals(MeshSymbol.SYNC, StatusPillState.Syncing.symbol); assertFalse(StatusPillState.Syncing.isFailure)
+        assertEquals(SharedStatusColorRole.PRIMARY, StatusPillState.Syncing.textColorRole)
     }
     @OriginalCase("SyncingPillViewTests::Ready state shows correct text and icon()")
     @Test fun ready() = prove {
         assertEquals(resources.getString(L.commonStatusReady), StatusPillState.Ready.text.resolve(resources))
         assertEquals(MeshSymbol.READY, StatusPillState.Ready.symbol); assertFalse(StatusPillState.Ready.isFailure)
+        assertEquals(SharedStatusColorRole.PRIMARY, StatusPillState.Ready.textColorRole)
+        assertEquals(SharedStatusColorRole.GREEN, StatusPillState.Ready.iconColorRole)
     }
     @OriginalCase("SyncingPillViewTests::Disconnected state shows orange warning icon and text()")
     @NativeAdaptation("native-warning-foreground-and-readable-surface")
     @Test fun disconnected() = prove {
         assertEquals(resources.getString(L.commonStatusDisconnected), StatusPillState.Disconnected.text.resolve(resources))
         assertEquals(MeshSymbol.WARNING, StatusPillState.Disconnected.symbol); assertFalse(StatusPillState.Disconnected.isFailure)
+        assertEquals(SharedStatusColorRole.ORANGE, StatusPillState.Disconnected.textColorRole)
+        assertEquals(SharedStatusColorRole.ORANGE, StatusPillState.Disconnected.iconColorRole)
     }
     @OriginalCase("SyncingPillViewTests::Disconnected with tap handler stores closure()")
     @Test fun retainsTap() = prove {
@@ -48,6 +55,8 @@ class SyncingPillTest : SourceCaseProof() {
         val state = StatusPillState.Failed(UiText.Verbatim("Sync Failed"))
         assertEquals("Sync Failed", state.text.resolve(resources)); assertTrue(state.isFailure)
         assertEquals(MeshSymbol.ERROR, state.symbol)
+        assertEquals(SharedStatusColorRole.RED, state.textColorRole)
+        assertEquals(SharedStatusColorRole.RED, state.iconColorRole)
     }
     @OriginalCase("SyncingPillViewTests::Failed state preserves custom error message()")
     @Test fun preservesFailure() = prove {
@@ -57,5 +66,6 @@ class SyncingPillTest : SourceCaseProof() {
     @Test fun hidden() = prove {
         assertEquals("", StatusPillState.Hidden.text.resolve(resources)); assertNull(StatusPillState.Hidden.symbol)
         assertFalse(StatusPillState.Hidden.isFailure)
+        assertEquals(SharedStatusColorRole.PRIMARY, StatusPillState.Hidden.textColorRole)
     }
 }

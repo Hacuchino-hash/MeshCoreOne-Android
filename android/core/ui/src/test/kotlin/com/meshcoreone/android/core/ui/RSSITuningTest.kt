@@ -2,6 +2,10 @@
 package com.meshcoreone.android.core.ui
 
 import kotlin.test.*
+import com.meshcoreone.android.core.designsystem.ThemeColor
+import com.meshcoreone.android.core.designsystem.WCAGContrast
+import com.meshcoreone.android.core.designsystem.toThemeColor
+import androidx.compose.ui.graphics.Color
 import org.junit.Test
 
 class RSSITuningTest : SourceCaseProof() {
@@ -58,7 +62,16 @@ class RSSITuningTest : SourceCaseProof() {
     @OriginalCase("RSSITuningTests::color maps each tier to its glyph color()")
     @NativeAdaptation("licensed-native-green-yellow-red-roles")
     @Test fun colorMeanings() = prove {
-        assertEquals(listOf(0L, 1L, 2L), RSSITuning.SignalTier.entries.map { it.rawValue })
-        assertEquals(3, RSSITuning.SignalTier.entries.map { it.accessibilityResource }.toSet().size)
+        val vectors = listOf(
+            Triple(RSSITuning.SignalTier.STRONG, SharedStatusColorRole.GREEN, ThemeColor.hex(0x34C759)),
+            Triple(RSSITuning.SignalTier.MEDIUM, SharedStatusColorRole.YELLOW, ThemeColor.hex(0xFFCC00)),
+            Triple(RSSITuning.SignalTier.WEAK, SharedStatusColorRole.RED, ThemeColor.hex(0xFF3B30)),
+        )
+        for ((tier, role, seed) in vectors) {
+            assertEquals(role, tier.colorRole)
+            assertEquals(seed, tier.colorRole.sourceSeed)
+            val native = statusForeground(tier.colorRole, Color.Black, Color.White, false)
+            assertTrue(WCAGContrast.contrastRatio(native.toThemeColor(), ThemeColor.WHITE) >= 4.5)
+        }
     }
 }

@@ -63,6 +63,7 @@ import com.meshcoreone.android.core.designsystem.toComposeColor
 import com.meshcoreone.android.core.l10n.generated.AppChatsStrings
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings
+import com.meshcoreone.android.core.model.CommittedBackupPreferenceFailure
 
 val SharedUiErrorCode = SemanticsPropertyKey<String>("SharedUiErrorCode")
 var SemanticsPropertyReceiver.sharedUiErrorCode by SharedUiErrorCode
@@ -96,6 +97,7 @@ fun ErrorAlert(
     modifier: Modifier = Modifier,
     title: UiText = UiText.Resource(AppSettingsStrings.alertErrorTitle),
     onRetry: (() -> Unit)? = null,
+    recoveryLabel: UiText = UiText.Resource(AppLocalizableStrings.commonTryAgain),
 ) {
     if (error == null) return
     AlertDialog(
@@ -112,11 +114,47 @@ fun ErrorAlert(
         dismissButton = onRetry?.let { retry ->
             {
                 TextButton(onClick = { onDismiss(); retry() }, modifier = Modifier.sharedTouchTarget()) {
-                    Text(uiString(UiText.Resource(AppLocalizableStrings.commonTryAgain)))
+                    Text(uiString(recoveryLabel))
                 }
             }
         },
     )
+}
+
+data class UiErrorActions(
+    val retry: ((Throwable) -> Unit)? = null,
+    val completeBackupPreferences: ((CommittedBackupPreferenceFailure) -> Unit)? = null,
+    val unlockDevice: (() -> Unit)? = null,
+    val restoreSecureData: ((Throwable) -> Unit)? = null,
+)
+
+fun PresentedUiError.recoveryAction(actions: UiErrorActions): (() -> Unit)? =
+    if (originalFailure is CommittedBackupPreferenceFailure) {
+        val failure = originalFailure
+        require(content.recovery == UiRecovery.COMPLETE_BACKUP_PREFERENCES &&
+            content.committedBackupReceipt == failure.committedReceipt) { "Committed preference recovery cannot retry an import or replace its receipt" }
+        actions.completeBackupPreferences?.let { complete -> { complete(failure) } }
+    } else if (content.recovery == UiRecovery.RETRY) {
+        actions.retry?.let { retry -> { retry(originalFailure) } }
+    } else if (content.recovery == UiRecovery.UNLOCK_DEVICE) actions.unlockDevice
+    else if (content.recovery == UiRecovery.RESTORE_SECURE_DATA) {
+        actions.restoreSecureData?.let { restore -> { restore(originalFailure) } }
+    } else null
+
+@Composable
+fun PresentedErrorAlert(
+    error: PresentedUiError?,
+    onDismiss: () -> Unit,
+    actions: UiErrorActions,
+    modifier: Modifier = Modifier,
+) {
+    ErrorAlert(error?.content, onDismiss, modifier, onRetry = error?.recoveryAction(actions),
+        recoveryLabel = when (error?.content?.recovery) {
+            UiRecovery.COMPLETE_BACKUP_PREFERENCES -> UiText.Resource(R.string.ui_backup_complete_preferences)
+            UiRecovery.UNLOCK_DEVICE -> UiText.Resource(R.string.ui_storage_unlock_device)
+            UiRecovery.RESTORE_SECURE_DATA -> UiText.Resource(AppSettingsStrings.settingsBackupImportTitle)
+            else -> UiText.Resource(AppLocalizableStrings.commonTryAgain)
+        })
 }
 
 @Composable

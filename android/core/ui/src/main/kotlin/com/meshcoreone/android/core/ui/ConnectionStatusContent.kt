@@ -46,7 +46,6 @@ import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.designsystem.LocalMeshTheme
 import com.meshcoreone.android.core.designsystem.MeshSymbol
 import com.meshcoreone.android.core.designsystem.RadioColorRole
-import com.meshcoreone.android.core.designsystem.SignalColorRole
 import com.meshcoreone.android.core.designsystem.toComposeColor
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
@@ -119,7 +118,7 @@ fun BLEStatusIndicatorView(state: RadioStatusState, actions: RadioStatusActions,
                 DropdownMenuItem(text = { Text(uiString(UiText.Resource(S.bleStatusChangeDevice))) },
                     onClick = { menuExpanded = false; actions.selectDevice() }, modifier = Modifier.sharedTouchTarget())
                 DropdownMenuItem(text = {
-                    Text(uiString(UiText.Resource(S.bleStatusDisconnect)), color = MaterialTheme.colorScheme.error)
+                    Text(uiString(UiText.Resource(S.bleStatusDisconnect)), color = sharedErrorForeground(sharedPaintedSurface()))
                 }, onClick = { menuExpanded = false; actions.disconnect() }, modifier = Modifier.sharedTouchTarget())
                 HorizontalDivider()
                 DropdownMenuItem(text = { Text(uiString(UiText.Resource(S.bleStatusSendZeroHopAdvert))) },
@@ -143,14 +142,20 @@ fun BLEStatusToolbarItem(state: RadioStatusState, actions: RadioStatusActions, m
     BLEStatusIndicatorView(state, actions, modifier)
 
 @Composable
-fun SignalBars(tier: RSSITuning.SignalTier, modifier: Modifier = Modifier, accessibilityLabel: UiText? = null) {
-    val color = LocalMeshTheme.current.roles.signalColor(when (tier) {
-        RSSITuning.SignalTier.STRONG -> SignalColorRole.GOOD
-        RSSITuning.SignalTier.MEDIUM -> SignalColorRole.FAIR
-        RSSITuning.SignalTier.WEAK -> SignalColorRole.POOR
-    }).toComposeColor()
+fun SignalBars(
+    tier: RSSITuning.SignalTier,
+    modifier: Modifier = Modifier,
+    accessibilityLabel: UiText? = null,
+    paintedSurface: androidx.compose.ui.graphics.Color = sharedPaintedSurface(),
+) {
+    val color = statusForeground(tier.colorRole, MaterialTheme.colorScheme.onSurface, paintedSurface,
+        LocalMeshTheme.current.frame.highContrast)
     val description = accessibilityLabel?.let { uiString(it) }
-    Canvas(modifier.size(24.dp).semantics { if (description != null) contentDescription = description }) {
+    Canvas(modifier.size(24.dp).semantics {
+        sharedPaintedSurface = paintedSurface
+        sharedEmittedForeground = color
+        if (description != null) contentDescription = description
+    }) {
         val count = tier.rawValue.toInt() + 1
         for (index in 0..<3) {
             val height = size.height * (index + 1) / 3
@@ -200,6 +205,11 @@ fun SyncingPillView(
 ) {
     if (state == StatusPillState.Hidden) return
     val message = uiString(state.text)
+    val background = if (state.isFailure) MaterialTheme.colorScheme.errorContainer else sharedPaintedSurface()
+    val foreground = statusForeground(state.textColorRole, MaterialTheme.colorScheme.onSurface,
+        background, LocalMeshTheme.current.frame.highContrast)
+    val iconForeground = statusForeground(state.iconColorRole, MaterialTheme.colorScheme.onSurface,
+        background, LocalMeshTheme.current.frame.highContrast)
     val content: @Composable () -> Unit = {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp).sharedTouchTarget().semantics {
             stateDescription = message
@@ -207,17 +217,21 @@ fun SyncingPillView(
                 progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate
             }
         }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            state.symbol?.let { Icon(it.vector, null) }
+            state.symbol?.let { Icon(it.vector, null, tint = iconForeground) }
             Text(message, style = MaterialTheme.typography.bodyMedium,
+                color = foreground,
                 fontWeight = if (state.isFailure) androidx.compose.ui.text.font.FontWeight.Bold else null)
         }
     }
-    val background = if (state.isFailure) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer
-    val foreground = if (state.isFailure) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface
+    val colors = modifier.semantics {
+        sharedPaintedSurface = background
+        sharedEmittedForeground = foreground
+        sharedEmittedIcon = iconForeground
+    }
     if (state == StatusPillState.Disconnected && onDisconnectedTap != null) {
-        Surface(onClick = onDisconnectedTap, modifier = modifier, shape = RoundedCornerShape(24.dp),
+        Surface(onClick = onDisconnectedTap, modifier = colors, shape = RoundedCornerShape(24.dp),
             color = background, contentColor = foreground, content = content)
-    } else Surface(modifier, shape = RoundedCornerShape(24.dp), color = background,
+    } else Surface(colors, shape = RoundedCornerShape(24.dp), color = background,
         contentColor = foreground, content = content)
 }
 

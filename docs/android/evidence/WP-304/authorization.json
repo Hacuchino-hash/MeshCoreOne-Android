@@ -102,6 +102,32 @@
     "scope": "Byte-exact initial source-state copy in the ephemeral proposal job only. Actual Gradle write-locks produces final state. No handwritten empty records, private AGP configuration changes, ROOT write or byte persistence approval.",
     "validation": "Keep preexisting_prior=null separate from seeded_from_root=true. Final state contains executed roster plus exact prior/seed state; every unexecuted source configuration remains identical."
   },
+  "unit_compile_alignment_amendment": {
+    "authority": "Parent independently reviewed official96a artifact11382225521 and admitted seven compile-to-existing-runtime source pins.",
+    "configuration": "debugUnitTestCompileClasspath",
+    "source_configuration": "debugUnitTestRuntimeClasspath",
+    "coordinates": [
+      "androidx.core:core:1.16.0",
+      "androidx.core:core-ktx:1.16.0",
+      "androidx.lifecycle:lifecycle-livedata-core:2.9.4",
+      "androidx.lifecycle:lifecycle-viewmodel:2.9.4",
+      "androidx.lifecycle:lifecycle-viewmodel-android:2.9.4",
+      "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4",
+      "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.4"
+    ],
+    "scope": "Validate unique exact existing ROOT unit-runtime seed before constraint; retain actual requested/selected alignment edges. No new coordinate admission, metadata/catalog/ROOT write, other-configuration pin or Activity version update."
+  },
+  "committed_preference_projection_amendment": {
+    "authority": "Parent inspected actual ImportResult and explicitly leased exactly three producer projection/assertion paths.",
+    "paths": [
+      "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/CommittedBackupPreferenceFailure.kt",
+      "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/AppBackupService.kt",
+      "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/BackupTransactionTest.kt"
+    ],
+    "scope": "Pure immutable full twelve-kind count/channel-slot receipt and typed Throwable marker only; existing exception name/constructor/result/preferences/storageFailure/cause and completePreferences behavior remain unchanged. Real Room producer test joins actual marker/cause/receipt/preference-only completion. No data build/schema/codec/mutex/transaction/drain/root lock changes.",
+    "primary_source_owner": "WP-203",
+    "native_copy_adaptation": "Explicit module-owned truthful postcommit/preference-only recovery strings in all twelve source locales; no global/source/generated L10n catalog edits."
+  },
   "frozen_device_settings_carry": {
     "authority": "Parent serialized carry-only one-file grant after producer removed the path from live writes.",
     "producer_work_package": "WP-211",

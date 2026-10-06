@@ -29,6 +29,7 @@ abstract class SourceCaseProof {
         val binding = method.getAnnotation(ProducerBindingPending::class.java)?.let { "pending-" + it.owner }
             ?: method.getAnnotation(NativeAdaptation::class.java)?.let { "native-adaptation-" + it.reason }
             ?: "native"
-        println("WP304_CASE|${Base64.getEncoder().encodeToString(source.id.toByteArray(Charsets.UTF_8))}|$scenarios|$binding")
+        val prefix = if (binding.startsWith("pending-")) "WP304_POLICY_CASE" else "WP304_CASE"
+        println("$prefix|${Base64.getEncoder().encodeToString(source.id.toByteArray(Charsets.UTF_8))}|$scenarios|$binding|${javaClass.name}#$methodName")
     }
 }

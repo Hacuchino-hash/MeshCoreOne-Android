@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.KeyEvent
 import android.view.View
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -66,6 +68,16 @@ import com.meshcoreone.android.core.model.NotificationLevel
 import com.meshcoreone.android.core.model.RadioId
 import com.meshcoreone.android.core.model.RemoteNodeRole
 import com.meshcoreone.android.core.model.SnapshotList
+import com.meshcoreone.android.core.model.BackupContract
+import com.meshcoreone.android.core.model.CommittedBackupCounts
+import com.meshcoreone.android.core.model.CommittedBackupReceipt
+import com.meshcoreone.android.core.model.CommittedBackupPreferenceFailure
+import com.meshcoreone.android.core.datastore.MeshCoreStorage
+import com.meshcoreone.android.core.datastore.StorageFailure
+import com.meshcoreone.android.core.datastore.StorageProblem
+import com.meshcoreone.android.core.datastore.StorageOperation
+import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.runBlocking
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import java.io.ByteArrayOutputStream
@@ -77,6 +89,7 @@ import kotlin.test.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -91,6 +104,7 @@ import org.robolectric.shadows.ShadowDialog
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class SharedUiComposeTest {
     @get:Rule val compose = createEmptyComposeRule()
+    @get:Rule val temporary = TemporaryFolder()
     private lateinit var controller: ActivityController<ComponentActivity>
     private val device = DeviceDTO(
         id = UUID.fromString("12345678-1234-1234-1234-123456789ABC"),
@@ -270,13 +284,26 @@ class SharedUiComposeTest {
         compose.runOnIdle { assertFalse(state.value.addDialogVisible) }
     }
 
-    @Test fun claimedTipRendersPassiveReadableCopyAndAnExplicitDismissControl() {
-        content { MeshCoreTheme(motionScale = 0f) { sample(tip = SharedTip.DEVICE_MENU) } }
-        resize(840)
-        compose.onNodeWithTag("tip").performScrollTo().assertIsDisplayed()
-            .assert(SemanticsMatcher.expectValue(SharedTipId, "DeviceMenuTip"))
-        compose.onNodeWithText(resources.getString(C.chatsTipDeviceMenuTitle)).assertIsDisplayed()
-        capture("tips")
+    @Test fun claimedTipRendersPassiveReadableCopyAndAnExplicitDismissControl() = runBlocking {
+        val root = temporary.newFolder()
+        val application = ApplicationProvider.getApplicationContext<Context>()
+        val context = object : ContextWrapper(application) {
+            override fun getApplicationContext(): Context = this
+            override fun getNoBackupFilesDir(): File = root
+        }
+        val storage = MeshCoreStorage.get(context)
+        try {
+            val tips = ShowOnceTips(storage.preferences)
+            tips.donateCompletedOnboarding()
+            assertTrue(tips.claim(SharedTip.DEVICE_MENU) { TipHostState(true, true, false) })
+            assertTrue(tips.hasDisplayed(SharedTip.DEVICE_MENU))
+            content { MeshCoreTheme(motionScale = 0f) { sample(tip = SharedTip.DEVICE_MENU) } }
+            resize(840)
+            compose.onNodeWithTag("tip").performScrollTo().assertIsDisplayed()
+                .assert(SemanticsMatcher.expectValue(SharedTipId, "DeviceMenuTip"))
+            compose.onNodeWithText(resources.getString(C.chatsTipDeviceMenuTitle)).assertIsDisplayed()
+            capture("tips")
+        } finally { storage.close() }
     }
 
     @Test fun cropDialogHasActualNativeImagePixelsBoundedGeometryAndAccessibleNonGestureControls() {
@@ -316,6 +343,61 @@ class SharedUiComposeTest {
                     { state.value = state.value.copy(focusedField = it) }, { submissions++ },
                     UiText.Resource(O.wifiConnectionConnectionDetailsHeader),
                     UiText.Resource(O.wifiConnectionConnectionDetailsFooter))
+            }
+
+            @Test fun font200RtlStorageRecoveryHasRealTypedMetadataAndNativeBackDismissesWithoutRetry() {
+                val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(
+                    StorageFailure(StorageProblem.DeviceLocked, StorageOperation.WRITE)))
+                var unlocked = 0
+                content {
+                    CompositionLocalProvider(LocalDensity provides Density(1f, 2f), LocalLayoutDirection provides LayoutDirection.Rtl) {
+                        MeshCoreTheme(highContrast = true, motionScale = 0f) {
+                            sample()
+                            PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(unlockDevice = { unlocked++ }))
+                        }
+                    }
+                }
+                resize(360)
+                compose.onNodeWithText(resources.getString(R.string.ui_storage_locked), substring = true).assertIsDisplayed()
+                capture("storage-recovery-font200-rtl", dialog = true)
+                compose.runOnUiThread {
+                    val dialog = assertNotNull(ShadowDialog.getLatestDialog())
+                    dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
+                    dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
+                }
+                compose.runOnIdle { assertNull(error.value); assertEquals(0, unlocked) }
+            }
+
+            @Test fun committedPreferenceDialogUsesOnlyTheActualMarkerCompletionActionAndKeepsTheReceipt() {
+                val receipt = CommittedBackupReceipt(BackupContract.modelArrayKeys.associateWith { CommittedBackupCounts(1, 0, 0, 0) },
+                    false, emptyMap())
+                val storage = StorageFailure(StorageProblem.OwnerClosed, StorageOperation.WRITE)
+                val marker = object : Exception("consumer-marker-fixture", storage), CommittedBackupPreferenceFailure {
+                    override val committedReceipt = receipt
+                    override val preferenceFailure: Throwable = storage
+                }
+                val error = mutableStateOf<PresentedUiError?>(UiErrorMapper().present(marker))
+                var importRetries = 0
+                var completed: CommittedBackupPreferenceFailure? = null
+                content {
+                    MeshCoreTheme(motionScale = 0f) {
+                        sample()
+                        PresentedErrorAlert(error.value, { error.value = null }, UiErrorActions(
+                            retry = { importRetries++ }, completeBackupPreferences = { completed = it },
+                        ))
+                    }
+                }
+                resize(360)
+                compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).assertIsDisplayed()
+                    .assertHeightIsAtLeast(49.dp)
+                capture("committed-preference-only", dialog = true)
+                compose.onNodeWithText(resources.getString(R.string.ui_backup_complete_preferences)).performClick()
+                compose.runOnIdle {
+                    assertNull(error.value)
+                    assertEquals(0, importRetries)
+                    assertSame(marker, completed)
+                    assertEquals(receipt, completed?.committedReceipt)
+                }
             }
         }
         resize(360)

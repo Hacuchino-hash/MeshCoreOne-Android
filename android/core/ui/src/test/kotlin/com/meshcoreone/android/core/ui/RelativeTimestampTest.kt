@@ -57,5 +57,34 @@ class RelativeTimestampTest : SourceCaseProof() {
         for (locale in listOf(Locale.CHINA, Locale.KOREA, Locale.GERMAN, Locale("ar"))) {
             assertTrue(TimestampFormatting(locale, zone).relative(previousDay, current).isNotEmpty())
         }
+
+        @Test fun relativeComponentsAreIntegralAndChooseMinutesHoursDaysWeeksMonthsAndYears() {
+            val reference = Instant.parse("2024-01-15T12:00:00Z")
+            val vectors = listOf(
+                Triple(reference.minusSeconds(90), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
+                Triple(reference.plusSeconds(90), 2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MINUTE),
+                Triple(reference.minusSeconds(5_400), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+                Triple(reference.minusSeconds(129_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+                Triple(reference.minusSeconds(1_209_600), -2L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.WEEK),
+                Triple(Instant.parse("2023-12-15T12:00:00Z"), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.MONTH),
+                Triple(reference.minusSeconds(400L * 86400), -1L, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.YEAR),
+            )
+            for ((date, amount, unit) in vectors) {
+                assertEquals(RelativeTimeComponent(amount, unit), formatter.relativeComponent(date, reference))
+            }
+            assertFalse(formatter.relative(reference.minusSeconds(90), reference).contains("1.5"))
+        }
+
+        @Test fun calendarDayLengthAcrossDstUsesTheInjectedZoneRatherThanFixed86400SecondDays() {
+            val source = Instant.parse("2024-03-09T17:00:00Z")
+            val later = Instant.parse("2024-03-10T16:00:00Z")
+            val local = TimestampFormatting(Locale.US, ZoneId.of("America/New_York"))
+            assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY),
+                local.relativeComponent(source, later))
+            assertEquals(RelativeTimeComponent(-23, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.HOUR),
+                formatter.relativeComponent(source, later))
+            val autumn = local.relativeComponent(Instant.parse("2024-11-02T16:00:00Z"), Instant.parse("2024-11-03T17:00:00Z"))
+            assertEquals(RelativeTimeComponent(-1, android.icu.text.RelativeDateTimeFormatter.RelativeDateTimeUnit.DAY), autumn)
+        }
     }
 }

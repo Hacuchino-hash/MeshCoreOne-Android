@@ -44,6 +44,16 @@ WORKFLOW = ".github/workflows/android-shared-ui-dependency-generation.yml"
 TASK = ":core:ui:resolveSharedUiDependencies"
 GRAPH = "android/core/ui/build/reports/wp304/dependency-graphs.tsv"
 CONFIGURATIONS = "android/core/ui/build/reports/wp304/resolution-configurations.txt"
+ALIGNMENT = "android/core/ui/build/reports/wp304/unit-compile-alignment.tsv"
+COMPILE_ALIGNMENT = {
+    "androidx.core:core": "1.16.0",
+    "androidx.core:core-ktx": "1.16.0",
+    "androidx.lifecycle:lifecycle-livedata-core": "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel": "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-android": "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-ktx": "2.9.4",
+    "androidx.lifecycle:lifecycle-viewmodel-savedstate": "2.9.4",
+}
 VM = "-Xms64m -Xmx512m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8"
 REQUIRED_INPUTS = {
     WORKFLOW, "android/core/ui/verification/dependency_proposal.py",
@@ -189,6 +199,26 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
             "added_vs_prior": sorted(values - before.get(name, set())),
             "added_vs_seed": sorted(values - seed.get(name, set()))})
     return {"configuration_count": len(after), "selected_component_rows": sum(len(x) for x in graph.values()), "configurations": delta}
+
+def validate_compile_alignment(seed_text, alignment_text):
+    seed = parse_lock(seed_text).get("debugUnitTestRuntimeClasspath", set())
+    source = {}
+    for artifact, version in COMPILE_ALIGNMENT.items():
+        candidates = {coordinate for coordinate in seed if coordinate.rsplit(":", 1)[0] == artifact}
+        require(candidates == {artifact + ":" + version}, "missing/ambiguous/changed runtime alignment seed: " + artifact)
+        source[artifact] = next(iter(candidates))
+    lines = alignment_text.splitlines()
+    require(lines and lines[0] == "artifact\tsourceConfiguration\tsourceCoordinate\tconfiguration\trequested\tselected"
+        and len(lines) > 1, "missing/malformed/zero actual compile alignment")
+    observed = set()
+    for line in lines[1:]:
+        fields = line.split("\t")
+        require(len(fields) == 6 and fields[0] in source and fields[1] == "debugUnitTestRuntimeClasspath"
+            and fields[2] == source[fields[0]] and fields[3] == "debugUnitTestCompileClasspath"
+            and fields[4].startswith(fields[0] + ":") and fields[5] == source[fields[0]], "unadmitted compile alignment edge")
+        observed.add(fields[0])
+    require(observed == set(source), "missing executed compile alignment")
+    return {"artifacts": source, "actual_resolved_edges": len(lines) - 1}
 
 
 def validate_command(command, state):
@@ -411,7 +441,7 @@ def run(root):
             failure = error
         # Copy all produced bytes before inspecting success, including a failed resolver's partial graph/lock.
         for relative, name in ((OWNER_LOCK, "gradle.lockfile"), (GRAPH, "dependency-graphs.tsv"),
-                (CONFIGURATIONS, "resolution-configurations.txt")):
+                (CONFIGURATIONS, "resolution-configurations.txt"), (ALIGNMENT, "unit-compile-alignment.tsv")):
             path = ROOT / relative
             if path.is_file() and not path.is_symlink():
                 shutil.copyfile(path, output / name)
@@ -432,6 +462,8 @@ def run(root):
         require(failure is None, "actual resolver failed: " + str(failure))
         require(all((output / name).is_file() for name in ("gradle.lockfile", "dependency-graphs.tsv", "resolution-configurations.txt")),
             "missing actual generated output")
+        record["unit_compile_alignment"] = validate_compile_alignment(seed.read_text(encoding="utf8"),
+            (output / "unit-compile-alignment.tsv").read_text(encoding="utf8"))
         record["delta"] = validate_delta(seed.read_text(encoding="utf8"), prior.decode("utf8") if prior is not None else None,
             (output / "gradle.lockfile").read_text(encoding="utf8"),
             (output / "dependency-graphs.tsv").read_text(encoding="utf8"),

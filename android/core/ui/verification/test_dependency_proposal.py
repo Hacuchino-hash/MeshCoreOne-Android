@@ -13,6 +13,7 @@ from dependency_proposal import (
     validate_command, validate_delta, validate_identity, validate_workflow, validate_writes, ROOT, WORKFLOW,
     validate_settings_bookkeeping, retain_settings_bookkeeping,
     seed_initial_owned_lock,
+    COMPILE_ALIGNMENT, validate_compile_alignment,
 )
 from controller.errors import PortError
 
@@ -45,6 +46,36 @@ def metadata(*coordinates):
 
 
 class DependencyProposalTests(unittest.TestCase):
+    def alignment_fixture(self):
+        seed = "\n".join(artifact + ":" + version + "=debugUnitTestRuntimeClasspath" for artifact, version in COMPILE_ALIGNMENT.items())
+        graph = "artifact\tsourceConfiguration\tsourceCoordinate\tconfiguration\trequested\tselected\n"
+        for artifact, version in COMPILE_ALIGNMENT.items():
+            requested = "1.9.0" if artifact.startswith("androidx.core:") else "2.8.7"
+            graph += f"{artifact}\tdebugUnitTestRuntimeClasspath\t{artifact}:{version}\tdebugUnitTestCompileClasspath\t{artifact}:{requested}\t{artifact}:{version}\n"
+        return seed, graph
+
+    def test_actual_lower_test_compile_transitives_align_only_to_existing_vetted_runtime_versions(self):
+        seed, graph = self.alignment_fixture()
+        value = validate_compile_alignment(seed, graph)
+        self.assertEqual(7, len(value["artifacts"]))
+        self.assertEqual(7, value["actual_resolved_edges"])
+
+    def test_missing_ambiguous_changed_or_unknown_alignment_seed_and_selected_version_fail(self):
+        seed, graph = self.alignment_fixture()
+        for changed in (
+            seed.replace("androidx.core:core:1.16.0=debugUnitTestRuntimeClasspath\n", ""),
+            seed + "\nandroidx.core:core:1.9.0=debugUnitTestRuntimeClasspath",
+            seed.replace(":1.16.0=", ":1.9.0="),
+        ):
+            with self.assertRaises(PortError):
+                validate_compile_alignment(changed, graph)
+        for changed in ("", graph.replace("\tandroidx.core:core:1.16.0\n", "\tandroidx.core:core:1.9.0\n"),
+            graph.replace("debugUnitTestCompileClasspath", "foreignConfig"),
+            graph.replace("androidx.core:core-ktx", "unknown:artifact"),
+            "\n".join(graph.splitlines()[:-1]) + "\n"):
+            with self.assertRaises(PortError):
+                validate_compile_alignment(seed, changed)
+
     def identity(self):
         repository = {"full_name": "cbattlegear/MeshCoreOne-Android"}
         event = {"number": 33, "pull_request": {

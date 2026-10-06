@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Не вдалося закодувати збережений елемент.</string>
+    <string name="ui_storage_save_failed">Не вдалося зберегти локальні дані.</string>
+    <string name="ui_storage_read_failed">Не вдалося прочитати локальні дані.</string>
+    <string name="ui_storage_delete_failed">Не вдалося видалити локальні дані.</string>
+    <string name="ui_storage_first_unlock">Після перезапуску розблокуйте пристрій для доступу до збережених даних.</string>
+    <string name="ui_storage_locked">Розблокуйте пристрій для доступу до збережених даних.</string>
+    <string name="ui_storage_inaccessible">Сховище пристрою недоступне.</string>
+    <string name="ui_storage_permission_denied">Доступ до сховища пристрою заборонено.</string>
+    <string name="ui_storage_io_failed">Пристрій не зміг завершити операцію зі сховищем.</string>
+    <string name="ui_storage_corrupt_preferences">Збережені налаштування пошкоджено.</string>
+    <string name="ui_storage_corrupt_state">Збережені захищені дані пошкоджено.</string>
+    <string name="ui_storage_corrupt_envelope">Не вдалося декодувати збережений елемент.</string>
+    <string name="ui_storage_authentication_failed">Не вдалося перевірити справжність збереженого елемента.</string>
+    <string name="ui_storage_key_missing">Ключ шифрування збережених даних відсутній.</string>
+    <string name="ui_storage_key_invalidated">Ключ шифрування більше не дійсний.</string>
+    <string name="ui_storage_key_corrupt">Збережений ключ шифрування пошкоджено.</string>
+    <string name="ui_storage_provider_failed">Захищене сховище недоступне.</string>
+    <string name="ui_storage_owner_duplicate">Локальне сховище вже використовується.</string>
+    <string name="ui_storage_owner_closed">Локальне сховище закрите.</string>
+    <string name="ui_storage_invalid_identity">Ідентифікатор збереженого елемента недійсний.</string>
+    <string name="ui_storage_invalid_value">Не вдалося зберегти значення.</string>
+    <string name="ui_storage_already_exists">Збережений елемент уже існує.</string>
+    <string name="ui_storage_not_found">Збережений елемент не знайдено.</string>
+    <string name="ui_storage_unsupported_version">Формат збережених даних %1$d не підтримується.</string>
+    <string name="ui_storage_too_large">Збережені дані перевищують обмеження %1$d байтів.</string>
+    <string name="ui_storage_preference_type">Збережене налаштування має несумісний тип значення.</string>
+    <string name="ui_storage_preference_no_default">Відсутнє налаштування не має типового значення.</string>
+    <string name="ui_storage_preference_invalid">Збережене налаштування має недійсне значення.</string>
+    <string name="ui_backup_preferences_incomplete">Записи резервної копії імпортовано. Не вдалося завершити налаштування. Повторіть лише відсутні налаштування, не імпортуючи записи знову.</string>
+    <string name="ui_backup_complete_preferences">Завершити налаштування</string>
+    <string name="ui_storage_unlock_device">Розблокувати пристрій</string>
+</resources>

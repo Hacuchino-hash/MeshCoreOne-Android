@@ -11,6 +11,9 @@ import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceExcepti
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
+import com.meshcoreone.android.core.datastore.StorageFailure
+import com.meshcoreone.android.core.datastore.StorageOperation
+import com.meshcoreone.android.core.datastore.StorageProblem
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
 import com.meshcoreone.android.core.model.AppBackupError
@@ -147,10 +150,15 @@ class ErrorUserFacingTest : SourceCaseProof() {
             message(failure))
         assertEquals("915.5", fault.expected); assertEquals("868.0", fault.actual)
     }
-    @ProducerBindingPending("WP-204-native-equivalence")
+    @NativeAdaptation("native-storage-family-without-Apple-status")
     @OriginalCase("ErrorUserFacingMessageTests::keychain error dispatches to concrete mapping()")
-    @Test fun legacyKeychainCopyPolicyIsNotManufacturedAndroidStatus() = prove {
-        assertEquals(L.errorKeychainStorageFailed(resources, -25299), ErrorCopy.keychainStorageFailed(-25299).resolve(resources))
+    @Test fun actualNativeStorageFaultDispatchesWithoutManufacturedAppleStatus() = prove {
+        val failure = StorageFailure(StorageProblem.SecretAlreadyExists, StorageOperation.WRITE)
+        assertEquals(resources.getString(R.string.ui_storage_save_failed) + "\n" +
+            resources.getString(R.string.ui_storage_already_exists), message(failure))
+        assertEquals(NativeStorageErrorFamily.STORAGE, failure.nativeFamily)
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(UiStorageIssue(StorageOperation.WRITE, StorageProblem.SecretAlreadyExists), mapper.present(failure).content.storageIssue)
     }
     @OriginalCase("ErrorUserFacingMessageTests::key generation error dispatches to concrete mapping()")
     @Test fun keyGeneration() = prove {

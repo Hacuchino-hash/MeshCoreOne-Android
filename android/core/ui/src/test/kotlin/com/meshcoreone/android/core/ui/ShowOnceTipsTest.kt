@@ -5,26 +5,33 @@ package com.meshcoreone.android.core.ui
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.UserManager
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.datastore.MeshCoreStorage
 import com.meshcoreone.android.core.datastore.PreferenceKey
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.datastore.StorageIssueReporter
 import com.meshcoreone.android.core.datastore.StorageProblem
+import com.meshcoreone.android.core.datastore.StorageOperation
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.test.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -140,5 +147,100 @@ class ShowOnceTipsTest {
         val failure = assertFailsWith<StorageFailure> { h.tips.hasDisplayed(SharedTip.DEVICE_MENU) }
         assertEquals(StorageProblem.OwnerClosed, failure.problem)
         assertTrue(h.reported.isNotEmpty())
+    }
+
+    @Test fun realLockedWriteIsTypedAndDoesNotConsumeTheDurableClaim() = runBlocking {
+        val h = Harness(temporary.newFolder())
+        val users = Shadows.shadowOf(h.context.getSystemService(UserManager::class.java))
+        try {
+            h.tips.donateCompletedOnboarding()
+            users.setUserUnlocked(false)
+            val failure = assertFailsWith<StorageFailure> { h.tips.claim(SharedTip.DEVICE_MENU) { connected } }
+            assertEquals(StorageOperation.WRITE, failure.operation)
+            assertEquals(StorageProblem.LockedBeforeFirstUnlock, failure.problem)
+            users.setUserUnlocked(true)
+            assertFalse(h.tips.hasDisplayed(SharedTip.DEVICE_MENU))
+            assertTrue(h.tips.claim(SharedTip.DEVICE_MENU) { connected })
+        } finally { users.setUserUnlocked(true); h.close() }
+    }
+
+    @Test fun realFilesystemWriteFailureRetainsPreviousBytesAndReopenDoesNotTreatTheTipAsDisplayed() = runBlocking {
+        val directory = temporary.newFolder()
+        val h = Harness(directory)
+        val storageDirectory = File(directory, "meshcoreone-datastore")
+        val retainedDirectory = File(directory, "retained-datastore")
+        h.tips.donateCompletedOnboarding()
+        val previous = File(storageDirectory, "app.preferences_pb").readBytes()
+        assertTrue(storageDirectory.renameTo(retainedDirectory))
+        assertTrue(storageDirectory.createNewFile())
+        try {
+            val failure = assertFailsWith<StorageFailure> { h.tips.claim(SharedTip.DEVICE_MENU) { connected } }
+            assertEquals(StorageProblem.IoFailure, failure.problem)
+            assertEquals(StorageOperation.WRITE, failure.operation)
+            assertFalse(h.tips.hasDisplayed(SharedTip.DEVICE_MENU))
+            assertContentEquals(previous, File(retainedDirectory, "app.preferences_pb").readBytes())
+            assertTrue(h.reported.contains(failure))
+        } finally {
+            h.close()
+            assertTrue(storageDirectory.isFile)
+            assertTrue(storageDirectory.delete())
+            assertTrue(retainedDirectory.renameTo(storageDirectory))
+        }
+        val reopened = Harness(directory)
+        try {
+            assertFalse(reopened.tips.hasDisplayed(SharedTip.DEVICE_MENU))
+            assertTrue(reopened.tips.claim(SharedTip.DEVICE_MENU) { connected })
+        } finally { reopened.close() }
+    }
+
+    @Test fun cancellingTheActualConsumerDuringASerializedWritePreventsClaimCommit() = runBlocking {
+        val h = Harness(temporary.newFolder())
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        try {
+            h.tips.donateCompletedOnboarding()
+            val consumer = async(Dispatchers.IO) {
+                h.tips.claim(SharedTip.DEVICE_MENU) {
+                    entered.countDown()
+                    check(release.await(5, TimeUnit.SECONDS))
+                    connected
+                }
+            }
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            consumer.cancel()
+            release.countDown()
+            assertFailsWith<CancellationException> { consumer.await() }
+            assertFalse(h.storage.preferences.snapshot().contains(SharedTip.DEVICE_MENU.displayedKey))
+            assertTrue(h.tips.claim(SharedTip.DEVICE_MENU) { connected })
+        } finally { release.countDown(); h.close() }
+    }
+
+    @Test fun actualOwnerCloseDuringAnInFlightWriteDoesNotReturnSuccessOrPersistAShownFlag() = runBlocking {
+        val directory = temporary.newFolder()
+        val h = Harness(directory)
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        h.tips.donateCompletedOnboarding()
+        val consumer = async(Dispatchers.IO) {
+            h.tips.claim(SharedTip.DEVICE_MENU) {
+                entered.countDown()
+                check(release.await(5, TimeUnit.SECONDS))
+                connected
+            }
+        }
+        try {
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            val closing = async(start = CoroutineStart.UNDISPATCHED) { h.close() }
+            val closed = assertFailsWith<StorageFailure> { h.storage.preferences.snapshot() }
+            assertEquals(StorageProblem.OwnerClosed, closed.problem)
+            release.countDown()
+            closing.await()
+            assertFailsWith<CancellationException> { consumer.await() }
+        } finally { release.countDown(); consumer.cancelAndJoin(); h.close() }
+        val reopened = Harness(directory)
+        try {
+            assertFalse(reopened.tips.hasDisplayed(SharedTip.DEVICE_MENU))
+            assertTrue(reopened.tips.claim(SharedTip.DEVICE_MENU) { connected })
+        } finally { reopened.close() }
     }
 }

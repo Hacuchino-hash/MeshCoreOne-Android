@@ -5,9 +5,30 @@ package com.meshcoreone.android.core.ui
 import java.io.File
 import kotlin.test.*
 import org.junit.Test
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.meshcoreone.android.core.contracts.domain.PersistenceStoreError
+import com.meshcoreone.android.core.contracts.domain.PersistenceStoreException
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.DeviceServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
+import com.meshcoreone.android.core.datastore.KeyGenerationFailure
+import com.meshcoreone.android.core.model.AppBackupError
+import com.meshcoreone.android.core.model.AppBackupException
+import com.meshcoreone.android.core.protocol.config.MeshCoreException
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
+import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
+import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
+import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [31], qualifiers = "en-rUS")
 class ErrorDispatchCoverageTest : SourceCaseProof() {
-    @ProducerBindingPending("WP-205-206-207-208-209-210-211-214")
+    @ProducerBindingPending("WP-205-206-207-208-209-210-214")
     @OriginalCase("ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()")
     @Test fun everyOriginalLocalizedErrorHasCopyAccountingOrTheOriginalControlFlowAllowlist() = prove {
         val root = File(requireNotNull(System.getProperty("repositoryDirectory")))
@@ -26,8 +47,24 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
         val allowlist = setOf("PairingError", "DevicePairingError")
         assertTrue(allowlist.all { it in discovered })
         val removedBilling = setOf("StoreServiceError")
-        assertTrue((discovered - ErrorCopy.sourceFamilies - allowlist - removedBilling).isEmpty(),
-            (discovered - ErrorCopy.sourceFamilies - allowlist - removedBilling).toString())
+        val resources = ApplicationProvider.getApplicationContext<Context>().resources
+        val mapper = UiErrorMapper()
+        val actualBindings = mapOf(
+            "MeshCoreError" to (MeshCoreException.Timeout() to L.errorMeshCoreTimeout),
+            "AppBackupError" to (AppBackupException(AppBackupError.InvalidFile) to S.settingsBackupErrorInvalidFile),
+            "WiFiTransportError" to (WiFiTransportException(WiFiTransportError.InvalidHost) to L.errorWifiInvalidHost),
+            "PersistenceStoreError" to (PersistenceStoreException(PersistenceStoreError.ContactNotFound) to L.errorPersistenceContactNotFound),
+            "KeyGenerationError" to (KeyGenerationFailure.ReservedPrefix() to L.errorKeyGenerationReservedPrefix),
+            "DeviceServiceError" to (DeviceServiceException(DeviceServiceError.DeviceNotFound) to L.errorDeviceServiceDeviceNotFound),
+            "SettingsServiceError" to (SettingsServiceException(SettingsServiceError.NotConnected) to L.errorSettingsNotConnected),
+        )
+        for ((source, pair) in actualBindings) {
+            assertTrue(source in discovered)
+            assertEquals(resources.getString(pair.second), mapper.message(pair.first).resolve(resources))
+        }
+        val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling - setOf("ProtocolError", "KeychainError")
+        assertTrue(nativeMissing.isNotEmpty(), "Unavailable producer families must not be silently credited as native dispatch")
+        assertTrue(nativeMissing.containsAll(setOf("MessageServiceError", "ChatSendQueueServiceError", "RemoteNodeError")))
         assertTrue(discovered.isNotEmpty())
     }
 }
