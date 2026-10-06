@@ -208,6 +208,21 @@ class BinaryProtocolServiceTest {
                 assertEquals(listOf("neighbours 1", "status 42", "telemetry 4", "status 43"), seen)
             }
         },
+        remoteCoreNative("a throwing push handler is contained and monitoring keeps delivering later pushes") {
+            withBinaryService {
+                val seen = mutableListOf<UInt>()
+                service.setStatusResponseHandler {
+                    if (it.uptime == 1u) throw IllegalStateException("view model gone")
+                    seen += it.uptime
+                }
+                service.startEventMonitoring()
+                session.yieldEvent(MeshEvent.StatusResponse(remoteAdminStatus(prefix, uptime = 1u)))
+                session.yieldEvent(MeshEvent.StatusResponse(remoteAdminStatus(prefix, uptime = 2u)))
+                remoteCoreAwait("monitoring stopped after a throwing handler") { seen.isNotEmpty() }
+                assertEquals(listOf(2u), seen)
+                assertEquals(1, session.eventSubscriptionCount)
+            }
+        },
         remoteCoreNative("pushes without a handler are ignored; a handler set later receives later pushes") {
             withBinaryService {
                 service.startEventMonitoring()

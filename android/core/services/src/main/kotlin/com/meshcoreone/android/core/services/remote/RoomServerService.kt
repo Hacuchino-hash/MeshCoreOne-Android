@@ -16,6 +16,7 @@ import java.util.UUID
 import java.util.logging.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
@@ -164,14 +165,19 @@ class RoomServerService(
         )
         dataStore.saveRoomMessage(session.radioId, messageDTO)
 
-        // Metadata only, no content.
-        auditLogger.logRoomMessagePosted(remoteSession.publicKey, RemoteSwiftText.characterCount(text))
-
-        // Send in the background so the UI can show the pending message immediately.
         val messageKey = EntityKey(session.radioId, messageDTO.id)
-        serviceScope.launch {
-            // sendMessageWithRetry requires the full 32-byte public key for path reset.
-            deliver(messageKey, session, remoteSession.publicKey, text, timestamp, isRetry = false)
+        try {
+            // Metadata only, no content.
+            auditLogger.logRoomMessagePosted(remoteSession.publicKey, RemoteSwiftText.characterCount(text))
+        } finally {
+            // Send in the background so the UI can show the pending message immediately. The row is already
+            // saved as pending, so the send must start even if this caller is cancelled during the audit, and
+            // ATOMIC runs its body even if the scope is cancelled first: deliver then records `failed` instead
+            // of leaving a pending row that retryMessage refuses. (Swift's send Task always runs.)
+            serviceScope.launch(start = CoroutineStart.ATOMIC) {
+                // sendMessageWithRetry requires the full 32-byte public key for path reset.
+                deliver(messageKey, session, remoteSession.publicKey, text, timestamp, isRetry = false)
+            }
         }
         return messageDTO
     }
@@ -228,23 +234,27 @@ class RoomServerService(
             return
         }
 
-        if (sentInfo != null) {
-            recordStatus(message, MessageStatus.DELIVERED, sentInfo.expectedAck.ackCodeUInt32, sentInfo.suggestedTimeoutMs) {
-                if (isRetry) "Failed to update message status after successful retry: $it"
-                else "Failed to update message status after successful send: $it"
+        // The radio already transmitted: record the outcome even if cancellation lands now, so the row never
+        // stays pending (Swift's send task is never cancelled).
+        withContext(NonCancellable) {
+            if (sentInfo != null) {
+                recordStatus(message, MessageStatus.DELIVERED, sentInfo.expectedAck.ackCodeUInt32, sentInfo.suggestedTimeoutMs) {
+                    if (isRetry) "Failed to update message status after successful retry: $it"
+                    else "Failed to update message status after successful send: $it"
+                }
+            } else {
+                // All retries exhausted: the radio transmitted but no ACK arrived. Mark sent (not failed)
+                // since the message likely reached the room server.
+                recordStatus(message, MessageStatus.SENT, null, null) { "Failed to update message status to sent: $it" }
             }
-        } else {
-            // All retries exhausted: the radio transmitted but no ACK arrived. Mark sent (not failed)
-            // since the message likely reached the room server.
-            recordStatus(message, MessageStatus.SENT, null, null) { "Failed to update message status to sent: $it" }
-        }
-        // Update the sort date only (no sync bookmark, which avoids clock-skew issues); Swift `try?`.
-        try {
-            dataStore.updateRoomActivity(session)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (error: Exception) {
-            logger.fine { "updateRoomActivity failed (ignored): $error" }
+            // Update the sort date only (no sync bookmark, which avoids clock-skew issues); Swift `try?`.
+            try {
+                dataStore.updateRoomActivity(session)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (error: Exception) {
+                logger.fine { "updateRoomActivity failed (ignored): $error" }
+            }
         }
     }
 

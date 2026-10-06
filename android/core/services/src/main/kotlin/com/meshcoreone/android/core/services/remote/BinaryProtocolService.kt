@@ -73,11 +73,26 @@ class BinaryProtocolService(
      * UNDISPATCHED registers the subscription before this function returns, so none are.
      */
     fun startEventMonitoring() {
+        // Swift cancels the previous monitor first, so one push never reaches a handler twice.
+        synchronized(lock) { eventMonitorTask.also { eventMonitorTask = null } }?.cancel()
         val monitor = serviceScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            session.events().collect { event -> handleEvent(event) }
+            session.events().collect { event -> handleEventKeepingMonitorAlive(event) }
         }
-        val previous = synchronized(lock) { eventMonitorTask.also { eventMonitorTask = monitor } }
-        previous?.cancel()
+        synchronized(lock) { eventMonitorTask.also { eventMonitorTask = monitor } }?.cancel()
+    }
+
+    /**
+     * Swift's handlers cannot throw. A throwing Kotlin handler must not end monitoring (later pushes would
+     * be dropped) or escape to the uncaught-exception handler.
+     */
+    private suspend fun handleEventKeepingMonitorAlive(event: MeshEvent) {
+        try {
+            handleEvent(event)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            logger.severe { "Binary protocol push handler failed for ${event::class.simpleName}: $error" }
+        }
     }
 
     /** Stop monitoring events. */

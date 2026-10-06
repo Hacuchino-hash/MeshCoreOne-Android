@@ -231,6 +231,21 @@ class RoomServerPostingTest {
                 collector.cancel()
             }
         },
+        remoteCoreNative("cancelling the owning scope before the send starts still records failed, never leaving it pending") {
+            withRemoteAdminHarness {
+                val key = room()
+                val dispatcher = checkNotNull(coroutineContext[ContinuationInterceptor])
+                val ownScope = CoroutineScope(SupervisorJob() + dispatcher)
+                val service = RoomServerService(core.session, core.service, store, core.radioId, ownScope)
+                core.session.sendMessageWithRetryHandler = { CompletableDeferred<MessageSentInfo?>().await() }
+                val posted = service.postMessage(key, "x")
+                // Single-threaded dispatcher: the send coroutine has not run yet.
+                ownScope.cancel()
+                remoteCoreAwait("pending row never resolved") {
+                    store.message(EntityKey(core.radioId, posted.id))?.status == MessageStatus.FAILED
+                }
+            }
+        },
         remoteCoreNative("events reach every subscriber; finishEvents ends them and later subscriptions are empty") {
             withRemoteAdminHarness {
                 val key = room()
