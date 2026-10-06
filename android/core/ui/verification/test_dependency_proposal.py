@@ -60,6 +60,12 @@ class DependencyProposalTests(unittest.TestCase):
         self.assertEqual(7, len(value["artifacts"]))
         self.assertEqual(7, value["actual_resolved_edges"])
 
+    def test_compile_alignment_waits_for_the_actual_agp_variant_configuration(self):
+        text = (ROOT / "android" / "core" / "ui" / "build.gradle.kts").read_text(encoding="utf8")
+        self.assertNotIn('configurations.named("debugUnitTestCompileClasspath")', text)
+        self.assertIn('if (name == "debugUnitTestCompileClasspath")', text)
+        self.assertIn('resolutionStrategy.force(*admittedUnitCompileAlignment.toTypedArray())', text)
+
     def test_missing_ambiguous_changed_or_unknown_alignment_seed_and_selected_version_fail(self):
         seed, graph = self.alignment_fixture()
         for changed in (

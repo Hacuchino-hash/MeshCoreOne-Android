@@ -67,8 +67,10 @@ val admittedUnitCompileAlignment = linkedMapOf(
     }
     source.single()
 }
-configurations.named("debugUnitTestCompileClasspath") {
-    resolutionStrategy.force(*admittedUnitCompileAlignment.toTypedArray())
+configurations.configureEach {
+    if (name == "debugUnitTestCompileClasspath") {
+        resolutionStrategy.force(*admittedUnitCompileAlignment.toTypedArray())
+    }
 }
 
 val sharedUiPlatformSdk37 = configurations.create("sharedUiPlatformSdk37") {
