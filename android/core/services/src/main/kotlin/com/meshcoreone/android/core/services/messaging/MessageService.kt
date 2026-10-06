@@ -120,7 +120,9 @@ class MessageService(
                 if (!ownership.isCurrent) throw CancellationException("Obsolete ACK monitor")
                 if (event is MeshEvent.Acknowledgement) {
                     try { handleAcknowledgement(event.code, event.tripTime) }
-                    catch (failure: PersistenceStoreException) { remember("ackDelivery", failure) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    // Swift's listener never throws; one bad ACK must not end every status subscriber.
+                    catch (failure: Exception) { remember("ackDelivery", failure) }
                 }
             }
         }
@@ -149,7 +151,11 @@ class MessageService(
                 clock.sleepFor(interval.seconds)
                 ownership.check("ackExpiry")
                 try { checkExpiredAcks() }
-                catch (failure: PersistenceStoreException) { remember("ackExpiry", failure) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (failure: Exception) {
+                    if (!ownership.isCurrent) throw failure
+                    remember("ackExpiry", failure)
+                }
             }
         }
         synchronized(lock) { expiry = task }
@@ -211,11 +217,13 @@ class MessageService(
         if (row == null) {
             val failure = PersistenceStoreException(PersistenceStoreError.MessageNotFound)
             remember("ack.$messageID", failure)
+            retireTerminalAck(tracking)
             throw failure
         }
         if (row.contactID != tracking.contactID || row.radioId != token.radioId) {
             val failure = PersistenceStoreException(PersistenceStoreError.InvalidData)
             remember("ack.$messageID", failure)
+            retireTerminalAck(tracking)
             throw failure
         }
         if (tracking.publicKey != null) {
@@ -224,6 +232,7 @@ class MessageService(
             if (contact != null && contact.publicKey != tracking.publicKey) {
                 val failure = MessageServiceException(MessageServiceError.ContactNotFound)
                 remember("ack.$messageID.identity", failure)
+                retireTerminalAck(tracking)
                 throw failure
             }
         }
@@ -248,24 +257,44 @@ class MessageService(
         val now = clock.wallClock.instant()
         val candidates = synchronized(lock) { pendingAcks.values.toList() }
         for (snapshot in candidates) {
-            if (snapshot.acknowledgement != null) { reconcileAcknowledgement(snapshot.messageID); continue }
-            mutation(snapshot.messageID).withLock {
-                val current = pendingAck(snapshot.messageID) ?: return@withLock
-                if (current.isDelivered || Duration.between(current.sentAt, now).toNanos().toDouble() / 1e9 <=
-                    maxOf(config.ackGiveUpWindow, current.timeout)) return@withLock
-                ownership.check("expireAcknowledgement")
-                val changed = dataStore.updateMessageStatusUnlessDelivered(key(current.messageID), MessageStatus.FAILED)
-                ownership.check("expireAcknowledgement.saved")
-                synchronized(lock) {
-                    pendingAcks.remove(current.messageID)
-                    activeDirectClaims[current.messageID]?.let {
-                        if (it.acknowledgement == null) it.retiredWithoutAcknowledgement = true
-                    }
-                }
-                if (changed) broadcastFailed(current.messageID)
+            try {
+                expireOrReconcile(snapshot, now)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                // One entry that cannot be reconciled or expired must not stop the sweep for every later DM.
+                if (!ownership.isCurrent) throw failure
+                remember("ackExpiry.${snapshot.messageID}", failure)
             }
         }
         recovered("ackExpiry")
+    }
+
+    /**
+     * The message row is gone or no longer this ACK's (deleted mid-flight, or the contact identity changed): nothing
+     * can ever be delivered for it, so retire the entry instead of retrying it forever, as the source always does.
+     */
+    private fun retireTerminalAck(tracking: PendingAck) {
+        synchronized(lock) { if (pendingAcks[tracking.messageID]?.receipt === tracking.receipt) pendingAcks.remove(tracking.messageID) }
+    }
+
+    private suspend fun expireOrReconcile(snapshot: PendingAck, now: Instant) {
+        if (snapshot.acknowledgement != null) { reconcileAcknowledgement(snapshot.messageID); return }
+        mutation(snapshot.messageID).withLock {
+            val current = pendingAck(snapshot.messageID) ?: return@withLock
+            if (current.isDelivered || Duration.between(current.sentAt, now).toNanos().toDouble() / 1e9 <=
+                maxOf(config.ackGiveUpWindow, current.timeout)) return@withLock
+            ownership.check("expireAcknowledgement")
+            val changed = dataStore.updateMessageStatusUnlessDelivered(key(current.messageID), MessageStatus.FAILED)
+            ownership.check("expireAcknowledgement.saved")
+            synchronized(lock) {
+                pendingAcks.remove(current.messageID)
+                activeDirectClaims[current.messageID]?.let {
+                    if (it.acknowledgement == null) it.retiredWithoutAcknowledgement = true
+                }
+            }
+            if (changed) broadcastFailed(current.messageID)
+        }
     }
 
     suspend fun failAllPendingMessages() {
