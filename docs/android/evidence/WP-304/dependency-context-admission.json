@@ -26,6 +26,8 @@
     "settings_exception": "Only the validated198-byte empty local catalog bookkeeping file; never committed.",
     "new_test_context_memberships": 26,
     "closed_context_data_sha256": "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d",
+    "closed_context_data_git_lf_sha256": "3f13f1854a310cfd58e54e1512b9e472a22697118a62331b2a296c12fbc6cec2",
+    "closed_context_data_representations": "Exact3908-byte parent CRLF/84a8153f or3794-byte Git LF/3f13f185 only;26 pairs unchanged.",
     "compile_alignment_artifacts": 7,
     "actual_compile_alignment_edges": 40,
     "original_same_config_members_removed_or_replaced": 0,

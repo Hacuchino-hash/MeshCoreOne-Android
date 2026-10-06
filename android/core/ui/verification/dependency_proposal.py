@@ -25,7 +25,7 @@ from controller.gates import Binding, policy_revision
 from controller.model import git, load_manifest
 from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
-from controller.schema import load_json
+from controller.schema import decode_json, load_json
 from controller.workflows import parse_yaml, validate_boundary
 
 REPOSITORY = "cbattlegear/MeshCoreOne-Android"
@@ -46,7 +46,8 @@ GRAPH = "android/core/ui/build/reports/wp304/dependency-graphs.tsv"
 CONFIGURATIONS = "android/core/ui/build/reports/wp304/resolution-configurations.txt"
 ALIGNMENT = "android/core/ui/build/reports/wp304/unit-compile-alignment.tsv"
 TEST_CONTEXT_INPUT = "android/core/ui/verification/test-context-memberships.json"
-TEST_CONTEXT_SHA = "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d"
+TEST_CONTEXT_SHA = "3f13f1854a310cfd58e54e1512b9e472a22697118a62331b2a296c12fbc6cec2"
+TEST_CONTEXT_RECEIPT_SHA = "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d"
 COMPILE_ALIGNMENT = {
     "androidx.core:core": "1.16.0",
     "androidx.core:core-ktx": "1.16.0",
@@ -168,11 +169,11 @@ def parse_graph(text, expected):
         for name, values in configurations.items()}
 
 
-def approved_test_context_memberships():
-    path = ROOT / TEST_CONTEXT_INPUT
-    require(path.is_file() and not path.is_symlink(), "missing/linked approved test-context data")
-    require(sha(path.read_bytes()) == TEST_CONTEXT_SHA, "approved test-context data changed")
-    value = load_json(path)
+def parse_approved_test_context_memberships(raw):
+    require((len(raw), sha(raw)) in {
+        (3794, TEST_CONTEXT_SHA), (3908, TEST_CONTEXT_RECEIPT_SHA),
+    }, "approved test-context data changed")
+    value = decode_json(raw.decode("utf8"))
     rows = value["allowed_new_test_context_memberships"]
     pairs = {(row["configuration"], row["coordinate"]) for row in rows}
     require(len(rows) == len(pairs) == 26 and {
@@ -181,6 +182,12 @@ def approved_test_context_memberships():
     } == {"debugUnitTestCompileClasspath": 10, "debugUnitTestRuntimeClasspath": 8, "debugUnitTestLintChecksClasspath": 8},
         "missing/extra approved test-context membership")
     return pairs
+
+
+def approved_test_context_memberships():
+    path = ROOT / TEST_CONTEXT_INPUT
+    require(path.is_file() and not path.is_symlink(), "missing/linked approved test-context data")
+    return parse_approved_test_context_memberships(path.read_bytes())
 
 
 def validate_delta(seed_text, prior_text, generated_text, graph_text, config_text, verification):
@@ -225,7 +232,8 @@ def validate_delta(seed_text, prior_text, generated_text, graph_text, config_tex
             "added_vs_prior": sorted(values - before.get(name, set())),
             "added_vs_seed": sorted(values - seed.get(name, set()))})
     return {"configuration_count": len(after), "selected_component_rows": sum(len(x) for x in graph.values()),
-        "configurations": delta, "test_context_data": {"path": TEST_CONTEXT_INPUT, "sha256": TEST_CONTEXT_SHA},
+        "configurations": delta, "test_context_data": {"path": TEST_CONTEXT_INPUT, "canonical_lf_sha256": TEST_CONTEXT_SHA,
+            "parent_crlf_receipt_sha256": TEST_CONTEXT_RECEIPT_SHA},
         "new_test_context_memberships": sorted(context_admissions, key=lambda row: (row["configuration"], row["coordinate"]))}
 
 def validate_compile_alignment(seed_text, alignment_text):

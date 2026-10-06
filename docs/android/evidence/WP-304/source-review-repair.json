@@ -36,8 +36,10 @@
     "resource_namespace": "Source-generated resources use L10nR; module-owned postcommit copy uses UiR explicitly.",
     "junit_scope": "Two relative-time methods and two Compose recovery methods moved from local functions to direct class-level JUnit methods. Bounded comment/literal/interpolation/delimiter-aware declaration validation rejects nested/orphan/unsupported annotations; actual XML must still match every declared method.",
     "current_declarations": 197,
-    "executed_native_methods": 0
+    "executed_native_methods": 0,
+    "actual_first_compile": "017865 compiled UI production but failed owned unit-test imports/type inference; current member assertions and exact typed identity/argument/slot shapes repaired without dropping methods."
   },
   "other_confirmed_owned_repairs": "Region whitespace is Zs plus tab, empty input has no fabricated error message and focus is requested within dialog composition. Native map menus dismiss after action, initial pill content is nonempty, failed unloaded sections have no duplicate header reload, nullable bitmap-copy failures are typed/reported and crop pointer deltas accumulate. Existing source hints/selected state and a native disconnected slash have consumer/pixel assertions. Backup integer-MiB display is preserved because both frozen source paths use integer division.",
+  "actual_producer_marker_execution": "017865 ordinary Linux data369/DataStore137 and transaction14 tests passed, including actual postCommitStorageFailureIsExplicitAndNeverClaimsDatabaseRollback. UI consumer/native PNG evidence still did not execute.",
   "native_hardware_license_signing_or_macro_acceptance": false
 }

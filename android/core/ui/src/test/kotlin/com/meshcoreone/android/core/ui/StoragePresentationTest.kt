@@ -130,7 +130,8 @@ class StoragePresentationTest {
         assertEquals(0, importRetries)
         assertSame(failure, completed)
         assertEquals(12, assertNotNull(completed).committedReceipt.counts.size)
-        assertEquals(setOf(1u.toUByte(), 3u.toUByte()), completed?.committedReceipt?.channelSlotsAffectedByImport?.get(radio))
+        val affectedSlots = assertNotNull(assertNotNull(completed).committedReceipt.channelSlotsAffectedByImport[radio])
+        assertEquals(setOf(1u.toUByte(), 3u.toUByte()), affectedSlots.toSet())
         assertNull(presented.recoveryAction(UiErrorActions(retry = { importRetries++ })))
         assertFailsWith<IllegalArgumentException> {
             presented.copy(content = presented.content.copy(recovery = UiRecovery.RETRY)).recoveryAction(UiErrorActions(retry = {}))

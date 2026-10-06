@@ -47,6 +47,7 @@ verified, not inferred from issue closure or session state.
 | `git diff --check` | Passed at authored checkpoints |
 | `python -B android\core\ui\verification\dependency_proposal.py --self-test --workflow-check` after exact context amendment | Passed41 regressions; closed26-pair admission, same-config incumbent/unknown-context/version/metadata/write guards and seven compile alignments retained |
 | Same declared helper command after serialized external-lock restoration | Passed43 regressions, including the actual admitted38-configuration file and rejection of the observed12-byte empty-SDK drop despite identical external component sets |
+| Same declared helper command after actual Linux line-ending failure repair | Passed45 regressions; only the two exact parent-CRLF/Git-LF length/hash representations are accepted, with mixed newline/extra-byte/pair mutation negatives |
 | `python -B docs\android\evidence\WP-304\collect_evidence.py --static --self-test` after discovery and messaging repair | Passed23 reader regressions;197 direct class-level declarations,130 families/158 scenarios accounted,21 pending producer families; **not native execution** |
 | `python -B docs\android\evidence\WP-304\generate_source_map.py` | Passed exact frozen88-input map in its actual default check mode |
 
@@ -254,6 +255,28 @@ available Message/Polling/Settings wrappers, not nine direct protocol stand-ins;
 its other six wrappers keep the whole family blocked. Protected main723/PR40
 adoption is held by the coordinator; source/schema exceptions are not adopted
 on the own source-pinned7e lineage.
+
+Actual017865 ordinary Linux run37407036772 passed the restored SDK lock state
+and compiled UI production Kotlin, then failed `compileDebugUnitTestKotlin`.
+Two member assertions had incorrect package imports; four collection/value
+comparisons failed Kotlin2.3 inference. The repair uses exact object identities
+and explicit argument/nonnull-slot shapes, retaining every197 native method and
+130/158 source scenario. No UI native method or PNG executed at this failure.
+[`native-017865-failure.json`](native-017865-failure.json) binds the complete
+77-member official artifact and23-member logs, independently retained first.
+The actual data369/DataStore137 suites passed; the real14-test transaction suite
+includes the passing committed-preference marker/Room case. This producer proof
+does not substitute for the unexecuted UI consumer or iOS compatibility.
+
+The separate017865 proposal job37407036788 failed before generation because
+the Windows parent data receipt used3908-byte CRLF/SHA84a8153f, while the same
+committed JSON checked out on Linux as3794-byte LF/SHA3f13f185. Exactly114 line
+separators changed; none of the26 pairs did. The owned reader now admits only
+these two exact known length/hash representations and parses those verified
+bytes, not arbitrary newline/whitespace normalization.
+[`generator-017865-eol-failure.json`](generator-017865-eol-failure.json) retains
+the genuine43-test1-failure/6-error historical result and complete raw logs.
+No proposal artifact or resolver ran in that failing job.
 
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):

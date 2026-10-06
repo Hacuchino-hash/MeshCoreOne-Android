@@ -72,7 +72,9 @@ class NativePlatform37Test {
         val first = assertIs<AvatarImageState.Failed>(cache.decode(raw))
         val second = assertIs<AvatarImageState.Failed>(cache.decode(raw))
         assertEquals(2, attempts)
-        assertEquals(listOf(first.failure, second.failure), failures)
+        assertEquals(2, failures.size)
+        assertSame(first.failure, failures[0])
+        assertSame(second.failure, failures[1])
         assertIs<java.io.IOException>(first.failure)
     }
 

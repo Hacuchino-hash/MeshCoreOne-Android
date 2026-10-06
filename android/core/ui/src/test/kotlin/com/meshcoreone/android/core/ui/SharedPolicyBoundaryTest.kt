@@ -124,7 +124,7 @@ class SharedPolicyBoundaryTest {
         assertSame(original, presented.originalFailure); assertEquals(UiRecovery.REDUCE_PAYLOAD, presented.content.recovery)
         assertTrue(presented.content.message.resolve(resources).contains("200"))
         assertTrue(presented.content.message.resolve(resources).contains("184"))
-        assertEquals(listOf(original), reported)
+        assertSame(original, reported.single())
         val cancellation = CancellationException("synthetic cancellation")
         assertFailsWith<CancellationException> { mapper.present(cancellation) }
         assertEquals(1, reported.size)
@@ -201,7 +201,9 @@ class SharedPolicyBoundaryTest {
         val copy = UiErrorMapper(reporter = UiErrorReporter {})
             .message(AppBackupException(AppBackupError.FileTooLarge(10_500_000, 10 * 1_048_576L)))
         val formatted = assertIs<UiText.Format>(copy)
-        assertEquals(listOf(UiFormatArgument.Integer(10), UiFormatArgument.Integer(10)), formatted.arguments)
+        assertEquals(2, formatted.arguments.size)
+        assertEquals(10L, assertIs<UiFormatArgument.Integer>(formatted.arguments[0]).value)
+        assertEquals(10L, assertIs<UiFormatArgument.Integer>(formatted.arguments[1]).value)
     }
 
     @Test fun actualMessagingFaultFamiliesKeepTheirPayloadsCausesAndNestedCentralDelegation() {

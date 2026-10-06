@@ -14,7 +14,8 @@ from dependency_proposal import (
     validate_settings_bookkeeping, retain_settings_bookkeeping,
     seed_initial_owned_lock,
     COMPILE_ALIGNMENT, validate_compile_alignment,
-    TEST_CONTEXT_INPUT, TEST_CONTEXT_SHA, approved_test_context_memberships,
+    TEST_CONTEXT_INPUT, TEST_CONTEXT_SHA, TEST_CONTEXT_RECEIPT_SHA, approved_test_context_memberships,
+    parse_approved_test_context_memberships,
 )
 from controller.errors import PortError
 
@@ -58,11 +59,27 @@ class DependencyProposalTests(unittest.TestCase):
         return seed, generated, graph, configs, metadata(previous, coordinate), previous
 
     def test_closed_parent_data_has_exact_original_hash_and_26_literal_context_pairs(self):
-        self.assertEqual(TEST_CONTEXT_SHA, hashlib.sha256((ROOT / TEST_CONTEXT_INPUT).read_bytes()).hexdigest())
+        raw = (ROOT / TEST_CONTEXT_INPUT).read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(TEST_CONTEXT_SHA, hashlib.sha256(raw).hexdigest())
+        self.assertEqual(TEST_CONTEXT_RECEIPT_SHA, hashlib.sha256(raw.replace(b"\n", b"\r\n")).hexdigest())
         pairs = approved_test_context_memberships()
         self.assertEqual(26, len(pairs))
         self.assertIn(("debugUnitTestCompileClasspath", "org.bouncycastle:bcprov-jdk18on:1.85"), pairs)
         self.assertNotIn(("debugUnitTestRuntimeClasspath", "org.bouncycastle:bcprov-jdk18on:1.85"), pairs)
+
+    def test_exact_parent_crlf_and_git_lf_representations_have_identical_closed_pairs(self):
+        lf = (ROOT / TEST_CONTEXT_INPUT).read_bytes().replace(b"\r\n", b"\n")
+        crlf = lf.replace(b"\n", b"\r\n")
+        self.assertEqual(3794, len(lf))
+        self.assertEqual(3908, len(crlf))
+        self.assertEqual(parse_approved_test_context_memberships(lf), parse_approved_test_context_memberships(crlf))
+
+    def test_line_ending_handling_cannot_admit_mixed_newlines_extra_bytes_or_changed_pairs(self):
+        lf = (ROOT / TEST_CONTEXT_INPUT).read_bytes().replace(b"\r\n", b"\n")
+        for changed in (lf.replace(b"\n", b"\r\n", 1), lf + b"\n", lf.replace(b"33.6.0-jre", b"33.6.1-jre"),
+                lf.replace(b"debugUnitTestCompileClasspath", b"debugCompileClasspath", 1)):
+            with self.subTest(changed=changed[:80]), self.assertRaises(PortError):
+                parse_approved_test_context_memberships(changed)
 
     def test_each_of_the_26_new_context_pairs_preserves_the_original_other_configuration(self):
         for configuration, coordinate in sorted(approved_test_context_memberships()):

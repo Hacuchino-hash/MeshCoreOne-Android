@@ -125,6 +125,10 @@
     "run_attempt": 1,
     "data_path": "android/core/ui/verification/test-context-memberships.json",
     "data_sha256": "84a8153f2c8e0544051304dec244c8cf310e03b97296dc50aad4d947c8ccf65d",
+    "parent_crlf_bytes": 3908,
+    "git_canonical_lf_bytes": 3794,
+    "git_canonical_lf_sha256": "3f13f1854a310cfd58e54e1512b9e472a22697118a62331b2a296c12fbc6cec2",
+    "line_endings": "Only the exact parent CRLF bytes or their verified Git LF representation are admitted by length/hash; no generic normalization, mixed newline, whitespace or pair changes.",
     "pair_counts": {"debugUnitTestCompileClasspath": 10, "debugUnitTestRuntimeClasspath": 8, "debugUnitTestLintChecksClasspath": 8},
     "scope": "Closed literal pairs only. A new membership requires no same-artifact seed/prior member in that configuration. An already-admitted exact owned membership may remain unchanged; no incumbent replacement or second version is allowed. Every source/prior member, actual graph, configuration, checksum and seven compile alignments remain mandatory.",
     "historical_hosted_result": "FAILED; authorized pure-data re-evaluation is not a replacement hosted/native result."
