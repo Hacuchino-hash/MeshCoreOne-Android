@@ -93,6 +93,29 @@ tasks.register("resolveContentDependencies") {
     }
 }
 
+// AndroidOnly: WP-218 diagnostic-only raw-failure printer, mirroring the precedented
+// android/core/runtime/verification/print_failures.py (WP-207) pattern, scoped only to
+// core:services. Hosted CI's --quiet Gradle invocation renders test progress on a single
+// rich-console line via carriage returns; stripped of terminal escape sequences afterwards, only
+// the last redraw of each overwritten line survives, so the TestListener above (whose
+// logger.error(...) calls are routed through that same live console) can silently lose all but
+// the final one or two of several genuine failures -- confirmed in CI run 37403142503, where 8
+// core:services test failures were reported in aggregate but only 2 ever reached the log. This
+// Exec task starts only after the Test task has fully finished (finalizedBy), as a fresh
+// subprocess whose own stdout is a separate, sequentially-flushed stream not subject to that
+// redraw, and reads the actual already-produced TEST-*.xml reports directly. It never changes
+// the test task's result; it is diagnostic-only.
+val repository = rootProject.projectDir.parentFile
+val printServicesFailureDiagnostics by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Print bounded actual raw core:services failures after test; never changes its result."
+    workingDir(repository)
+    commandLine("python", "-B", repository.resolve("docs").resolve("android").resolve("evidence")
+        .resolve("WP-218").resolve("print_failures.py").absolutePath)
+    providers.gradleProperty("wp218EvidenceDirectory").orNull?.let { args("--output", it) }
+}
+tasks.named("test") { finalizedBy(printServicesFailureDiagnostics) }
+
 // WP-218 diagnostic-only test-failure logging: mirrors the precedented pattern already used by
 // core/designsystem (WP-301) and android/app (WP-218). Hosted CI invokes Gradle with --quiet, so
 // without this, a failing `:core:services:test` run prints zero per-test failure identity or
