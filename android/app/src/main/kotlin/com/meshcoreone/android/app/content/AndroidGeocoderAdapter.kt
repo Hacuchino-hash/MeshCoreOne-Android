@@ -24,6 +24,7 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder as AndroidGeocoder
 import android.os.Build
+import androidx.annotation.RequiresApi
 import com.meshcoreone.android.core.services.content.GeoCoordinate
 import com.meshcoreone.android.core.services.content.Geocoder
 import com.meshcoreone.android.core.services.content.GeocodeResult
@@ -82,6 +83,13 @@ class AndroidGeocoderAdapter(
             }
         }
 
+    // The 4-arg GeocodeListener overload below is API 33+ only. This function is only ever
+    // called from reverseGeocode's `Build.VERSION.SDK_INT >= TIRAMISU` branch, but that guard
+    // lives in a different function; Android Lint's version-check propagation does not carry
+    // across a function-call boundary unless the callee itself is annotated, so the real,
+    // already-true version constraint is made explicit here with @RequiresApi rather than
+    // suppressed.
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun geocodeAsync(geocoder: AndroidGeocoder, coordinate: GeoCoordinate): List<Address>? =
         suspendCancellableCoroutine { continuation ->
             geocoder.getFromLocation(
