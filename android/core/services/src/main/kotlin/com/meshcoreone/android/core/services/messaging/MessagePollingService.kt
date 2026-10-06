@@ -45,6 +45,8 @@ class MessagePollingService(
     private var listener: Deferred<Unit>? = null
     private var polling: Deferred<Long>? = null
     private var pollingActive = false
+    /** A MESSAGES_WAITING push arrived while the drain had auto-fetch paused (it would otherwise be lost). */
+    private var waitingDuringPoll = false
     private var monitorActive = false
     private var autoFetch = false
     private var desiredAutoPaused = false
@@ -192,10 +194,13 @@ class MessagePollingService(
                 polling = task
                 pollingActive = true
                 task.invokeOnCompletion { cause ->
-                    synchronized(lock) {
+                    val followUp = synchronized(lock) {
                         if (polling === task) polling = null
+                        // Swift never pauses auto-fetch for a poll, so a push during it is always drained.
+                        (cause == null && waitingDuringPoll && autoFetch && !desiredAutoPaused).also { waitingDuringPoll = false }
                     }
                     if (cause != null && cause !is CancellationException) remember("pollAllMessages", cause)
+                    if (followUp && ownership.isCurrent) launchFollowUpDrain()
                 }
                 task.start()
             }
@@ -204,10 +209,25 @@ class MessagePollingService(
         return work.await()
     }
 
+    private fun launchFollowUpDrain() {
+        ownership.scope.launch {
+            try { pollAllMessages() }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: Exception) { remember("pollAllMessages.followUp", failure) }
+        }
+    }
+
     private suspend fun drainRadio(): Long {
         val anchor = clock.wallClock.instant()
         var count = 0L
         var released = false
+        // The drain pauses session auto-fetch; subscribe first so a MESSAGES_WAITING push in that window
+        // (notably after the final NoMoreMessages, before auto-fetch resubscribes) triggers one follow-up drain.
+        val waiting = session.events(EventFilter.messagesWaiting)
+        synchronized(lock) { waitingDuringPoll = false }
+        val waitingWatch = ownership.scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            waiting.collect { synchronized(lock) { waitingDuringPoll = true } }
+        }
         try {
             lifecycle.withLock { reconcileAutoLocked() }
             deliverPending()
@@ -246,6 +266,7 @@ class MessagePollingService(
                 }
             }
             withContext(NonCancellable) { lifecycle.withLock { reconcileAutoLocked() } }
+            waitingWatch.cancel()
         }
     }
 
