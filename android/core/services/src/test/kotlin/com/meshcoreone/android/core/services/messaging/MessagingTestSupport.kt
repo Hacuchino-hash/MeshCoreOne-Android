@@ -12,6 +12,7 @@ import com.meshcoreone.android.core.protocol.event.*
 import com.meshcoreone.android.core.protocol.model.CommandCode
 import com.meshcoreone.android.core.protocol.model.ResponseCode
 import com.meshcoreone.android.core.protocol.session.MeshCoreSession
+import com.meshcoreone.android.core.protocol.session.MeshCoreSessionProtocol
 import com.meshcoreone.android.core.protocol.session.SessionClock
 import com.meshcoreone.android.core.protocol.transport.MeshTransport
 import com.meshcoreone.android.core.protocol.transport.mock.MockTransport
@@ -307,6 +308,7 @@ internal class Harness(
     val session = MeshCoreSession(transport, SessionConfiguration(defaultTimeout = 2.0), clock, scope.coroutineContext)
     val diagnostics = mutableListOf<MessagingDiagnostic>()
     private val queues = mutableListOf<ChatSendQueueService>()
+    private val pollers = mutableListOf<MessagePollingService>()
     val service = MessageService(token, SELF, session, store, signals, scope, config, clock,
         jitter = { 1.0 }, reporter = MessagingIssueReporter { diagnostics += it })
     val contact = ContactDTO(CONTACT, RADIO, TARGET, "Peer", lastHeardTimestamp = 0u)
@@ -328,12 +330,22 @@ internal class Harness(
         timeout: Double = 30.0, delivered: Boolean = false,
     ) = PendingAck(message.id, CONTACT, SnapshotSet(listOf(code)), clock.wallClock.instant().minusSeconds(age), timeout, delivered)
     suspend fun close() {
+        var failure: Exception? = null
+        suspend fun release(action: suspend () -> Unit) {
+            try { action() }
+            catch (cause: Exception) {
+                val first = failure
+                if (first == null) failure = cause else first.addSuppressed(cause)
+            }
+        }
         try {
-            queues.asReversed().forEach { it.shutdown() }
-            service.close()
-            session.stop()
+            pollers.asReversed().forEach { release { it.close() } }
+            queues.asReversed().forEach { release { it.shutdown() } }
+            release { service.close() }
+            release { session.stop() }
         }
         finally { fixtureJob.cancelAndJoin() }
+        failure?.let { throw it }
     }
     fun sends(code: CommandCode): List<Bytes> = transport.sentData.filter { it[0] == code.rawValue }
     fun queue(
@@ -342,6 +354,9 @@ internal class Harness(
         indexer: OutgoingChannelReactionIndexer = OutgoingChannelReactionIndexer { _, _, _, _, _ -> },
     ) = ChatSendQueueService(token, store, service, query, indexer, signals, scope, config, clock,
         MessagingIssueReporter { diagnostics += it }).also { queues += it }
+    fun poller(role: MeshCoreSessionProtocol = session) =
+        MessagePollingService(token, role, store, signals, scope, clock, MessagingIssueReporter { diagnostics += it })
+            .also { pollers += it }
     suspend fun pending(message: MessageDTO, attempt: Long? = 0, isResend: Boolean = false): PendingSendDTO {
         val dto = if (message.channelIndex == null) PendingSendDTO.fromEnvelope(
             DirectMessageEnvelope(message.id, CONTACT, isResend), RADIO, enqueuedAt = clock.wallClock.instant())

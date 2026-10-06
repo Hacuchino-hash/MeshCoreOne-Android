@@ -39,7 +39,7 @@ class ChatSendQueueService(
     private val completedDMs = mutableSetOf<UUID>()
     private val completedChannels = mutableMapOf<UUID, UInt>()
     private val indexedChannels = mutableSetOf<UUID>()
-    private val persistenceSubmissions = mutableSetOf<Deferred<Unit>>()
+    private val persistenceSubmissions = mutableSetOf<Deferred<Result<Unit>>>()
     private val directClaimIDs = mutableMapOf<UUID, UUID>()
     private var hydrated = false
     private var hydration: Deferred<Unit>? = null
@@ -120,14 +120,15 @@ class ChatSendQueueService(
         checkQueueLifetime("persistPendingSend")
         val task = synchronized(lock) {
             if (teardown != null || ownership.closing) throw ChatSendQueueServiceException(ChatSendQueueServiceError.NotConnected)
-            persistenceScope.async(start = CoroutineStart.LAZY) {
-                try { dataStore.insertPendingSendAssigningSequence(dto) }
-                catch (failure: PersistenceStoreException) {
-                    record("persistPendingSend.${dto.id}", failure)
-                    throw ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(failure))
-                }
-                synchronized(lock) {
-                    if (!ownership.closing) schedule()
+            persistenceScope.async<Result<Unit>>(start = CoroutineStart.LAZY) {
+                try {
+                    dataStore.insertPendingSendAssigningSequence(dto)
+                    synchronized(lock) { if (!ownership.closing) schedule() }
+                    Result.success(Unit)
+                } catch (failure: PersistenceStoreException) {
+                    val typed = ChatSendQueueServiceException(ChatSendQueueServiceError.PersistFailed(failure))
+                    record("persistPendingSend.${dto.id}", typed)
+                    Result.failure(typed)
                 }
             }.also { work ->
                 persistenceSubmissions += work
@@ -139,7 +140,7 @@ class ChatSendQueueService(
             }
         }
         // Accepted durable submissions outlive observer cancellation, but are joined before generation shutdown returns.
-        task.await()
+        task.await().getOrThrow()
     }
 
     suspend fun hydrate() {
@@ -357,7 +358,7 @@ class ChatSendQueueService(
             val accepted = synchronized(lock) { persistenceSubmissions.toList() }
             for (work in accepted) {
                 work.start()
-                try { work.await() }
+                try { work.await().getOrThrow() }
                 catch (failure: Exception) { record("acceptedPersistenceCompletion", failure) }
             }
             triggers.finish()

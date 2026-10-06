@@ -167,6 +167,29 @@ leaking jobs until the runner deadline. No assertion, source floor, timeout
 budget, mandatory suite or error outcome is weakened.
 Two guard regressions extend the Python reader/hook suite to32 cases.
 
+Diagnostic run `37409573578`, attempt1 at `f3056870`, retained actual data-runner
+progress before again reaching the unchanged1,800-second limit. Artifact
+11388804836 is23,922 bytes / SHA-256
+`940edadef51d83fbdfd8164aff0edb5899aec23aeecb43ec4c0b2ed66034e45b`;
+all14 members and full log were verified/retained before analysis. The last
+started case was
+`deliveredManualRetryRowDoesNotEmitAnotherPacketOrLoseItsPersistedStatus`.
+Its authored harness left the actual connection at CONNECTED and then awaited
+a READY-gated queue forever. The repair explicitly enters READY before draining;
+the production readiness gate is not weakened.
+
+The same raw log identifies the exact typed expected storage failure in
+`acceptedInsertStorageFailureIsIncludedInShutdownInsteadOfBeingLostAfterItReturns`.
+Authoritative accepted writes now retain a typed `Result<Unit>` completion and
+throw its original queue/persistence cause only to observers through getOrThrow,
+with shutdown separately collecting that failure. The test observes that exact
+failure as data rather than allowing an expected failing child to escape its
+test scope. Source/native and Room fixture boundaries now explicitly close every
+poller, queue, radio generation and session on both success/failure, attempting
+all cleanup and retaining original/suppressed failures.
+The log's individual start/end lines are diagnostic observations, not full
+JUnit discovery or whole-WP PASS; there is still zero completed native XML.
+
 The coordinator's one-file frozen fault producer for UI-304 is exactly
 `MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
 1,969 LF bytes / SHA-256

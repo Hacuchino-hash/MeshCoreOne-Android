@@ -136,6 +136,15 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertIn('finally {', text)
         self.assertIn('prior.addSuppressed(failure)', text)
 
+    def test_pollers_and_room_generations_have_explicit_failure_path_release(self):
+        text = (READER.ROOT / READER.SERVICES / READER.MESSAGING / "MessagingTestSupport.kt").read_text()
+        self.assertIn('pollers.asReversed().forEach { release { it.close() } }', text)
+        self.assertIn('queues.asReversed().forEach { release { it.shutdown() } }', text)
+        room = (READER.ROOT / READER.ROOM).read_text()
+        self.assertIn('generations.asReversed().forEach { release { it.stop() } }', room)
+        self.assertIn('pollers.asReversed().forEach { release { it.close() } }', room)
+        self.assertIn('first.addSuppressed(cause)', room)
+
     def test_verifier_depends_on_both_actual_tasks_and_preserves_incumbent_hooks(self):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
         self.assertIn('dependsOn(":core:services:test", "testDebugUnitTest")', text)

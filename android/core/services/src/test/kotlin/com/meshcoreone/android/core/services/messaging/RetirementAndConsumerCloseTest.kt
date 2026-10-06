@@ -62,7 +62,7 @@ class RetirementAndConsumerCloseTest {
         },
         native("manualContactConsumerCanAwaitCloseWithoutSelfJoinOrFalsePollSuccess") {
             val h = Harness(this); h.start(); val tracked = TrackedSession(h.session)
-            val p = MessagePollingService(h.token, tracked, h.store, h.signals, h.scope, h.clock)
+            val p = h.poller(tracked)
             var returned: TeardownReport? = null
             p.setContactMessageHandler { _, _, _ -> returned = p.close() }
             p.startMessageEventMonitoring()
@@ -76,7 +76,7 @@ class RetirementAndConsumerCloseTest {
         },
         native("liveContactConsumerCanAwaitCloseAndTerminatesItsActualSessionSubscription") {
             val h = Harness(this); h.start(); val tracked = TrackedSession(h.session)
-            val p = MessagePollingService(h.token, tracked, h.store, h.signals, h.scope, h.clock)
+            val p = h.poller(tracked)
             val returned = CompletableDeferred<TeardownReport>()
             p.setContactMessageHandler { _, _, _ -> returned.complete(p.close()) }
             p.startMessageEventMonitoring(); h.transport.mock.simulateReceive(contactPacket("close live"))
@@ -86,7 +86,7 @@ class RetirementAndConsumerCloseTest {
             assertSuccessorIsIndependent(h); h.close()
         },
         native("externalCloseAndConsumerReentrantCloseCannotWaitOnEachOther") {
-            val h = Harness(this); h.start(); val p = MessagePollingService(h.token, h.session, h.store, h.signals, h.scope, h.clock)
+            val h = Harness(this); h.start(); val p = h.poller()
             val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
             var consumerReport: TeardownReport? = null
             p.setContactMessageHandler { _, _, _ ->
@@ -102,7 +102,7 @@ class RetirementAndConsumerCloseTest {
             assertFailsWith<CancellationException> { polling.await() }; assertEquals(1, p.undeliveredCount); h.close()
         },
         native("channelConsumerReentrantCloseRetainsTheConsumedChannelRecord") {
-            val h = Harness(this); h.start(); val p = MessagePollingService(h.token, h.session, h.store, h.signals, h.scope, h.clock)
+            val h = Harness(this); h.start(); val p = h.poller()
             var returned: TeardownReport? = null
             p.setChannelMessageHandler { wire, _, _ -> assertEquals("Local: channel", wire.text); returned = p.close() }
             h.transport.incomingMessages += ByteWriter().appendUInt8(ResponseCode.CHANNEL_MESSAGE_RECEIVED.rawValue)
@@ -120,7 +120,7 @@ class RetirementAndConsumerCloseTest {
     }
     private suspend fun TestScope.assertSuccessorIsIndependent(h: Harness) {
         val successor = Harness(this, store = h.store, generation = 2); successor.start()
-        val p = MessagePollingService(successor.token, successor.session, successor.store, successor.signals, successor.scope, successor.clock)
+        val p = successor.poller()
         var received = 0
         p.setContactMessageHandler { _, contact, _ -> assertEquals(CONTACT, contact?.id); received++ }
         successor.transport.incomingMessages += contactPacket("successor")

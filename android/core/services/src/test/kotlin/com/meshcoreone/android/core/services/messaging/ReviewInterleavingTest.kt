@@ -102,7 +102,7 @@ class ReviewInterleavingTest {
                     actual.stopAutoMessageFetching(); paused.complete(Unit); release.await()
                 }
             }
-            val p = MessagePollingService(h.token, role, h.store, h.signals, h.scope, h.clock)
+            val p = h.poller(role)
             val delivered = mutableListOf<String>(); val contexts = mutableListOf<DeliveryContext>()
             p.setContactMessageHandler { wire, _, context -> delivered += wire.text; contexts += context }
             p.startAutoFetch(RADIO); h.transport.holdGetReplies = true
@@ -121,7 +121,7 @@ class ReviewInterleavingTest {
             val role = object : MeshCoreSessionProtocol by actual {
                 override suspend fun startAutoMessageFetching() { starts++; actual.startAutoMessageFetching() }
             }
-            val p = MessagePollingService(h.token, role, h.store, h.signals, h.scope, h.clock)
+            val p = h.poller(role)
             val gate = CompletableDeferred<Unit>()
             p.setContactMessageHandler { _, _, _ -> gate.await() }
             p.startAutoFetch(RADIO); h.transport.incomingMessages += contactPacket("manual")
@@ -140,7 +140,7 @@ class ReviewInterleavingTest {
             val role = object : MeshCoreSessionProtocol by actual {
                 override suspend fun startAutoMessageFetching() { starts++; actual.startAutoMessageFetching() }
             }
-            val p = MessagePollingService(h.token, role, h.store, h.signals, h.scope, h.clock)
+            val p = h.poller(role)
             val gate = CompletableDeferred<Unit>(); p.setContactMessageHandler { _, _, _ -> gate.await() }
             p.startAutoFetch(RADIO); h.transport.incomingMessages += contactPacket("manual resume")
             val work = backgroundScope.async { p.pollAllMessages() }; runCurrent()

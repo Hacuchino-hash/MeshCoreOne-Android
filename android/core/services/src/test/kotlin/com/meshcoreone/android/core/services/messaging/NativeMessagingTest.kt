@@ -322,8 +322,7 @@ class NativeMessagingTest {
             p.close(); h.close()
         },
     )
-    private fun poller(h: Harness) = MessagePollingService(h.token, h.session, h.store, h.signals, h.scope, h.clock,
-        MessagingIssueReporter { h.diagnostics += it })
+    private fun poller(h: Harness) = h.poller()
     private fun contactPacket(text: String, type: UByte = 0u): Bytes {
         val writer = ByteWriter().appendUInt8(ResponseCode.CONTACT_MESSAGE_RECEIVED.rawValue).append(TARGET.prefix(6))
             .appendUInt8(0u).appendUInt8(type).appendUInt32LE(UInt.MAX_VALUE)

@@ -72,6 +72,8 @@ class MessagingRoomIntegrationTest {
     private lateinit var db: MeshCoreDatabase
     private lateinit var store: RoomPersistenceStore
     private lateinit var contact: ContactDTO
+    private val generations = mutableListOf<RadioGeneration>()
+    private val pollers = mutableListOf<MessagePollingService>()
     private fun database(name: String? = null): MeshCoreDatabase {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val builder = if (name == null) Room.inMemoryDatabaseBuilder(context, MeshCoreDatabase::class.java)
@@ -85,7 +87,24 @@ class MessagingRoomIntegrationTest {
         contact = ContactDTO(radioId = radio, publicKey = target, name = "Peer", lastHeardTimestamp = 0u)
     }
     @After fun close() {
-        try { runBlocking { store.close() } }
+        try {
+            runTest(scheduler) {
+                var failure: Exception? = null
+                suspend fun release(action: suspend () -> Unit) {
+                    try { action() }
+                    catch (cause: Exception) {
+                        val first = failure
+                        if (first == null) failure = cause else first.addSuppressed(cause)
+                    }
+                }
+                withContext(NonCancellable) {
+                    pollers.asReversed().forEach { release { it.close() } }
+                    generations.asReversed().forEach { release { it.stop() } }
+                    release { store.close() }
+                }
+                failure?.let { throw it }
+            }
+        }
         finally { process.cancel(); db.close() }
     }
     private suspend fun seed() {
@@ -106,8 +125,10 @@ class MessagingRoomIntegrationTest {
         val service = MessageService(token, self, session, persistence, signals, scope, config, clock)
         val queue = ChatSendQueueService(token, persistence, service, MessagingChannelQuery { null },
             OutgoingChannelReactionIndexer { _, _, _, _, _ -> }, signals, scope, clock = clock)
+        init { generations += this }
         suspend fun start() { session.start() }
         suspend fun stop() { queue.shutdown(); service.close(); session.stop(); scope.cancel() }
+        fun poller() = MessagePollingService(token, session, store, signals, scope, clock).also { pollers += it }
     }
 
     @Test fun freshAndRecoveredAttemptsUseTheActualCommittedCounterAndWireTimestamp() = runTest(scheduler) {
@@ -207,7 +228,8 @@ class MessagingRoomIntegrationTest {
         store.saveMessage(message)
         val dto = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio)
         store.replacePendingSendForRetry(message.id, dto)
-        val g = RadioGeneration(5); g.start(); g.queue.hydrate(); runCurrent(); g.queue.awaitDrainCompletion()
+        val g = RadioGeneration(5); g.start(); g.signals.set(DeviceConnectionState.READY)
+        g.queue.hydrate(); runCurrent(); g.queue.awaitDrainCompletion()
         assertTrue(g.firmware.sent().isEmpty()); assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, message.id))?.status)
         assertTrue(store.fetchPendingSends(radio).isEmpty()); g.stop()
     }
@@ -278,11 +300,17 @@ class MessagingRoomIntegrationTest {
         }
         val g = RadioGeneration(11, blocked); g.start()
         val message = g.service.createPendingMessage("failing accepted insert", contact)
-        val enqueue = backgroundScope.async { g.queue.enqueueDM(DirectMessageEnvelope(message.id, contact.id)) }
+        val enqueue = backgroundScope.async {
+            try {
+                g.queue.enqueueDM(DirectMessageEnvelope(message.id, contact.id))
+                null
+            } catch (failure: ChatSendQueueServiceException) { failure }
+        }
         runCurrent(); assertTrue(entered.isCompleted)
         val closing = async { g.queue.shutdown() }; runCurrent(); assertFalse(closing.isCompleted)
         store.close(); release.complete(Unit)
-        assertFailsWith<ChatSendQueueServiceException> { enqueue.await() }
+        val failure = assertNotNull(enqueue.await())
+        assertIs<PersistenceStoreException>(failure.cause)
         val report = closing.await()
         assertFalse(report.isComplete)
         assertTrue(report.issues.any { it.cause is ChatSendQueueServiceException && it.cause.cause is PersistenceStoreException })
@@ -405,7 +433,7 @@ class MessagingRoomIntegrationTest {
     @Test fun manualPollingRoomConsumerCanCloseWithAnExplicitUnfinishedRecordReport() = runTest(scheduler) {
         seed()
         val g = RadioGeneration(18); g.start(); g.signals.set(DeviceConnectionState.READY)
-        val p = MessagePollingService(g.token, g.session, store, g.signals, g.scope, clock)
+        val p = g.poller()
         var report: TeardownReport? = null
         var savedID: UUID? = null
         p.setContactMessageHandler { wire, resolved, _ ->
@@ -429,7 +457,7 @@ class MessagingRoomIntegrationTest {
     @Test fun livePollingRoomConsumerCanAwaitItsOwnGenerationCloseWithoutLeakingHandlers() = runTest(scheduler) {
         seed()
         val g = RadioGeneration(19); g.start(); g.signals.set(DeviceConnectionState.READY)
-        val p = MessagePollingService(g.token, g.session, store, g.signals, g.scope, clock)
+        val p = g.poller()
         val report = CompletableDeferred<TeardownReport>()
         p.setContactMessageHandler { _, resolved, _ ->
             assertEquals(contact.id, resolved?.id)
