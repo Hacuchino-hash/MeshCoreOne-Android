@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import base64
+import copy
+from contextlib import redirect_stdout
 import hashlib
 import io
 import json
@@ -22,6 +24,15 @@ def png(width=1, height=1):
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
     header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
     return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(b"\0" + b"\xff" * 4)) + chunk(b"IEND", b"")
+
+def invocation_record():
+    return {"schema_version": 1, "stage": "verify", "host": "linux", "identity": {
+        "run_id": 12, "run_attempt": 1, "binding": {
+            "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
+            "base_sha": "a" * 40, "head_sha": "b" * 40,
+            "source_sha": retain_raw.PIN, "manifest_sha256": retain_raw.MANIFEST,
+            "policy_revision": retain_raw.POLICY,
+        }}}
 
 
 class ReaderTests(unittest.TestCase):
@@ -174,13 +185,26 @@ class NativeTest {
             image = png()
             (source / "TEST-failure.xml").write_bytes(xml)
             (images / "compact-light.png").write_bytes(image)
-            with patch.object(retain_raw, "native_inputs", return_value={"input": {}}), patch.object(retain_raw, "git", return_value=b"b" * 40):
-                result = retain_raw.retain(source, root / "raw", images=images, pipeline_output=root / "pipeline")
+            pipeline = root / "pipeline"; pipeline.mkdir()
+            invocation = pipeline / "wp109-invocation.json"
+            invocation.write_text(json.dumps(invocation_record()))
+            console = io.StringIO()
+            with patch.object(retain_raw, "native_inputs", return_value={"input": {}}), patch.object(retain_raw, "git", return_value=b"b" * 40), redirect_stdout(console):
+                result = retain_raw.retain(source, root / "raw", emit=True, images=images, invocation_path=invocation)
             target = root / "pipeline" / "wp304-native"
             self.assertEqual(xml, (target / "junit" / "TEST-failure.xml").read_bytes())
             self.assertEqual(image, (target / "ui" / "compact-light.png").read_bytes())
             self.assertEqual(hashlib.sha256(image).hexdigest(), result["images"][0]["sha256"])
+            self.assertEqual(invocation_record(), result["invocation"])
             self.assertEqual("raw-retained-unvalidated", json.loads((target / "raw-retention.json").read_text())["result"])
+            receipts = console.getvalue().splitlines()
+            self.assertEqual(3, len(receipts))
+            for prefix, raw in (("WP304_RAW_JUNIT|TEST-failure.xml|", xml),
+                    ("WP304_RAW_PNG|compact-light.png|", image)):
+                receipt = next(line for line in receipts if line.startswith(prefix))
+                digest, encoded = receipt[len(prefix):].split("|")
+                self.assertEqual(hashlib.sha256(raw).hexdigest(), digest)
+                self.assertEqual(raw, base64.b64decode(encoded, validate=True))
 
     def test_pipeline_retention_rejects_repository_output_or_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -193,6 +217,67 @@ class NativeTest {
                 with patch.object(retain_raw, "native_inputs", return_value={}), patch.object(retain_raw, "git", return_value=b"b" * 40):
                     with self.assertRaises(EvidenceError):
                         retain_raw.retain(source, root / "raw", pipeline_output=destination)
+
+    def test_actual_invocation_forwards_only_exact_linux_verify_identity_root(self):
+        record = invocation_record()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wp109-invocation.json"
+            path.write_text(json.dumps(record))
+            with patch.object(retain_raw, "git", return_value=b"b" * 40):
+                self.assertEqual((path.parent, record), retain_raw.pipeline_invocation(path))
+                for key, value in (("host", "windows"), ("stage", "protocol"), ("identity", None),
+                        ("schema_version", True)):
+                    changed = record | {key: value}; path.write_text(json.dumps(changed))
+                    with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
+                for key, value in (("head_sha", "c" * 40), ("repository", "other/repo"),
+                        ("work_package", "WP-304"), ("policy_revision", "c" * 64),
+                        ("source_sha", "c" * 40), ("manifest_sha256", "c" * 64),
+                        ("base_sha", None), ("base_sha", "a" * 39)):
+                    changed = copy.deepcopy(record); changed["identity"]["binding"][key] = value
+                    path.write_text(json.dumps(changed))
+                    with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
+                for key, value in (("run_id", 0), ("run_attempt", True)):
+                    changed = copy.deepcopy(record); changed["identity"][key] = value
+                    path.write_text(json.dumps(changed))
+                    with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
+
+    def test_pipeline_invocation_rejects_wrong_path_unbounded_or_malformed_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            wrong = root / "other.json"
+            wrong.write_text("{}")
+            with self.assertRaisesRegex(EvidenceError, "Unsafe invocation"):
+                retain_raw.pipeline_invocation(wrong)
+            path = root / "wp109-invocation.json"
+            for raw in ("", " " * (64 * 1024 + 1)):
+                path.write_text(raw)
+                with self.assertRaisesRegex(EvidenceError, "Empty/excessive"):
+                    retain_raw.pipeline_invocation(path)
+            for raw in ("null", "[]", "{}", '{"schema_version":1,"schema_version":1}'):
+                path.write_text(raw)
+                with self.assertRaises(EvidenceError):
+                    retain_raw.pipeline_invocation(path)
+
+    def test_invalid_invocation_retains_raw_bytes_but_does_not_export_or_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, images = root / "source", root / "images"
+            source.mkdir(); images.mkdir()
+            xml = b'<testsuite tests="1" failures="1"><testcase name="failed"><failure>actual stack</failure></testcase></testsuite>'
+            image = png()
+            (source / "TEST-failure.xml").write_bytes(xml)
+            (images / "dialog.png").write_bytes(image)
+            invocation = root / "wp109-invocation.json"
+            invocation.write_text('{"schema_version":0}')
+            console = io.StringIO()
+            with patch.object(retain_raw, "native_inputs", return_value={}), patch.object(retain_raw, "git", return_value=b"b" * 40), redirect_stdout(console):
+                with self.assertRaisesRegex(EvidenceError, "Wrong native pipeline"):
+                    retain_raw.retain(source, root / "raw", emit=True, images=images, invocation_path=invocation)
+            self.assertEqual(xml, (root / "raw" / "junit" / "TEST-failure.xml").read_bytes())
+            self.assertEqual(image, (root / "raw" / "ui" / "dialog.png").read_bytes())
+            self.assertIsNone(json.loads((root / "raw" / "raw-retention.json").read_text())["invocation"])
+            self.assertFalse((root / "wp304-native").exists())
+            self.assertEqual(3, len(console.getvalue().splitlines()))
 
     def test_missing_junit_writes_blocked_binding_not_a_success(self):
         with tempfile.TemporaryDirectory() as directory:

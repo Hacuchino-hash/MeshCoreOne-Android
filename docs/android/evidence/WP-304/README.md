@@ -1,8 +1,8 @@
 # WP-304 candidate evidence
 
-**Status: coherent source repair and independently admitted generated owned
-lock; native execution and remaining producer dispatch parity are unverified.
-No macro acceptance.**
+**Status: independently admitted generated owned lock and genuine partial
+native execution; latest9f run191/197 passed, six harness failures remain.
+Twenty-one producer families are uncredited. No macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its
@@ -50,6 +50,7 @@ verified, not inferred from issue closure or session state.
 | Same declared helper command after actual Linux line-ending failure repair | Passed45 regressions; only the two exact parent-CRLF/Git-LF length/hash representations are accepted, with mixed newline/extra-byte/pair mutation negatives |
 | `python -B docs\android\evidence\WP-304\collect_evidence.py --static --self-test` after discovery and messaging repair | Passed23 reader regressions;197 direct class-level declarations,130 families/158 scenarios accounted,21 pending producer families; **not native execution** |
 | `python -B docs\android\evidence\WP-304\generate_source_map.py` | Passed exact frozen88-input map in its actual default check mode |
+| `python -B docs\android\evidence\WP-304\collect_evidence.py --static --self-test` after measured9f harness/output repair | Passed28 reader regressions, including exact forwarded invocation, raw PNG/XML export and failure-before-export cases;197 direct native declarations,130/158 accounting and21 pending producer families unchanged. **Not native execution.** |
 
 The declaration count grows as native flow/API evidence is authored; it is not
 an executed suite count. No iOS, physical radio, Android device/TalkBack,
@@ -313,13 +314,35 @@ Actualc754a2 native37417500006 then ran197 methods with195 passes and two
 remaining failures: native dialog lifecycle/layout and the test's animation
 startup-frame model. Real font200/RTL dialog/Back and actual filesystem IO/
 reopen assertions passed. [`native-c754a2-failure.json`](native-c754a2-failure.json)
-binds the complete official artifact/logs. The follow-up supplies and asserts
-real activity/dialog focus and attachment, lays out the active dialog, and
-distinguishes recomposition from the first nonzero animation frame according to
-the official MainTestClock contract. It does not wait for300ms or drop first-
-visible-state/hidden-action checks. Produced PNG/XML/input bytes now copy into
-the existing pipeline artifact's `wp304-native` subtree before verdict, rather
-than remaining only in ignored module output or encoded log receipts.
+binds the complete official artifact/logs. Its9f follow-up genuinely executed
+197 methods, with191 passes and six harness failures. Five dialog tests failed
+the attachment guard before behavior; the pill's composed state was still
+Hidden after one Compose clock tick. The environment-dependent PNG export
+also did not occur: the trusted executor strips `ANDROID_CI_OUTPUT` before
+Gradle. [`native-9f8560-failure.json`](native-9f8560-failure.json) retains the
+complete77-member official artifact,23-member logs,18 raw XML reports and
+zero standalone `wp304-native` artifact members. This is not UI acceptance.
+
+The bounded authored harness repair explicitly sends public Compose snapshot
+apply notifications, drains due native callbacks, advances one Compose frame
+and pumps16ms of the actual Android main looper. Dialog focus uses the pinned
+Robolectric `ShadowViewRootImpl` adapter used by `ActivityController`; test-only
+root extraction is not a shipping hidden-API dependency. Attachment, native
+window/field focus, Back, current incoming state and hidden-action assertions
+remain. The first-state check measures48ms/three controlled Compose frames,
+not300ms or the end of the fade. Two fixed post-focus frames apply and lay out
+focus before idle; the60s timeout is unchanged.
+
+The owned Gradle retainer now forwards the already trusted
+`meshCliInvocationFile` property. The reader validates its exact bounded,
+unlinked Linux verify/WP003 repository/base/head/source/manifest/policy and
+positive run/attempt identity, then derives the external evidence root.
+Produced PNG/XML/input bytes are retained and console-emitted before export
+or a success verdict, including invalid forwarding failures. Only the
+`wp304-native` subtree may be copied; repository roots, linked paths and
+overwrite are rejected. This repair is authored and Python-tested, not yet
+proven by a new native run or a complete ten-state artifact. No global
+environment allowlist, shared executor or workflow changed.
 
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):

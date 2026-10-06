@@ -96,11 +96,17 @@ val retainSharedUiRaw by tasks.registering(Exec::class) {
     group = "verification"
     description = "Retain produced verbatim JUnit and input bindings before success validation, including failure stacks."
     workingDir(repository)
-    commandLine("python", rawRetainer.absolutePath,
-        "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-        "--images", layout.buildDirectory.dir("reports/wp304/ui").get().asFile.absolutePath,
-        "--output", layout.buildDirectory.dir("reports/wp304/raw").get().asFile.absolutePath,
-        "--emit")
+    doFirst {
+        val arguments = mutableListOf("python", rawRetainer.absolutePath,
+            "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
+            "--images", layout.buildDirectory.dir("reports/wp304/ui").get().asFile.absolutePath,
+            "--output", layout.buildDirectory.dir("reports/wp304/raw").get().asFile.absolutePath,
+            "--emit")
+        providers.gradleProperty("meshCliInvocationFile").orNull?.let {
+            arguments += listOf("--invocation", it)
+        }
+        commandLine(arguments)
+    }
 }
 tasks.withType<Test>().configureEach {
     if (name == "testDebugUnitTest") finalizedBy(retainSharedUiRaw)

@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.content.pm.ApplicationInfo
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -96,6 +98,7 @@ import java.security.MessageDigest
 import java.util.Base64
 import java.util.UUID
 import java.util.Locale
+import java.time.Duration
 import kotlin.test.*
 import org.junit.After
 import org.junit.Before
@@ -105,10 +108,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadow.api.Shadow
 import org.robolectric.shadows.ShadowDialog
+import org.robolectric.shadows.ShadowViewRootImpl
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31], qualifiers = "en-rUS-w360dp-h900dp-mdpi")
@@ -137,6 +143,26 @@ class SharedUiComposeTest {
     }
     private fun content(block: @Composable () -> Unit) { controller.get().setContent(content = block) }
 
+    private fun nativeFrame() {
+        // MainTestClock does not drain Android's snapshot and window-attachment queues.
+        compose.runOnUiThread {
+            Snapshot.sendApplyNotifications()
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+        }
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnUiThread {
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(16))
+        }
+    }
+
+    private fun focusNativeDialog(view: View) {
+        // Apply Robolectric's ActivityController focus path to the separate dialog ViewRoot.
+        val root = assertNotNull(View::class.java.getMethod("getViewRootImpl").invoke(view))
+        Shadow.extract<ShadowViewRootImpl>(root).callWindowFocusChanged(true)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        assertTrue(view.hasWindowFocus(), "Native dialog ViewRoot did not receive focus")
+    }
+
     @Suppress("DEPRECATION")
     private fun configureSystemFontAndDirection(fontScale: Float, direction: LayoutDirection) {
         compose.runOnUiThread {
@@ -156,6 +182,7 @@ class SharedUiComposeTest {
     }
 
     private fun resize(width: Int, height: Int = 900) {
+        nativeFrame()
         compose.runOnUiThread {
             val view = controller.get().window.decorView
             controller.get().window.setLayout(width, height)
@@ -165,15 +192,16 @@ class SharedUiComposeTest {
             val dialog = ShadowDialog.getLatestDialog()
             if (dialog?.isShowing == true) {
                 val dialogView = assertNotNull(dialog.window).decorView
-                assertTrue(dialogView.isAttachedToWindow)
+                assertTrue(dialogView.isAttachedToWindow,
+                    "Native dialog decor is not attached after the Android frame")
                 dialogView.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.AT_MOST),
                     View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.AT_MOST))
                 dialogView.layout(0, 0, dialogView.measuredWidth, dialogView.measuredHeight)
-                dialogView.dispatchWindowFocusChanged(true)
-                assertTrue(dialogView.hasWindowFocus())
+                focusNativeDialog(dialogView)
             }
         }
-        if (!compose.mainClock.autoAdvance) compose.mainClock.advanceTimeBy(32)
+        nativeFrame()
+        nativeFrame()
         compose.waitForIdle()
     }
 
@@ -326,7 +354,7 @@ class SharedUiComposeTest {
         resize(360)
         compose.onNodeWithText("invalid region").assertIsFocused()
         compose.onNodeWithText(resources.getString(C.chatsChannelInfoRegionAddSelected)).performClick()
-        compose.mainClock.advanceTimeBy(32)
+        nativeFrame()
         compose.onNodeWithText("invalid region").assertIsFocused()
         compose.runOnIdle { assertEquals(RegionValidationError.InvalidCharacters, state.value.validationError); assertEquals(0, adds) }
         capture("dialog", dialog = true)
@@ -336,7 +364,7 @@ class SharedUiComposeTest {
             dialog.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
             assertNotNull(dialog.window).decorView.dispatchWindowFocusChanged(false)
         }
-        compose.mainClock.advanceTimeBy(32)
+        nativeFrame()
         compose.runOnIdle { assertEquals(0, adds) }
         compose.runOnIdle { assertFalse(state.value.addDialogVisible) }
         compose.mainClock.autoAdvance = true
@@ -565,20 +593,22 @@ class SharedUiComposeTest {
         resize(360)
         compose.runOnIdle { assertTrue(composedWindowFocused) }
         compose.mainClock.autoAdvance = false
+        val schedulingStart = compose.mainClock.currentTime
         compose.runOnIdle { state.value = StatusPillState.Syncing }
-        compose.mainClock.advanceTimeByFrame()
+        nativeFrame()
         compose.runOnIdle { assertEquals(StatusPillState.Syncing, composedState) }
-        compose.mainClock.advanceTimeByFrame()
-        compose.mainClock.advanceTimeByFrame()
+        nativeFrame()
+        nativeFrame()
         compose.waitForIdle()
+        assertEquals(48L, compose.mainClock.currentTime - schedulingStart)
         compose.onNodeWithText(resources.getString(L.commonStatusSyncing)).assertExists()
         println("WP304_FIRST_VISIBLE_FRAME|frames=3|animationPlaytimeMillis=16|state=Syncing")
         compose.mainClock.advanceTimeBy(320)
         compose.runOnIdle { state.value = StatusPillState.Disconnected }
-        compose.mainClock.advanceTimeByFrame()
+        nativeFrame()
         compose.onNodeWithText(resources.getString(L.commonStatusDisconnected)).performClick()
         compose.runOnIdle { assertEquals(1, taps); state.value = StatusPillState.Hidden }
-        compose.mainClock.advanceTimeByFrame()
+        nativeFrame()
         compose.onNodeWithText(resources.getString(L.commonStatusDisconnected)).assertDoesNotExist()
         compose.mainClock.advanceTimeBy(320)
         compose.mainClock.autoAdvance = true
