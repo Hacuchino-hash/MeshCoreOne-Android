@@ -191,7 +191,15 @@ object NodeConfigJson {
         fun int8(key: String): Byte = required(key, "Int8").integer("Int8", -128, 127).toInt().toByte()
         fun uint32(key: String): UInt = required(key, "UInt32").integer("UInt32", 0, 0xFFFF_FFFFL).toUInt()
 
-        private fun asString(): String = (value as? NodeConfigJsonValue.Text)?.value ?: throw mismatch(this, "String")
+        private fun asString(): String = when (value) {
+            is NodeConfigJsonValue.Text -> value.value
+            is NodeConfigJsonValue.RawText -> try {
+                value.decode()
+            } catch (error: NodeConfigJsonSyntaxException) {
+                throw NodeConfigDecodingException.DataCorrupted(path, error.message ?: "The given data was not valid JSON.")
+            }
+            else -> throw mismatch(this, "String")
+        }
 
         /**
          * Foundation semantics: an integer literal must fit the type exactly; a literal with a
@@ -200,6 +208,9 @@ object NodeConfigJson {
          */
         private fun integer(type: String, min: Long, max: Long): Long {
             val literal = (value as? NodeConfigJsonValue.Number)?.literal ?: throw mismatch(this, type)
+            if (!NodeConfigJsonReader.isValidNumber(literal)) {
+                throw NodeConfigDecodingException.DataCorrupted(path, "Invalid JSON number <$literal>.")
+            }
             val parsed: Long? = if (literal.none { it == '.' || it == 'e' || it == 'E' }) {
                 BigInteger(literal).takeIf { it >= BigInteger.valueOf(min) && it <= BigInteger.valueOf(max) }?.toLong()
             } else {

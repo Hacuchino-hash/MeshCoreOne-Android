@@ -7,13 +7,28 @@ import java.nio.charset.CodingErrorAction
 
 /** A parsed JSON value. Numbers keep their source text so integer range checks stay exact. */
 internal sealed interface NodeConfigJsonValue {
-    /** Members in source order; lookups resolve a duplicated key to its last occurrence. */
+    /**
+     * Members in source order; lookups resolve a duplicated key to its FIRST occurrence, as Foundation's
+     * JSONDecoder does (verified against swiftc/Foundation on macOS 26 at every nesting level, null included).
+     */
     data class Object(val members: List<Pair<String, NodeConfigJsonValue>>) : NodeConfigJsonValue {
-        operator fun get(key: String): NodeConfigJsonValue? = members.lastOrNull { it.first == key }?.second
+        operator fun get(key: String): NodeConfigJsonValue? = members.firstOrNull { it.first == key }?.second
         fun containsKey(key: String): Boolean = members.any { it.first == key }
     }
     data class Array(val items: List<NodeConfigJsonValue>) : NodeConfigJsonValue
     data class Text(val value: String) : NodeConfigJsonValue
+
+    /**
+     * A parsed string value whose escapes and control characters are validated only when it is decoded,
+     * like Foundation's JSONDecoder: an invalid string under an unknown or shadowed duplicate key is
+     * never an error, but one the decoder actually reads is reported as corrupted data.
+     */
+    data class RawText(val raw: String) : NodeConfigJsonValue {
+        /** @throws NodeConfigJsonSyntaxException for an invalid escape or an unescaped control character. */
+        fun decode(): String = NodeConfigJsonReader.decodeStringContents(raw)
+    }
+
+    /** The literal as scanned; its JSON number grammar is validated only when it is decoded (Foundation). */
     data class Number(val literal: String) : NodeConfigJsonValue
     data class Bool(val value: Boolean) : NodeConfigJsonValue
     data object Null : NodeConfigJsonValue
@@ -41,6 +56,14 @@ internal object NodeConfigJsonReader {
 
     fun parse(text: String): NodeConfigJsonValue = Cursor(text).parseDocument()
 
+    /** Strict RFC 8259 number grammar, checked when a scanned number is decoded. */
+    private val NUMBER_GRAMMAR = Regex("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?")
+
+    fun isValidNumber(literal: String): Boolean = NUMBER_GRAMMAR.matches(literal)
+
+    /** Decodes the contents between a string's quotes, validating escapes and control characters. */
+    fun decodeStringContents(raw: String): String = Cursor("\"$raw\"").parseQuotedString()
+
     private class Cursor(private val text: String) {
         private var index = 0
 
@@ -60,11 +83,11 @@ internal object NodeConfigJsonReader {
             return when (val character = text[index]) {
                 '{' -> parseObject(depth)
                 '[' -> parseArray(depth)
-                '"' -> NodeConfigJsonValue.Text(parseString())
+                '"' -> NodeConfigJsonValue.RawText(scanString())
                 't' -> literal("true", NodeConfigJsonValue.Bool(true))
                 'f' -> literal("false", NodeConfigJsonValue.Bool(false))
                 'n' -> literal("null", NodeConfigJsonValue.Null)
-                else -> if (character == '-' || character in '0'..'9') parseNumber() else fail("Invalid value at offset $index.")
+                else -> if (character == '-' || character in '0'..'9') scanNumber() else fail("Invalid value at offset $index.")
             }
         }
 
@@ -82,7 +105,12 @@ internal object NodeConfigJsonReader {
                 members += key to parseValue(depth + 1)
                 skipWhitespace()
                 when (peek()) {
-                    ',' -> index++
+                    ',' -> {
+                        index++
+                        skipWhitespace()
+                        // Foundation accepts one trailing comma before the closer ({"a":1,}), not {,}.
+                        if (peek() == '}') { index++; return NodeConfigJsonValue.Object(members) }
+                    }
                     '}' -> { index++; return NodeConfigJsonValue.Object(members) }
                     else -> fail("Expected ',' or '}' at offset $index.")
                 }
@@ -98,9 +126,37 @@ internal object NodeConfigJsonReader {
                 items += parseValue(depth + 1)
                 skipWhitespace()
                 when (peek()) {
-                    ',' -> index++
+                    ',' -> {
+                        index++
+                        skipWhitespace()
+                        // Foundation accepts one trailing comma before the closer ([1,]), not [,].
+                        if (peek() == ']') { index++; return NodeConfigJsonValue.Array(items) }
+                    }
                     ']' -> { index++; return NodeConfigJsonValue.Array(items) }
                     else -> fail("Expected ',' or ']' at offset $index.")
+                }
+            }
+        }
+
+        /** Decodes a whole quoted string (used for object keys, which Foundation validates eagerly). */
+        fun parseQuotedString(): String {
+            val value = parseString()
+            if (index != text.length) fail("Unexpected character after string at offset $index.")
+            return value
+        }
+
+        /** Finds a value string's closing quote, skipping escaped characters, without validating it. */
+        private fun scanString(): String {
+            expect('"')
+            val start = index
+            while (true) {
+                if (index >= text.length) fail("Unterminated string.")
+                when (text[index++]) {
+                    '"' -> return text.substring(start, index - 1)
+                    '\\' -> {
+                        if (index >= text.length) fail("Unterminated string.")
+                        index++
+                    }
                 }
             }
         }
@@ -155,29 +211,16 @@ internal object NodeConfigJsonReader {
             return digits.toInt(16).toChar()
         }
 
-        private fun parseNumber(): NodeConfigJsonValue {
+        /**
+         * Scans a number the way Foundation's structural pass does: a leading '-' or digit, then any run
+         * of digits, '.', 'e', 'E', '+' or '-'. Grammar errors such as `01` or `1.` surface only on decode.
+         */
+        private fun scanNumber(): NodeConfigJsonValue {
             val start = index
-            if (peek() == '-') index++
-            when {
-                peek() == '0' -> index++
-                peek() in '1'..'9' -> digits()
-                else -> fail("Invalid number at offset $start.")
-            }
-            if (peek() == '.') {
-                index++
-                if (peek() !in '0'..'9') fail("Invalid number at offset $start.")
-                digits()
-            }
-            if (peek() == 'e' || peek() == 'E') {
-                index++
-                if (peek() == '+' || peek() == '-') index++
-                if (peek() !in '0'..'9') fail("Invalid number at offset $start.")
-                digits()
-            }
+            index++
+            while (peek().let { it in '0'..'9' || it == '.' || it == 'e' || it == 'E' || it == '+' || it == '-' }) index++
             return NodeConfigJsonValue.Number(text.substring(start, index))
         }
-
-        private fun digits() { while (peek() in '0'..'9') index++ }
 
         private fun literal(word: String, value: NodeConfigJsonValue): NodeConfigJsonValue {
             if (!text.startsWith(word, index)) fail("Invalid literal at offset $index.")
@@ -227,6 +270,7 @@ internal object NodeConfigJsonWriter {
                 append(out, it, pretty, sorted, depth + 1)
             }
             is NodeConfigJsonValue.Text -> appendString(out, value.value)
+            is NodeConfigJsonValue.RawText -> appendString(out, value.decode())
             is NodeConfigJsonValue.Number -> out.append(value.literal)
             is NodeConfigJsonValue.Bool -> out.append(value.value)
             NodeConfigJsonValue.Null -> out.append("null")

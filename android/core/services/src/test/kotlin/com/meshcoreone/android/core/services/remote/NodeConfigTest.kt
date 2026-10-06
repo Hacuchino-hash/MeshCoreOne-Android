@@ -269,8 +269,8 @@ class NodeConfigTest {
                 latitude = "0.0", longitude = "0.0", lastAdvert = 0u, lastModified = 0u, outPath = "aabbcc",
             )
             val json = encodedObject(NodeConfigJson.encodeContact(contact))
-            assertEquals(NodeConfigJsonValue.Text("Nick"), json["custom_name"])
-            assertEquals(NodeConfigJsonValue.Text("aabbcc"), json["out_path"])
+            assertEquals(NodeConfigJsonValue.RawText("Nick"), json["custom_name"])
+            assertEquals(NodeConfigJsonValue.RawText("aabbcc"), json["out_path"])
         },
         "Position isZero returns false for non-zero coordinates" to {
             assertFalse(PositionSettings(latitude = "40.7128", longitude = "-74.006").isZero)
@@ -452,14 +452,77 @@ class NodeConfigTest {
             assertNull(NodeConfigJson.decode("""{"radio_settings":null,"name":null,"unknown":[1,{"a":true}]}""").radioSettings)
         },
         "malformed JSON text is reported as corrupted data" to {
-            for (text in listOf("", "{", "{\"name\":\"a\",}", "{\"name\":01}", "{\"name\":\"\\ud800\"}", "{} x", "{'a':1}", "{\"a\":\"\u0001\"}")) {
+            for (text in listOf("", "{", "{\"name\":\"\\ud800\"}", "{} x", "{'a':1}", "{\"name\":\"\u0001\"}")) {
                 assertFailsWith<NodeConfigDecodingException.DataCorrupted>(text) { NodeConfigJson.decode(text) }
             }
             assertFailsWith<NodeConfigDecodingException.DataCorrupted> { NodeConfigJson.decode(byteArrayOf(0x7B, 0xC3.toByte(), 0x7D)) }
             assertEquals("x", NodeConfigJson.decode(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()) + "{\"name\":\"x\"}".toByteArray()).name)
         },
-        "a duplicated key resolves to its last occurrence" to {
-            assertEquals("second", NodeConfigJson.decode("""{"name":"first","name":"second"}""").name)
+        "a duplicated key resolves to its first occurrence like Foundation's JSONDecoder" to {
+            // Oracle: swiftc + Foundation (macOS 26) decoding MeshCoreNodeConfig, at every nesting level.
+            assertEquals("first", NodeConfigJson.decode("""{"name":"first","name":"second"}""").name)
+            assertEquals("a", NodeConfigJson.decode("""{"name":"a","x":1,"name":"b"}""").name)
+            assertEquals("a", NodeConfigJson.decode("""{"name":"a","name":null}""").name)
+            assertNull(NodeConfigJson.decode("""{"name":null,"name":"b"}""").name)
+            assertEquals(
+                1u,
+                NodeConfigJson.decode(
+                    """{"radio_settings":{"frequency":1,"bandwidth":2,"spreading_factor":7,"coding_rate":5,"tx_power":1,"frequency":9}}""",
+                ).radioSettings?.frequency,
+            )
+            assertEquals(listOf("x"), NodeConfigJson.decode("""{"channels":[{"name":"x","secret":"s"}],"channels":[{"name":"y","secret":"s"}]}""").channels?.map { it.name })
+            // The shadowed duplicate is never validated.
+            assertEquals("a", NodeConfigJson.decode("""{"name":"a","name":"\x"}""").name)
+            assertEquals("a", NodeConfigJson.decode("""{"name":"a","name":01}""").name)
+            assertFailsWith<NodeConfigDecodingException.DataCorrupted> { NodeConfigJson.decode("""{"name":"\x","name":"a"}""") }
+        },
+        "trailing commas are accepted like Foundation's JSONDecoder, empty-comma containers are not" to {
+            assertEquals("a", NodeConfigJson.decode("""{"name":"a",}""").name)
+            assertEquals("a", NodeConfigJson.decode("{\"name\":\"a\" , \n}").name)
+            assertEquals(1, NodeConfigJson.decode("""{"channels":[{"name":"a","secret":"b"},]}""").channels?.size)
+            assertNull(NodeConfigJson.decode("""{"u":[1 , ],"v":{"k":1,}}""").name)
+            for (text in listOf("""{,}""", """{"channels":[,]}""", """{"name":"a",,}""", """{"u":[,1]}""", """{"name":"a",}x""")) {
+                assertFailsWith<NodeConfigDecodingException.DataCorrupted>(text) { NodeConfigJson.decode(text) }
+            }
+        },
+        "string and number contents are validated only when decoded, like Foundation's JSONDecoder" to {
+            // Unknown keys may hold invalid strings and number-ish runs; Foundation never reads them.
+            for (text in listOf(
+                "{\"u\":\"a\nb\"}", """{"u":"\x"}""", """{"u":"\uD800"}""", """{"u":01}""", """{"u":1.}""", """{"u":-}""",
+                """{"u":--}""", """{"u":1.2.3}""", """{"u":1e5e5}""", """{"u":1+}""", """{"u":0-}""", """{"u":1E}""", """{"u":[01,"\q"]}""",
+                """{"other_settings":{"multi_acks":1,"u":01}}""", "{\"u\":\"a\u0001\"}", """{"u\n":1}""",
+            )) {
+                NodeConfigJson.decode(text)
+            }
+            // Structural errors are still eager.
+            for (text in listOf("""{"u":+1}""", """{"u":tru}""", """{"u":1x}""", """{"u":-a}""", """{"u":1 2}""", "{\"a\nb\":1}", """{"\x":1}""", """{"\uD800":1}""")) {
+                assertFailsWith<NodeConfigDecodingException.DataCorrupted>(text) { NodeConfigJson.decode(text) }
+            }
+            // Read fields are validated when decoded.
+            for (text in listOf(
+                "{\"name\":\"a\nb\"}", "{\"name\":\"a\tb\"}", "{\"name\":\"a\u0001b\"}", "{\"name\":\"a\u001Fb\"}", "{\"name\":\"a\rb\"}",
+                """{"name":"\x"}""", """{"name":"\u12"}""", """{"name":"\uDE00"}""", """{"name":"\uD83Dx"}""", """{"name":"\'"}""",
+                """{"other_settings":{"multi_acks":01}}""", """{"other_settings":{"multi_acks":00}}""", """{"other_settings":{"multi_acks":-01}}""",
+                """{"other_settings":{"multi_acks":.5}}""", """{"other_settings":{"multi_acks":1.}}""", """{"other_settings":{"multi_acks":1e}}""",
+                """{"other_settings":{"multi_acks":0x1}}""", """{"other_settings":{"multi_acks":NaN}}""", """{"other_settings":{"multi_acks":1e400}}""",
+                """{"other_settings":{"multi_acks":255.0000000000001}}""", """{"other_settings":{"multi_acks":1.0000000000000002}}""",
+            )) {
+                assertFailsWith<NodeConfigDecodingException.DataCorrupted>(text) { NodeConfigJson.decode(text) }
+            }
+            assertFailsWith<NodeConfigDecodingException.TypeMismatch> { NodeConfigJson.decode("""{"name":01}""") }
+            assertFailsWith<NodeConfigDecodingException.TypeMismatch> { NodeConfigJson.decode("""{"name":true}""") }
+            assertEquals("a\u007Fb", NodeConfigJson.decode("{\"name\":\"a\u007Fb\"}").name)
+            assertEquals("k", NodeConfigJson.decode("""{"na\u006de":"k"}""").name)
+            val acks = { literal: String -> NodeConfigJson.decode("""{"other_settings":{"multi_acks":$literal}}""").otherSettings?.multiAcks }
+            assertEquals(100u.toUByte(), acks("1E2")); assertEquals(100u.toUByte(), acks("1e+2")); assertEquals(1u.toUByte(), acks("1e0"))
+            assertEquals(0u.toUByte(), acks("-0")); assertEquals(0u.toUByte(), acks("-0.0")); assertEquals(0u.toUByte(), acks("-1e-400"))
+            assertEquals(2u.toUByte(), acks("2.0000000000000001")); assertEquals(255u.toUByte(), acks("254.99999999999999"))
+        },
+        "encoding writes DEL, U+2028 and astral characters raw and NUL as a lowercase escape like JSONEncoder" to {
+            assertEquals(
+                "{\n  \"name\" : \"\\u0000\\b\\f\\r\u007F\u2028\uD83D\uDE00\\/\"\n}",
+                NodeConfigJson.encode(MeshCoreNodeConfig(name = "\u0000\b\u000C\r\u007F\u2028\uD83D\uDE00/")),
+            )
         },
     )
 
