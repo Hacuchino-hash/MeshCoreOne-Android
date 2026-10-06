@@ -1,8 +1,16 @@
 {
   "work_package": "WP-208",
   "receipt": "autonomous-WP-208-7e2835ba",
-  "status": "producer handoff requested; no shared build or lock writes by WP-208",
+  "status": "Exact coordinator carry applied and frozen; own-base data test edge and actual WP-208 hooks authored, awaiting Linux execution",
   "services_owner": "WP-218",
+  "services_bootstrap_carry": "services-bootstrap-carry.json",
+  "actual_declared_tasks": [
+    ":core:data:verifyMessagingTests",
+    ":core:data:verifyMessagingEvidenceReaders",
+    ":core:data:retainMessagingServicesRawEvidence",
+    ":core:data:retainMessagingRoomRawEvidence"
+  ],
+  "output_binding": "Actual forwarded meshCliInvocationFile parent/wp208-native; distinct raw/services-completion, raw/room-completion and validated directories",
   "services_requests": [
     "Keep the existing pure JVM protocol/model/contracts production edges; no runtime/data/Android edge.",
     "Admit the already-pinned kotlinx-coroutines-test test dependency.",

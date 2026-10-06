@@ -1,4 +1,5 @@
 // AndroidOnly: WP-202 Admitted Room repository dependencies and complete native assertion hook.
+import java.io.File
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 
 plugins {
@@ -84,3 +85,63 @@ val verifyBackupTests by tasks.registering(Exec::class) {
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }
 tasks.named("check") { dependsOn(verifyBackupTests) }
+
+// AndroidOnly: WP-208 Exact owning assertions and raw-first finalizers over both actual test runners.
+fun messagingEvidenceCommand(captureOnly: Boolean, completion: String): List<String> {
+    val invocationValue = providers.gradleProperty("meshCliInvocationFile").orNull
+        ?: throw GradleException("WP-208 requires the actual forwarded meshCliInvocationFile; no guessed execution binding")
+    val invocation = File(invocationValue)
+    check(invocation.isAbsolute) { "WP-208 executor invocation must be an absolute path" }
+    val evidence = File(invocation.parentFile, "wp208-native")
+    return buildList {
+        add("python")
+        add("-B")
+        add(repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-208")
+            .resolve("collect_evidence.py").absolutePath)
+        if (captureOnly) add("--capture-only")
+        addAll(listOf("--output", File(evidence, completion).absolutePath, "--invocation", invocation.absolutePath))
+    }
+}
+
+val retainMessagingServicesRawEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain full services/data XML and actual execution inputs after the services runner, even on failure."
+    workingDir(repository)
+    outputs.upToDateWhen { false }
+    doFirst { commandLine(messagingEvidenceCommand(true, "raw/services-completion")) }
+}
+
+val retainMessagingRoomRawEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain full services/data XML and actual execution inputs after the Room runner, even on failure."
+    workingDir(repository)
+    outputs.upToDateWhen { false }
+    doFirst { commandLine(messagingEvidenceCommand(true, "raw/room-completion")) }
+}
+
+val verifyMessagingTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require all WP-208 original/native identities, actual Room consumers and exact Linux run binding."
+    dependsOn(":core:services:test", "testDebugUnitTest")
+    workingDir(repository)
+    outputs.upToDateWhen { false }
+    doFirst { commandLine(messagingEvidenceCommand(false, "validated")) }
+}
+
+val verifyMessagingEvidenceReaders by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Execute positive and adversarial source/raw-evidence reader assertions with nonzero discovery."
+    workingDir(repository)
+    commandLine("python", "-B", "-m", "unittest", "discover", "-s",
+        repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-208").absolutePath,
+        "-p", "test_collect_evidence.py", "-v")
+}
+
+tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest") finalizedBy(retainMessagingRoomRawEvidence)
+}
+rootProject.project(":core:services").tasks.withType<Test>().configureEach {
+    if (name == "test") finalizedBy(retainMessagingServicesRawEvidence)
+}
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }
+tasks.named("check") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }

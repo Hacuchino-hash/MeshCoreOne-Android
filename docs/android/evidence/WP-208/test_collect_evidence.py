@@ -96,6 +96,50 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertGreaterEqual(len(source["room_consumers"]), 8)
         self.assertGreater(len(source["native_regressions"]), 0)
 
+    def test_actual_data_hook_uses_correct_reader_flags_and_forwarded_invocation_only(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('import java.io.File', text)
+        self.assertIn('providers.gradleProperty("meshCliInvocationFile")', text)
+        self.assertIn('File(invocation.parentFile, "wp208-native")', text)
+        self.assertIn('add("--capture-only")', text)
+        self.assertIn('"--output"', text)
+        self.assertIn('"--invocation"', text)
+        self.assertNotIn('--invocation-file', text)
+        self.assertNotIn('GITHUB_RUN_ID', text)
+        self.assertNotIn('System.getenv', text)
+
+    def test_actual_runners_have_distinct_lazy_raw_first_finalizers(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('if (name == "testDebugUnitTest") finalizedBy(retainMessagingRoomRawEvidence)', text)
+        self.assertIn('if (name == "test") finalizedBy(retainMessagingServicesRawEvidence)', text)
+        self.assertIn('rootProject.project(":core:services").tasks.withType<Test>().configureEach', text)
+        self.assertIn('"raw/services-completion"', text)
+        self.assertIn('"raw/room-completion"', text)
+        self.assertIn('"validated"', text)
+        self.assertNotIn('tasks.named("testDebugUnitTest")', text)
+
+    def test_verifier_depends_on_both_actual_tasks_and_preserves_incumbent_hooks(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('dependsOn(":core:services:test", "testDebugUnitTest")', text)
+        self.assertIn('dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders)', text)
+        self.assertIn('dependsOn(verifyPersistenceRepositoryTests)', text)
+        self.assertIn('dependsOn(verifyBackupTests)', text)
+        self.assertEqual(1, text.count('testImplementation(project(":core:services"))'))
+        self.assertNotIn('implementation(project(":core:services"))\n', text.replace('testImplementation', 'TEST_EDGE'))
+        self.assertNotIn('verifyDeviceSettingsTests', text)
+
+    def test_two_file_bootstrap_and_local_data_lock_are_exact_frozen_producers(self):
+        receipt = READER.load_json(Path(__file__).with_name("services-bootstrap-carry.json"))
+        self.assertEqual(2, len(receipt["files"]))
+        for row in receipt["files"]:
+            path = READER.ROOT.joinpath(*row["path"].split("/"))
+            raw = path.read_bytes().replace(b"\r\n", b"\n")
+            self.assertEqual(row["carried_blob"], READER.git(READER.ROOT, "hash-object", "--path=" + row["path"], str(path)))
+            self.assertEqual(row["lf_bytes"], len(raw))
+            self.assertEqual(row["lf_sha256"], READER.hashlib.sha256(raw).hexdigest())
+        lock = receipt["data_local_lock"]
+        self.assertEqual(lock["blob"], READER.git(READER.ROOT, "hash-object", str(READER.ROOT.joinpath(*lock["path"].split("/")))))
+
     def test_missing_full_module_xml_fails(self):
         (self.output / "junit" / "data" / "TEST-fixture.xml").unlink()
         self.rejected()

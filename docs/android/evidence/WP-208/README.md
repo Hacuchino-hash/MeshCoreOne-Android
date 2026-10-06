@@ -66,11 +66,38 @@ No Windows JVM, SDK/JDK/WSL provisioning, global cache or dependency installatio
 is authorized. The documented preflight returned exit2 because `ANDROID_CI_STATE`
 is missing; it gates local execution, not the admitted owned authorship.
 
-The services build file and root services lock remain exclusively WP-218's;
-the data build file/module lock remain exclusively WP-211's. The proposed
-`verifyMessagingTests` hook is **not yet an actual task and must not be invoked**.
-The serialized producer request is [`build-hook-request.json`](build-hook-request.json).
+The coordinator's subsequent temporary four-path build-wiring grant is recorded
+in [`services-bootstrap-carry.json`](services-bootstrap-carry.json). The exact
+WP-218 dependency/resolver/failure-logging two-file patch is carried and frozen;
+WP-218 may immediately resume live ownership of those paths. No content/device
+implementation or whole donor branch was copied. The one-line data TEST services
+edge preserves the existing published amendment and does not change production
+dependencies. The local data lock remains the exact incumbent `af409126` blob.
+
+The owning data script now declares actual `:core:data:verifyMessagingTests`,
+depending on both `:core:services:test` and `:core:data:testDebugUnitTest`,
+and `:core:data:verifyMessagingEvidenceReaders`, wired to root
+`verifyScaffoldTests`/owning `check`. Existing repository/backup/runtime hooks
+remain untouched. Separate lazy `Test.configureEach` finalizers retain
+`raw/services-completion` and `raw/room-completion`; full validation is a
+separate `validated` directory under the actual forwarded invocation's parent
+`wp208-native` directory. The reader receives only its real `--output`,
+`--invocation` and optional `--capture-only` flags, never a guessed task/input
+or environment credential. These tasks are declared, **not yet executed proof**.
+The historical producer request and actual status are in
+[`build-hook-request.json`](build-hook-request.json).
 No manifest/catalog/schema/policy/golden floor is changed to bypass missing wiring.
+
+The actual Linux root executor command remains:
+
+```text
+python tools/android-port/controller/ci.py run --stage verify
+```
+
+It forwards the real invocation to the new owning hook through the existing
+`meshCliInvocationFile` property. Four focused hook/carry regression assertions
+extend the Python reader suite to30 cases; actual JVM/Room discovery and outcomes
+still come only from complete raw XML. No Windows JVM/Gradle execution occurs.
 
 ## Raw-first Linux evidence contract
 
@@ -128,6 +155,14 @@ The worker's verified one-file receipt is retained in its session artifacts as
 `wp208-messaging-faults-producer-freeze.json`. Its live writer grant is removed;
 the file stays byte-frozen. This is not ACK/Room/whole-WP acceptance, a full
 candidate carry, source-reference exception or a new shared build/data hook grant.
+
+Actual default main has advanced to `7237727fe498e87261cc9b321051567a86279fef`.
+This worker has **not adopted its source-reference exceptions or source tree**.
+The evidence reader still requires the originally authorized exact base
+`7e2835bad2c03dfb5a088063655f9fc4dbafd00f`; if a subsequent real PR execution
+reports a different base, final acceptance fails until the coordinator supplies
+an exact trusted base/ancestry amendment. Native assertions may be executed and
+raw evidence retained without silently relabeling that binding as the old base.
 
 Room assertions use real native in-memory/file-backed SQLite on simulated SDK31.
 They cover fresh/recovered counters, cold store reopen, forgotten radios,
