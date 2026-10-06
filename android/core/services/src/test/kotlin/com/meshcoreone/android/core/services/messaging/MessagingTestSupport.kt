@@ -30,6 +30,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
@@ -57,13 +58,13 @@ internal class TestMessagingClock(val scheduler: TestCoroutineScheduler) : Sessi
 }
 
 internal class TestSignals(initial: SessionToken = token()) : ConnectionSignals {
-    private val state = MutableStateFlow(snapshot(initial, DeviceConnectionState.READY))
-    override val snapshot = state.asStateFlow()
+    private val state = MutableStateFlow(TestSignals.snapshot(initial, DeviceConnectionState.READY))
+    override val snapshot: StateFlow<ConnectionSnapshot> = state.asStateFlow()
     private val lock = Any()
     private val subscribers = mutableSetOf<kotlinx.coroutines.channels.Channel<ConnectionSnapshot>>()
     val subscriberCount: Int get() = synchronized(lock) { subscribers.size }
     fun set(token: SessionToken?, rung: DeviceConnectionState) {
-        val value = snapshot(token, rung)
+        val value = TestSignals.snapshot(token, rung)
         synchronized(lock) {
             state.value = value
             subscribers.forEach { it.trySend(value).getOrThrow() }
@@ -358,9 +359,10 @@ internal class Harness(
         MessagePollingService(token, role, store, signals, scope, clock, MessagingIssueReporter { diagnostics += it })
             .also { pollers += it }
     suspend fun pending(message: MessageDTO, attempt: Long? = 0, isResend: Boolean = false): PendingSendDTO {
-        val dto = if (message.channelIndex == null) PendingSendDTO.fromEnvelope(
+        val channelIndex = message.channelIndex
+        val dto = if (channelIndex == null) PendingSendDTO.fromEnvelope(
             DirectMessageEnvelope(message.id, CONTACT, isResend), RADIO, enqueuedAt = clock.wallClock.instant())
-        else PendingSendDTO.fromEnvelope(ChannelMessageEnvelope(message.id, message.channelIndex, isResend,
+        else PendingSendDTO.fromEnvelope(ChannelMessageEnvelope(message.id, channelIndex, isResend,
             message.text, message.timestamp, "Test"), RADIO, enqueuedAt = clock.wallClock.instant())
         store.upsertPendingSend(dto.copy(sequence = 1, attemptCount = attempt))
         return dto

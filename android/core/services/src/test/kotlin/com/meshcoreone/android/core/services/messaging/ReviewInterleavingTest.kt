@@ -112,7 +112,7 @@ class ReviewInterleavingTest {
             assertIs<MessageResult.ContactMessage>(authority.await())
             h.transport.holdGetReplies = false; release.complete(Unit)
             assertEquals(0L, manual.await()); assertEquals(listOf("preexisting authority"), delivered)
-            assertEquals(listOf(DeliveryContext.Live), contexts); assertTrue(p.waitForPendingHandlers(Duration.ZERO))
+            assertEquals(listOf<DeliveryContext>(DeliveryContext.Live), contexts); assertTrue(p.waitForPendingHandlers(Duration.ZERO))
             p.close(); h.close()
         },
         native("manualOwnershipKeepsNewestPauseAndPreventsResumeFromCompetingOnTheWire") {

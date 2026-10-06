@@ -188,7 +188,25 @@ test scope. Source/native and Room fixture boundaries now explicitly close every
 poller, queue, radio generation and session on both success/failure, attempting
 all cleanup and retaining original/suppressed failures.
 The log's individual start/end lines are diagnostic observations, not full
-JUnit discovery or whole-WP PASS; there is still zero completed native XML.
+JUnit discovery or whole-WP PASS; that timed-out run has no completed native XML.
+
+At repaired-stall head `ef9650de`, run `37412427683`/attempt1 completed the
+**actual full data suite387/387 and all18/18 messaging Room consumers** with
+zero failures/errors/skips, including the original mandatory8 methods. The
+owned raw Room finalizer retained complete XML plus282 actual compiled input
+blobs, all matching that exact head and the real authorized base/source/policy/
+Linux run binding. Official artifact11390001223, 146,708 bytes, SHA-256
+`be825b5e6e50bc67b3f9b47c9572d7b46360fe0256f9acd7febd4450c741e059`,
+passed all85 safe-member/CRC checks before independent XML/counter replay.
+The structured historical record is [`native-run-37412427683.json`](native-run-37412427683.json).
+
+That run failed `:core:services:compileTestKotlin` before JVM assertions:
+recursive snapshot property/function inference, a nullable cross-module
+channelIndex smart cast, and generic live-context expected-list inference.
+The owned test repair uses explicit/guarded proper types and unchanged expected
+values, not unchecked casts or family removal. There is zero services JUnit
+from this compile failure. The successful Room result is historical to its
+exact head, **not final new-head or whole-WP proof**.
 
 The coordinator's one-file frozen fault producer for UI-304 is exactly
 `MessagingFaults.kt`, Git blob `d6f96917b135f12d3fa62c0e5c456aac709257bc`,
