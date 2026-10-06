@@ -4,6 +4,12 @@
 // core:protocol's `api(libs.kotlinx.coroutines.core)`; coroutines-test already locked on
 // debugUnitTest* configs via androidx.compose.ui.test.junit4) - no new explicit declaration
 // or app.lockfile delta is needed for the app/content adapters added in this increment.
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     id("mesh.android.application")
     id("mesh.android.robolectric")
@@ -36,4 +42,35 @@ dependencies {
     implementation(project(":platform:shortcuts"))
     implementation(project(":platform:translation"))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+}
+
+// WP-218 diagnostic-only addition: hosted CI invokes the root verify stage with Gradle's
+// `--quiet` flag, which otherwise suppresses the failing test's identity and stack trace even on
+// a failed Test task (confirmed by direct inspection of tools/android-port/controller/ci.py and
+// the uploaded CI artifact, which contains no JUnit XML/report on a failed run). This mirrors the
+// exact same local pattern already used by core/designsystem/build.gradle.kts for the same
+// reason: no behavior change, no new dependency/config; `logger.error` always prints regardless
+// of the configured Gradle log level, so this is the one reliable way to see which test failed.
+tasks.withType<Test>().configureEach {
+    testLogging.quiet {
+        events(TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+    val failureLogger = logger
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) = Unit
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) = Unit
+        override fun beforeTest(testDescriptor: TestDescriptor) = Unit
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                failureLogger.error("WP218_NATIVE_FAILURE|${testDescriptor.className}|${testDescriptor.name}")
+                result.exceptions.forEach { failure ->
+                    failureLogger.error("WP218 native failure stack", failure)
+                }
+            }
+        }
+    })
 }
