@@ -12,6 +12,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -66,6 +67,15 @@ class DebugLogBuffer(
     /** Adds [entry]; a full buffer flushes immediately, otherwise a flush is scheduled after [FLUSH_INTERVAL]. */
     fun append(entry: DebugLogEntryDTO) {
         val job = synchronized(lock) {
+            if (!scope.isActive) {
+                // No timer or flush can run any more; only an explicit flush()/shutdown() will. Stay bounded
+                // (the requeue cap) and report the overflow through the next drop summary.
+                val next = buffer + entry
+                val overflow = next.size - MAX_BUFFER_SIZE * 2
+                buffer = if (overflow > 0) next.drop(overflow) else next
+                if (overflow > 0) droppedEntryCount += overflow.toLong()
+                return
+            }
             buffer = buffer + entry
             if (buffer.size >= MAX_BUFFER_SIZE) flushNowLocked() else scheduleFlushLocked()
         }

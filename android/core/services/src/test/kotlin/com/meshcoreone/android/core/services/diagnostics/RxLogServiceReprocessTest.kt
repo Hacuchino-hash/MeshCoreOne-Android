@@ -1,6 +1,7 @@
 // PortedFrom: MC1Services/Tests/MC1ServicesTests/Services/RxLogServiceReprocessTests.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.services.diagnostics
 
+import com.meshcoreone.android.core.model.DebugLogLevel
 import com.meshcoreone.android.core.model.DecryptStatus
 import com.meshcoreone.android.core.model.RxLogEntryDTO
 import com.meshcoreone.android.core.protocol.bytes.Bytes
@@ -112,6 +113,19 @@ class RxLogServiceReprocessTest {
                 val saved = h.store.allEntries().single()
                 assertEquals(radioId, saved.radioId)
                 assertEquals(DecryptStatus.NOT_APPLICABLE, saved.decryptStatus)
+            }
+        },
+        case("WP-212::a throwing repeat processor is logged and does not end live RX monitoring") {
+            val calls = java.util.concurrent.atomic.AtomicInteger()
+            RxLogSvcHarness(heardRepeats = RxLogRepeatProcessing { calls.incrementAndGet(); error("repeat store down") }).use { h ->
+                h.service.startEventMonitoring(rxLogSvcRadio())
+                rxLogSvcWaitUntil("the monitor subscribes to rxLogData") { h.session.subscriberCount == 1 }
+                h.session.emit(MeshEvent.RxLogData(rxLogSvcParsed(PayloadType.ADVERT, Bytes.of(0x09, 0x08))))
+                rxLogSvcWaitUntil("the first packet is persisted") { h.store.allEntries().size == 1 }
+                h.session.emit(MeshEvent.RxLogData(rxLogSvcParsed(PayloadType.ADVERT, Bytes.of(0x07, 0x06))))
+                rxLogSvcWaitUntil("monitoring survives and persists the second packet") { h.store.allEntries().size == 2 }
+                assertEquals(2, calls.get())
+                assertTrue(h.logs.all.any { it.level == DebugLogLevel.ERROR && it.message.contains("heard repeats") })
             }
         },
         case("WP-212::stopEventMonitoring cancels the monitor and releases the session subscription") {

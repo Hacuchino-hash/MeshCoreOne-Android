@@ -10,7 +10,7 @@ observed results. It isn't a controller acceptance record.
 
 | Command | Observed |
 | --- | --- |
-| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **224 tests, 0 failures, 0 errors, 0 skipped** |
+| `./gradlew :core:services:test validateModuleGraph --rerun` | `BUILD SUCCESSFUL`; `:core:services` **225 tests, 0 failures, 0 errors, 0 skipped** |
 | `python tools/android-port/portmap.py` | exit 0 |
 | `python tools/android-port/controller/validate.py` | exit 0 (`valid`) |
 
@@ -24,7 +24,7 @@ nine test files run under their exact ids, as JUnit display names
 | --- | ---: | ---: | ---: |
 | RF (`RFCalculator`, characterization, segments) | 55 | 14 | 69 |
 | Logging core (buffer, prune, persistent logger, redaction, audit) | 12 | 90 | 102 |
-| RX log (advert hop, reprocess, region reprocess, DM decrypt, export) | 16 | 35 | 51 |
+| RX log (advert hop, reprocess, region reprocess, DM decrypt, export) | 16 | 36 | 52 |
 | Seam wiring | 0 | 2 | 2 |
 
 The native cases cover the following:

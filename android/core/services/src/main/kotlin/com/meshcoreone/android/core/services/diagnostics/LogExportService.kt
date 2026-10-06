@@ -21,6 +21,8 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** Flushes buffered debug log entries to the store; implemented by the debug log buffer port. */
 fun interface DebugLogFlushing {
@@ -115,7 +117,7 @@ class LogExportService(
         val content = generateExport(appState)
         val fileName = exportFileName()
         return try {
-            openSink(fileName).use { it.write(content.toByteArray(Charsets.UTF_8)) }
+            withContext(Dispatchers.IO) { openSink(fileName).use { it.write(content.toByteArray(Charsets.UTF_8)) } }
             fileName
         } catch (cancellation: CancellationException) {
             throw cancellation

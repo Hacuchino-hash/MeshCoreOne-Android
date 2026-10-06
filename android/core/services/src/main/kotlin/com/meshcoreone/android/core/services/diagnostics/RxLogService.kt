@@ -346,8 +346,15 @@ class RxLogService(
         // Emit to stream consumers (RX log screens, live activity freshness).
         entryBroadcaster.yield(dto)
 
-        // Inline await provides natural backpressure under high RX volume.
-        heardRepeatsService?.processForRepeats(dto)
+        // Inline await provides natural backpressure under high RX volume. The source call cannot throw;
+        // a failing repeat processor must not end live RX monitoring, so it is logged and skipped.
+        try {
+            heardRepeatsService?.processForRepeats(dto)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            log(DebugLogLevel.ERROR, "Failed to process heard repeats: ${error.rxLogErrorDescription()}")
+        }
     }
 
     /**

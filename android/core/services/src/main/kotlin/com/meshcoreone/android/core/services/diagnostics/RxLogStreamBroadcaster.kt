@@ -20,6 +20,11 @@ internal class RxLogStreamBroadcaster<T> {
 
     val subscriberCount: Int get() = synchronized(lock) { subscribers.size }
 
+    /**
+     * Registers a subscriber immediately (so nothing yielded after this call is missed) and returns its
+     * single-collection flow. The subscriber is removed when that collection ends; a returned flow that is
+     * never collected keeps buffering until [finish], so callers must collect what they subscribe to.
+     */
     fun subscribe(): Flow<T> {
         val channel = Channel<T>(Channel.UNLIMITED)
         val id = synchronized(lock) {
