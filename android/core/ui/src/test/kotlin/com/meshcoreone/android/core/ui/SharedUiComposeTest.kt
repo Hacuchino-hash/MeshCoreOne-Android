@@ -8,6 +8,7 @@ import android.view.View
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
+import android.content.pm.ApplicationInfo
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -134,6 +135,8 @@ class SharedUiComposeTest {
     private fun configureSystemFontAndDirection(fontScale: Float, direction: LayoutDirection) {
         compose.runOnUiThread {
             val application = ApplicationProvider.getApplicationContext<Context>()
+            application.applicationInfo.flags = application.applicationInfo.flags or ApplicationInfo.FLAG_SUPPORTS_RTL
+            controller.get().applicationInfo.flags = controller.get().applicationInfo.flags or ApplicationInfo.FLAG_SUPPORTS_RTL
             for (target in setOf(application.resources, controller.get().resources)) {
                 val configuration = Configuration(target.configuration).apply {
                     this.fontScale = fontScale
@@ -141,6 +144,8 @@ class SharedUiComposeTest {
                 }
                 target.updateConfiguration(configuration, target.displayMetrics)
             }
+            controller.get().window.decorView.layoutDirection =
+                if (direction == LayoutDirection.Rtl) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
         }
     }
 

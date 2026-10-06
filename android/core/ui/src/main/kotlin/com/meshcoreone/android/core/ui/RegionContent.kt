@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -153,6 +154,7 @@ private fun RegionAddDialog(state: RegionManagementState, actions: RegionManagem
         title = { Text(uiString(UiText.Resource(C.chatsChannelInfoRegionAddRegionTitle))) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val windowFocused = LocalWindowInfo.current.isWindowFocused
                 val validationCopy = state.validationError?.let(::regionValidationCopy)
                 OutlinedTextField(state.newRegionName, actions.newNameChanged,
                     Modifier.fillMaxWidth().focusRequester(focus),
@@ -161,7 +163,7 @@ private fun RegionAddDialog(state: RegionManagementState, actions: RegionManagem
                     isError = validationCopy != null,
                     supportingText = validationCopy?.let { copy -> { Text(uiString(copy)) } },
                 )
-                LaunchedEffect(focus) { focus.requestFocus() }
+                LaunchedEffect(focus, windowFocused) { if (windowFocused) focus.requestFocus() }
             }
         },
         confirmButton = {

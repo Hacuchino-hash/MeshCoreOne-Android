@@ -220,6 +220,8 @@ sealed interface StatusPillState {
 
 data class SyncingPillActions(val onDisconnectedTap: (() -> Unit)?)
 
+private class RetainedPillState(var value: StatusPillState = StatusPillState.Hidden)
+
 @Composable
 fun SyncingPillView(state: StatusPillState, actions: SyncingPillActions, modifier: Modifier = Modifier) =
     SyncingPillView(state, modifier, actions.onDisconnectedTap)
@@ -269,9 +271,9 @@ fun SyncingPillOverlay(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    var displayedState by remember { mutableStateOf<StatusPillState>(StatusPillState.Hidden) }
-    val contentState = if (state == StatusPillState.Hidden) displayedState else state
-    SideEffect { if (state != StatusPillState.Hidden) displayedState = state }
+    val displayedState = remember { RetainedPillState() }
+    val contentState = if (state == StatusPillState.Hidden) displayedState.value else state
+    SideEffect { if (state != StatusPillState.Hidden) displayedState.value = state }
     val duration = LocalMeshTheme.current.duration(300)
     val opacity by animateFloatAsState(if (state == StatusPillState.Hidden) 0f else 1f,
         animationSpec = tween(duration), label = "SharedStatusPillOpacity")

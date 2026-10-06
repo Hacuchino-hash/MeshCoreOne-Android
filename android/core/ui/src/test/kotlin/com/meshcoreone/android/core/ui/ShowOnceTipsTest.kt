@@ -182,8 +182,10 @@ class ShowOnceTipsTest {
             assertTrue(h.reported.contains(failure))
         } finally {
             h.close()
-            assertTrue(temporaryWrite.isDirectory)
-            assertTrue(temporaryWrite.delete())
+            if (temporaryWrite.exists()) {
+                assertTrue(temporaryWrite.isDirectory)
+                assertTrue(temporaryWrite.delete())
+            }
         }
         val reopened = Harness(directory)
         try {

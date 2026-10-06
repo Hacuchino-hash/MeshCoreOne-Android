@@ -298,6 +298,17 @@ canvas and a nominal font200/RTL dialog using default Android-system values;
 the next assertions verify painted roles and actual layout density/direction.
 Candidate labels or a passing screenshot method alone are not sufficient proof.
 
+Actual10b591 native37411758494 progressed to193/197 passing methods with four
+remaining failures, zero errors/skips. Eight actual PNG state receipts now
+include large-font CJK/RTL body and real failure/retry; full acceptance remains
+blocked. [`native-10b591-failure.json`](native-10b591-failure.json) retains the
+complete official artifact/log hashes and exact failures. Native dialog font2
+was measured but its host still lacked RTL capability/direction. Focus-window
+admission and an extra reactive pill-retention composition remained real timing
+issues, while actual DataStore cleanup removed the blocked temporary obstacle.
+The next bounded repair retains every assertion and the first-frame/focus/
+typed filesystem failure requirements; it does not extend the idle timeout.
+
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):
 real native storage distinctions/adapters, exact committed-preference marker/
