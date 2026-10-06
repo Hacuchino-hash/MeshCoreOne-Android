@@ -242,6 +242,8 @@ class ConnectionManager(
             throw ConnectionError.ConnectionFailed("Connection blocked by circuit breaker (cooling down)")
         }
         val deviceId = (normalized as? ConnectionTarget.Bluetooth)?.deviceId
+        // Swift evaluates both break-glass conditions before any state change; capture it before CONNECTING is published.
+        val breakGlass = forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED
         if (deviceId != null && activeReconnectDeviceId == deviceId) {
             if (forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED && synchronized(lock) { rebuildDevice } != deviceId) {
                 reconnectionCoordinator.clearReconnectingDevice()
@@ -290,7 +292,7 @@ class ConnectionManager(
                         throw ConnectionError.DeviceNotFound()
                     }
                     requireRevision(claimedRevision)
-                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync)) return@withOperation
+                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync, breakGlass = breakGlass)) return@withOperation
                     // An owned link whose adoption failed published DISCONNECTED; Swift sets .connecting again.
                     if (connectionState != DeviceConnectionState.CONNECTING) publish(claimedRevision) { connectingSnapshot() }
                     val attempts = if (deviceId == null) 1 else
@@ -1139,13 +1141,25 @@ class ConnectionManager(
         lastConnection.persistDisconnectDiagnostic("source=bleStateMachine.autoReconnectingHandler, error=$details, intent=${intentSummary()}")
     }
 
-    private suspend fun tryAdoptOrReject(target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false): Boolean {
+    private suspend fun tryAdoptOrReject(
+        target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false, breakGlass: Boolean = false,
+    ): Boolean {
         val expectedRevision = synchronized(lock) { revision }
         val deviceId = (target as? ConnectionTarget.Bluetooth)?.deviceId ?: return false
         val state = platform.state(target)
         if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded platform query")
         if (state.autoReconnecting) {
             if (state.connectedDeviceId != deviceId) return false
+            if (breakGlass) {
+                // Swift's second break-glass (connect(to:) → abandonStuckReconnect): the coordinator's cycle is already
+                // gone but the transport is still auto-reconnecting this device, so a user-forced connect from
+                // DISCONNECTED tears the pending connect down and falls through to a fresh attempt that can surface
+                // the real failure (e.g. an invalidated bond) instead of deferring to the same doomed wait again.
+                reconnectionCoordinator.clearReconnectingDevice()
+                closeGeneration(ensureRestorationRoute(target, expectedRevision), disconnectPhysical = true)
+                if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded break-glass")
+                return false
+            }
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
             ensureRestorationRoute(target, expectedRevision)
             reconnectionCoordinator.restartTimeout(deviceId)
