@@ -114,3 +114,36 @@ internal val RemoteNodeSessionDTO.auditTarget: RemoteAuditTarget
     get() = if (isRoom) RemoteAuditTarget.ROOM else RemoteAuditTarget.REPEATER
 
 internal val RemoteNodeSessionDTO.remoteSessionKey: EntityKey get() = EntityKey(radioId, id)
+
+/** Delegates to [delegate], logging and swallowing any non-cancellation failure (Swift's logger cannot throw). */
+internal class NonThrowingAuditLog(
+    private val delegate: RemoteCommandAuditLog,
+    private val logger: java.util.logging.Logger,
+) : RemoteCommandAuditLog {
+    private suspend inline fun guarded(action: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (cancellation: kotlin.coroutines.cancellation.CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            logger.warning { "Audit log $action failed: $error" }
+        }
+    }
+
+    override suspend fun logLoginRequest(target: RemoteAuditTarget, publicKey: Bytes, pathLength: UByte) =
+        guarded("loginRequest") { delegate.logLoginRequest(target, publicKey, pathLength) }
+    override suspend fun logLoginSuccess(target: RemoteAuditTarget, publicKey: Bytes, isAdmin: Boolean) =
+        guarded("loginSuccess") { delegate.logLoginSuccess(target, publicKey, isAdmin) }
+    override suspend fun logLoginFailed(target: RemoteAuditTarget, publicKey: Bytes, reason: String) =
+        guarded("loginFailed") { delegate.logLoginFailed(target, publicKey, reason) }
+    override suspend fun logLogout(target: RemoteAuditTarget, publicKey: Bytes) =
+        guarded("logout") { delegate.logLogout(target, publicKey) }
+    override suspend fun logStatusRequest(target: RemoteAuditTarget, publicKey: Bytes) =
+        guarded("statusRequest") { delegate.logStatusRequest(target, publicKey) }
+    override suspend fun logTelemetryRequest(target: RemoteAuditTarget, publicKey: Bytes) =
+        guarded("telemetryRequest") { delegate.logTelemetryRequest(target, publicKey) }
+    override suspend fun logCLICommand(publicKey: Bytes, command: String) =
+        guarded("cliCommand") { delegate.logCLICommand(publicKey, command) }
+    override suspend fun logKeepAlive(target: RemoteAuditTarget, publicKey: Bytes) =
+        guarded("keepAlive") { delegate.logKeepAlive(target, publicKey) }
+}

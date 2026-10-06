@@ -53,9 +53,12 @@ class RemoteNodeService(
     internal val passwordStore: RemoteNodePasswordStore,
     scope: CoroutineScope,
     internal val clock: SessionClock = SystemSessionClock(),
-    internal val auditLogger: RemoteCommandAuditLog = RemoteCommandAuditLog.NONE,
+    auditLogger: RemoteCommandAuditLog = RemoteCommandAuditLog.NONE,
 ) : AutoCloseable {
     internal val logger: Logger = Logger.getLogger("com.mc1.RemoteNode")
+
+    /** Swift's audit logger cannot throw; a throwing implementation is logged, never allowed to abort a flow. */
+    internal val auditLogger: RemoteCommandAuditLog = NonThrowingAuditLog(auditLogger, logger)
     private val job = SupervisorJob(scope.coroutineContext[Job])
     internal val serviceScope = CoroutineScope(scope.coroutineContext + job)
 
@@ -148,13 +151,28 @@ class RemoteNodeService(
                 else -> false
             }
         }
+        // Swift cancels the previous monitor before subscribing the new one, so no event is handled twice.
+        synchronized(lock) { eventMonitorTask.also { eventMonitorTask = null } }?.cancel()
         // UNDISPATCHED registers the subscription before this function returns, like Swift's awaited
         // `session.events(filter:)`, even for a cold flow.
         val monitor = serviceScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            session.events(filter).collect { event -> handleEvent(event) }
+            session.events(filter).collect { event -> handleEventKeepingMonitorAlive(event) }
         }
-        val previous = synchronized(lock) { eventMonitorTask.also { eventMonitorTask = monitor } }
-        previous?.cancel()
+        synchronized(lock) { eventMonitorTask.also { eventMonitorTask = monitor } }?.cancel()
+    }
+
+    /**
+     * Swift's event handler cannot throw. A Kotlin collaborator that does must not end monitoring (later
+     * logins would time out and CLI replies would be dropped) or escape to the uncaught-exception handler.
+     */
+    private suspend fun handleEventKeepingMonitorAlive(event: MeshEvent) {
+        try {
+            handleEvent(event)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            logger.severe { "Remote node event handler failed for ${event::class.simpleName}: $error" }
+        }
     }
 
     /** Stop monitoring events. */
