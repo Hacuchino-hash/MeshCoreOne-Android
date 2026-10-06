@@ -1,6 +1,6 @@
 # WP-208 messaging evidence
 
-**Authored candidate, not verified parity or a completion receipt.**
+**Bounded messaging candidate, not a gate approval or a completion receipt.**
 The exact manual authorization and immutable initial identity are in
 [`receipt.json`](receipt.json). Branch rename is `NoTool`; the app-managed
 branch remains `cbattlegear-supreme-guacamole`.
@@ -14,6 +14,16 @@ source queue scenarios are authored as deterministic, enabled tests, not exclusi
 `collect_evidence.py --source-only` reconstructs this accounting from the frozen
 catalog and explicit Kotlin test declarations. Headers/names alone are not
 execution or behavior evidence.
+
+Exact head `a8ec220306b61b046b6080611488ebd6e43bd0da` has independently
+replayed hosted Linux proof: all184 owning JVM identities (131 expanded
+originals plus53 native), all18 messaging Room methods and full387 data cases
+pass with zero failures/errors/skips. Run `37415349088`/attempt1 also passes
+root standalone/assemble/lint and complete raw input/report/APK validation.
+The immutable artifact is recorded in
+[`native-run-37415349088.json`](native-run-37415349088.json). It is historical
+proof for that exact head, not a substitute for the subsequent hook-scope
+repair's exact-head evidence.
 
 The candidate uses actual merged `MeshCoreSession`, register-before-send
 correlation, immutable model values and persistence contracts. Test firmware
@@ -36,6 +46,9 @@ python -B .\tools\android-port\portmap.py
 ```
 
 These commands inspect source/provenance and the reader. They do not execute Kotlin.
+The paragraphs below retain the chronological authoring/failed-run record;
+their earlier "unverified" boundaries are superseded only by the exact-head
+native record above, never by source declaration counts.
 The first reader run discovered/passed21 tests, then the raw-retention,
 duplicate-JSON and path-traversal additions discovered/passed24 tests, each
 with zero failures/errors/skips.
@@ -61,7 +74,8 @@ validators passed. Initial portmap validation rejected mixed `PortedFrom` and
 `AndroidOnly` dispositions; the headers were corrected and the unchanged
 validator passed. These results are not Kotlin execution evidence.
 The real JVM task is `:core:services:test`; native consumers use the existing
-`:core:data:testDebugUnitTest`. **Neither task has been executed by this worker.**
+`:core:data:testDebugUnitTest`. Both execute on the declared hosted Linux job,
+not locally on this Windows worktree.
 No Windows JVM, SDK/JDK/WSL provisioning, global cache or dependency installation
 is authorized. The documented preflight returned exit2 because `ANDROID_CI_STATE`
 is missing; it gates local execution, not the admitted owned authorship.
@@ -83,7 +97,8 @@ remain untouched. Separate lazy `Test.configureEach` finalizers retain
 separate `validated` directory under the actual forwarded invocation's parent
 `wp208-native` directory. The reader receives only its real `--output`,
 `--invocation` and optional `--capture-only` flags, never a guessed task/input
-or environment credential. These tasks are declared, **not yet executed proof**.
+or environment credential. Their successful execution is bound to the
+specific immutable head/run recorded above.
 The historical producer request and actual status are in
 [`build-hook-request.json`](build-hook-request.json).
 No manifest/catalog/schema/policy/golden floor is changed to bypass missing wiring.
@@ -111,6 +126,21 @@ not invent a worker-run binding or relabel historical proof.
 verbatim and retains run identity and current/committed input blobs **before**
 success validation. It is a task finalizer as well as the first step of the
 success reader, so dependency-task failures retain their raw evidence.
+
+Finalizers remain independently registered on both real runners. Raw capture
+is required whenever the actual graph includes `verifyMessagingTests` or
+`:core:services:test`, an executor invocation is explicitly forwarded, or the
+raw-retainer task is directly requested. Missing invocation data still throws
+in every required context, including a failed messaging dependency; the
+success reader is unconditional and remains fail-closed.
+An unrelated backup-only graph without a messaging request is not a WP-208
+verification invocation. Its existing WP-203 pipeline independently retains
+complete bound data XML in `finally`; this hook does not replace or obstruct it.
+The six actual Gradle scope assertions run inside the existing
+`verifyMessagingEvidenceReaders` task, in addition to35 positive/adversarial
+Python reader assertions. The next exact-head root and backup jobs must prove
+both topologies; skipping an unrelated WP-208 raw task is not native test or
+messaging acceptance credit.
 
 The success command is the same reader without `--capture-only`. It requires
 the Linux verify stage, a real run/attempt, exact base/head/source/manifest/policy,

@@ -90,6 +90,20 @@ rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }
 tasks.named("check") { dependsOn(verifyBackupTests) }
 
 // AndroidOnly: WP-208 Exact owning assertions and raw-first finalizers over both actual test runners.
+fun messagingRawCaptureRequired(
+    forwardedInvocation: Boolean,
+    verifierSelected: Boolean,
+    servicesRunnerSelected: Boolean,
+    directlyRequested: Boolean,
+): Boolean = forwardedInvocation || verifierSelected || servicesRunnerSelected || directlyRequested
+
+fun messagingRawCaptureSelected(rawTaskName: String): Boolean = messagingRawCaptureRequired(
+    providers.gradleProperty("meshCliInvocationFile").isPresent,
+    gradle.taskGraph.hasTask(":core:data:verifyMessagingTests"),
+    gradle.taskGraph.hasTask(":core:services:test"),
+    gradle.startParameter.taskNames.any { it.substringAfterLast(':') == rawTaskName },
+)
+
 fun messagingEvidenceCommand(captureOnly: Boolean, completion: String): List<String> {
     val invocationValue = providers.gradleProperty("meshCliInvocationFile").orNull
         ?: throw GradleException("WP-208 requires the actual forwarded meshCliInvocationFile; no guessed execution binding")
@@ -111,6 +125,10 @@ val retainMessagingServicesRawEvidence by tasks.registering(Exec::class) {
     description = "Retain full services/data XML and actual execution inputs after the services runner, even on failure."
     workingDir(repository)
     outputs.upToDateWhen { false }
+    notCompatibleWithConfigurationCache("Inspects actual messaging verification task selection")
+    onlyIf("WP-208 capture requires its verification graph, a forwarded invocation or a direct capture request") {
+        messagingRawCaptureSelected(name)
+    }
     doFirst { commandLine(messagingEvidenceCommand(true, "raw/services-completion")) }
 }
 
@@ -119,6 +137,10 @@ val retainMessagingRoomRawEvidence by tasks.registering(Exec::class) {
     description = "Retain full services/data XML and actual execution inputs after the Room runner, even on failure."
     workingDir(repository)
     outputs.upToDateWhen { false }
+    notCompatibleWithConfigurationCache("Inspects actual messaging verification task selection")
+    onlyIf("WP-208 capture requires its verification graph, a forwarded invocation or a direct capture request") {
+        messagingRawCaptureSelected(name)
+    }
     doFirst { commandLine(messagingEvidenceCommand(true, "raw/room-completion")) }
 }
 
@@ -135,6 +157,15 @@ val verifyMessagingEvidenceReaders by tasks.registering(Exec::class) {
     group = "verification"
     description = "Execute positive and adversarial source/raw-evidence reader assertions with nonzero discovery."
     workingDir(repository)
+    doFirst {
+        check(!messagingRawCaptureRequired(false, false, false, false))
+        check(messagingRawCaptureRequired(true, false, false, false))
+        check(messagingRawCaptureRequired(false, true, false, false))
+        check(messagingRawCaptureRequired(false, false, true, false))
+        check(messagingRawCaptureRequired(false, false, false, true))
+        check(messagingRawCaptureRequired(true, true, true, true))
+        logger.lifecycle("WP208_HOOK_SCOPE_ASSERTIONS|6")
+    }
     commandLine("python", "-B", "-m", "unittest", "discover", "-s",
         repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-208").absolutePath,
         "-p", "test_collect_evidence.py", "-v")

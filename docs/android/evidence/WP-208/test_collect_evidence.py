@@ -120,6 +120,23 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertIn('"validated"', text)
         self.assertNotIn('tasks.named("testDebugUnitTest")', text)
 
+    def test_raw_scope_preserves_all_required_capture_contexts_and_actual_gradle_assertions(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('forwardedInvocation || verifierSelected || servicesRunnerSelected || directlyRequested', text)
+        self.assertIn('gradle.taskGraph.hasTask(":core:data:verifyMessagingTests")', text)
+        self.assertIn('gradle.taskGraph.hasTask(":core:services:test")', text)
+        self.assertIn("it.substringAfterLast(':') == rawTaskName", text)
+        self.assertEqual(2, text.count('messagingRawCaptureSelected(name)'))
+        self.assertIn('check(!messagingRawCaptureRequired(false, false, false, false))', text)
+        for context in ((True, False, False, False), (False, True, False, False),
+                        (False, False, True, False), (False, False, False, True),
+                        (True, True, True, True)):
+            flags = ', '.join(str(value).lower() for value in context)
+            self.assertIn(f'check(messagingRawCaptureRequired({flags}))', text)
+        self.assertIn('WP208_HOOK_SCOPE_ASSERTIONS|6', text)
+        self.assertIn('throw GradleException("WP-208 requires the actual forwarded meshCliInvocationFile', text)
+        self.assertNotIn('wp203_ci', text)
+
     def test_runner_progress_is_explicit_without_modifying_frozen_services_build(self):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
         self.assertIn('WP208_RUNNER_START|', text)
@@ -271,6 +288,11 @@ class EvidenceReaderTest(unittest.TestCase):
     def test_missing_run_id_is_not_historical_or_local_acceptance(self):
         self.invocation["identity"]["run_id"] = 0
         self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_absent_invocation_metadata_never_becomes_messaging_success(self):
+        self.snapshot["invocation"] = None
+        self.save_snapshot()
+        self.rejected()
 
     def test_different_valid_base_sha_is_not_the_authorized_base(self):
         self.invocation["identity"]["binding"]["base_sha"] = "d" * 40
