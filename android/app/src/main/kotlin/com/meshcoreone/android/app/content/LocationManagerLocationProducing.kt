@@ -120,48 +120,51 @@ class LocationManagerLocationProducing(
             throw LocationServiceError.RequestFailed("location provider disabled")
         }
         return suspendCancellableCoroutine { continuation ->
-            // Real, inline permission re-check immediately guarding the call below: lint's
-            // MissingPermission detector requires the guard in the exact same lexical scope as
-            // the call it protects (an earlier check in an enclosing function, across this
-            // lambda boundary, is not recognized). This is also a genuine correctness guard, not
-            // only a lint placation: the grant this adapter observed when core:services'
-            // LocationService checked authorizationStatus before invoking this producer could
-            // have been revoked by the user (Settings) in the intervening time, since Android
-            // permissions are revocable at any moment, not just at request time.
+            // Real, inline permission re-check immediately guarding the call below, written as
+            // the POSITIVE "== PERMISSION_GRANTED || == PERMISSION_GRANTED" branch lint's
+            // MissingPermission detector's dataflow actually recognizes for an anyOf permission
+            // group: its pattern-matcher does not perform the De Morgan transform needed to
+            // credit an inverted ("!=" combined with "&&") early-return guard as equivalent, even
+            // in the exact same lexical scope (that was this fix's own prior, still-flagged
+            // attempt). This is also a genuine correctness guard, not only a lint placation: the
+            // grant this adapter observed when core:services' LocationService checked
+            // authorizationStatus before invoking this producer could have been revoked by the
+            // user (Settings) in the intervening time, since Android permissions are revocable at
+            // any moment, not just at request time.
             if (
-                context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED &&
-                context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED ||
+                context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
-                mutableStatus.value = LocationAuthorizationStatus.DENIED
-                continuation.resumeWith(
-                    Result.failure(LocationServiceError.NotAuthorized(LocationAuthorizationStatus.DENIED)),
-                )
-                return@suspendCancellableCoroutine
-            }
-            val cancellationSignal = CancellationSignal()
-            continuation.invokeOnCancellation { cancellationSignal.cancel() }
-            try {
-                manager.getCurrentLocation(
-                    provider,
-                    cancellationSignal,
-                    Executor { it.run() },
-                    { location: Location? ->
-                        if (location == null) {
-                            continuation.resumeWith(
-                                Result.failure(LocationServiceError.RequestFailed("no fix available")),
-                            )
-                        } else {
-                            continuation.resumeWith(
-                                Result.success(GeoCoordinate(location.latitude, location.longitude)),
-                            )
-                        }
-                    },
-                )
-            } catch (revoked: SecurityException) {
-                // Belt-and-suspenders: permission revoked in the narrow window between the
-                // checkSelfPermission guard above and this call reaching the OS.
+                val cancellationSignal = CancellationSignal()
+                continuation.invokeOnCancellation { cancellationSignal.cancel() }
+                try {
+                    manager.getCurrentLocation(
+                        provider,
+                        cancellationSignal,
+                        Executor { it.run() },
+                        { location: Location? ->
+                            if (location == null) {
+                                continuation.resumeWith(
+                                    Result.failure(LocationServiceError.RequestFailed("no fix available")),
+                                )
+                            } else {
+                                continuation.resumeWith(
+                                    Result.success(GeoCoordinate(location.latitude, location.longitude)),
+                                )
+                            }
+                        },
+                    )
+                } catch (revoked: SecurityException) {
+                    // Belt-and-suspenders: permission revoked in the narrow window between the
+                    // checkSelfPermission guard above and this call reaching the OS.
+                    mutableStatus.value = LocationAuthorizationStatus.DENIED
+                    continuation.resumeWith(
+                        Result.failure(LocationServiceError.NotAuthorized(LocationAuthorizationStatus.DENIED)),
+                    )
+                }
+            } else {
                 mutableStatus.value = LocationAuthorizationStatus.DENIED
                 continuation.resumeWith(
                     Result.failure(LocationServiceError.NotAuthorized(LocationAuthorizationStatus.DENIED)),
