@@ -13,8 +13,10 @@ import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.Rule
 import org.junit.Test
@@ -83,7 +85,15 @@ class DataStoreLinkPreviewPreferencesSourceTest {
             // same shared process-owned store) must still be observed - proves this is a real
             // DataStore-backed Flow, not a private in-memory copy.
             owner.preferences.set(AppStorageKey.linkPreviewsEnabled, true)
-            val observed = withTimeout(5_000) { source.preferences.first { it.previewsEnabled } }
+            // The update above lands via the real MeshCoreStorage/DataStore IO dispatcher, and
+            // this source's own StateFlow is only refreshed when that real (non-test-scheduler)
+            // collector delivers the next DataStore emission - a genuinely async, non-virtual
+            // event. Running the wait on a real dispatcher (not the TestScope's virtual one)
+            // gives withTimeout a real wall-clock budget instead of letting runTest's virtual
+            // clock fast-forward the timeout to completion before that real emission can arrive.
+            val observed = withContext(Dispatchers.Default) {
+                withTimeout(5_000) { source.preferences.first { it.previewsEnabled } }
+            }
             assertTrue(observed.previewsEnabled)
         } finally {
             owner.close()
