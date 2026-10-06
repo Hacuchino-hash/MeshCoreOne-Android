@@ -511,9 +511,10 @@ class ConnectionManager(
             listOf(ConnectionMethod.WiFi(it.host, it.port))
         } ?: emptyList()
         val device = DeviceDTO.fromConnection(deviceId, radioId, info, capabilities, autoAdd, prior, methods, clock.instant)
-        synchronized(lock) { requireCurrent(owner); owner.device = device }
         val ownership = FactoryOwnership(token)
-        owner.ownership = ownership
+        // Publish the ownership under the same lock closeGeneration takes: either teardown already ended this
+        // generation (requireCurrent throws before the factory allocates anything) or it sees and closes it.
+        synchronized(lock) { requireCurrent(owner); owner.device = device; owner.ownership = ownership }
         val services = serviceFactory.create(RuntimeServiceInputs(
             SessionInputs(token, session, this, owner.scope), device,
             RuntimeServiceCallbacks(
