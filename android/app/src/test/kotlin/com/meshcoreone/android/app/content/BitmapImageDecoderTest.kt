@@ -1,11 +1,16 @@
-// AndroidOnly: WP-218 real BitmapFactory-backed ImageDecoding native adapter test. Robolectric
-// 4.17 defaults to native graphics mode, so BitmapFactory.decodeByteArray here is the real Skia
-// decode path, not a width/height stub -- these cases exercise genuine decode/downsample/failure
-// behavior, not a fake. The PNG fixture bytes are generated on the fly via javax.imageio, which
-// is a host-JVM-only TEST utility here (this file runs under Robolectric on the desktop JVM, is
-// never shipped to a device, and is not part of core:services' pure-JVM production surface that
-// WP-218 restricts from java.awt/javax.imageio) -- production decode always goes through the real
-// BitmapFactory call below, never through this fixture helper.
+// AndroidOnly: WP-218 real BitmapFactory-backed ImageDecoding native adapter test. This module
+// declares only org.robolectric:robolectric + the preinstrumented android-all SDK jar (see
+// android/gradle/libs.versions.toml) -- no nativeruntime-dist-* artifact and no
+// @GraphicsMode(NATIVE) -- so BitmapFactory.decodeByteArray runs under Robolectric's legacy
+// shadow, which genuinely parses real format header bytes (PNG/JPEG/etc. magic numbers + IHDR)
+// for width/height on real encoded data, but defaults to fabricating a success Bitmap for data
+// it can't recognize (see `setAllowInvalidImageData` usage below). These cases still exercise
+// genuine decode/downsample/header-driven failure behavior against the real production
+// BitmapFactory call path, not a hand-rolled fake. The PNG fixture bytes are generated on the fly
+// via javax.imageio, which is a host-JVM-only TEST utility here (this file runs under Robolectric
+// on the desktop JVM, is never shipped to a device, and is not part of core:services' pure-JVM
+// production surface that WP-218 restricts from java.awt/javax.imageio) -- production decode
+// always goes through the real BitmapFactory call below, never through this fixture helper.
 package com.meshcoreone.android.app.content
 
 import com.meshcoreone.android.core.services.content.ImageDecodeOutcome
@@ -20,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowBitmapFactory
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31])
@@ -67,6 +73,18 @@ class BitmapImageDecoderTest {
 
     @Test
     fun `garbage bytes that are not any recognized image fail explicitly`() = runTest {
+        // Robolectric's legacy (non-native) graphics shadow defaults to
+        // `allowInvalidImageData = true`, which fabricates a 100x100 success Bitmap for ANY
+        // byte array BitmapFactory can't actually parse -- the opposite of real Android/Skia,
+        // which returns null for unrecognized data. This project does not declare Robolectric's
+        // native-graphics runtime artifact (confirmed via android/gradle/libs.versions.toml: no
+        // org.robolectric:nativeruntime-dist-* coordinate, no @GraphicsMode(NATIVE) usage), so
+        // the header comment above claiming "real Skia decode path" was inaccurate for garbage,
+        // non-format bytes specifically (genuine PNG bytes above ARE correctly header-parsed by
+        // the legacy shadow, which is why those two tests pass unaided). Forcing
+        // allowInvalidImageData=false here restores real-Android null-on-garbage semantics for
+        // this one assertion without touching the two genuine-PNG tests' passing behavior.
+        ShadowBitmapFactory.setAllowInvalidImageData(false)
         val decoder = BitmapImageDecoder(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined)
 
         val outcome = decoder.decode(byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8))
