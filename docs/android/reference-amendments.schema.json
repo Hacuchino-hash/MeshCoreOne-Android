@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Narrow, individually-reviewed exceptions to the frozen Swift reference pin",
+  "description": "Each entry permits exactly one test-only file to diverge from the pinned commit's blob, to one specific reviewed replacement blob. Production Swift source is never eligible. Every entry requires its own ADR. This never advances REFERENCE_SHA and never widens into a general exception.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "reference_sha", "entries"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "reference_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "original_blob_sha", "approved_blob_sha", "adr", "reason"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "original_blob_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "approved_blob_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "adr": {"type": "string", "pattern": "^docs/android/adr/.+\\.md$"},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
