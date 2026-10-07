@@ -24,8 +24,13 @@ repair lease for `android/core/connectivity/`,
 Verified durable receipt:
 `~/meshcoreone-work/leases/wp206-connectivity-repair/receipt.json`,
 identity `wp206-repair-12b3e244-372fbc58-20261007`. Its session, branch, worktree,
-base, manifest and both committed policy digests match the trusted base; all
-changed files are within its three write paths.
+base, manifest and both committed policy digests match the trusted base.
+The user subsequently issued an exclusive supervised amendment for exactly
+`docs/android/evidence/WP-211/collect_evidence.py` and
+`docs/android/evidence/WP-211/test_collect_evidence.py`, assigned to this repair
+session to resolve the actual full-gate producer failure. All changed files are
+within these five authorized paths. The operational shared-ledger alias is
+`supervised-WP206-connectivity-repair-372fbc`.
 This is manual supervised authorization, not dispatcher activation or formal
 acceptance of the original unleased external contribution.
 
@@ -55,8 +60,14 @@ identified these failures:
 
 Baseline reports:
 `~/meshcoreone-work/local-checks/run-zpn1PImt/gradle-verify.log`.
-Raw XML:
+Raw XML at the time of reproduction:
 `~/meshcoreone-work/local-checks/repos/1059cdbfd240fcfc/android/core/connectivity/build/test-results/testDebugUnitTest/`.
+That managed snapshot is reused by subsequent checks. The original two failed
+suite XML documents were preserved verbatim from the tool's captured output as
+session artifact `wp206-baseline-failed-junit-output.txt` (SHA-256
+`17950fe2d2795b95ee4ebf056e533f7e052c86862784979745b5d7946ce68ae9`).
+The baseline Gradle log was also preserved as `wp206-baseline-gradle-verify.log`
+(SHA-256 `67f264ec9982950a9d7f331f70e94ba9b96f5c00ffc8b130247206eec0eef710`).
 
 The merged runtime's `reportHealthReconnectFailure` reports
 `RuntimeDiagnostic.Failure("health.reconnect", cause)` instead of throwing.
@@ -76,8 +87,8 @@ removed or changed.
 
 `python .\tools\android-port\portmap.py` and
 `python .\tools\android-port\controller\validate.py` passed in the live visible
-terminal before the repair. Full repair verification is pending; this document
-will be updated with actual outcomes before submission.
+terminal before the repair. Actual repair iterations are recorded below; they
+never substitute for the complete successful exact-commit submission gate.
 
 The first repaired full run was:
 
@@ -91,16 +102,73 @@ with no failures/errors/skips. Preflight passed. Actual connectivity XML contain
 15 suites and 174 discovered/passed cases, 0 failures/errors/skips. The original
 three failing cases are included, not excluded or retried individually.
 
-The complete gate is **BLOCKED**, not passed: verification stopped at
-`:core:data:retainDeviceSettingsRoomEvidence`. The out-of-scope WP-211
+That full attempt failed: verification stopped at
+`:core:data:retainDeviceSettingsRoomEvidence`. The then-out-of-scope WP-211
 `collect_evidence.py::invocation` rejects the actual local invocation JSON with
 `ValueError: Hosted invocation lacks actual run identity`. The data build reuses
 `meshCliInvocationFile`, whose local runner record honestly has no hosted identity.
 The services and data suites completed with 306 and 381 passing cases respectively,
 0 failures/errors/skips, but this is not a full root or runtime result.
-The precise producer handoff was sent to the coordinator. No hosted identity is
-fabricated, collector validation skipped, shared producer edited or push allowed
-on the strength of this partial result.
+The precise producer handoff was sent to the coordinator, who subsequently
+granted the two-file amendment above. No hosted identity was fabricated,
+collector validation skipped or push allowed on the strength of this partial result.
+
+The unchanged eight auth-routing and 26 BLE-health original-case bindings and
+test method identities were compared directly between the base Git blobs and
+the repair commit. All match exactly.
+
+Before the producer amendment, this visible iteration ran:
+
+```powershell
+python $gate --distribution Ubuntu-22.04 --worktree --stages standalone,assemble,lint,inspect
+```
+
+Standalone, assemble and lint passed. Inspect could not copy
+`android/build/reports/scaffold/test-discovery.tsv` because the earlier failed
+root verification never generated it. This partial iteration is not substituted
+for the required complete cycle and does not establish overall inspection success.
+
+## Authorized producer interoperability repair
+
+The WP-211 reader now accepts only the standard typed schema-1/Linux/verify
+record with an explicitly present `identity: null` as local-only execution.
+It preserves null hosted run/attempt IDs, the current Git HEAD, the complete
+actual invocation, and the existing unauthenticated local-reader authority.
+Missing identities, malformed hosted dictionaries, boolean/nonpositive/missing
+hosted IDs and malformed bindings fail rather than falling back to local.
+
+Hosted records retain the exact root binding, source/manifest/policy and current
+HEAD. Their actual base must be a full SHA naming an existing commit, inherit
+the frozen integration baseline, and be an ancestor of the actual HEAD; it is
+no longer required to equal the first producer PR's historical base. The
+historical receipt/integration baselines, reviewed producer freeze and case
+floors remain unchanged. Validation checks the retained actual invocation
+itself and requires any supplied invocation to match it completely; external
+input cannot conceal a changed or missing retained record. Trusted root CI
+still independently binds its own actual event/run/head/base.
+
+```powershell
+python .\docs\android\evidence\WP-211\test_collect_evidence.py -v
+```
+
+Passed in the visible terminal: 46 reader/producer regressions, 0 failures,
+errors or skips. The added cases use a real temporary Git history for baseline,
+later ancestor, unrelated, missing and non-commit base validation. Synthetic
+reader fixtures never count as native service/Room evidence. Existing malformed,
+zero, failed, skipped, duplicate, hash/freeze and exact partition guards remain.
+No runtime, business code, data build, shared runner, source pin, policy or
+producer freeze was changed.
+
+The required submission verification is the installed full committed-head gate:
+
+```powershell
+python $gate --distribution Ubuntu-22.04 --commit HEAD
+```
+
+All seven default stages (`python,preflight,verify,standalone,assemble,lint,inspect`)
+must pass before a remote update. Its immutable HEAD, complete result and retained
+run logs belong in the follow-up PR; the normal installed pre-push hook remains
+enabled and independently executes the complete committed-tip gate.
 
 ## Evidence boundary
 

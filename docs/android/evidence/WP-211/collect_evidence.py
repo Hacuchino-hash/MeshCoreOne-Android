@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[4]
 OUT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
-from controller.gates import policy_revision
+from controller.gates import Binding, policy_revision
 from controller.model import Manifest
 from controller.schema import load_json
 
@@ -255,20 +255,36 @@ def invocation(path):
         return {"host": platform.system().lower(), "run_id": None, "run_attempt": None, "base_sha": BASE,
                 "authority": "local reader; not an authenticated CI or acceptance receipt"}
     record = load_json(path)
-    require(record["schema_version"] == 1 and record["host"] == "linux" and record["stage"] == "verify",
+    require(isinstance(record, dict) and set(record) == {"schema_version", "host", "stage", "identity"},
+            "Malformed declared invocation fields")
+    require(type(record["schema_version"]) is int and record["schema_version"] == 1 and
+            record["host"] == "linux" and record["stage"] == "verify",
             "Expected actual declared Linux verify invocation")
     identity = record["identity"]
-    require(identity is not None, "Hosted invocation lacks actual run identity")
+    if identity is None:
+        return {**invocation(None), "host": record["host"], "head_sha": git("rev-parse", "HEAD"),
+                "actual_invocation": record}
+    require(isinstance(identity, dict) and set(identity) == {"binding", "run_id", "run_attempt"},
+            "Malformed hosted invocation identity")
     binding = identity["binding"]
-    require(binding["repository"] == "cbattlegear/MeshCoreOne-Android" and binding["head_sha"] == git("rev-parse", "HEAD"),
+    require(isinstance(binding, dict), "Malformed hosted invocation binding")
+    typed_binding = Binding.parse(binding)
+    head = git("rev-parse", "HEAD")
+    require(typed_binding.repository == "cbattlegear/MeshCoreOne-Android" and
+            typed_binding.work_package == "WP-003" and typed_binding.head_sha == head,
             "Stale/foreign actual invocation")
-    require(binding["base_sha"] == BASE, "Invocation is not bound to the authorized current integration base")
+    require(git("cat-file", "-t", typed_binding.base_sha) == "commit", "Invocation base is not an existing commit")
+    require(git("merge-base", BASE, typed_binding.base_sha) == BASE,
+            "Invocation base is outside the inherited integration baseline")
+    require(git("merge-base", typed_binding.base_sha, head) == typed_binding.base_sha,
+            "Invocation base is not an ancestor of the actual HEAD")
     require(binding["source_sha"] == SOURCE and binding["manifest_sha256"] == MANIFEST and binding["policy_revision"] == POLICY,
             "Invocation source/policy drift")
     require(type(identity["run_id"]) is int and identity["run_id"] > 0 and
             type(identity["run_attempt"]) is int and identity["run_attempt"] > 0, "Missing run/attempt identity")
     return {"host": record["host"], "run_id": identity["run_id"], "run_attempt": identity["run_attempt"],
             "base_sha": binding["base_sha"], "actual_root_binding": binding,
+            "actual_invocation": record,
             "authority": "actual root invocation retained; independent trusted CI still binds its own artifacts"}
 
 
@@ -332,8 +348,18 @@ def validate_retained(output, invocation_file=None):
     require(metadata["receipt_base_sha"] == RECEIPT_BASE and metadata["integration_base_sha"] == BASE,
             "Retained receipt/integration base drift")
     require(metadata["recovery_owner_receipt"] == RECOVERY_OWNER, "Retained recovery owner receipt drift")
-    actual_invocation = invocation_file or (output / "actual-invocation.json" if (output / "actual-invocation.json").is_file() else None)
+    retained_invocation = output / "actual-invocation.json"
+    if metadata["invocation_file"] is not None:
+        require(retained_invocation.is_file() and not retained_invocation.is_symlink(),
+                "Missing/linked retained actual invocation")
+        actual_invocation = retained_invocation
+    else:
+        require(not retained_invocation.exists(), "Unexpected retained actual invocation")
+        actual_invocation = None
     require(metadata["execution"] == invocation(actual_invocation), "Retained execution identity drift")
+    if invocation_file is not None:
+        require(actual_invocation is not None and load_json(invocation_file) == load_json(actual_invocation),
+                "Provided invocation differs from the retained actual invocation")
     require(metadata["head_sha"] == git("rev-parse", "HEAD"), "Retained source HEAD is stale")
     require(all(value["git_blob"] == value["checkout_blob"] for value in metadata["input_blobs"].values()),
             "Compiled input checkout differs from immutable HEAD")
