@@ -1,0 +1,29 @@
+nan inf -inf -0.000000
+[a ] [a]
+[a   ] [a][  ]
+[a  b] [a][ b]
+[ a] [a]
+[a] [a]
+[set  tx 22] [set][ tx 22]
+869.525,,250,11,5 4
+,1,2,3,4 4
+1,2,3,4, 4
+[+inf] inf
+[-Infinity] -inf
+[INFINITY] inf
+[infinite] nil
+[+nan] nan
+[-NaN] nan
+[nan()] nan
+[nan(abc_1)] nan
+[nan(] nil
+[0x] nil
+[0x.8] 0.5
+[0x1.] 1.0
+[0x1p] nil
+[1e+] nil
+[1.e5] 100000.0
+[..5] nil
+[0x1P+2] 4.0
+0 x
+Optional(12) nil Optional(-1) Optional(1)
