@@ -82,7 +82,7 @@ class LinkPreviewScraperTest {
     @Test
     fun `loadImageData rejects an oversized expected content length`() = runTest {
         val scraper = scraperFor(
-            startedWith(mimeType = "image/jpeg", expectedContentLength = 10 * 1024 * 1024, body = byteArrayOf(1)),
+            startedWith(mimeType = "image/jpeg", expectedContentLength = 3 * 1024 * 1024, body = byteArrayOf(1)),
         )
 
         assertNull(scraper.loadImageData("https://example.com/huge.jpg"))

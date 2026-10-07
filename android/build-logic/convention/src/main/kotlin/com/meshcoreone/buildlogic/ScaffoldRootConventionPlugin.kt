@@ -51,7 +51,6 @@ class ScaffoldRootConventionPlugin : Plugin<Project> {
             notCompatibleWithConfigurationCache("Reads current reports from the four configured scaffold suites")
             dependsOn(
                 ":core:contracts:test",
-                ":core:services:test",
                 ":app:testDebugUnitTest",
                 ":scaffold:room-verification:testDebugUnitTest",
                 gradle.includedBuild("build-logic").task(":convention:test"),
@@ -60,7 +59,6 @@ class ScaffoldRootConventionPlugin : Plugin<Project> {
                 val reports = linkedMapOf(
                     "build-logic" to "build-logic/convention/build/test-results/test",
                     "contracts" to "core/contracts/build/test-results/test",
-                    "services" to "core/services/build/test-results/test",
                     "app" to "app/build/test-results/testDebugUnitTest",
                     "room-verification" to "scaffold/room-verification/build/test-results/testDebugUnitTest",
                 )

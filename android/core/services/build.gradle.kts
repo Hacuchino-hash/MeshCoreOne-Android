@@ -121,9 +121,47 @@ tasks.register("resolveContentDependencies") {
 // test`'s own result (finalizedBy does not affect the finalized task's outcome); it only makes
 // this task itself fail loudly, which is purely diagnostic plumbing, not a feature/behavior gate.
 val repository = rootProject.projectDir.parentFile
+val contentCollector = repository.resolve("docs").resolve("android").resolve("evidence")
+    .resolve("WP-218").resolve("collect_evidence.py")
+val contentInvocation = providers.gradleProperty("meshCliInvocationFile")
+val contentEvidenceDirectory = contentInvocation.map {
+    file(it).parentFile.resolve("wp218-native").absolutePath
+}
+
+val retainContentServiceReports by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain all raw Services reports and input bytes before parsing, including failed runs."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--retain-only", "services",
+        "--output", contentEvidenceDirectory.map { file(it).resolve("services-raw").absolutePath }
+            .getOrElse(layout.buildDirectory.dir("reports/wp218/services-raw").get().asFile.absolutePath))
+    contentInvocation.orNull?.let { args("--invocation", it) }
+}
+tasks.named("test") { finalizedBy(retainContentServiceReports) }
+
+val verifyContentEvidenceReader by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Run nonzero content-reader raw-retention, source154 and immutable-binding regressions."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--self-test")
+}
+
+val verifyContentTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require real Services/App tests and every frozen original content family; missing behavior fails."
+    dependsOn("test", ":app:testDebugUnitTest", verifyContentEvidenceReader)
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath,
+        "--output", contentEvidenceDirectory.map { file(it).resolve("source154").absolutePath }.getOrElse(""))
+    contentInvocation.orNull?.let { args("--invocation", it) }
+}
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyContentTests) }
+tasks.named("check") { dependsOn(verifyContentTests) }
+
 val printServicesFailureDiagnostics by tasks.registering(Exec::class) {
     group = "verification"
     description = "Print bounded actual raw core:services failures after test; never changes test's result."
+    dependsOn(retainContentServiceReports)
     workingDir(repository)
     commandLine("python", "-B", repository.resolve("docs").resolve("android").resolve("evidence")
         .resolve("WP-218").resolve("print_failures.py").absolutePath)

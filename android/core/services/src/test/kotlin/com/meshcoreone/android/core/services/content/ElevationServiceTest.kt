@@ -3,14 +3,10 @@
 // these are pure math with no platform dependency. ErrorTests (4 cases) asserted *localized
 // message content* (`errorDescription` strings sourced from L10n.Localizable) - an app-layer
 // presentation concern outside core:services' pure-JVM scope; this file instead asserts the
-// equivalent *error identity/payload* parity the source's test names actually describe (that
-// each case carries the right associated data), consistent with the task's "parameter families,
-// not filename/header counts" standard. DistanceIntegrationTests (1 case) is NOT ported: it
-// depends on `RFCalculator.distance`, which the port-manifest assigns to WP-212 (not yet
-// merged) - this port instead has an independently-authored equivalent further below that
-// injects a fake distance function, proving the *wiring* (fetchElevations really calls
-// `distanceMeters(start, each)` and attaches the result per-sample) without claiming the real
-// RFCalculator algorithm itself, which stays WP-212's to port and test.
+// error identity/payload, but these are NOT replacements for the four original localized
+// presentation assertions: the source154 collector keeps those four cases BLOCKED.
+// DistanceIntegrationTests now uses the admitted real GeodesicDistance prerequisite, not a
+// fake distance lambda; the separate fetch wiring test deliberately still uses an injected fake.
 //
 // The retry/backoff/attempt-dispatch orchestration in `performRequest` has no original Swift
 // *unit* test (it was only exercised by the source's own network-dependent integration paths,
@@ -19,6 +15,7 @@
 package com.meshcoreone.android.core.services.content
 
 import kotlinx.coroutines.test.runTest
+import com.meshcoreone.android.core.services.rf.GeodesicDistance
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -131,6 +128,17 @@ class ElevationServiceTest {
             assertEquals(pointA.latitude, sample.latitude)
             assertEquals(pointA.longitude, sample.longitude)
         }
+    }
+
+    @Test
+    fun `Sample coordinates work with RFCalculator distance`() {
+        val samples = ElevationService.sampleCoordinates(pointA, pointB, 5)
+        val totalDistance = GeodesicDistance.metersBetween(pointA, pointB)
+        val cumulativeDistance = samples.zipWithNext().sumOf { (from, to) ->
+            GeodesicDistance.metersBetween(from, to)
+        }
+
+        assertTrue(kotlin.math.abs(cumulativeDistance - totalDistance) < 1.0)
     }
 
     // MARK: - ElevationServiceError identity/payload parity (see file header)

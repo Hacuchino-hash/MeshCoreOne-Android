@@ -1,9 +1,6 @@
 // PortedFrom: MC1Tests/Services/DecodedPreviewCacheTests.swift@db14559b39d32322b06477c6ae676112f583db50
-// Uses plain String payloads for Hero/Icon with an explicit cost-per-character function, in
-// place of the Swift test's real UIImage fixtures - the behavior under test is DecodedPreviewCache's
-// own store/decoded/clear contract and its FIFO/cost eviction sweep (delegated to
-// ThreadSafeFifoCostBoundedCache, already independently covered by FifoCostBoundedCacheTest),
-// plus the dto byte-stripping behavior that is unique to this type.
+// Payload identity and DTO/FIFO behavior are tested independently of the platform image type.
+// BitmapImageDecoderTest exercises the original decoded-pixel cost with a real Bitmap handle.
 package com.meshcoreone.android.core.services.content
 
 import com.meshcoreone.android.core.model.LinkPreviewDataDTO
@@ -11,7 +8,9 @@ import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class DecodedPreviewCacheTest {
     private val stringCost: (String) -> Long = { it.length.toLong() }
@@ -27,6 +26,59 @@ class DecodedPreviewCacheTest {
     )
 
     @Test
+    fun `Round-trips a stored entry with DTO, hero, and icon`() {
+        val cache = DecodedPreviewCache<Any, Any>()
+        val hero = Any()
+        val icon = Any()
+        val original = dto("https://example.invalid/round-trip")
+        cache.store(CachedDecodedPreview(original, hero, icon, { 4L }, { 4L }), original.url)
+
+        val result = assertNotNull(cache.decoded(original.url))
+        assertEquals(original.url, result.dto.url)
+        assertEquals(original.title, result.dto.title)
+        assertSame(hero, result.hero)
+        assertSame(icon, result.icon)
+    }
+
+    @Test
+    fun `Tolerates a nil hero or icon`() {
+        val cache = DecodedPreviewCache<Any, Any>()
+        val icon = Any()
+        val original = dto("https://example.invalid/nil-hero")
+        cache.store(CachedDecodedPreview(original, null, icon, { 4L }, { 4L }), original.url)
+
+        val result = assertNotNull(cache.decoded(original.url))
+        assertNull(result.hero)
+        assertSame(icon, result.icon)
+    }
+
+    @Test
+    fun `Re-storing the same key replaces the entry`() {
+        val cache = DecodedPreviewCache<Any, Any>()
+        val first = dto("https://example.invalid/replace").copy(title = "first")
+        val second = first.copy(title = "second")
+        val secondHero = Any()
+        cache.store(CachedDecodedPreview(first, Any(), null, { 4L }, { 4L }), first.url)
+        cache.store(CachedDecodedPreview(second, secondHero, null, { 4L }, { 4L }), second.url)
+
+        val result = assertNotNull(cache.decoded(first.url))
+        assertSame(secondHero, result.hero)
+        assertEquals("second", result.dto.title)
+    }
+
+    @Test
+    fun `FIFO eviction drops the oldest entry past the count cap`() {
+        val cache = DecodedPreviewCache<Any, Any>()
+        val urls = (0 until 60).map { "https://example.invalid/$it" }
+        for (url in urls) {
+            cache.store(CachedDecodedPreview(dto(url), Any(), null, { 4L }, { 4L }), url)
+        }
+
+        assertNull(cache.decoded(urls.first()))
+        assertNotNull(cache.decoded(urls.last()))
+    }
+
+    @Test
     fun `Stores raw source bytes but strips them from the retained dto`() {
         val entry = CachedDecodedPreview(
             dto = dto("https://example.com"),
@@ -38,6 +90,8 @@ class DecodedPreviewCacheTest {
 
         assertNull(entry.dto.imageData)
         assertNull(entry.dto.iconData)
+        assertEquals("https://example.com", entry.dto.url)
+        assertEquals("Example", entry.dto.title)
         assertEquals(100L, entry.dto.imageWidth)
         assertEquals(50L, entry.dto.imageHeight)
         assertEquals("hero-pixels".length.toLong() + "icon-pixels".length.toLong(), entry.cost)
@@ -97,6 +151,7 @@ class DecodedPreviewCacheTest {
     fun `clear empties the cache`() {
         val cache = DecodedPreviewCache<String, String>(maxEntryCount = 50, maxTotalCostBytes = 1000)
         cache.store(CachedDecodedPreview<String, String>(dto("a"), "1", null, stringCost, stringCost), "a")
+        assertNotNull(cache.decoded("a"))
 
         cache.clear()
 

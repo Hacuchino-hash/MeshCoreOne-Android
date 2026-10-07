@@ -14,12 +14,19 @@
 package com.meshcoreone.android.app.content
 
 import com.meshcoreone.android.core.services.content.ImageDecodeOutcome
+import com.meshcoreone.android.core.services.content.BoundedHttpFetching
+import com.meshcoreone.android.core.services.content.CachedDecodedPreview
+import com.meshcoreone.android.core.services.content.DecodedImageHandle
+import com.meshcoreone.android.core.services.content.HttpFetchAttempt
+import com.meshcoreone.android.core.services.content.LinkPreviewScraper
+import com.meshcoreone.android.core.model.LinkPreviewDataDTO
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
@@ -60,6 +67,48 @@ class BitmapImageDecoderTest {
         assertIs<ImageDecodeOutcome.Decoded>(outcome)
         assertTrue(outcome.handle.width <= 256, "expected a downsampled width, got ${outcome.handle.width}")
         assertTrue(outcome.handle.height <= 128, "expected a downsampled height, got ${outcome.handle.height}")
+    }
+
+    @Test
+    fun `downsampledImage honors maxPixelSize`() = runTest {
+        val decoder = BitmapImageDecoder(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined)
+        val outcome = decoder.decode(realPngBytes(64, 64), maxDimension = 32)
+
+        assertIs<ImageDecodeOutcome.Decoded>(outcome)
+        assertTrue(maxOf(outcome.handle.width, outcome.handle.height) <= 32)
+    }
+
+    @Test
+    fun `decoded preview cost reflects real Bitmap byte cost`() = runTest {
+        val decoder = BitmapImageDecoder(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined)
+        val outcome = decoder.decode(realPngBytes(100, 50))
+        assertIs<ImageDecodeOutcome.Decoded>(outcome)
+        val entry = CachedDecodedPreview<DecodedImageHandle, DecodedImageHandle>(
+            dto = LinkPreviewDataDTO(url = "https://example.invalid/cost"),
+            hero = outcome.handle,
+            icon = null,
+            heroCost = { it.costBytes.toLong() },
+            iconCost = { it.costBytes.toLong() },
+        )
+
+        assertTrue(entry.cost >= 20_000)
+    }
+
+    @Test
+    fun `loadImageData returns decoded data for a valid image`() = runTest {
+        val png = realPngBytes(4, 4)
+        val fetching = object : BoundedHttpFetching {
+            override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt =
+                HttpFetchAttempt.Started(200, "image/png", png.size.toLong()) { receive ->
+                    receive(png)
+                }
+        }
+        val scraper = LinkPreviewScraper(fetching, isUrlSafe = { true })
+        val fetched = assertNotNull(scraper.loadImageData("https://example.com/photo.png"))
+        val outcome = BitmapImageDecoder(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined).decode(fetched)
+
+        assertIs<ImageDecodeOutcome.Decoded>(outcome)
+        assertTrue(outcome.handle.width > 0)
     }
 
     @Test

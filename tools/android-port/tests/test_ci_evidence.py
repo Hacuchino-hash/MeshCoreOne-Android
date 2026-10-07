@@ -117,7 +117,7 @@ class EvidenceTests(unittest.TestCase):
             binding = self.fixture(directory)
             result = self.aggregate(directory, binding)
             self.assertEqual(set(result["hosts"]), {"linux"})
-            self.assertEqual(result["hosts"]["linux"]["kotlin_assertions"], 137)
+            self.assertEqual(result["hosts"]["linux"]["kotlin_assertions"], 47)
             self.assertEqual(result["hosts"]["linux"]["module_unit_assertions"], 3)
 
     def test_missing_forged_stale_and_failed_active_module_evidence_is_rejected(self):
