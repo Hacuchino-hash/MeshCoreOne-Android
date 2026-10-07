@@ -7,7 +7,7 @@ import java.util.Locale
 
 /**
  * Approximates `String.localizedStandardCompare` (verified against Foundation with swiftc, evidence
- * oracle `wp313_compare.swift.txt`): digit runs compare by numeric value ("a2" < "a10"); base letters
+ * oracle `compare.swift.txt`): digit runs compare by numeric value ("a2" < "a10"); base letters
  * decide first, then diacritics, then case with lowercase first ("a" < "A" < "á" < "Á"); whitespace is
  * significant and sorts low (" a" < "a"); equal numbers break ties by fewer digits ("x1" < "x01").
  * The tiers are applied across the whole string, as collation does, not token by token.

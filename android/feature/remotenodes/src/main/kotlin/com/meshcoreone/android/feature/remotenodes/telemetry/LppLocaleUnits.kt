@@ -23,7 +23,7 @@ enum class MeasurementSystem {
 /**
  * Foundation `Measurement` conversions with Foundation's own linear coefficients, so converted values
  * keep the same floating-point error as iOS (25.5 °C is 77.89999999999563 °F there; verified with
- * swiftc, evidence oracle `wp313_numbers.swift.txt`).
+ * swiftc, evidence oracle `numbers.swift.txt`).
  */
 private object FoundationUnits {
     // UnitTemperature: kelvin base; celsius (1.0, 273.15), fahrenheit (0.55555555555556, 255.37222222222427).

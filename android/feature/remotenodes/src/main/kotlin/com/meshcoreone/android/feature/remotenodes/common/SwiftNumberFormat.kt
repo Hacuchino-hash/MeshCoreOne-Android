@@ -9,7 +9,7 @@ import java.util.Locale
 
 /**
  * Swift `Double.formatted(.number...)` behavior, verified against Foundation with swiftc (evidence
- * oracle `wp313_numbers.swift.txt`):
+ * oracle `numbers.swift.txt`):
  * - rounding is half-even applied to the shortest decimal representation of the double, so 2.675
  *   with two digits is "2.68" (Java's exact-binary rounding would give "2.67") and 3.85 with one
  *   digit is "3.8";
