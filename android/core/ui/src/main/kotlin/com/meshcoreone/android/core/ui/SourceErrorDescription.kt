@@ -6,6 +6,28 @@ package com.meshcoreone.android.core.ui
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.AdvertisementFault
+import com.meshcoreone.android.core.contracts.domain.errors.BinaryProtocolFault
+import com.meshcoreone.android.core.contracts.domain.errors.ChannelServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.ContactServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.RemoteNodeFault
+import com.meshcoreone.android.core.contracts.domain.errors.RoomServerFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
+
+fun <T> T.sourceEnglishDescription(): String where T : Throwable, T : SourceServiceFaultCarrier {
+    val session = when (val fault = sourceServiceFault) {
+        is ContactServiceFault.SessionError -> fault.error
+        is ChannelServiceFault.SessionError -> fault.error
+        is AdvertisementFault.SessionError -> fault.error
+        is RemoteNodeFault.SessionError -> fault.error
+        is RoomServerFault.SessionError -> fault.error
+        is BinaryProtocolFault.SessionError -> fault.error
+        else -> null
+    }
+    return session?.sourceEnglishDescription() ?: requireNotNull(message) {
+        "Source fault producer must retain its diagnostic constructor"
+    }
+}
 
 fun MessageServiceException.sourceEnglishDescription(): String = when (val fault = error) {
     MessageServiceError.NotConnected -> "Not connected to device."

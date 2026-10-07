@@ -31,11 +31,27 @@ PROJECTION_INPUTS = (
     "android/core/ble/src/main/kotlin/com/meshcoreone/android/core/ble/BleError.kt",
     "android/core/runtime/src/test/kotlin/com/meshcoreone/android/core/runtime/RuntimeFaultProjectionTest.kt",
     "android/core/ble/src/test/kotlin/com/meshcoreone/android/core/ble/BleFaultProjectionTest.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/contacts/ContactServiceError.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/contacts/ChannelServiceSupport.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/contacts/AdvertisementService.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/remote/RemoteNodeError.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/remote/RoomServerError.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/remote/BinaryProtocolError.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/remote/NodeConfigServiceTypes.kt",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/contacts/SourceServiceFaultProjectionTests.kt",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/remote/RemoteRoomNodeConfigFaultProjectionTests.kt",
 )
+FROZEN_SERVICE_PROJECTION_TESTS = {
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/contacts/SourceServiceFaultProjectionTests.kt":
+        "c0d4770bd746a910bd275f1360bb6bd65a6162e6",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/remote/RemoteRoomNodeConfigFaultProjectionTests.kt":
+        "a844d0565d78d65ad10191f886c62e9b09f574a0",
+}
 PROJECTION_SUITES = {
     "runtime": {
         "directory": "android/core/runtime/build/test-results/test",
         "classname": "com.meshcoreone.android.core.runtime.RuntimeFaultProjectionTest",
+        "module": "runtime",
         "declaration_kind": "runtime-native-case",
         "methods": {
             "WP-207::runtime faults preserve every connection payload cause and diagnostic",
@@ -47,12 +63,27 @@ PROJECTION_SUITES = {
     "ble": {
         "directory": "android/core/ble/build/test-results/testDebugUnitTest",
         "classname": "com.meshcoreone.android.core.ble.BleFaultProjectionTest",
+        "module": "ble",
         "declaration_kind": "junit-method",
         "methods": {
             "allSourceAndNativeCasesKeepTheirPayloadCauseRecoveryAndDiagnostics",
             "everyMetadataEnumAndNullableOrExtremeStatusProjectsWithoutOrdinalCoercion",
             "actualGattThrowSitesStillDistinguishAttAndConnectionStateStatusEight",
             "sourceAndNeutralCasesAreExactlyOneToOneAndAllRecoveryValuesAreRepresented",
+        },
+        "contacts": {
+            "directory": "android/core/services/build/test-results/test",
+            "classname": "com.meshcoreone.android.core.services.contacts.SourceServiceFaultProjectionTests",
+            "module": "services",
+            "declaration_kind": "contacts-native-case",
+            "case_count": 25,
+        },
+        "remote": {
+            "directory": "android/core/services/build/test-results/test",
+            "classname": "com.meshcoreone.android.core.services.remote.RemoteRoomNodeConfigFaultProjectionTests",
+            "module": "services",
+            "declaration_kind": "remote-native-case",
+            "case_count": 41,
         },
     },
 }
@@ -134,6 +165,9 @@ def inventory():
             "Frozen external service fault declaration missing or changed")
     for relative in PROJECTION_INPUTS:
         require(ROOT.joinpath(*relative.split("/")).is_file(), "Missing granted actual Runtime/BLE projection input")
+    for relative, expected in FROZEN_SERVICE_PROJECTION_TESTS.items():
+        require(git("hash-object", "--", str(ROOT.joinpath(*relative.split("/")))).decode().strip() == expected,
+            "Landed service projection assertions changed without their source-owner receipt")
     catalog = unique_json(ROOT / "docs" / "android" / "test-cases.json")
     require(catalog["source_sha"] == PIN, "Original case pin drift")
     owned_paths = {row["path"] for row in inputs}

@@ -13,6 +13,11 @@ import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceExcep
 import com.meshcoreone.android.core.l10n.generated.AppLocalizableStrings as L
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.protocol.model.ErrorCode
+import com.meshcoreone.android.core.services.contacts.AdvertisementError
+import com.meshcoreone.android.core.services.contacts.ChannelServiceError
+import com.meshcoreone.android.core.services.remote.BinaryProtocolError
+import com.meshcoreone.android.core.services.remote.RemoteNodeError
+import com.meshcoreone.android.core.services.remote.RoomServerError
 import kotlin.test.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,11 +88,15 @@ class ErrorLocalizationTest : SourceCaseProof() {
         assertEquals(mapper.deviceError(3u).resolve(resources), mapper.message(failure).resolve(resources))
         assertFalse(mapper.message(failure).resolve(resources).contains("SessionError"))
     }
-    @ProducerBindingPending("WP-209")
+    @NativeAdaptation("native-typed-description-accessor")
     @OriginalCase("ErrorLocalizationTests::ChannelServiceError.sessionError passes through MeshCoreError description()")
-    @Test fun channelDelegationPolicy() = prove {
-        assertEquals("The operation timed out. Please try again.", MeshCoreException.Timeout().sourceEnglishDescription())
-        assertEquals(resources.getString(L.errorMeshCoreTimeout), mapper.message(MeshCoreException.Timeout()).resolve(resources))
+    @Test fun actualChannelSessionKeepsItsCauseAndCentralDescription() = prove {
+        val cause = MeshCoreException.DeviceError(3u)
+        val failure = ChannelServiceError.SessionError(cause)
+        assertSame(cause, failure.cause)
+        assertSame(cause, failure.error)
+        assertEquals("Device storage is full.", failure.sourceEnglishDescription())
+        assertEquals(mapper.message(cause).resolve(resources), mapper.message(failure).resolve(resources))
     }
     @OriginalCase("ErrorLocalizationTests::SettingsServiceError.sessionError passes through without prefix()")
     @Test fun settingsConcreteDelegation() = prove {
@@ -108,27 +117,34 @@ class ErrorLocalizationTest : SourceCaseProof() {
         assertFalse(fault.expectedEnabled); assertTrue(fault.actualEnabled)
         assertTrue(copy.isNotEmpty()); assertFalse(copy.contains("SettingsServiceError"))
     }
-    @ProducerBindingPending("WP-210")
+    @NativeAdaptation("native-typed-description-accessor")
     @OriginalCase("ErrorLocalizationTests::RemoteNodeError.sessionError passes through without prefix()")
-    @Test fun remoteDelegationPolicy() = prove {
-        val description = MeshCoreException.BluetoothPoweredOff().sourceEnglishDescription()
+    @Test fun actualRemoteSessionKeepsItsCauseAndDescriptionWithoutPrefix() = prove {
+        val cause = MeshCoreException.BluetoothPoweredOff()
+        val failure = RemoteNodeError.SessionError(cause)
+        assertSame(cause, failure.cause)
+        val description = failure.sourceEnglishDescription()
         assertEquals("Bluetooth is turned off. Please enable Bluetooth to connect.", description)
         assertFalse(description.contains("Session error:"))
+        assertEquals(mapper.message(cause).resolve(resources), mapper.message(failure).resolve(resources))
     }
-    @ProducerBindingPending("WP-209")
     @OriginalCase("ErrorLocalizationTests::AdvertisementError.notConnected produces readable description()")
-    @Test fun advertisementPolicy() = prove {
-        assertEquals(resources.getString(L.errorAdvertisementNotConnected), copy("AdvertisementError", "notConnected"))
+    @Test fun actualAdvertisementNotConnectedHasReadableLocalizedCopy() = prove {
+        val failure = AdvertisementError.NotConnected()
+        assertEquals(resources.getString(L.errorAdvertisementNotConnected), mapper.message(failure).resolve(resources))
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorLocalizationTests::RoomServerError.permissionDenied produces readable description()")
-    @Test fun roomPolicy() = prove {
-        assertEquals(resources.getString(L.errorRoomServerPermissionDenied), copy("RoomServerError", "permissionDenied"))
+    @Test fun actualRoomPermissionFailureHasReadableLocalizedCopy() = prove {
+        val failure = RoomServerError.PermissionDenied()
+        assertEquals(resources.getString(L.errorRoomServerPermissionDenied), mapper.message(failure).resolve(resources))
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorLocalizationTests::BinaryProtocolError.timeout produces readable description()")
-    @Test fun binaryPolicy() = prove {
-        assertEquals(resources.getString(L.errorBinaryProtocolTimeout), copy("BinaryProtocolError", "timeout"))
+    @Test fun actualBinaryTimeoutHasReadableLocalizedCopy() = prove {
+        val failure = BinaryProtocolError.Timeout()
+        assertEquals(resources.getString(L.errorBinaryProtocolTimeout), mapper.message(failure).resolve(resources))
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
     @ProducerBindingPending("WP-214")
     @OriginalCase("ErrorLocalizationTests::SyncCoordinatorError.alreadySyncing produces readable description()")

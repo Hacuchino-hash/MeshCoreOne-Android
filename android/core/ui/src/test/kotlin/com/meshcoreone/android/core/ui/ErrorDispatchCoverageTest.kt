@@ -23,6 +23,13 @@ import com.meshcoreone.android.core.ble.BleError
 import com.meshcoreone.android.core.ble.BleTransportException
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.TimeoutError
+import com.meshcoreone.android.core.services.contacts.AdvertisementError
+import com.meshcoreone.android.core.services.contacts.ChannelServiceError
+import com.meshcoreone.android.core.services.contacts.ContactServiceError
+import com.meshcoreone.android.core.services.remote.BinaryProtocolError
+import com.meshcoreone.android.core.services.remote.NodeConfigServiceError
+import com.meshcoreone.android.core.services.remote.RemoteNodeError
+import com.meshcoreone.android.core.services.remote.RoomServerError
 import kotlin.time.Duration.Companion.seconds
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.model.AppBackupError
@@ -39,7 +46,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31], qualifiers = "en-rUS")
 class ErrorDispatchCoverageTest : SourceCaseProof() {
-    @ProducerBindingPending("WP-206-209-210-214")
+    @ProducerBindingPending("WP-206-214")
     @OriginalCase("ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()")
     @Test fun everyOriginalLocalizedErrorHasCopyAccountingOrTheOriginalControlFlowAllowlist() = prove {
         val root = File(requireNotNull(System.getProperty("repositoryDirectory")))
@@ -73,6 +80,12 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
             "ChatSendQueueServiceError" to (ChatSendQueueServiceException(ChatSendQueueServiceError.NotConnected) to L.errorChatSendQueueNotConnected),
             "BLEError" to (BleTransportException(BleError.NotConnected) to L.errorBleNotConnected),
             "ConnectionError" to (ConnectionError.NotConnected() to L.errorConnectionNotConnected),
+            "ContactServiceError" to (ContactServiceError.ContactTableFull() to L.errorContactServiceContactTableFull),
+            "ChannelServiceError" to (ChannelServiceError.NotConnected() to L.errorChannelServiceNotConnected),
+            "AdvertisementError" to (AdvertisementError.NotConnected() to L.errorAdvertisementNotConnected),
+            "RemoteNodeError" to (RemoteNodeError.PermissionDenied() to L.errorRemoteNodePermissionDenied),
+            "RoomServerError" to (RoomServerError.PermissionDenied() to L.errorRoomServerPermissionDenied),
+            "BinaryProtocolError" to (BinaryProtocolError.Timeout() to L.errorBinaryProtocolTimeout),
         )
         for ((source, pair) in actualBindings) {
             assertTrue(source in discovered)
@@ -81,9 +94,13 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
         val timeout = TimeoutError("sync", 5.seconds)
         assertEquals(resources.getString(L.errorTimeoutOperationTimedOut), mapper.message(timeout).resolve(resources))
         assertSame(timeout, mapper.present(timeout).originalFailure)
-        val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling - setOf("ProtocolError", "KeychainError")
+        val config = NodeConfigServiceError.InvalidChannelSecret(2, 30)
+        assertEquals(S.configImportErrorInvalidChannelSecret(resources, 2, 30), mapper.message(config).resolve(resources))
+        assertTrue("NodeConfigServiceError" in discovered)
+        val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling -
+            setOf("ProtocolError", "KeychainError", "NodeConfigServiceError")
         assertTrue(nativeMissing.isNotEmpty(), "Unavailable producer families must not be silently credited as native dispatch")
-        assertTrue(nativeMissing.containsAll(setOf("ChannelServiceError", "RemoteNodeError", "SyncCoordinatorError")))
+        assertEquals(setOf("AccessorySetupKitError", "SyncCoordinatorError"), nativeMissing)
         assertFalse(nativeMissing.any { it in setOf("MessageServiceError", "MessagePollingError", "ChatSendQueueServiceError",
             "BLEError", "ConnectionError", "TimeoutError") })
         assertTrue(discovered.isNotEmpty())

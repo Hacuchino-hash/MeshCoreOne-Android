@@ -28,6 +28,7 @@ dependencies {
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(project(":core:runtime"))
     testImplementation(project(":core:ble"))
+    testImplementation(project(":core:services"))
     // The existing UI seed is 1.8.2; do not silently replace it with the catalog's 1.13.0.
     testImplementation("androidx.activity:activity-compose:1.8.2")
 }
@@ -107,6 +108,8 @@ val retainSharedUiRaw by tasks.registering(Exec::class) {
                 .dir("test-results/test").get().asFile.absolutePath,
             "--ble-junit", rootProject.project(":core:ble").layout.buildDirectory
                 .dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
+            "--services-junit", rootProject.project(":core:services").layout.buildDirectory
+                .dir("test-results/test").get().asFile.absolutePath,
             "--emit")
         providers.gradleProperty("meshCliInvocationFile").orNull?.let {
             arguments += listOf("--invocation", it)
@@ -116,7 +119,7 @@ val retainSharedUiRaw by tasks.registering(Exec::class) {
 }
 tasks.withType<Test>().configureEach {
     if (name == "testDebugUnitTest") finalizedBy(retainSharedUiRaw)
-    if (name == "testDebugUnitTest") dependsOn(":core:runtime:test", ":core:ble:testDebugUnitTest")
+    if (name == "testDebugUnitTest") dependsOn(":core:runtime:test", ":core:ble:testDebugUnitTest", ":core:services:test")
     dependsOn(prepareSharedUiPlatformSdks)
     jvmArgumentProviders.add(SharedUiPlatformArguments(layout.buildDirectory.dir("shared-ui-platform-sdks")))
     jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")

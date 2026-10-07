@@ -36,6 +36,17 @@ import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.TimeoutError
+import com.meshcoreone.android.core.services.contacts.AdvertisementError
+import com.meshcoreone.android.core.services.contacts.ChannelServiceError
+import com.meshcoreone.android.core.services.contacts.ContactServiceError
+import com.meshcoreone.android.core.services.remote.BinaryProtocolError
+import com.meshcoreone.android.core.services.remote.NodeConfigServiceError
+import com.meshcoreone.android.core.services.remote.RemoteNodeError
+import com.meshcoreone.android.core.services.remote.RoomServerError
+import com.meshcoreone.android.core.contracts.domain.errors.ChannelServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.NodeConfigServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.RemoteNodeFault
+import com.meshcoreone.android.core.contracts.domain.errors.RoomServerFault
 import kotlin.time.Duration.Companion.seconds
 import kotlin.test.*
 import org.junit.Test
@@ -105,10 +116,12 @@ class ErrorUserFacingTest : SourceCaseProof() {
         assertEquals(L.errorAccessorySetupPairingFailed(resources, "user declined"),
             ErrorCopy.accessoryPairingFailed("user declined").resolve(resources))
     }
-    @ProducerBindingPending("WP-209")
     @OriginalCase("ErrorUserFacingMessageTests::contact service error dispatches to concrete mapping()")
-    @Test fun contactCopyPolicy() = prove {
-        assertEquals(resources.getString(L.errorContactServiceContactTableFull), copy("ContactServiceError", "contactTableFull"))
+    @Test fun actualContactTableFailureUsesItsProducerProjection() = prove {
+        val failure = ContactServiceError.ContactTableFull()
+        assertEquals(resources.getString(L.errorContactServiceContactTableFull), message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(failure.sourceServiceFault, mapper.present(failure).content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::message service error dispatches to concrete mapping()")
     @Test fun actualSendFaultSuppressesItsRawReasonWithoutLosingThePayload() = prove {
@@ -119,10 +132,13 @@ class ErrorUserFacingTest : SourceCaseProof() {
         assertSame(fault, failure.error); assertEquals("queue rejected", fault.reason)
         assertSame(failure, mapper.present(failure).originalFailure)
     }
-    @ProducerBindingPending("WP-209")
     @OriginalCase("ErrorUserFacingMessageTests::channel service error dispatches to concrete mapping()")
-    @Test fun channelCopyPolicy() = prove {
-        assertEquals(L.errorChannelServiceCircuitBreakerOpen(resources, 3), ErrorCopy.circuitBreakerOpen(3).resolve(resources))
+    @Test fun actualChannelBreakerFailureRetainsItsCount() = prove {
+        val failure = ChannelServiceError.CircuitBreakerOpen(3)
+        val presented = mapper.present(failure)
+        assertEquals(L.errorChannelServiceCircuitBreakerOpen(resources, 3), presented.content.message.resolve(resources))
+        assertSame(failure, presented.originalFailure)
+        assertEquals(ChannelServiceFault.CircuitBreakerOpen(3), presented.content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::chat send queue service error dispatches to concrete mapping()")
     @Test fun queueConcreteDispatch() = prove {
@@ -134,32 +150,45 @@ class ErrorUserFacingTest : SourceCaseProof() {
         assertEquals(resources.getString(L.errorMessagePollingPollingFailed),
             message(MessagePollingException(MessagePollingError.PollingFailed)))
     }
-    @ProducerBindingPending("WP-209")
     @OriginalCase("ErrorUserFacingMessageTests::advertisement error dispatches to concrete mapping()")
-    @Test fun advertCopyPolicy() = prove {
-        assertEquals(resources.getString(L.errorAdvertisementSendFailed), copy("AdvertisementError", "sendFailed"))
+    @Test fun actualAdvertisementFailureDispatchesThroughItsRealCarrier() = prove {
+        val failure = AdvertisementError.SendFailed()
+        assertEquals(resources.getString(L.errorAdvertisementSendFailed), message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(failure.sourceServiceFault, mapper.present(failure).content.sourceFault)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorUserFacingMessageTests::remote node error dispatches to concrete mapping()")
-    @Test fun remoteCopyPolicy() = prove {
-        val text = copy("RemoteNodeError", "loginFailed")
+    @Test fun actualRemoteLoginFailureSuppressesCopyNotItsReason() = prove {
+        val failure = RemoteNodeError.LoginFailed("authentication failed")
+        val text = message(failure)
         assertEquals(resources.getString(L.errorRemoteNodeLoginFailed), text); assertFalse(text.contains("authentication failed"))
+        assertEquals("authentication failed", failure.reason)
+        assertEquals(RemoteNodeFault.LoginFailed(failure.reason), mapper.present(failure).content.sourceFault)
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertFalse(failure.isRetryable)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorUserFacingMessageTests::room server error dispatches to concrete mapping()")
-    @Test fun roomCopyPolicy() = prove {
-        assertEquals(resources.getString(L.errorRoomServerSessionNotFound), copy("RoomServerError", "sessionNotFound"))
+    @Test fun actualRoomSessionFailureDispatchesThroughItsRealCarrier() = prove {
+        val failure = RoomServerError.SessionNotFound()
+        assertEquals(resources.getString(L.errorRoomServerSessionNotFound), message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(failure.sourceServiceFault, mapper.present(failure).content.sourceFault)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorUserFacingMessageTests::room server send failed drops raw reason()")
-    @Test fun roomFailureReasonPolicy() = prove {
-        val text = copy("RoomServerError", "sendFailed")
+    @Test fun actualRoomSendFailureSuppressesCopyNotItsRawReason() = prove {
+        val failure = RoomServerError.SendFailed("Retry already in progress")
+        val text = message(failure)
         assertEquals(resources.getString(L.errorRoomServerSendFailed), text); assertFalse(text.contains("Retry already in progress"))
+        assertEquals("Retry already in progress", failure.reason)
+        assertEquals(RoomServerFault.SendFailed(failure.reason), mapper.present(failure).content.sourceFault)
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorUserFacingMessageTests::binary protocol error dispatches to concrete mapping()")
-    @Test fun binaryCopyPolicy() = prove {
-        assertEquals(resources.getString(L.errorBinaryProtocolTimeout), copy("BinaryProtocolError", "timeout"))
+    @Test fun actualBinaryTimeoutDispatchesThroughItsRealCarrier() = prove {
+        val failure = BinaryProtocolError.Timeout()
+        assertEquals(resources.getString(L.errorBinaryProtocolTimeout), message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(failure.sourceServiceFault, mapper.present(failure).content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::persistence store error dispatches to concrete mapping()")
     @Test fun persistence() = prove {
@@ -201,11 +230,12 @@ class ErrorUserFacingTest : SourceCaseProof() {
     @Test fun keyGeneration() = prove {
         assertEquals(resources.getString(L.errorKeyGenerationReservedPrefix), message(KeyGenerationFailure.ReservedPrefix()))
     }
-    @ProducerBindingPending("WP-210")
     @OriginalCase("ErrorUserFacingMessageTests::node config service error dispatches to concrete mapping()")
-    @Test fun configCopyPolicy() = prove {
-        assertEquals(S.configImportErrorInvalidChannelSecret(resources, 2, 30),
-            ErrorCopy.invalidChannelSecret(2, 30).resolve(resources))
+    @Test fun actualConfigFailureRetainsIndexAndHexLengthThroughItsProducer() = prove {
+        val failure = NodeConfigServiceError.InvalidChannelSecret(2, 30)
+        assertEquals(S.configImportErrorInvalidChannelSecret(resources, 2, 30), message(failure))
+        assertEquals(NodeConfigServiceFault.InvalidChannelSecret(2, 30), mapper.present(failure).content.sourceFault)
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
     @NativeAdaptation("removed-billing")
     @OriginalCase("ErrorUserFacingMessageTests::store service error dispatches to concrete mapping()")
@@ -223,18 +253,25 @@ class ErrorUserFacingTest : SourceCaseProof() {
     }
     @OriginalCase("ErrorUserFacingMessageTests::unmapped error falls back to localized description()")
     @Test fun unmapped() = prove { assertEquals("Something went wrong", message(IllegalStateException("Something went wrong"))) }
-    @ProducerBindingPending("WP-209-210")
     @OriginalCase("ErrorUserFacingMessageTests::session error delegates to central mesh core mapping()")
-    @Test fun availableSessionWrappersDelegateWhileSixOriginalProducerWrappersRemainBlocked() = prove {
+    @Test fun allNineActualSessionWrappersDelegateToTheOriginalCentralMapping() = prove {
         val bindings = listOf(
+            ContactServiceError.SessionError(MeshCoreException.Timeout()) to L.errorMeshCoreTimeout,
             MessageServiceException(MessageServiceError.SessionError(MeshCoreException.NotConnected())) to L.errorMeshCoreNotConnected,
+            ChannelServiceError.SessionError(MeshCoreException.SessionNotStarted()) to L.errorMeshCoreSessionNotStarted,
             MessagePollingException(MessagePollingError.SessionError(MeshCoreException.BluetoothPoweredOff())) to L.errorMeshCoreBluetoothPoweredOff,
+            AdvertisementError.SessionError(MeshCoreException.FeatureDisabled()) to L.errorMeshCoreFeatureDisabled,
+            RemoteNodeError.SessionError(MeshCoreException.Timeout()) to L.errorMeshCoreTimeout,
+            RoomServerError.SessionError(MeshCoreException.NotConnected()) to L.errorMeshCoreNotConnected,
+            BinaryProtocolError.SessionError(MeshCoreException.SessionNotStarted()) to L.errorMeshCoreSessionNotStarted,
             SettingsServiceException(SettingsServiceError.SessionError(MeshCoreException.Timeout())) to L.errorMeshCoreTimeout,
         )
+        assertEquals(9, bindings.size)
         for ((failure, expected) in bindings) {
             assertEquals(resources.getString(expected), message(failure))
             assertSame(failure, mapper.present(failure).originalFailure)
             assertNotNull(failure.cause)
+            assertEquals(mapper.message(requireNotNull(failure.cause)).resolve(resources), message(failure))
         }
     }
     @OriginalCase("ErrorUserFacingMessageTests::persist failed recurses into underlying error()")

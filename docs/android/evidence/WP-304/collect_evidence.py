@@ -182,18 +182,38 @@ def declarations():
     require(set(identities) == set(cases), "Missing owned original family declarations")
     require(methods, "Zero declared native tests")
     for owner, suite in PROJECTION_SUITES.items():
-        relative = "android/core/" + owner + "/src/test/kotlin/" + suite["classname"].replace(".", "/") + ".kt"
-        source = ROOT.joinpath(*relative.split("/"))
-        text = source.read_text(encoding="utf8")
-        if suite["declaration_kind"] == "runtime-native-case":
-            names = re.findall(r'nativeCase\("([^"]+)"', text)
-            require(len(names) == len(set(names)), "Duplicate producer runtime regression")
-            actual = {suite["classname"] + "#WP-207::" + name for name in names}
-        else:
-            actual = native_test_methods(text)
-        expected = {suite["classname"] + "#" + method for method in suite["methods"]}
-        require(actual == expected, "Actual producer projection source methods drifted")
+        projection_declaration_methods(suite)
     return cases, methods
+
+
+def projection_declaration_methods(suite):
+    relative = "android/core/" + suite["module"] + "/src/test/kotlin/" + suite["classname"].replace(".", "/") + ".kt"
+    text = ROOT.joinpath(*relative.split("/")).read_text(encoding="utf8")
+    kind = suite["declaration_kind"]
+    if kind == "runtime-native-case":
+        names = ["WP-207::" + name for name in re.findall(r'nativeCase\("([^"]+)"', text)]
+    elif kind == "junit-method":
+        names = [method.split("#", 1)[1] for method in native_test_methods(text)]
+    elif kind == "contacts-native-case":
+        names = ["WP-209::" + name for name in re.findall(r'contactsNative\("([^"]+)"', text)]
+    elif kind == "remote-native-case":
+        names = ["WP-210::" + name for name in re.findall(r'remoteCoreNative\("([^"]+)"', text) if "$" not in name]
+        for case, retryable in re.findall(r'remoteNative\("(\w+)",[^\n]+,\s*(true|false)\)', text):
+            names.append(f"WP-210::RemoteNodeError.{case} projects to RemoteNodeFault.{case} "
+                f"with message, cause and retryability ({retryable}) unchanged")
+        for helper, producer, payload in (("roomNative", "RoomServerError", "RoomServerFault"),
+                ("binaryNative", "BinaryProtocolError", "BinaryProtocolFault")):
+            for case in re.findall(helper + r'\("(\w+)",', text):
+                names.append(f"WP-210::{producer}.{case} projects to {payload}.{case} with message and cause unchanged")
+    else:
+        require(False, "Unknown producer projection declaration kind")
+    require(len(names) == len(set(names)), "Duplicate producer projection declaration")
+    methods = set(names)
+    if "methods" in suite:
+        require(methods == suite["methods"], "Actual producer projection source methods drifted")
+    else:
+        require(len(methods) == suite["case_count"], "Missing landed producer per-case projection assertions")
+    return methods
 
 
 def source_bindings():
@@ -257,7 +277,7 @@ def verify_projection_suite(path, classname, methods):
 def producer_projection_evidence():
     return {owner: verify_projection_suite(
         ROOT.joinpath(*suite["directory"].split("/")) / ("TEST-" + suite["classname"] + ".xml"),
-        suite["classname"], suite["methods"],
+        suite["classname"], projection_declaration_methods(suite),
     ) for owner, suite in PROJECTION_SUITES.items()}
 
 

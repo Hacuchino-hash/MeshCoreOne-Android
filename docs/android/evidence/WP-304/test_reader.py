@@ -405,7 +405,7 @@ class NativeTest {
                     patch.object(retain_raw, "git", return_value=b"b" * 40):
                 result = retain_raw.retain(source, root / "raw", pipeline_output=root / "pipeline",
                     producer_junit=sources)
-            self.assertEqual({"runtime", "ble"}, set(result["producer_reports"]))
+            self.assertEqual(set(retain_raw.PROJECTION_SUITES), set(result["producer_reports"]))
             for owner, receipt in result["producer_reports"].items():
                 path = root / "pipeline" / "wp304-native" / "producers" / owner / receipt["name"]
                 self.assertEqual(raw, path.read_bytes())
