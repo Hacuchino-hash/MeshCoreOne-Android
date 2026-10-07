@@ -162,6 +162,16 @@ Git blob, alongside every original messaging/Room/freeze guard.
 The integrated commit requires a new complete local cycle and fresh hosted
 proof; prior254 results cannot unlock its publishing or merge gates.
 
+The inherited connectivity174/three baseline failure and WP-211 local/provider
+reader compatibility were repaired by exclusive producer12b3 in PR61.
+Its actual head `b151ea4c` passed the complete official local cycle, enabled hook,
+root GitHub checks and all seven independent jobs before the coordinator merged
+it. User-directed main `e04afa92ca5f494a8b5adefbd4384c04df23535f` is adopted as
+exact producer Git bytes; no duplicate edits to its reserved readers or changes
+to runtime business behavior are made here. All frozen messaging/bootstrap
+producers and45 owned reader cases remain intact. The final integrated commit
+still requires its own complete official local cycle and fresh hosted evidence.
+
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
 verified before the first edit. The frozen catalog contains 128 original

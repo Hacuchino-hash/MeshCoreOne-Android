@@ -72,6 +72,10 @@
     },
     "current_main_integration": {
       "main_sha": "372fbc5866305e045025472ba555e7941873000f",
+      "merged_baseline_repair_main": "e04afa92ca5f494a8b5adefbd4384c04df23535f",
+      "baseline_repair_pr": 61,
+      "baseline_repair_head": "b151ea4c0e424f9e6c89ed1d513a860f663b4384",
+      "producer_carry": "User-directed merged main; exact WP206 assertions/WP211 reader bytes adopted without duplicate edits to reserved producer paths.",
       "scope": "Mechanical current-main conflict recovery in the existing PR43 branch; no other PR branch or producer business behavior authored.",
       "data_hook": "Both complete WP208 and already-merged WP211 hook blocks retained; WP211 block compared byte-for-byte after outer text normalization to its exact main Git blob.",
       "services_build": "Conflict resolved by retaining exact frozen c4f2ab08fb8c2620ffb31f55d7f0519263d2a30c. Main contains the same dependency/scoped-resolver producer without diagnostic logging; no producer behavior or pin is lost.",
