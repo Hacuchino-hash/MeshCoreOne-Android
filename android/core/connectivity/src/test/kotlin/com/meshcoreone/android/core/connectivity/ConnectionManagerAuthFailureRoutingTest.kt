@@ -11,10 +11,12 @@ import com.meshcoreone.android.core.connectivity.support.settle
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.RuntimeDisconnectReason
+import com.meshcoreone.android.core.runtime.RuntimeDiagnostic
 import com.meshcoreone.android.core.runtime.RuntimeSyncResult
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import org.junit.Test
 
@@ -92,19 +94,28 @@ class ConnectionManagerAuthFailureRoutingTest {
         val id = connectThenLose()
         // Registry inactive (scan-fallback shape): connect reaches the transport, which fails auth.
         companion.isSessionActive = false
-        createRadio = { FakeRadio().also { it.connectFailure = authFailure } }
-        val thrown = runCatching { manager.checkBLEConnectionHealth() }.exceptionOrNull()
-        assertIs<BleTransportException>(thrown)
+        val failure = authFailure
+        createRadio = { FakeRadio().also { it.connectFailure = failure } }
+        manager.checkBLEConnectionHealth()
+        val reported = diagnostics.filterIsInstance<RuntimeDiagnostic.Failure>()
+            .single { it.operation == "health.reconnect" }
+        assertSame(failure, assertIs<BleTransportException>(reported.cause))
         assertEquals(listOf(id), authFailures)
+        assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+        assertTrue(manager.connectionIntent.wantsConnection)
     }
 
     @Test @OriginalCase("ConnectionManagerAuthFailureRoutingTests::opportunistic reconnect stays silent for non-auth connect failures()", "native-equivalent")
     fun `opportunistic reconnect stays silent for non-auth connect failures`() = runtimeScenario {
         connectThenLose()
         companion.setPairedAccessories(emptyList())
-        val thrown = runCatching { manager.checkBLEConnectionHealth() }.exceptionOrNull()
-        assertIs<ConnectionError.DeviceNotFound>(thrown)
+        manager.checkBLEConnectionHealth()
+        val reported = diagnostics.filterIsInstance<RuntimeDiagnostic.Failure>()
+            .single { it.operation == "health.reconnect" }
+        assertIs<ConnectionError.DeviceNotFound>(reported.cause)
         assertTrue(authFailures.isEmpty())
+        assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+        assertTrue(manager.connectionIntent.wantsConnection)
     }
 
     @Test @OriginalCase("ConnectionManagerAuthFailureRoutingTests::launch auto-reconnect throwing authenticationFailed surfaces recovery without the watchdog()")
