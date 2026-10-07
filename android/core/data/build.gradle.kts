@@ -98,25 +98,41 @@ fun messagingRawCaptureRequired(
 ): Boolean = forwardedInvocation || verifierSelected || servicesRunnerSelected || directlyRequested
 
 fun messagingRawCaptureSelected(rawTaskName: String): Boolean = messagingRawCaptureRequired(
-    providers.gradleProperty("meshCliInvocationFile").isPresent,
+    providers.gradleProperty("meshCliInvocationFile").isPresent ||
+        providers.gradleProperty("wp208LocalEvidenceDirectory").isPresent,
     gradle.taskGraph.hasTask(":core:data:verifyMessagingTests"),
     gradle.taskGraph.hasTask(":core:services:test"),
     gradle.startParameter.taskNames.any { it.substringAfterLast(':') == rawTaskName },
 )
 
 fun messagingEvidenceCommand(captureOnly: Boolean, completion: String): List<String> {
-    val invocationValue = providers.gradleProperty("meshCliInvocationFile").orNull
-        ?: throw GradleException("WP-208 requires the actual forwarded meshCliInvocationFile; no guessed execution binding")
-    val invocation = File(invocationValue)
-    check(invocation.isAbsolute) { "WP-208 executor invocation must be an absolute path" }
-    val evidence = File(invocation.parentFile, "wp208-native")
+    val invocation = providers.gradleProperty("meshCliInvocationFile").orNull?.let(::File)
+    val localDirectory = providers.gradleProperty("wp208LocalEvidenceDirectory").orNull?.let(::File)
+    check(invocation == null || localDirectory == null) { "Local messaging cannot borrow hosted execution identity" }
+    val localHead = providers.gradleProperty("wp208LocalExpectedHead").orNull
+    val evidence = if (localDirectory != null) {
+        check(localDirectory.isAbsolute && localHead?.matches(Regex("[0-9a-f]{40}")) == true) {
+            "WP-208 local evidence requires an absolute private directory and exact committed HEAD"
+        }
+        localDirectory
+    } else {
+        val actual = invocation
+            ?: throw GradleException("WP-208 requires the actual forwarded meshCliInvocationFile; no guessed execution binding")
+        check(actual.isAbsolute && localHead == null) { "WP-208 requires an absolute actual invocation, not a worker override" }
+        File(actual.parentFile, "wp208-native")
+    }
     return buildList {
         add("python")
         add("-B")
         add(repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-208")
             .resolve("collect_evidence.py").absolutePath)
         if (captureOnly) add("--capture-only")
-        addAll(listOf("--output", File(evidence, completion).absolutePath, "--invocation", invocation.absolutePath))
+        addAll(listOf("--output", File(evidence, completion).absolutePath))
+        if (localDirectory != null) {
+            addAll(listOf("--local", "--expected-head", checkNotNull(localHead)))
+        } else {
+            addAll(listOf("--invocation", checkNotNull(invocation).absolutePath))
+        }
     }
 }
 

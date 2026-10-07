@@ -338,6 +338,8 @@ def main(argv=None):
     parser.add_argument("--capture-only", action="store_true")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--invocation", type=Path)
+    parser.add_argument("--local", action="store_true")
+    parser.add_argument("--expected-head")
     args = parser.parse_args(argv)
     try:
         if args.source_only:
@@ -351,15 +353,29 @@ def main(argv=None):
             declared = os.environ.get("ANDROID_CI_OUTPUT")
             require(declared, "Explicit raw output/ANDROID_CI_OUTPUT is required")
             output = Path(declared) / "wp208"
+        if args.local:
+            require(args.invocation is None, "Local execution cannot borrow a hosted invocation")
+            require(isinstance(args.expected_head, str) and HEX.fullmatch(args.expected_head) and
+                    git(ROOT, "rev-parse", "HEAD") == args.expected_head, "Local execution needs its exact committed HEAD")
+        else:
+            require(args.expected_head is None, "A worker HEAD override cannot replace hosted provider identity")
         capture(output, args.invocation)
         if args.capture_only:
             print("Raw failure/success inputs retained; no success validation performed")
             return 0
-        require(args.invocation is not None and args.invocation.is_absolute(),
-                "The actual absolute executor invocation is required")
-        expected_identity = executor_identity(load_json(args.invocation))
-        result = validate_capture(output, source_accounting(), expected_identity=expected_identity)
-        (output / "assertions.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        if args.local:
+            result = validate_capture(output, source_accounting(), require_hosted=False)
+            require(result["head_sha"] == args.expected_head, "Local reports belong to another commit")
+            result["evidence_kind"] = "local-native"
+            result["scope"] = "Exact local JVM/simulated SDK31 Room assertions; no hosted/provider, hardware or gate authority"
+            result_name = "local-assertions.json"
+        else:
+            require(args.invocation is not None and args.invocation.is_absolute(),
+                    "The actual absolute executor invocation is required")
+            expected_identity = executor_identity(load_json(args.invocation))
+            result = validate_capture(output, source_accounting(), expected_identity=expected_identity)
+            result_name = "assertions.json"
+        (output / result_name).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result["counts"]))
         return 0
     except (ValueError, OSError, KeyError, ET.ParseError, subprocess.CalledProcessError) as failure:

@@ -172,7 +172,11 @@ class ReviewRecoveryTest {
                 received += message.text
             }
             h.transport.incomingMessages += reviewContactPacket("bad"); h.transport.incomingMessages += reviewContactPacket("good")
-            assertSame(cause, assertFailsWith<MessagePollingException> { p.pollAllMessages() }.cause)
+            val failure = assertFailsWith<MessagePollingException> { p.pollAllMessages() }
+            assertIs<IllegalStateException>(failure.cause)
+            assertEquals(cause.message, failure.cause?.message)
+            // Coroutine stacktrace recovery may copy the exception, but must retain the original cause.
+            assertTrue(generateSequence(failure.cause) { it.cause }.any { it === cause })
             assertEquals(listOf("good"), received); assertEquals(1, p.undeliveredCount)
             assertFalse(p.waitForPendingHandlers(Duration.ZERO))
             failing = false; assertEquals(0L, p.pollAllMessages())

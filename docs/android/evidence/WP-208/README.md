@@ -84,6 +84,42 @@ notes concern a non-dedup repository function outside this lease. They are a
 precise WP-202/216 producer follow-up, not permission to alter that function or
 the frozen non-dedup baseline here.
 
+## Forward-only local publishing gate
+
+The user subsequently requires an actual successful local native test cycle
+before any **new** code push. Earlier `bde0adae` and `9f62ffdd` pushes predate
+that directive. Current published PR43 is RED: run37652847991 discovered
+210 services cases (209 passed/one failed) and397/397 data/28/28 Room.
+The remaining new assertion assumed reference identity at the first cause,
+but coroutine stacktrace recovery copies `IllegalStateException`; the local
+repair verifies its type/message and the exact original cause lineage.
+No production or original/native expectation/floor is weakened.
+The coordinator is warned in PR43 comment6042651033; remote HEAD stays frozen
+until the publishing/merge-status hold is released.
+
+The existing `:core:data:verifyMessagingTests` and
+`:core:data:verifyMessagingEvidenceReaders` tasks now accept explicit
+`-Pwp208LocalEvidenceDirectory=<absolute-private-directory>` and
+`-Pwp208LocalExpectedHead=<exact-committed-head>` for the required local cycle.
+Both actual runners retain their raw finalizers. Local mode requires exact
+current/compiled Git inputs, all declared original/native/Room identities,
+nonzero full suites and zero failed/error/skipped cases. It cannot borrow a
+hosted invocation or replace provider identity. Its output is specifically
+`local-assertions.json`, with `evidence_kind=local-native` and null hosted
+execution identity; it cannot satisfy a hosted or human gate.
+
+Local execution uses the already installed WSL Temurin21.0.12.1+1/SDK37.2/
+build-tools37.0.0 and exact Python3.12.4/PyYAML6.0.3, a fresh per-session private
+cache and a visible nonquiet terminal. The authoritative Windows worktree is
+used directly; a private command-scoped Linux Git binding reads its actual
+worktree metadata, without rewriting `.git`, changing repository configuration,
+creating a second checkout/branch or syncing another owner's WSL clone.
+No installation/provisioning or Windows Gradle is performed.
+The same existing declared task cycle is run with strict verification,
+forced noncached assertions, one worker and the documented measured local
+heap/JVM limits. Until its exact-tree complete XML is independently replayed,
+local success and permission for a new code push remain unclaimed.
+
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
 verified before the first edit. The frozen catalog contains 128 original

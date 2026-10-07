@@ -102,7 +102,7 @@ class EvidenceReaderTest(unittest.TestCase):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
         self.assertIn('import java.io.File', text)
         self.assertIn('providers.gradleProperty("meshCliInvocationFile")', text)
-        self.assertIn('File(invocation.parentFile, "wp208-native")', text)
+        self.assertIn('File(actual.parentFile, "wp208-native")', text)
         self.assertIn('add("--capture-only")', text)
         self.assertIn('"--output"', text)
         self.assertIn('"--invocation"', text)
@@ -317,6 +317,29 @@ class EvidenceReaderTest(unittest.TestCase):
     def test_missing_independent_provider_expectation_is_not_hosted_acceptance(self):
         with self.assertRaisesRegex(ValueError, "independently expected"):
             READER.validate_capture(self.output, self.accounting)
+
+    def test_explicit_local_assertions_never_acquire_a_hosted_execution_identity(self):
+        self.snapshot["invocation"] = None
+        self.snapshot["execution_expected"] = None
+        self.save_snapshot()
+        result = READER.validate_capture(self.output, self.accounting, require_hosted=False)
+        self.assertIsNone(result["execution_identity"])
+        self.assertEqual(2, result["counts"]["messaging"]["discovered"])
+        self.rejected()
+
+    def test_local_hooks_require_explicit_head_and_never_borrow_hosted_identity(self):
+        text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        self.assertIn('providers.gradleProperty("wp208LocalEvidenceDirectory")', text)
+        self.assertIn('providers.gradleProperty("wp208LocalExpectedHead")', text)
+        self.assertIn('check(invocation == null || localDirectory == null)', text)
+        self.assertIn('localDirectory.isAbsolute', text)
+        self.assertIn('"--local", "--expected-head"', text)
+        self.assertNotIn('GITHUB_RUN_ID', text)
+        reader = Path(__file__).with_name("collect_evidence.py").read_text()
+        self.assertIn('args.invocation is None, "Local execution cannot borrow a hosted invocation"', reader)
+        self.assertIn('git(ROOT, "rev-parse", "HEAD") == args.expected_head', reader)
+        self.assertIn('result["evidence_kind"] = "local-native"', reader)
+        self.assertIn('result_name = "local-assertions.json"', reader)
 
     def test_self_consistent_wrong_run_attempt_or_head_still_fails_provider_expectation(self):
         original_invocation, original_snapshot = copy.deepcopy(self.invocation), copy.deepcopy(self.snapshot)
