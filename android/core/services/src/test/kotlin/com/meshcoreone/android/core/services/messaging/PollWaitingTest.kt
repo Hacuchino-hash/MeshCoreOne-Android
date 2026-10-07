@@ -1,8 +1,9 @@
 // AndroidOnly: WP-208 PR47 success/failure catch-up and current auto-fetch intent over real raw pushes.
 package com.meshcoreone.android.core.services.messaging
 
-import com.meshcoreone.android.core.contracts.domain.DeliveryContext
+import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingException
+import com.meshcoreone.android.core.model.DeliveryContext
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.model.CommandCode
 import com.meshcoreone.android.core.protocol.model.ResponseCode
@@ -76,7 +77,7 @@ class PollWaitingTest {
             val h = Harness(this); h.start(); val p = h.poller(); var received = 0
             p.setContactMessageHandler { _, _, _ -> received++ }; p.startAutoFetch(RADIO); runCurrent()
             h.transport.afterNoMore = {
-                h.signals.set(token(generation = 2), com.meshcoreone.android.core.model.DeviceConnectionState.READY)
+                h.signals.set(token(generation = 2), DeviceConnectionState.READY)
                 h.transport.incomingMessages += reviewContactPacket("successor only")
             }
             assertFailsWith<MessagePollingException> { p.pollAllMessages() }; runCurrent()

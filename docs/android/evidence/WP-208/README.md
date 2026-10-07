@@ -70,6 +70,15 @@ evidence are mandatory before a verified handoff. No local native run occurs:
 the declared preflight still fails on missing `ANDROID_CI_STATE`; no Windows
 Gradle, provisioning, installation, self-merge or full-graph acceptance is used.
 
+First recovery run `37650491322`/attempt1 at `bde0adae` genuinely executed
+397/397 full data and28/28 Room consumers with zero failures/errors/skips.
+Its services **test compilation failed** on two misqualified imports in the new
+`PollWaitingTest`; there is no services XML or assertion credit. The official
+85-member artifact and complete raw Room XML/285 input bindings were retained
+before the import-only repair. Exact historical partial evidence is in
+[`recovery-run-37650491322.json`](recovery-run-37650491322.json).
+Those passing Room results are not proof for the repaired head.
+
 The review's informational `RepositoryReactionPolicy.isMcoV1` scalar/grapheme
 notes concern a non-dedup repository function outside this lease. They are a
 precise WP-202/216 producer follow-up, not permission to alter that function or
