@@ -32,9 +32,24 @@ def inspect_apk():
     if "launchable-activity: name='com.meshcoreone.android.MainActivity'" not in badging:
         raise ValueError("Actual APK launcher is missing")
     permissions = re.findall(r"^uses-permission: name='([^']+)'", badging, re.MULTILINE)
-    expected = ["com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"]
+    # WP-206 core:connectivity merges BLE/CDM presence/connectedDevice FGS/LAN permissions (manifest order).
+    expected = [
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.CHANGE_NETWORK_STATE",
+        "android.permission.ACCESS_LOCAL_NETWORK",
+        "com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+    ]
     if permissions != expected:
-        raise ValueError(f"Unexpected scaffold permissions: {permissions}")
+        raise ValueError(f"Unexpected merged permissions: {permissions}")
+    if "uses-permission: name='android.permission.BLUETOOTH_SCAN' usesPermissionFlags='neverForLocation'" not in badging:
+        raise ValueError("BLUETOOTH_SCAN must be declared neverForLocation")
     with zipfile.ZipFile(apk) as archive:
         if archive.testzip() is not None:
             raise ValueError("APK archive CRC validation failed")
