@@ -28,6 +28,36 @@ policy:
 `56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a`.
 65 IDs, 185 edges, all planned pending states and eight original gates are unchanged.
 
+## Repair integration on 2026-10-07
+
+The user requested integration of currently green PRs and approved the two
+existing test-only checkout exceptions without changing the original Android
+behavior/oracle pin. The integration baseline is actual main
+`e3369a97bf3a1e19b801c8d69ca8abf171da432b`.
+
+The coordinator's bounded `coordinator-WP207-merge-integration` lease covers
+the runtime module and its own evidence/deviation documents. The existing
+coordinator worktree and managed branch preserve the original commits from
+PRs [#34](https://github.com/cbattlegear/MeshCoreOne-Android/pull/34),
+[#36](https://github.com/cbattlegear/MeshCoreOne-Android/pull/36),
+[#37](https://github.com/cbattlegear/MeshCoreOne-Android/pull/37),
+[#39](https://github.com/cbattlegear/MeshCoreOne-Android/pull/39) and
+[#55](https://github.com/cbattlegear/MeshCoreOne-Android/pull/55).
+The sole fixture conflict retains both `warmUpFailure` and `onLost`.
+
+The combined fixes exposed duplicate loss notifications: the outer switch
+catch and owned-submission cleanup both called the observer. A-07 assigns
+that notification only to the revision-guarded owned cleanup. Three additional
+native regressions cover teardown ordering, observer failure and reentrant
+successor connections without replacing any original assertion.
+
+Native execution and full acceptance of this new integration head are pending.
+The declared `:core:runtime:verifyConnectionRuntimeTests`,
+`:core:runtime:verifyRuntimeNativeIntegrationTests` and root CI tasks must
+produce complete nonzero XML and current input/head/base/run proof. A green
+component PR is not evidence that their combined state passes. No physical,
+license, signing, release or whole-app completion is claimed here.
+
 ## Write and execution receipts
 
 The coordinator bound `autonomous-WP-207-e697823c` to this native/app identity,
