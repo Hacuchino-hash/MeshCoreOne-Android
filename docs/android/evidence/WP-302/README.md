@@ -168,6 +168,32 @@ The suite's explicit `NavigationRail` still renders the 80dp Material rail;
 its newer bar overload permits scalable labels. Reading licensed public source
 APIs is not binary checksum admission, Kotlin compilation or native execution.
 
+## Complete official cycle attempt after the correctness fixes
+
+The full, unchanged official cycle was actually invoked, not a selected-stage
+or fixture-only substitute:
+
+```powershell
+python C:\Users\camer\source\repos\MeshCoreOne-Android\.git\hooks\meshcore-local\check.py --distribution Ubuntu-22.04 --commit bd59980e73c206c6d69397bda88e5607aff80165
+```
+
+**Failed, exit 1.** It materialized all **3859 tracked inputs from immutable
+candidate Git blobs**, passed manifest validation, then failed the Python
+stage's actual traceability CLI with exit 2 at the approved preserved launcher.
+The later preflight/verify/standalone/assemble/lint/inspect stages did **not**
+execute in this attempt. No Kotlin compilation, native discovery/execution or
+successful complete cycle is inferred.
+
+Full visible output is `full-cycle-bd59980e.log`; installed raw reports are
+`/home/cbattagler/meshcoreone-work/local-checks/run-KZcizvbE`, including
+`traceability.log`. D0 already holds the exclusive canonical validator and App
+support paths. The current blocker is delivery of that authorized producer
+correction/carry, not additional worker/scope authorization. No development
+push or WP-302 PR was attempted. Reader regressions and static inventory output
+for the corrective implementation are retained in
+`correctness-reader-regressions.log`: 15/15 passed, 50 original families and
+140 declared local nodes, not native acceptance.
+
 ## Historical admission at d6826d81
 
 The remaining sections preserve the initial blocker/preflight facts. Their
