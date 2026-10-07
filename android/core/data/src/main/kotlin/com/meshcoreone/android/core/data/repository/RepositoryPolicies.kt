@@ -61,11 +61,9 @@ internal fun Bytes.startsWith(prefix: Bytes): Boolean =
 internal object RepositoryDeduplicationKey {
     fun contentBased(
         contactID: UUID?, channelIndex: UByte?, senderNodeName: String?, timestamp: UInt, content: String,
-    ): String {
-        val hash = sha256(Bytes.utf8(content)).prefix(4).uppercaseHexString()
-        return if (channelIndex != null) "ch-$channelIndex-$timestamp-${senderNodeName ?: ""}-$hash"
-            else "dm-${contactID?.canonicalString() ?: "unknown"}-$timestamp-$hash"
-    }
+    ): String = com.meshcoreone.android.core.model.DeduplicationKey.contentBased(
+        contactID, channelIndex, senderNodeName, timestamp, content,
+    )
 }
 
 internal data class InboundHop(val count: Long, val timestamp: UInt?)

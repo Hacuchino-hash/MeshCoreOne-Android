@@ -1,0 +1,227 @@
+// WP-217 Swift oracle stubs. The frozen MockDataProvider sources compile against these
+// minimal public DTO/enum stand-ins, whose initializer labels, defaults and raw values
+// copy MC1Services/MeshCore at db14559b. `Date()` in the frozen sources is rewritten to
+// `OracleClock.now` so the seed is evaluated at a pinned instant.
+import CryptoKit
+import Foundation
+
+public enum OracleClock {
+  public static var now = Date(timeIntervalSince1970: 1_767_225_600)
+}
+
+public enum ProtocolLimits { public static let publicKeySize = 32 }
+public enum PathEncoding { public static let maxHopCount = 63 }
+
+public func encodePathLen(hashSize: Int, hopCount: Int) -> UInt8 {
+  precondition(1...3 ~= hashSize, "hashSize must be 1, 2, or 3")
+  let mode = UInt8(hashSize - 1)
+  let hops = UInt8(min(hopCount, PathEncoding.maxHopCount))
+  return (mode << 6) | hops
+}
+
+public enum MessageStatus: Int { case pending = 0, sending, sent, delivered, failed, retrying }
+public enum MessageDirection: Int { case incoming = 0, outgoing }
+public enum TextType: UInt8 { case plain = 0, cliData, signedPlain }
+public enum ContactType: UInt8 { case chat = 1, repeater, room }
+public enum NotificationLevel: Int { case muted = 0, mentionsOnly, all }
+public enum DecryptStatus: Int {
+  case notApplicable = 0, noMatchingKey, hmacFailed, decryptFailed, success, pending, dmNoMatchingKey
+}
+public enum RouteType: UInt8 { case tcFlood = 0, flood, direct, tcDirect }
+public enum PayloadType: UInt8 {
+  case request = 0, response, textMessage, ack, advert, groupText, groupData, anonRequest, path, trace, multipart
+}
+
+public struct DeviceDTO {
+  public let id: UUID, radioID: UUID, publicKey: Data, nodeName: String, firmwareVersion: UInt8
+  public let firmwareVersionString: String, manufacturerName: String, buildDate: String
+  public let maxContacts: UInt16, maxChannels: UInt8, frequency: UInt32, bandwidth: UInt32
+  public let spreadingFactor: UInt8, codingRate: UInt8, txPower: Int8, maxTxPower: Int8
+  public let latitude: Double, longitude: Double, blePin: UInt32, clientRepeat: Bool, pathHashMode: UInt8
+  public let manualAddContacts: Bool, autoAddConfig: UInt8, autoAddMaxHops: UInt8, multiAcks: UInt8
+  public let telemetryModeBase: UInt8, telemetryModeLoc: UInt8, telemetryModeEnv: UInt8, advertLocationPolicy: UInt8
+  public let lastConnected: Date, lastContactSync: UInt32, isActive: Bool, ocvPreset: String?, customOCVArrayString: String?
+
+  public init(
+    id: UUID, radioID: UUID = UUID(), publicKey: Data, nodeName: String, firmwareVersion: UInt8,
+    firmwareVersionString: String, manufacturerName: String, buildDate: String, maxContacts: UInt16,
+    maxChannels: UInt8, frequency: UInt32, bandwidth: UInt32, spreadingFactor: UInt8, codingRate: UInt8,
+    txPower: Int8, maxTxPower: Int8, latitude: Double, longitude: Double, blePin: UInt32,
+    clientRepeat: Bool = false, pathHashMode: UInt8 = 0, manualAddContacts: Bool, autoAddConfig: UInt8 = 0,
+    autoAddMaxHops: UInt8 = 0, multiAcks: UInt8, telemetryModeBase: UInt8, telemetryModeLoc: UInt8,
+    telemetryModeEnv: UInt8, advertLocationPolicy: UInt8, lastConnected: Date, lastContactSync: UInt32,
+    isActive: Bool, ocvPreset: String?, customOCVArrayString: String?
+  ) {
+    self.id = id; self.radioID = radioID; self.publicKey = publicKey; self.nodeName = nodeName
+    self.firmwareVersion = firmwareVersion; self.firmwareVersionString = firmwareVersionString
+    self.manufacturerName = manufacturerName; self.buildDate = buildDate; self.maxContacts = maxContacts
+    self.maxChannels = maxChannels; self.frequency = frequency; self.bandwidth = bandwidth
+    self.spreadingFactor = spreadingFactor; self.codingRate = codingRate; self.txPower = txPower
+    self.maxTxPower = maxTxPower; self.latitude = latitude; self.longitude = longitude; self.blePin = blePin
+    self.clientRepeat = clientRepeat; self.pathHashMode = pathHashMode; self.manualAddContacts = manualAddContacts
+    self.autoAddConfig = autoAddConfig; self.autoAddMaxHops = autoAddMaxHops; self.multiAcks = multiAcks
+    self.telemetryModeBase = telemetryModeBase; self.telemetryModeLoc = telemetryModeLoc
+    self.telemetryModeEnv = telemetryModeEnv; self.advertLocationPolicy = advertLocationPolicy
+    self.lastConnected = lastConnected; self.lastContactSync = lastContactSync; self.isActive = isActive
+    self.ocvPreset = ocvPreset; self.customOCVArrayString = customOCVArrayString
+  }
+}
+
+public struct ContactDTO {
+  public let id: UUID, radioID: UUID, publicKey: Data, name: String, typeRawValue: UInt8, flags: UInt8
+  public let outPathLength: UInt8, outPath: Data, lastAdvertTimestamp: UInt32, latitude: Double, longitude: Double
+  public let lastModified: UInt32, lastHeardTimestamp: UInt32?, nickname: String?, isBlocked: Bool, isMuted: Bool
+  public let isFavorite: Bool, lastMessageDate: Date?, unreadCount: Int, unreadMentionCount: Int
+  public let ocvPreset: String?, customOCVArrayString: String?, avatarImageData: Data?
+
+  public init(
+    id: UUID, radioID: UUID, publicKey: Data, name: String, typeRawValue: UInt8, flags: UInt8,
+    outPathLength: UInt8, outPath: Data, lastAdvertTimestamp: UInt32, latitude: Double, longitude: Double,
+    lastModified: UInt32, lastHeardTimestamp: UInt32?, nickname: String?, isBlocked: Bool, isMuted: Bool,
+    isFavorite: Bool, lastMessageDate: Date?, unreadCount: Int, unreadMentionCount: Int = 0,
+    ocvPreset: String? = nil, customOCVArrayString: String? = nil, avatarImageData: Data? = nil
+  ) {
+    self.id = id; self.radioID = radioID; self.publicKey = publicKey; self.name = name
+    self.typeRawValue = typeRawValue; self.flags = flags; self.outPathLength = outPathLength; self.outPath = outPath
+    self.lastAdvertTimestamp = lastAdvertTimestamp; self.latitude = latitude; self.longitude = longitude
+    self.lastModified = lastModified; self.lastHeardTimestamp = lastHeardTimestamp; self.nickname = nickname
+    self.isBlocked = isBlocked; self.isMuted = isMuted; self.isFavorite = isFavorite
+    self.lastMessageDate = lastMessageDate; self.unreadCount = unreadCount
+    self.unreadMentionCount = unreadMentionCount; self.ocvPreset = ocvPreset
+    self.customOCVArrayString = customOCVArrayString; self.avatarImageData = avatarImageData
+  }
+}
+
+public struct ChannelDTO {
+  public let id: UUID, radioID: UUID, index: UInt8, name: String, secret: Data, isEnabled: Bool
+  public let lastMessageDate: Date?, unreadCount: Int, unreadMentionCount: Int
+  public let notificationLevel: NotificationLevel, isFavorite: Bool, floodScopeModeRawValue: String, regionScope: String?
+
+  public init(
+    id: UUID, radioID: UUID, index: UInt8, name: String, secret: Data, isEnabled: Bool, lastMessageDate: Date?,
+    unreadCount: Int, unreadMentionCount: Int = 0, notificationLevel: NotificationLevel = .all, isFavorite: Bool = false
+  ) {
+    self.id = id; self.radioID = radioID; self.index = index; self.name = name; self.secret = secret
+    self.isEnabled = isEnabled; self.lastMessageDate = lastMessageDate; self.unreadCount = unreadCount
+    self.unreadMentionCount = unreadMentionCount; self.notificationLevel = notificationLevel
+    self.isFavorite = isFavorite; floodScopeModeRawValue = "inherit"; regionScope = nil
+  }
+}
+
+public struct MessageDTO {
+  public let id: UUID, radioID: UUID, contactID: UUID?, channelIndex: UInt8?, text: String, timestamp: UInt32
+  public let createdAt: Date, sortDate: Date, direction: MessageDirection, status: MessageStatus, textType: TextType
+  public let ackCode: UInt32?, pathLength: UInt8, snr: Double?, pathNodes: Data?, senderKeyPrefix: Data?
+  public let senderNodeName: String?, isRead: Bool, replyToID: UUID?, roundTripTime: UInt32?, heardRepeats: Int
+  public let sendCount: Int, retryAttempt: Int, maxRetryAttempts: Int, deduplicationKey: String?
+  public let linkPreviewURL: String?, linkPreviewTitle: String?, linkPreviewImageData: Data?
+  public let linkPreviewIconData: Data?, linkPreviewFetched: Bool, containsSelfMention: Bool, mentionSeen: Bool
+  public let failureSeen: Bool, timestampCorrected: Bool, senderTimestamp: UInt32?, reactionSummary: String?
+  public let routeType: RouteType?, regionScope: String?, regionScopeMatches: [String]
+
+  public init(
+    id: UUID, radioID: UUID, contactID: UUID?, channelIndex: UInt8?, text: String, timestamp: UInt32,
+    createdAt: Date, sortDate: Date? = nil, direction: MessageDirection, status: MessageStatus, textType: TextType,
+    ackCode: UInt32?, pathLength: UInt8, snr: Double?, pathNodes: Data? = nil, senderKeyPrefix: Data?,
+    senderNodeName: String?, isRead: Bool, replyToID: UUID?, roundTripTime: UInt32?, heardRepeats: Int,
+    sendCount: Int = 1, retryAttempt: Int, maxRetryAttempts: Int, deduplicationKey: String? = nil,
+    linkPreviewURL: String? = nil, linkPreviewTitle: String? = nil, linkPreviewImageData: Data? = nil,
+    linkPreviewIconData: Data? = nil, linkPreviewFetched: Bool = false, containsSelfMention: Bool = false,
+    mentionSeen: Bool = false, failureSeen: Bool = false, timestampCorrected: Bool = false,
+    senderTimestamp: UInt32? = nil, reactionSummary: String? = nil, routeType: RouteType? = nil,
+    regionScope: String? = nil, regionScopeMatches: [String] = []
+  ) {
+    self.id = id; self.radioID = radioID; self.contactID = contactID; self.channelIndex = channelIndex
+    self.text = text; self.timestamp = timestamp; self.createdAt = createdAt; self.sortDate = sortDate ?? createdAt
+    self.direction = direction; self.status = status; self.textType = textType; self.ackCode = ackCode
+    self.pathLength = pathLength; self.snr = snr; self.pathNodes = pathNodes; self.senderKeyPrefix = senderKeyPrefix
+    self.senderNodeName = senderNodeName; self.isRead = isRead; self.replyToID = replyToID
+    self.roundTripTime = roundTripTime; self.heardRepeats = heardRepeats; self.sendCount = sendCount
+    self.retryAttempt = retryAttempt; self.maxRetryAttempts = maxRetryAttempts
+    self.deduplicationKey = deduplicationKey; self.linkPreviewURL = linkPreviewURL
+    self.linkPreviewTitle = linkPreviewTitle; self.linkPreviewImageData = linkPreviewImageData
+    self.linkPreviewIconData = linkPreviewIconData; self.linkPreviewFetched = linkPreviewFetched
+    self.containsSelfMention = containsSelfMention; self.mentionSeen = mentionSeen; self.failureSeen = failureSeen
+    self.timestampCorrected = timestampCorrected; self.senderTimestamp = senderTimestamp
+    self.reactionSummary = reactionSummary; self.routeType = routeType; self.regionScope = regionScope
+    self.regionScopeMatches = regionScopeMatches
+  }
+}
+
+public struct MessageRepeatDTO {
+  public let id: UUID, messageID: UUID, receivedAt: Date, pathNodes: Data, pathLength: UInt8
+  public let snr: Double?, rssi: Int?, rxLogEntryID: UUID?
+
+  public init(
+    id: UUID = UUID(), messageID: UUID, receivedAt: Date, pathNodes: Data, pathLength: UInt8 = 0,
+    snr: Double?, rssi: Int?, rxLogEntryID: UUID?
+  ) {
+    self.id = id; self.messageID = messageID; self.receivedAt = receivedAt; self.pathNodes = pathNodes
+    self.pathLength = pathLength; self.snr = snr; self.rssi = rssi; self.rxLogEntryID = rxLogEntryID
+  }
+}
+
+public struct ReactionDTO {
+  public let id: UUID, messageID: UUID, emoji: String, senderName: String, messageHash: String, rawText: String
+  public let receivedAt: Date, channelIndex: UInt8?, contactID: UUID?, radioID: UUID
+
+  // Real default is `Date()`; the oracle pins it like every other seed clock read.
+  public init(
+    id: UUID = UUID(), messageID: UUID, emoji: String, senderName: String, messageHash: String, rawText: String,
+    receivedAt: Date = OracleClock.now, channelIndex: UInt8?, contactID: UUID?, radioID: UUID
+  ) {
+    self.id = id; self.messageID = messageID; self.emoji = emoji; self.senderName = senderName
+    self.messageHash = messageHash; self.rawText = rawText; self.receivedAt = receivedAt
+    self.channelIndex = channelIndex; self.contactID = contactID; self.radioID = radioID
+  }
+}
+
+public struct NodeStatusSnapshotDTO {
+  public let timestamp: Date, nodePublicKey: Data, batteryMillivolts: UInt16?, lastSNR: Double?
+  public let lastRSSI: Int16?, noiseFloor: Int16?, uptimeSeconds: UInt32?
+  public let latitude: Double?, longitude: Double?, altitude: Double?
+
+  public init(
+    timestamp: Date, nodePublicKey: Data, batteryMillivolts: UInt16? = nil, lastSNR: Double? = nil,
+    lastRSSI: Int16? = nil, noiseFloor: Int16? = nil, uptimeSeconds: UInt32? = nil,
+    latitude: Double? = nil, longitude: Double? = nil, altitude: Double? = nil
+  ) {
+    self.timestamp = timestamp; self.nodePublicKey = nodePublicKey; self.batteryMillivolts = batteryMillivolts
+    self.lastSNR = lastSNR; self.lastRSSI = lastRSSI; self.noiseFloor = noiseFloor
+    self.uptimeSeconds = uptimeSeconds; self.latitude = latitude; self.longitude = longitude; self.altitude = altitude
+  }
+}
+
+public struct ParsedRxLogData {
+  public let snr: Double?, rssi: Int?, rawPayload: Data, routeType: RouteType, payloadType: PayloadType
+  public let payloadVersion: UInt8, payloadTypeBits: UInt8, transportCode: Data?, pathLength: UInt8
+  public let pathNodes: [UInt8], packetPayload: Data, packetHash: String
+
+  public init(
+    snr: Double?, rssi: Int?, rawPayload: Data, routeType: RouteType, payloadType: PayloadType,
+    payloadVersion: UInt8, payloadTypeBits: UInt8, transportCode: Data?, pathLength: UInt8,
+    pathNodes: [UInt8], packetPayload: Data
+  ) {
+    self.snr = snr; self.rssi = rssi; self.rawPayload = rawPayload; self.routeType = routeType
+    self.payloadType = payloadType; self.payloadVersion = payloadVersion; self.payloadTypeBits = payloadTypeBits
+    self.transportCode = transportCode; self.pathLength = pathLength; self.pathNodes = pathNodes
+    self.packetPayload = packetPayload
+    // MeshCore ParsedRxLogData.computePacketHash(from:)
+    packetHash = SHA256.hash(data: packetPayload).prefix(8).map { String(format: "%02x", $0) }.joined()
+  }
+}
+
+public struct RxLogEntryDTO {
+  public let id: UUID, radioID: UUID, receivedAt: Date, parsed: ParsedRxLogData, channelIndex: UInt8?
+  public let channelName: String?, decryptStatus: DecryptStatus, regionScope: String?, regionScopeMatches: [String]
+
+  public init(
+    id: UUID = UUID(), radioID: UUID, receivedAt: Date = OracleClock.now, from parsed: ParsedRxLogData,
+    channelIndex: UInt8? = nil, channelName: String? = nil, decryptStatus: DecryptStatus = .notApplicable,
+    regionScope: String? = nil, regionScopeMatches: [String] = []
+  ) {
+    self.id = id; self.radioID = radioID; self.receivedAt = receivedAt; self.parsed = parsed
+    self.channelIndex = channelIndex; self.channelName = channelName; self.decryptStatus = decryptStatus
+    self.regionScope = regionScope; self.regionScopeMatches = regionScopeMatches
+  }
+}
