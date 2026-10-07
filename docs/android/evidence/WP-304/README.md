@@ -1,9 +1,10 @@
 # WP-304 candidate evidence
 
-**Status: published efe528cc Linux native execution passed197/197 methods and all
-ten required standalone PNG states. The overall run remains FAILED because21
-producer families are policy-only. The owned local-only retention repair is not
-a complete local-cycle pass or publication receipt. No macro acceptance.**
+**Status: remote PR33 remains efe528cc. The latest local main4033-integrated
+candidate155c258c verifies202 passing UI cases, ten PNGs and74 real producer
+projection assertions.126/130 families and154/158 scenarios are bound; only four
+Companion/Sync/complete-dispatch families remain blocked. No full local-cycle
+pass, new-code push or macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its
@@ -200,6 +201,47 @@ carried unchanged, not duplicated here. Companion/Sync neutral projections and
 the unmerged209/210 actual producer consumers remain the next bounded phase.
 
 ## Linux resolution/execution proposal, not a command already run
+
+### Landed service consumer continuation
+
+The user-directed main738 batch and then main4033 frontier were carried by
+non-destructive own-branch merges; every incoming staged blob matched the actual
+approved main. Runtime/BLE projections and the two frozen API files were
+preserved. Actual contacts/channels/advertisement and remote/room/binary/config
+exceptions now execute through the default neutral UI mapper. All nine original
+session wrappers are exercised with their original underlying cases and cause
+identity; raw login/send reasons remain on the producer/payload, not visible
+copy. The typed source-English accessor delegates real session payloads without
+changing the producer's existing diagnostic constructor.
+
+Actual committed validation at155c258c/tree
+`d2036b23232b88e0d7d9d3de5a3ebc07a12db7ce`, integrated with main4033, retains202
+passing UI assertions/19 XML reports/ten PNGs and the unchanged real Runtime4,
+BLE4, Contacts25 and Remote41 projection cases. The owned reader requires all
+four independent source-derived suites and current input hashes;39 regressions
+pass. Accounting remains130/158 and35 parameter rows, with126/154 nonpending.
+No producer, connectivity or WP211 implementation/validator was edited by this
+consumer continuation. Concrete Services is testImplementation only.
+
+The full installed local hook still exits1 at `verifySharedUiTests`/reader2,
+not a failed native case or an old local-mode hold. Exactly these four IDs remain:
+`ErrorUserFacingMessageTests::accessory setup kit error dispatches to concrete mapping()`,
+`ErrorUserFacingMessageTests::sync coordinator error dispatches to concrete mapping()`,
+`ErrorLocalizationTests::SyncCoordinatorError.alreadySyncing produces readable description()`,
+and the original complete dispatch family. The real producers are already
+landed; their remaining neutral Companion/Sync carrier projections need the
+minimal assigned source paths. There is no reason to recreate those services or
+remove the gate. Publication remains prohibited until the complete actual local
+cycle succeeds.
+
+The committed Runtime/BLE graph readback succeeded under strict/no-build-cache,
+38 configurations/1472 external rows,47 actual seven-pin alignment edges and
+zero new context memberships. All3445 tracked inputs and the incumbent owned
+lock were unchanged. The earlier checkout-byte failures were caused by stale
+CRLF materialization from a working-tree iteration: only the authorized phase
+files in the managed snapshot were formatted to verified immutable Git bytes,
+and its index/tree remained exact. No shared hook, hash predicate or source-owner
+reader was changed.
 
 The coordinator explicitly admitted the owned resolver and one bounded workflow
 on2026-10-05T14:23:19.109-05:00. The exact
