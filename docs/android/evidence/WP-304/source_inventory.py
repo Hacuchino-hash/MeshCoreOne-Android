@@ -71,20 +71,20 @@ PROJECTION_SUITES = {
             "actualGattThrowSitesStillDistinguishAttAndConnectionStateStatusEight",
             "sourceAndNeutralCasesAreExactlyOneToOneAndAllRecoveryValuesAreRepresented",
         },
-        "contacts": {
-            "directory": "android/core/services/build/test-results/test",
-            "classname": "com.meshcoreone.android.core.services.contacts.SourceServiceFaultProjectionTests",
-            "module": "services",
-            "declaration_kind": "contacts-native-case",
-            "case_count": 25,
-        },
-        "remote": {
-            "directory": "android/core/services/build/test-results/test",
-            "classname": "com.meshcoreone.android.core.services.remote.RemoteRoomNodeConfigFaultProjectionTests",
-            "module": "services",
-            "declaration_kind": "remote-native-case",
-            "case_count": 41,
-        },
+    },
+    "contacts": {
+        "directory": "android/core/services/build/test-results/test",
+        "classname": "com.meshcoreone.android.core.services.contacts.SourceServiceFaultProjectionTests",
+        "module": "services",
+        "declaration_kind": "contacts-native-case",
+        "case_count": 25,
+    },
+    "remote": {
+        "directory": "android/core/services/build/test-results/test",
+        "classname": "com.meshcoreone.android.core.services.remote.RemoteRoomNodeConfigFaultProjectionTests",
+        "module": "services",
+        "declaration_kind": "remote-native-case",
+        "case_count": 41,
     },
 }
 COMMITTED_PRODUCER_INPUTS = (
