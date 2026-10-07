@@ -13,12 +13,19 @@ import subprocess
 import sys
 import uuid
 import unittest
+import zlib
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.ci_evidence import read_xml, suite_counts
 from controller.errors import PortError
 from controller.model import load_manifest
+
+PNG_HELPERS = ("docs/android/evidence/WP-304/collect_evidence.py", "docs/android/evidence/WP-304/source_inventory.py")
+sys.path.insert(0, str((ROOT / PNG_HELPERS[0]).parent))
+PNG_SPEC = importlib.util.spec_from_file_location("wp302_shared_png_reader", ROOT / PNG_HELPERS[0])
+PNG_READER = importlib.util.module_from_spec(PNG_SPEC)
+PNG_SPEC.loader.exec_module(PNG_READER)
 
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
 APP = ROOT / "android" / "app"
@@ -49,6 +56,13 @@ def canonical(value):
 
 def method_name(value):
     return re.sub(r"\[(?:31|37)\]$", "", value.removesuffix("()")).removesuffix("()")
+
+
+def native_png_shape(data):
+    try:
+        return PNG_READER.png_shape(data)
+    except (PNG_READER.EvidenceError, struct.error, zlib.error) as error:
+        fail("invalid native PNG: " + str(error))
 
 
 def inventory():
@@ -113,6 +127,7 @@ def current_inputs():
     paths = {path for path in paths if "/src/" in path or path.endswith((".gradle.kts", ".toml", ".lockfile"))
              or path.endswith("verification-metadata.xml")}
     paths |= {"docs/android/evidence/WP-302/collect_evidence.py", "docs/android/evidence/WP-302/source-inventory.json"}
+    paths.update(PNG_HELPERS)
     result = {}
     for relative in sorted(paths):
         raw = (ROOT / relative).read_bytes()
@@ -180,7 +195,7 @@ def native_reports(directory, binding, expected):
                     data = base64.b64decode(parts[5], validate=True)
                     if not 0 < len(data) < 16 * 1024 * 1024 or not 0 < width <= 4096 or not 0 < height <= 4096:
                         fail("invalid native image bounds")
-                    if data[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", data[16:24]) != (width, height) or digest(data) != checksum:
+                    if digest(data) != checksum or native_png_shape(data) != (width, height):
                         fail("native image bytes/dimensions/hash disagree")
                     renders[name] = {"width": width, "height": height, "sha256": checksum, "bytes": len(data), "data": data}
     if set(executed) != expected:

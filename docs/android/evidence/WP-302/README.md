@@ -35,7 +35,7 @@ python -B -m unittest discover -s docs\android\evidence\WP-302 -p test_evidence_
 python docs\android\evidence\WP-302\collect_evidence.py --inventory
 ```
 
-Results: **15 reader regressions passed**, no skips; static inventory maps all
+Current results: **19 reader regressions passed**, no skips; static inventory maps all
 50 families and declares 140 native nodes. Synthetic reader XML is **not**
 native execution. No native assertion, screenshot, instrumentation or complete
 committed-head cycle is claimed from either command.
@@ -45,6 +45,16 @@ XML, absent per-test SDK/head/tree/nonce/input bindings, missing native screen
 states and altered hashes. It checks literal compiled checkout bytes against
 candidate Git blobs; no CRLF reader waiver. Full raw XML is retained before
 validation. It never approves a hardware/license/signing/parity gate.
+
+Native PNG validation now reuses the existing WP-304 strict decoder rather than
+trusting only the signature/IHDR dimensions and a matching hash. CRCs, complete
+chunks/ending, bounded decompression, pixel counts and row filters are checked.
+The two read-only helper files are included in literal pre-test input binding;
+neither helper is edited and no WP-304 source-family credit is imported.
+`png-reader-regressions.log` retains the 19-case result, including exact malformed
+image rejection before screen-inventory checks. Valid synthetic pixels still
+cannot replace the mandatory 108 real rendered states or 140 current executions.
+Earlier 15-case results below remain historical evidence for those commits.
 
 The D0-only build producer must declare the five catalog aliases as actual App
 dependencies, admit App transitive lifecycle2.10/savedstate1.4/navigationevent1.1.1,

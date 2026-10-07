@@ -1,5 +1,8 @@
 """WP-302 reader regressions only: synthetic XML never supplies native acceptance."""
 import importlib.util
+import base64
+import struct
+import zlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -15,6 +18,13 @@ MARKER = "WP302_EXECUTION|nonce|head|tree|digest|" + CLASS + "|realCase|jvm"
 
 
 class ReaderTest(unittest.TestCase):
+    @staticmethod
+    def png(width=1, height=1, pixels=b"\0\xff\xff\xff\xff"):
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+        header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+        return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b"")
+
     def reports(self, output="", nodes=None, tests=1, skipped=0):
         nodes = nodes if nodes is not None else '<testcase classname="' + CLASS + '" name="realCase"/>'
         self.directory = tempfile.TemporaryDirectory()
@@ -69,6 +79,35 @@ class ReaderTest(unittest.TestCase):
 
     def test_malformed_render_bytes_fail(self):
         self.rejects(self.reports(MARKER + "\nWP302_RENDER|sdk-31-bad|10|10|bad|AAAA"))
+
+    def test_shared_png_decoder_accepts_valid_pixels_without_granting_native_execution(self):
+        self.assertEqual((1, 1), EVIDENCE.native_png_shape(self.png()))
+
+    def test_png_header_alone_crc_truncation_and_wrong_pixels_fail_at_the_decoder(self):
+        png = self.png()
+        changed_crc = bytearray(png)
+        changed_crc[29] ^= 1
+        malformed = (
+            b"\x89PNG\r\n\x1a\n" + b"\0" * 8 + struct.pack(">II", 1, 1),
+            png[:-1], bytes(changed_crc), self.png(2, 2),
+            self.png(pixels=b"\x05\xff\xff\xff\xff"), self.png(pixels=b"\0" * 50),
+        )
+        for data in malformed:
+            with self.subTest(bytes=len(data)):
+                with self.assertRaisesRegex(EVIDENCE.PortError, "invalid native PNG"):
+                    EVIDENCE.native_png_shape(data)
+
+    def test_malformed_png_with_a_matching_hash_fails_before_screen_inventory(self):
+        data = self.png()[:-1]
+        render = "\nWP302_RENDER|sdk-31-bad|1|1|" + EVIDENCE.digest(data) + "|" + base64.b64encode(data).decode()
+        with self.assertRaisesRegex(EVIDENCE.PortError, "invalid native PNG"):
+            EVIDENCE.native_reports(self.reports(MARKER + render), BINDING, {IDENTITY})
+
+    def test_valid_pixels_do_not_replace_the_missing_native_screen_matrix(self):
+        data = self.png()
+        render = "\nWP302_RENDER|sdk-31-width-360|1|1|" + EVIDENCE.digest(data) + "|" + base64.b64encode(data).decode()
+        with self.assertRaisesRegex(EVIDENCE.PortError, "missing/unexpected.*screen states"):
+            EVIDENCE.native_reports(self.reports(MARKER + render), BINDING, {IDENTITY})
 
     def test_missing_binding_fields_are_not_success_shaped(self):
         with self.assertRaises(KeyError):
