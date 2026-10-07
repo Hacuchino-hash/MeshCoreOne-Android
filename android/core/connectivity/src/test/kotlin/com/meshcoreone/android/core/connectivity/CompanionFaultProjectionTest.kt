@@ -44,8 +44,12 @@ class CompanionFaultProjectionTest {
     }
 
     private class Gateway(override val isSupported: Boolean) : CompanionDeviceGateway {
+        var events: CompanionAssociationEvents? = null
         override fun associations(): List<CompanionAssociation> = emptyList()
-        override fun associate(events: CompanionAssociationEvents) = events.onChooserPending(Unit, 1L)
+        override fun associate(events: CompanionAssociationEvents) {
+            this.events = events
+            events.onChooserPending(Unit, 1L)
+        }
         override suspend fun disassociate(association: CompanionAssociation) = Unit
         override fun observePresence(association: CompanionAssociation, observe: Boolean) = Unit
     }
@@ -58,14 +62,20 @@ class CompanionFaultProjectionTest {
     }
 
     @Test fun actualPickerCancellationRemainsCancellationAndDoesNotAcquireAFaultCarrier() = scenario {
-        val service = CompanionSetupService(Gateway(true), scope, clock, chooserHost = CompanionChooserHost { _, _ -> })
+        val gateway = Gateway(true)
+        var launches = 0
+        val service = CompanionSetupService(gateway, scope, clock, chooserHost = CompanionChooserHost { _, _ -> launches++ })
         service.activateSession()
         val pending = scope.async { service.showPicker() }
         settle()
+        assertEquals("presented", service.lastPickerOutcome)
+        assertEquals(1, launches)
         pending.cancel()
         val error = assertFailsWith<CancellationException> { pending.await() }
         assertFalse(error is SourceServiceFaultCarrier)
-        assertEquals("cancelled", service.lastPickerOutcome)
+        assertEquals("presented", service.lastPickerOutcome)
+        requireNotNull(gateway.events).onChooserPending(Unit, 2L)
+        assertEquals(1, launches, "An abandoned request must not launch another chooser")
         service.invalidateSession()
     }
 }
