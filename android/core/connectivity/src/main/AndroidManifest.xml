@@ -1,2 +1,39 @@
-<!-- AndroidOnly: WP-002 Connection shell without FGS, receivers or permission requests. -->
-<manifest />
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-206 Connectivity permissions, one connectedDevice foreground service and the companion presence service. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+    <uses-feature android:name="android.software.companion_device_setup" android:required="false" />
+
+    <!-- GATT connect/bond (API 31+ runtime permission). -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Only the in-app scan fallback scans; results are never used to derive location. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- LAN companion radios: TCP, no-internet WiFi network request, API 37 local-network protection. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
+    <application>
+        <service
+            android:name="com.meshcoreone.android.core.connectivity.service.ConnectedDeviceService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+        <service
+            android:name="com.meshcoreone.android.core.connectivity.platform.MeshCompanionDeviceService"
+            android:exported="true"
+            android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE">
+            <intent-filter>
+                <action android:name="android.companion.CompanionDeviceService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
