@@ -17,8 +17,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
 import java.util.Locale
+import com.meshcoreone.android.core.model.RegionSelection
+import com.meshcoreone.android.core.services.device.RadioPresets
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class RegionResolverTest {
@@ -205,5 +208,83 @@ class RegionResolverTest {
         val result = resolver(location, geocoder).resolve()
 
         assertNull(result)
+    }
+
+    @Test
+    fun `real matcher resolves normalized SoCal county into the real county preset`() = runTest {
+        val geocoder = FakeGeocoder(
+            GeocodeResult("US", "  California  ", "Los \u00c1ngeles County"),
+        )
+        val target = RegionResolver(LocationService(FakeLocationProducing()), geocoder)
+
+        val region = assertNotNull(target.resolve())
+
+        assertEquals(RegionSelection("US", RegionSelection.Source.LOCATION, "US-CA", "los angeles"), region)
+        val preset = RadioPresets.recommended(region)
+        assertEquals("wcmesh", preset?.id)
+        assertEquals(927.875, preset?.frequencyMHz)
+        assertEquals(62.5, preset?.bandwidthKHz)
+        assertEquals(7u.toUByte(), preset?.spreadingFactor)
+        assertEquals(5u.toUByte(), preset?.codingRate)
+        assertEquals(3L, preset?.pathHashSize)
+    }
+
+    @Test
+    fun `real matcher leaves uncatalogued county absent and chooses the country preset`() = runTest {
+        val geocoder = FakeGeocoder(GeocodeResult("US", "California", "Santa Clara County"))
+
+        val region = assertNotNull(RegionResolver(LocationService(FakeLocationProducing()), geocoder).resolve())
+
+        assertEquals("US-CA", region?.administrativeAreaCode)
+        assertNull(region?.countyKey)
+        assertEquals("us-ca", RadioPresets.recommended(region)?.id)
+    }
+
+    @Test
+    fun `real matcher resolves Australian postal and long names into frozen subdivision presets`() = runTest {
+        for ((name, code, preset) in listOf(
+            Triple("  QLD  ", "AU-QLD", "au-qld"),
+            Triple("Western Australia", "AU-WA", "au-sa-wa"),
+            Triple("Victoria", "AU-VIC", "au-915"),
+        )) {
+            val geocoder = FakeGeocoder(GeocodeResult("AU", name, null))
+
+            val region = assertNotNull(RegionResolver(LocationService(FakeLocationProducing()), geocoder).resolve())
+
+            assertEquals(code, region?.administrativeAreaCode)
+            assertNull(region?.countyKey)
+            assertEquals(preset, RadioPresets.recommended(region)?.id)
+        }
+    }
+
+    @Test
+    fun `real matcher preserves case and unknown-country no-match contracts`() {
+        assertEquals("US-CA", RegionalAreaMatcher.matchSubdivision("US", "california"))
+        assertNull(RegionalAreaMatcher.matchSubdivision("us", "california"))
+        assertNull(RegionalAreaMatcher.matchSubdivision("US", "California"))
+        assertNull(RegionalAreaMatcher.matchSubdivision("US", "puerto rico"))
+        assertNull(RegionalAreaMatcher.matchSubdivision("CA", "ontario"))
+        assertNull(RegionalAreaMatcher.matchCounty("US", "US-PA", "philadelphia"))
+        assertNull(RegionalAreaMatcher.matchCounty("AU", "US-CA", "los angeles"))
+        assertNull(RegionalAreaMatcher.matchCounty("US", "US-CA", null))
+    }
+
+    @Test
+    fun `real matcher and preset consumer are reused on a location cache hit`() = runTest {
+        var geocodeCalls = 0
+        val geocoder = FakeGeocoder(
+            GeocodeResult("US", "California", "Orange County"),
+            onReverseGeocode = { geocodeCalls++ },
+        )
+        val target = RegionResolver(
+            LocationService(FakeLocationProducing()), geocoder, clockMs = { 0L },
+        )
+
+        val first = target.resolve()
+        val second = assertNotNull(target.resolve())
+
+        assertEquals(first, second)
+        assertEquals(1, geocodeCalls)
+        assertEquals("wcmesh", RadioPresets.recommended(second)?.id)
     }
 }

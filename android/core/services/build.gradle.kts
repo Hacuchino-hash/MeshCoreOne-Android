@@ -127,6 +127,15 @@ val contentInvocation = providers.gradleProperty("meshCliInvocationFile")
 val contentEvidenceDirectory = contentInvocation.map {
     file(it).parentFile.resolve("wp218-native").absolutePath
 }
+val contentPretestBinding = contentEvidenceDirectory.map { file(it).resolve("pretest-binding.json").absolutePath }
+val prepareContentInvocation by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Bind the actual Linux local/hosted candidate and compiled inputs BEFORE native tests."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--prepare-binding",
+        "--invocation", contentInvocation.getOrElse(""), "--output", contentPretestBinding.getOrElse(""))
+}
+tasks.named("test") { dependsOn(prepareContentInvocation) }
 
 val retainContentServiceReports by tasks.registering(Exec::class) {
     group = "verification"
@@ -136,6 +145,7 @@ val retainContentServiceReports by tasks.registering(Exec::class) {
         "--output", contentEvidenceDirectory.map { file(it).resolve("services-raw").absolutePath }
             .getOrElse(layout.buildDirectory.dir("reports/wp218/services-raw").get().asFile.absolutePath))
     contentInvocation.orNull?.let { args("--invocation", it) }
+    contentPretestBinding.orNull?.let { args("--pretest", it) }
 }
 tasks.named("test") { finalizedBy(retainContentServiceReports) }
 
@@ -154,6 +164,7 @@ val verifyContentTests by tasks.registering(Exec::class) {
     commandLine("python", "-B", contentCollector.absolutePath,
         "--output", contentEvidenceDirectory.map { file(it).resolve("source154").absolutePath }.getOrElse(""))
     contentInvocation.orNull?.let { args("--invocation", it) }
+    contentPretestBinding.orNull?.let { args("--pretest", it) }
 }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyContentTests) }
 tasks.named("check") { dependsOn(verifyContentTests) }

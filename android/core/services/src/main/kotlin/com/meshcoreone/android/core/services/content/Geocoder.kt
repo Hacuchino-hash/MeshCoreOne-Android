@@ -20,6 +20,13 @@ data class GeocodeResult(
     val subAdministrativeArea: String?,
 )
 
+sealed class GeocoderError(message: String? = null, cause: Throwable? = null) : Exception(message, cause) {
+    object Unavailable : GeocoderError()
+    object RequestInProgress : GeocoderError()
+    object Closed : GeocoderError()
+    class RequestFailed(message: String, cause: Throwable? = null) : GeocoderError(message, cause)
+}
+
 /**
  * Narrow producer-role port for the real Android reverse-geocoding API (the platform
  * `location.Geocoder` class). A future native adapter (`app/content`, deferred - see docs/android/deviations/

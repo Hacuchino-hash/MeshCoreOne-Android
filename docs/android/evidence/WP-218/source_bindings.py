@@ -20,16 +20,6 @@ CLASSES = {
 
 # Missing behavior remains a blocking original case; unrelated typed/fake tests are not substitutes.
 BLOCKED = {
-    ("ElevationServiceTests.ErrorTests", "networkError has descriptive message"):
-        "The localized Network error presentation/underlying message is not implemented.",
-    ("ElevationServiceTests.ErrorTests", "invalidResponse has descriptive message"):
-        "The localized Invalid response from elevation API presentation is not implemented.",
-    ("ElevationServiceTests.ErrorTests", "apiError includes message"):
-        "The localized API error presentation/associated message is not implemented.",
-    ("ElevationServiceTests.ErrorTests", "noData has descriptive message"):
-        "The localized No elevation data returned presentation is not implemented.",
-    ("LinkPreviewServiceTests", "loadImageData rejects a redirect to a private host"):
-        "Requires the real DNS-safe native HTTP redirect consumer, not an initial-URL rejection fake.",
 }
 
 ALIASES = {}
@@ -71,6 +61,12 @@ Sample count clamped to maximum of 100|sampleCoordinates count clamped to maximu
 Coordinates are evenly distributed|sampleCoordinates are evenly distributed
 Identical points return same coordinate repeated|sampleCoordinates identical points return same coordinate repeated
 """)
+aliases("ElevationServiceTests.ErrorTests", "ElevationErrorPresentationTest", """
+networkError has descriptive message|networkError has descriptive message
+invalidResponse has descriptive message|invalidResponse has descriptive message
+apiError includes message|apiError includes message
+noData has descriptive message|noData has descriptive message
+""", module="app")
 aliases("ImageHeaderDecoderTests", "ImageHeaderDecoderTest", """
 decodeDimensions returns nil for non-image bytes|decodeDimensions returns null for non-image bytes
 decodeDimensions returns nil for empty data|decodeDimensions returns null for empty data
@@ -174,6 +170,9 @@ loadImageData rejects a non image mime type|loadImageData rejects a non-image mi
 """)
 aliases("LinkPreviewServiceTests", "BitmapImageDecoderTest", """
 loadImageData returns decoded data for a valid image|loadImageData returns decoded data for a valid image
+""", module="app")
+aliases("LinkPreviewServiceTests", "OkHttpContentFetchingTest", """
+loadImageData rejects a redirect to a private host|loadImageData rejects a redirect to a private host
 """, module="app")
 aliases("RegionResolverTests", "RegionResolverTest", """
 nil isoCountryCode \u2192 nil|nil country code resolves to null

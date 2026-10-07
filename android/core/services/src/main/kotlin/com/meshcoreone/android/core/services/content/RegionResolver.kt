@@ -7,16 +7,9 @@
 // `ElevationService`/`LinkPreviewCache` do: no CoreLocation/OSLog/@MainActor import exists to
 // port, only the actual control flow.
 //
-// The source's real `RegionalAreas` matcher (`matchSubdivision`/`matchCounty`, a static lookup
-// table over ISO country/subdivision codes) is WP-211's to port and is NOT yet merged. Per
-// explicit coordinator correction, that is not a reason to omit or fake this file's remaining
-// behavior: [RegionAreaMatching] is a narrow, typed producer role standing in for the not-yet-
-// merged `RegionalAreas` lookup (mirroring how [LocationProducing]/[Geocoder] already stand in
-// for not-yet-written native adapters elsewhere in this module) -- it is a REQUIRED constructor
-// dependency with no default/fallback implementation, so this file cannot silently degrade to a
-// permanent "nothing ever matches" stub; a real caller must supply a real matcher (WP-211's, once
-// merged) or a test must supply a test double, exactly as the source's own designated initializer
-// requires a real `Geocoder`.
+// The default matcher delegates to the coordinator-admitted, frozen WP-211 RegionalAreas
+// producer. The injectable role remains for deterministic location/geocoder consumer tests;
+// the producer's six borrowed files are not modified or claimed as WP-218 source acceptance.
 //
 // Everything else is implemented for real: coordinate rounding to the nearest whole degree for
 // the cache key (round-half-away-from-zero, matching Swift's default `Double.rounded()`), the
@@ -31,6 +24,7 @@ package com.meshcoreone.android.core.services.content
 import com.meshcoreone.android.core.model.RegionSelection
 import java.text.Normalizer
 import java.util.Locale
+import java.util.logging.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
@@ -38,7 +32,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 
 /**
- * Narrow producer-role port standing in for the not-yet-merged `RegionalAreas` geographic
+ * Narrow producer-role port over the `RegionalAreas` geographic
  * catalog (WP-211): translates a geocoder's free-text administrative-area/sub-administrative-area
  * strings into the stable subdivision/county codes [RegionSelection] actually stores. Mirrors the
  * source's `RegionalAreas.matchSubdivision`/`matchCounty` static functions' exact signatures and
@@ -67,7 +61,7 @@ interface RegionAreaMatching {
 class RegionResolver(
     private val location: LocationService,
     private val geocoder: Geocoder,
-    private val areaMatching: RegionAreaMatching,
+    private val areaMatching: RegionAreaMatching = RegionalAreaMatcher,
     private val locationTimeoutMs: Long = LOCATION_TIMEOUT_MS,
     private val geocodeTimeoutMs: Long = GEOCODE_TIMEOUT_MS,
     private val cacheTtlMs: Long = CACHE_TTL_MS,
@@ -111,12 +105,10 @@ class RegionResolver(
                 cache[key] = CachedResult(selection, expiresAtMs = clockMs() + cacheTtlMs)
             }
             selection
-        } catch (_: Exception) {
-            // Mirrors the source's bare `catch { logger.debug(...); return nil }`: every failure
-            // mode this function can produce (LocationServiceError, a geocode timeout/error) is
-            // documented as an intentional silent fallback to the manual picker, not a hidden
-            // bug being swallowed. No logger dependency exists in this pure-JVM module (same
-            // precedent as InlineImageDimensionsStore's persistence-failure handling).
+        } catch (error: Exception) {
+            Logger.getLogger("MeshCore.RegionResolver").fine(
+                "Region resolution failed: ${error.javaClass.simpleName}",
+            )
             null
         }
     }

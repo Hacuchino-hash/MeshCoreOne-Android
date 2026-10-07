@@ -6,8 +6,11 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import platform
 import sys
 import unittest
+import uuid
+from datetime import datetime, timezone
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -83,7 +86,7 @@ def input_paths(entries, manifest_data):
     return sorted(CONTROL_INPUTS | native | dependencies | {item["path"] for item in owned})
 
 
-def capture(repo, output, *, invocation=None, modules=("services", "app")):
+def capture(repo, output, *, invocation=None, pretest=None, modules=("services", "app")):
     repo, output = repo.resolve(), output.resolve()
     bounded_directory(output, output.parent)
     if repo == output or repo.is_relative_to(output):
@@ -138,11 +141,19 @@ def capture(repo, output, *, invocation=None, modules=("services", "app")):
         raw = invocation.read_bytes()
         (output / "invocation.json").write_bytes(raw)
         invocation_record = {"sha256": sha(raw), "size_bytes": len(raw)}
+    pretest_record = None
+    if pretest is not None:
+        if linked(pretest) or not pretest.is_file() or pretest.stat().st_size > 2 * 1024 * 1024:
+            raise PortError("Missing/unsafe pre-test content binding")
+        raw = pretest.read_bytes()
+        (output / "pretest-binding.json").write_bytes(raw)
+        pretest_record = {"sha256": sha(raw), "size_bytes": len(raw)}
     value = {
         "schema_version": 1, "work_package": "WP-218", "head_sha": head,
         "scope": "Complete raw produced bytes retained before JUnit parsing or any verification verdict.",
         "inputs": inputs, "reports": records, "invocation": invocation_record,
         "retention_errors": retention_errors,
+        "pretest": pretest_record,
     }
     write_json(output / "raw-snapshot.json", value)
     if retention_errors:
@@ -172,6 +183,40 @@ def immutable_inputs(repo, snapshot, output, manifest):
     return result
 
 
+def prepare_binding(repo, invocation, output):
+    if platform.system() != "Linux":
+        raise PortError("Content pre-test binding must be prepared by the actual Linux executor")
+    raw = invocation.read_bytes()
+    value = decode_json(raw.decode("utf-8"))
+    fields(value, {"schema_version", "stage", "identity", "host"}, label="actual pre-test executor invocation")
+    if value["schema_version"] != 1 or value["host"] != "linux" or value["stage"] != "verify":
+        raise PortError("Only the declared actual Linux verify executor can prepare content evidence")
+    head = git(repo, "rev-parse", "HEAD").decode("ascii").strip()
+    manifest = load_manifest(repo)
+    entries = tree(repo, head)
+    paths = input_paths(entries, manifest.data)
+    if any(path not in entries for path in paths) or git(repo, "diff", "HEAD", "--name-only", "--", *paths).strip():
+        raise PortError("Pre-test compiled/control inputs must match the actual immutable candidate")
+    policy = decode_json((repo / "docs/android/automation-policy.json").read_text(encoding="utf-8"))
+    record = {
+        "schema_version": 1, "execution_kind": "local" if value["identity"] is None else "hosted",
+        "local_run_id": str(uuid.uuid4()) if value["identity"] is None else None,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "head_sha": head, "tree_sha": git(repo, "rev-parse", head + "^{tree}").decode("ascii").strip(),
+        "approved_base_sha": APPROVED_BASE, "source_sha": SOURCE, "manifest_sha256": manifest.sha256,
+        "policy_revision": policy_revision(manifest, policy), "forwarded_invocation_sha256": sha(raw),
+        "inputs": {path: entries[path] for path in paths},
+        "scope": "Actual pre-test local/hosted candidate identity; local runs have no GitHub/cold-cache authority.",
+    }
+    if git(repo, "merge-base", APPROVED_BASE, head).decode("ascii").strip() != APPROVED_BASE:
+        raise PortError("Candidate lost the explicitly approved work-package base")
+    if output.exists():
+        raise PortError("Pre-test binding must not overwrite an earlier invocation")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    write_json(output, record)
+    return record
+
+
 def invocation_binding(repo, snapshot, output, manifest, policy):
     if snapshot["invocation"] is None:
         raise PortError("Actual executor invocation/base/head/run binding is mandatory")
@@ -183,6 +228,39 @@ def invocation_binding(repo, snapshot, output, manifest, policy):
     if type(value["schema_version"]) is not int or value["schema_version"] != 1 or value["stage"] != "verify" or value["host"] != "linux":
         raise PortError("Content acceptance requires the declared actual Linux verify invocation")
     identity = value["identity"]
+    if identity is None:
+        if platform.system() != "Linux" or snapshot.get("pretest") is None:
+            raise PortError("Local content evidence requires the actual pre-test Linux candidate binding")
+        pretest_raw = (output / "pretest-binding.json").read_bytes()
+        if snapshot["pretest"] != {"sha256": sha(pretest_raw), "size_bytes": len(pretest_raw)}:
+            raise PortError("Pre-test binding bytes changed")
+        pretest = decode_json(pretest_raw.decode("utf-8"))
+        fields(pretest, {
+            "schema_version", "execution_kind", "local_run_id", "started_at", "head_sha", "tree_sha",
+            "approved_base_sha", "source_sha", "manifest_sha256", "policy_revision",
+            "forwarded_invocation_sha256", "inputs", "scope",
+        }, label="pre-test local content binding")
+        try:
+            local_id = str(uuid.UUID(pretest["local_run_id"]))
+        except (ValueError, TypeError, AttributeError) as error:
+            raise PortError("Local content run has no actual invocation UUID") from error
+        if (
+            pretest["schema_version"] != 1 or pretest["execution_kind"] != "local"
+            or local_id != pretest["local_run_id"] or pretest["head_sha"] != snapshot["head_sha"]
+            or pretest["tree_sha"] != git(repo, "rev-parse", snapshot["head_sha"] + "^{tree}").decode("ascii").strip()
+            or pretest["approved_base_sha"] != APPROVED_BASE or pretest["source_sha"] != SOURCE
+            or pretest["manifest_sha256"] != manifest.sha256
+            or pretest["policy_revision"] != policy_revision(manifest, policy)
+            or pretest["forwarded_invocation_sha256"] != sha(raw)
+            or pretest["inputs"] != {path: record["blob_sha"] for path, record in snapshot["inputs"].items()}
+        ):
+            raise PortError("Stale/mismatched actual local pre-test code/tree/source/input binding")
+        return {
+            "binding": asdict(Binding(REPOSITORY, "WP-218", APPROVED_BASE, snapshot["head_sha"],
+                                     SOURCE, manifest.sha256, policy_revision(manifest, policy))),
+            "execution_kind": "local", "local_run_id": local_id, "run_id": None, "run_attempt": None,
+            "host": "linux", "scope": "Local warm candidate execution only; no hosted/cold-cache acceptance.",
+        }
     fields(identity, {"binding", "run_id", "run_attempt"}, label="actual content run")
     bound = Binding.parse(identity["binding"])
     positive_integer(identity["run_id"], "Actual content run")
@@ -301,17 +379,34 @@ def require_native_discovery(raw_inputs, cases):
             raise PortError("Missing native content test package/class")
         for first, second in names:
             method = first or second
+            sdks = configured_sdks(text)
             hits = [
                 key for key in cases
                 if key[1] in {package[1] + "." + name for name in classes}
-                and key[2].removesuffix("()") == method
+                and runtime_method(key[2]) == method
             ]
-            if len(hits) != 1:
+            if len(hits) != (len(sdks) or 1):
                 raise PortError("Missing/ambiguous actual declared native content test: " + path + "::" + method)
-            declared += 1
+            if sdks and {runtime_sdk(key[2], max(sdks)) for key in hits} != sdks:
+                raise PortError("Missing/reduced actual native content platform API: " + path + "::" + method)
+            declared += len(hits)
     if declared == 0:
         raise PortError("Zero discovered committed native content assertions")
     return declared
+
+
+def configured_sdks(text):
+    match = re.search(r"@Config\s*\(\s*sdk\s*=\s*\[([\d,\s]+)\]", text)
+    return {int(value) for value in re.findall(r"\d+", match[1])} if match else set()
+
+
+def runtime_method(name):
+    return re.sub(r"\[\d+\]$", "", name.removesuffix("()"))
+
+
+def runtime_sdk(name, default):
+    match = re.search(r"\[(\d+)\]$", name.removesuffix("()"))
+    return int(match[1]) if match else default
 
 
 def native_method(raw_inputs, native_class, method):
@@ -348,12 +443,13 @@ def source_execution(originals, cases, raw_inputs):
             hits = [
                 value for (candidate_module, candidate_class, name), value in cases.items()
                 if candidate_module == module and candidate_class == native_class
-                and name.removesuffix("()") == method
+                and runtime_method(name) == method
             ]
-            if len(hits) != 1:
+            path, text = native_method(raw_inputs, native_class, method)
+            sdks = configured_sdks(text)
+            if len(hits) != (len(sdks) or 1):
                 row["blocker"] = "Missing/ambiguous executed original native case: " + native_class + "::" + method
             else:
-                path, text = native_method(raw_inputs, native_class, method)
                 if original["inputs"] is not None:
                     axes = original["inputs"]["axes"]
                     if len(axes) != 1 or axes[0]["kind"] != "literal-collection":
@@ -363,7 +459,10 @@ def source_execution(originals, cases, raw_inputs):
                     values = re.search(r"for\s*\(\s*extension\s+in\s+listOf\(([^)]*)\)", body)
                     if values is None or re.findall(r'"[^"]*"', values[1]) != axes[0]["declared_rows"]:
                         raise PortError("Missing/reduced original image-extension parameter rows")
-                row["native_cases"] = [{**hits[0], "input": path}]
+                row["native_cases"] = [
+                    {**hit, "input": path, "platform_api": runtime_sdk(hit["name"], max(sdks)) if sdks else None}
+                    for hit in hits
+                ]
         result.append(row)
     return result
 
@@ -398,6 +497,8 @@ def main(argv=None):
     parser.add_argument("--repo", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--invocation", type=Path)
+    parser.add_argument("--pretest", type=Path)
+    parser.add_argument("--prepare-binding", action="store_true")
     parser.add_argument("--retain-only", choices=tuple(REPORTS))
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args(argv)
@@ -410,8 +511,16 @@ def main(argv=None):
                 return 0
         if args.output is None or not args.output.is_absolute():
             raise PortError("Explicit absolute content raw output is mandatory")
+        if args.prepare_binding:
+            if args.invocation is None:
+                raise PortError("Actual executor invocation is required before native tests")
+            prepared = prepare_binding(args.repo, args.invocation, args.output)
+            print(json.dumps({key: prepared[key] for key in (
+                "execution_kind", "local_run_id", "head_sha", "tree_sha", "source_sha",
+            )} | {"inputs_bound_before_tests": len(prepared["inputs"])}))
+            return 0
         modules = (args.retain_only,) if args.retain_only else tuple(REPORTS)
-        snapshot = capture(args.repo, args.output, invocation=args.invocation, modules=modules)
+        snapshot = capture(args.repo, args.output, invocation=args.invocation, pretest=args.pretest, modules=modules)
         if args.retain_only:
             print(json.dumps({"raw_snapshot": str(args.output / "raw-snapshot.json"),
                               "reports_retained": len(snapshot["reports"]), "verification_verdict": None}))

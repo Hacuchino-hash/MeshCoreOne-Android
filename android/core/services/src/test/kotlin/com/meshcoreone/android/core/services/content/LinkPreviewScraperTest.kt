@@ -30,7 +30,7 @@ class LinkPreviewScraperTest {
      * `UrlSafetyCheckerTest`/`RedirectSafetyPolicyTest`).
      */
     private fun scraperFor(attempt: HttpFetchAttempt): LinkPreviewScraper =
-        LinkPreviewScraper(fetcherReturning(attempt), isUrlSafe = { true })
+        LinkPreviewScraper(fetcherReturning(attempt), PreviewImageProcessing { it }, isUrlSafe = { true })
 
     private fun startedWith(
         statusCode: Int = 200,
@@ -41,6 +41,7 @@ class LinkPreviewScraperTest {
         statusCode = statusCode,
         mimeType = mimeType,
         expectedContentLength = expectedContentLength,
+        closeResponse = {},
         chunks = { onChunk -> if (body.isNotEmpty()) onChunk(body) },
     )
 
@@ -71,7 +72,7 @@ class LinkPreviewScraperTest {
                 return startedWith(mimeType = "image/jpeg", body = byteArrayOf(1, 2, 3))
             }
         }
-        val scraper = LinkPreviewScraper(fetching)
+        val scraper = LinkPreviewScraper(fetching, PreviewImageProcessing { it })
 
         val data = scraper.loadImageData("http://127.0.0.1/secret.jpg")
 

@@ -47,6 +47,7 @@ class InlineImageCacheTest {
         statusCode = statusCode,
         mimeType = mimeType,
         expectedContentLength = expectedContentLength,
+        closeResponse = {},
         chunks = { onChunk -> if (body.isNotEmpty()) onChunk(body) },
     )
 

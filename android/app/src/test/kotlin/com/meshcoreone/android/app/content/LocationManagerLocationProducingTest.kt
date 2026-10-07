@@ -9,10 +9,14 @@ import android.location.Location
 import android.location.LocationManager
 import com.meshcoreone.android.core.services.content.LocationAuthorizationStatus
 import com.meshcoreone.android.core.services.content.LocationServiceError
+import com.meshcoreone.android.core.services.content.LocationService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlinx.coroutines.async
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -20,7 +24,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [31])
+@Config(sdk = [31, 37])
 class LocationManagerLocationProducingTest {
     private val context = org.robolectric.RuntimeEnvironment.getApplication()
     private val locationManager = context.getSystemService(LocationManager::class.java)!!
@@ -53,7 +57,9 @@ class LocationManagerLocationProducingTest {
 
     @Test
     fun `requestLocation fails with a typed error when the provider is disabled`() = runTest {
-        shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, false)
+        for (provider in listOf(LocationManager.FUSED_PROVIDER, LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)) {
+            shadowOf(locationManager).setProviderEnabled(provider, false)
+        }
         shadowOf(context as android.app.Application).grantPermissions(
             android.Manifest.permission.ACCESS_FINE_LOCATION,
         )
@@ -69,8 +75,8 @@ class LocationManagerLocationProducingTest {
 
         val error = assertFailsWith<LocationServiceError.NotAuthorized> { adapter.requestLocation() }
 
-        assertEquals(LocationAuthorizationStatus.DENIED, error.status)
-        assertEquals(LocationAuthorizationStatus.DENIED, adapter.authorizationStatus.value)
+        assertEquals(LocationAuthorizationStatus.NOT_DETERMINED, error.status)
+        assertEquals(LocationAuthorizationStatus.NOT_DETERMINED, adapter.authorizationStatus.value)
     }
 
     @Test
@@ -81,7 +87,7 @@ class LocationManagerLocationProducingTest {
     }
 
     @Test
-    fun `authorizationStatus reports AUTHORIZED_ALWAYS once fine location is granted`() {
+    fun `fine location grants foreground authorization rather than inventing background permission`() {
         // Simulates the real OS grant state the way Robolectric's shadow Application allows a
         // test to represent an already-granted permission, without going through an Activity
         // prompt -- distinct from this adapter's own disclosed requestPermissionIfNeeded gap.
@@ -90,7 +96,7 @@ class LocationManagerLocationProducingTest {
         )
         val adapter = LocationManagerLocationProducing(context)
 
-        assertEquals(LocationAuthorizationStatus.AUTHORIZED_ALWAYS, adapter.authorizationStatus.value)
+        assertEquals(LocationAuthorizationStatus.AUTHORIZED_WHEN_IN_USE, adapter.authorizationStatus.value)
     }
 
     @Test
@@ -100,5 +106,98 @@ class LocationManagerLocationProducingTest {
         adapter.reportPermissionResult(granted = false)
 
         assertEquals(LocationAuthorizationStatus.DENIED, adapter.authorizationStatus.value)
+    }
+
+    @Test
+    fun `unwired permission requester fails explicitly without a 30 second permission spinner`() = runTest {
+        val adapter = LocationManagerLocationProducing(context)
+        val service = LocationService(adapter)
+
+        assertFailsWith<LocationServiceError.PermissionRequestUnavailable> {
+            service.requestCurrentLocation()
+        }
+
+        assertEquals(0L, testScheduler.currentTime)
+        assertEquals(LocationAuthorizationStatus.NOT_DETERMINED, adapter.authorizationStatus.value)
+    }
+
+    @Test
+    fun `explicit permission requester invokes the real capability contract once before its reported decision`() {
+        var requests = 0
+        val adapter = LocationManagerLocationProducing(
+            context,
+            permissionRequester = LocationPermissionRequesting { requests++ },
+        )
+
+        adapter.requestPermissionIfNeeded()
+        assertEquals(1, requests)
+        adapter.reportPermissionResult(granted = false)
+        adapter.requestPermissionIfNeeded()
+        assertEquals(1, requests)
+        assertEquals(LocationAuthorizationStatus.DENIED, adapter.authorizationStatus.value)
+    }
+
+    @Test
+    fun `permission revoked during a pending real fix is typed and releases the request`() = runTest {
+        shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
+        val application = context as android.app.Application
+        shadowOf(application).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        LocationManagerLocationProducing(context).use { adapter ->
+            supervisorScope {
+                val pending = async { adapter.requestLocation() }
+                testScheduler.runCurrent()
+                shadowOf(application).denyPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                adapter.reportPermissionResult(granted = false)
+                val failure = assertFailsWith<LocationServiceError.NotAuthorized> { pending.await() }
+                assertEquals(LocationAuthorizationStatus.DENIED, failure.status)
+                assertEquals(LocationAuthorizationStatus.DENIED, adapter.authorizationStatus.value)
+            }
+            shadowOf(application).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            adapter.reportPermissionResult(granted = true)
+            val next = async { adapter.requestLocation() }
+            testScheduler.runCurrent()
+            shadowOf(locationManager).simulateLocation(Location(LocationManager.FUSED_PROVIDER).apply {
+                latitude = 1.0
+                longitude = 2.0
+            })
+            assertEquals(1.0, next.await().latitude)
+        }
+    }
+
+    @Test
+    fun `cancelling a pending platform fix does not complete a successor or leak its signal`() = runTest {
+        shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
+        shadowOf(context as android.app.Application).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        LocationManagerLocationProducing(context).use { adapter ->
+            val first = async { adapter.requestLocation() }
+            testScheduler.runCurrent()
+            first.cancel()
+            assertFailsWith<CancellationException> { first.await() }
+            val next = async { adapter.requestLocation() }
+            testScheduler.runCurrent()
+            assertTrue(!next.isCompleted)
+            shadowOf(locationManager).simulateLocation(Location(LocationManager.FUSED_PROVIDER).apply {
+                latitude = 3.0
+                longitude = 4.0
+            })
+            assertEquals(3.0, next.await().latitude)
+        }
+    }
+
+    @Test
+    fun `background authorization requires the actual background grant and close cancels the live request`() = runTest {
+        shadowOf(locationManager).setProviderEnabled(LocationManager.FUSED_PROVIDER, true)
+        shadowOf(context as android.app.Application).grantPermissions(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+        )
+        val adapter = LocationManagerLocationProducing(context)
+        assertEquals(LocationAuthorizationStatus.AUTHORIZED_ALWAYS, adapter.authorizationStatus.value)
+        val pending = async { adapter.requestLocation() }
+        testScheduler.runCurrent()
+        adapter.close()
+        adapter.close()
+        assertFailsWith<CancellationException> { pending.await() }
+        assertFailsWith<LocationServiceError.RequestFailed> { adapter.requestLocation() }
     }
 }

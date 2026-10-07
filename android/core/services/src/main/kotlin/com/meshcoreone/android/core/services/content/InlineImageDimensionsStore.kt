@@ -60,6 +60,11 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Instant
+import java.time.Clock
+import java.time.DateTimeException
+import java.util.logging.Logger
+import kotlin.math.floor
+import kotlin.math.roundToLong
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -100,8 +105,8 @@ private const val NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS = 978_307_200L
  * in-memory mirror populated eagerly at [save] time (before the file write completes), and
  * [resolutionUpdates] multicasts every post-subscription [save]'s URL to every live collector.
  */
-class InlineImageDimensionsStore(private val file: File) {
-    private data class Entry(val aspect: Double, val fetchedAtEpochSecond: Long)
+class InlineImageDimensionsStore(private val file: File, private val clock: Clock = Clock.systemUTC()) {
+    private data class Entry(val aspect: Double, val fetchedAt: Instant)
 
     private val mutex = Mutex()
     private var entries: Map<String, Entry> = loadEntries(file)
@@ -138,17 +143,21 @@ class InlineImageDimensionsStore(private val file: File) {
      * lock itself), matching the source actor's non-reentrant method body.
      */
     suspend fun save(url: String, width: Double, height: Double) {
-        if (width <= 0.0 || height <= 0.0) return
+        if (!(width > 0.0 && height > 0.0)) return
         val aspect = width / height
         mutex.withLock {
-            entries = entries + (url to Entry(aspect, Instant.now().epochSecond))
+            entries = entries + (url to Entry(aspect, clock.instant()))
             aspectMirror[url] = aspect
-            persist()
             resolutionEvents.emit(url)
+            persist()
         }
     }
 
     private fun persist() {
+        if (entries.values.any { !it.aspect.isFinite() }) {
+            Logger.getLogger("MeshCore.ImageDimensions").severe("Dimensions snapshot is not JSON-encodable")
+            return
+        }
         val payload = buildJsonObject {
             entries.forEach { (url, entry) ->
                 put(
@@ -158,7 +167,8 @@ class InlineImageDimensionsStore(private val file: File) {
                         put(
                             "fetchedAt",
                             JsonPrimitive(
-                                entry.fetchedAtEpochSecond - NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS,
+                                entry.fetchedAt.epochSecond - NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS +
+                                    entry.fetchedAt.nano / 1_000_000_000.0,
                             ),
                         )
                     },
@@ -171,22 +181,23 @@ class InlineImageDimensionsStore(private val file: File) {
                 Files.createDirectories(parent.toPath())
             }
             val tmp = File(parent, "${file.name}.tmp-${System.nanoTime()}")
-            tmp.writeText(payload, Charsets.UTF_8)
             try {
-                Files.move(
-                    tmp.toPath(),
-                    file.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.ATOMIC_MOVE,
-                )
-            } catch (_: AtomicMoveNotSupportedException) {
-                Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                tmp.writeText(payload, Charsets.UTF_8)
+                try {
+                    Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE)
+                } catch (_: AtomicMoveNotSupportedException) {
+                    Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                }
+            } finally {
+                tmp.delete()
             }
-        } catch (_: IOException) {
+        } catch (error: IOException) {
             // Best-effort write, matching the source's log-and-continue on persistence failure
             // (the source never throws out of `save` on a write error). No logger dependency
             // exists in this pure-JVM module; the in-memory mirror and `entries` map remain the
             // source of truth for the remainder of this process's lifetime regardless.
+            Logger.getLogger("MeshCore.ImageDimensions").warning("Dimensions disk write failed: ${error.javaClass.simpleName}")
         }
     }
 
@@ -206,21 +217,30 @@ class InlineImageDimensionsStore(private val file: File) {
                 val root = Json.parseToJsonElement(String(bytes, Charsets.UTF_8)).jsonObject
                 root.mapValues { (_, value) ->
                     val entryObject = value.jsonObject
-                    Entry(
-                        aspect = entryObject.getValue("aspect").jsonPrimitive.double,
-                        fetchedAtEpochSecond = entryObject.getValue("fetchedAt").jsonPrimitive.long +
-                            NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS,
-                    )
+                    val stamp = entryObject.getValue("fetchedAt").jsonPrimitive
+                    require(!stamp.isString) { "Codable image cache date must be numeric" }
+                    val seconds = stamp.double + NSDATE_REFERENCE_DATE_EPOCH_OFFSET_SECONDS
+                    require(seconds.isFinite()) { "Nonfinite image cache date" }
+                    val whole = floor(seconds).toLong()
+                    Entry(entryObject.getValue("aspect").jsonPrimitive.double,
+                          Instant.ofEpochSecond(whole, ((seconds - whole) * 1_000_000_000).roundToLong()))
                 }
             } catch (_: IOException) {
                 emptyMap()
             } catch (_: SerializationException) {
+                Logger.getLogger("MeshCore.ImageDimensions").info("Dimensions file is undecodable; using the explicit disposable empty cache")
                 emptyMap()
             } catch (_: IllegalArgumentException) {
+                Logger.getLogger("MeshCore.ImageDimensions").info("Dimensions file has invalid entries; using the explicit disposable empty cache")
                 emptyMap()
             } catch (_: NoSuchElementException) {
+                Logger.getLogger("MeshCore.ImageDimensions").info("Dimensions file has missing fields; using the explicit disposable empty cache")
                 emptyMap()
             } catch (_: NumberFormatException) {
+                Logger.getLogger("MeshCore.ImageDimensions").info("Dimensions file has invalid numbers; using the explicit disposable empty cache")
+                emptyMap()
+            } catch (_: DateTimeException) {
+                Logger.getLogger("MeshCore.ImageDimensions").info("Dimensions file has an unsupported date; using the explicit disposable empty cache")
                 emptyMap()
             }
         }

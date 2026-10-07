@@ -17,6 +17,11 @@
 // returns the capped, mime-validated raw bytes; it does not claim the recompression behavior.
 package com.meshcoreone.android.core.services.content
 
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Logger
+
 /** A single fetch attempt's outcome, enough to apply the Swift original's bounded-GET checks. */
 sealed interface HttpFetchAttempt {
     /**
@@ -25,13 +30,38 @@ sealed interface HttpFetchAttempt {
      * adapter close/cancel the underlying connection), mirroring the Swift original's
      * `for try await byte in bytes { ...; if overCap { return nil } }` early-exit streaming.
      */
-    data class Started(
+    class Started(
         val statusCode: Int,
         val mimeType: String?,
         /** Server-declared body size, or `null` when not declared (never trusted alone). */
         val expectedContentLength: Long?,
+        private val closeResponse: () -> Unit,
         val chunks: suspend (onChunk: suspend (ByteArray) -> Boolean) -> Unit,
-    ) : HttpFetchAttempt
+    ) : HttpFetchAttempt, AutoCloseable {
+        private val closed = AtomicBoolean()
+
+        override fun close() {
+            if (closed.compareAndSet(false, true)) closeResponse()
+        }
+
+        suspend fun readBounded(byteCap: Int): ByteArray? {
+            require(byteCap > 0) { "HTTP byte cap must be positive" }
+            check(!closed.get()) { "HTTP response is closed" }
+            if (expectedContentLength != null && expectedContentLength > byteCap) return null
+            val buffer = ByteArrayOutputStream()
+            var exceeded = false
+            chunks { chunk ->
+                if (exceeded || chunk.size > byteCap - buffer.size()) {
+                    exceeded = true
+                    false
+                } else {
+                    buffer.write(chunk)
+                    true
+                }
+            }
+            return if (exceeded) null else buffer.toByteArray()
+        }
+    }
 
     /** Any network, TLS, timeout, or DNS-safety failure. [reason] is diagnostic only. */
     data class Failed(val reason: String) : HttpFetchAttempt
@@ -56,6 +86,7 @@ interface BoundedHttpFetching {
 /** `og:image` / `og:title` HTML scrape fallback, and the scraped-image bounded fetch. */
 class LinkPreviewScraper(
     private val httpFetching: BoundedHttpFetching,
+    private val imageProcessing: PreviewImageProcessing,
     /**
      * Defaults to the real [UrlSafetyChecker.isSafe] so production callers get the full
      * scheme/private-range/DNS-rebinding check; tests inject a deterministic override instead
@@ -79,8 +110,17 @@ class LinkPreviewScraper(
             acceptsMime = { it.contains(HTML_MIME_SUBSTRING) },
         ) ?: return null
 
-        val html = decodeUtf8OrLatin1(data) ?: return null
+        val html = decodeUtf8OrLatin1(data)
         return LinkPreviewHtmlMetadata.parseHtmlMetadata(html, url)
+    }
+
+    suspend fun fetchPageMetadata(url: String): PagePreviewMetadata? {
+        if (!isUrlSafe(url)) return null
+        val data = boundedFetch(
+            url, 10_000, HTML_SCRAPE_BYTE_CAP,
+            acceptsMime = { it.contains(HTML_MIME_SUBSTRING) },
+        ) ?: return null
+        return LinkPreviewHtmlMetadata.parsePageMetadata(decodeUtf8OrLatin1(data), url)
     }
 
     /**
@@ -91,12 +131,13 @@ class LinkPreviewScraper(
     suspend fun loadImageData(url: String): ByteArray? {
         if (!isUrlSafe(url)) return null
 
-        return boundedFetch(
+        val data = boundedFetch(
             url = url,
             timeoutMs = IMAGE_FETCH_TIMEOUT_MS,
             byteCap = IMAGE_BYTE_CAP,
             acceptsMime = { it.startsWith(IMAGE_MIME_PREFIX) },
-        )
+        ) ?: return null
+        return imageProcessing.boundedPreviewImage(data)
     }
 
     /**
@@ -110,41 +151,27 @@ class LinkPreviewScraper(
         timeoutMs: Long,
         byteCap: Int,
         acceptsMime: (String) -> Boolean,
-    ): ByteArray? {
+    ): ByteArray? = try {
         val attempt = httpFetching.fetch(url, timeoutMs)
-        if (attempt !is HttpFetchAttempt.Started) return null
-        if (attempt.statusCode !in 200..299) return null
-
-        val mimeType = attempt.mimeType ?: return null
-        if (!acceptsMime(mimeType)) return null
-
-        attempt.expectedContentLength?.let { if (it > byteCap) return null }
-
-        val buffer = java.io.ByteArrayOutputStream()
-        var exceeded = false
-        attempt.chunks { chunk ->
-            if (exceeded) {
-                false
-            } else {
-                buffer.write(chunk)
-                if (buffer.size() > byteCap) {
-                    exceeded = true
-                    false
-                } else {
-                    true
-                }
-            }
+        if (attempt !is HttpFetchAttempt.Started) null else attempt.use {
+            if (it.statusCode !in 200..299) return@use null
+            val mimeType = it.mimeType ?: return@use null
+            if (!acceptsMime(mimeType)) return@use null
+            it.readBounded(byteCap)
         }
-        if (exceeded) return null
-
-        return buffer.toByteArray()
+    } catch (error: IOException) {
+        Logger.getLogger("MeshCore.LinkPreviewService").fine("Preview HTTP stream failed: ${error.javaClass.simpleName}")
+        null
     }
 
-    private fun decodeUtf8OrLatin1(data: ByteArray): String? = runCatching {
-        String(data, Charsets.UTF_8)
-    }.recoverCatching {
+    private fun decodeUtf8OrLatin1(data: ByteArray): String = try {
+        Charsets.UTF_8.newDecoder()
+            .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+            .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+            .decode(java.nio.ByteBuffer.wrap(data)).toString()
+    } catch (_: java.nio.charset.CharacterCodingException) {
         String(data, Charsets.ISO_8859_1)
-    }.getOrNull()
+    }
 
     companion object {
         /** Streaming bound for the HTML scrape GET; `og:image`/`og:title` live in `<head>`. */

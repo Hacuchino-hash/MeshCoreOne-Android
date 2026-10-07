@@ -41,9 +41,12 @@
 //     cancellation never reaches the `markFailed` call sites at all.
 package com.meshcoreone.android.core.services.content
 
-import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.util.logging.Logger
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
@@ -79,8 +82,10 @@ sealed interface InlineImageResult {
 class CachedDecodedImage(
     val handle: DecodedImageHandle,
     val isGif: Boolean,
-    val data: ByteArray?,
+    data: ByteArray?,
 ) {
+    private val retainedData = data?.copyOf()
+    val data: ByteArray? get() = retainedData?.copyOf()
     val cost: Long = handle.costBytes.toLong() + (data?.size?.toLong() ?: 0L)
 }
 
@@ -135,15 +140,18 @@ class InlineImageCache(
         val precheck = stateMutex.withLock { precheckLocked(url) }
         if (precheck != null) return precheck
 
-        return fetchSemaphore.withPermit {
-            val afterWait = memoryCache.get(url)
-            try {
-                when {
-                    afterWait != null -> InlineImageResult.Loaded(afterWait)
-                    !currentCoroutineContext().isActive -> InlineImageResult.Failed
-                    else -> performFetch(url)
-                }
-            } finally {
+        try {
+            return fetchSemaphore.withPermit {
+                currentCoroutineContext().ensureActive()
+                memoryCache.get(url)?.let { return@withPermit InlineImageResult.Loaded(it.copyOf()) }
+                performFetch(url)
+            }
+        } catch (error: IOException) {
+            Logger.getLogger("MeshCore.InlineImageCache").fine("Inline image HTTP stream failed: ${error.javaClass.simpleName}")
+            markFailed(url)
+            return InlineImageResult.Failed
+        } finally {
+            withContext(NonCancellable) {
                 stateMutex.withLock { inFlightUrls.remove(url) }
             }
         }
@@ -152,7 +160,7 @@ class InlineImageCache(
     /** Runs under [stateMutex]; returns a terminal result when no fetch is needed, else `null`. */
     private fun precheckLocked(url: String): InlineImageResult? {
         if (url in failedUrls) return InlineImageResult.Failed
-        memoryCache.get(url)?.let { return InlineImageResult.Loaded(it) }
+        memoryCache.get(url)?.let { return InlineImageResult.Loaded(it.copyOf()) }
         if (!inFlightUrls.add(url)) return InlineImageResult.Loading
         return null
     }
@@ -176,6 +184,7 @@ class InlineImageCache(
 
     /** Empties the decoded-image mirror, e.g. in response to a memory-pressure signal. */
     fun clearDecodedMirror() = decodedMirror.clear()
+    fun clearRawMemory() = memoryCache.clear()
 
     /**
      * Records that an image-extension URL served an HTML page, so later classification reroutes
@@ -199,18 +208,23 @@ class InlineImageCache(
     override suspend fun probeImageDimensions(url: String): Pair<Int, Int>? {
         if (!isUrlSafe(url)) return null
 
-        return fetchSemaphore.withPermit {
-            val attempt = httpFetching.fetch(url, PROBE_TIMEOUT_MS, PROBE_BYTE_RANGE)
-            if (attempt !is HttpFetchAttempt.Started) return@withPermit null
-            if (attempt.statusCode != HTTP_STATUS_OK && attempt.statusCode != HTTP_STATUS_PARTIAL_CONTENT) {
-                return@withPermit null
+        return try {
+            fetchSemaphore.withPermit {
+                val attempt = httpFetching.fetch(url, PROBE_TIMEOUT_MS, PROBE_BYTE_RANGE)
+                if (attempt !is HttpFetchAttempt.Started) return@withPermit null
+                attempt.use { response ->
+                    if (response.statusCode != HTTP_STATUS_OK && response.statusCode != HTTP_STATUS_PARTIAL_CONTENT) {
+                        return@use null
+                    }
+                    val data = response.readBounded(PROBE_MAX_BUFFER_BYTES) ?: return@use null
+                    val dims = ImageHeaderDecoder.decodeDimensions(data) ?: return@use null
+                    dimensionsStore?.save(url, dims.first.toDouble(), dims.second.toDouble())
+                    dims
+                }
             }
-
-            val data = readBounded(attempt, PROBE_MAX_BUFFER_BYTES) ?: return@withPermit null
-            val dims = ImageHeaderDecoder.decodeDimensions(data) ?: return@withPermit null
-
-            dimensionsStore?.save(url, dims.first.toDouble(), dims.second.toDouble())
-            dims
+        } catch (error: IOException) {
+            Logger.getLogger("MeshCore.InlineImageCache").fine("Image probe stream failed: ${error.javaClass.simpleName}")
+            null
         }
     }
 
@@ -226,62 +240,23 @@ class InlineImageCache(
             markFailed(url)
             return InlineImageResult.Failed
         }
-        if (attempt.statusCode !in HTTP_SUCCESS_RANGE) {
-            markFailed(url)
-            return InlineImageResult.Failed
-        }
-
-        // An image-extension URL that serves an HTML landing page is a reclassification, not a
-        // decode failure: checked (and returned) before the size guard, so an oversized page
-        // still reroutes rather than dead-ending in the negative cache, and never marked failed
-        // since the URL must stay retryable.
-        if (attempt.mimeType == HTML_MIME_TYPE) {
-            markServesHtmlPage(url)
-            return InlineImageResult.NotImage
-        }
-
-        val data = readBounded(attempt, MAX_DOWNLOAD_BYTES)
-        if (data == null) {
-            markFailed(url)
-            return InlineImageResult.Failed
-        }
-
-        // Lightweight validation: confirm the bytes are a recognized image container (see this
-        // file's header note on ImageHeaderDecoder's narrower-than-ImageIO format coverage).
-        if (ImageHeaderDecoder.decodeDimensions(data) == null) {
-            markFailed(url)
-            return InlineImageResult.Failed
-        }
-
-        memoryCache.put(url, data)
-        return InlineImageResult.Loaded(data)
-    }
-
-    /**
-     * Streams [attempt]'s body into memory, enforcing [byteCap] chunk-by-chunk so the cap holds
-     * even when the server lies about (or omits) its declared content length. Returns `null` on
-     * an over-cap declared length or an over-cap actual body.
-     */
-    private suspend fun readBounded(attempt: HttpFetchAttempt.Started, byteCap: Int): ByteArray? {
-        attempt.expectedContentLength?.let { if (it > byteCap) return null }
-
-        val buffer = ByteArrayOutputStream()
-        var exceeded = false
-        attempt.chunks { chunk ->
-            if (exceeded) {
-                false
-            } else {
-                buffer.write(chunk)
-                if (buffer.size() > byteCap) {
-                    exceeded = true
-                    false
-                } else {
-                    true
-                }
+        return attempt.use {
+            if (it.statusCode !in HTTP_SUCCESS_RANGE) {
+                markFailed(url)
+                return@use InlineImageResult.Failed
             }
+            if (it.mimeType == HTML_MIME_TYPE) {
+                markServesHtmlPage(url)
+                return@use InlineImageResult.NotImage
+            }
+            val data = it.readBounded(MAX_DOWNLOAD_BYTES)
+            if (data == null || ImageHeaderDecoder.decodeDimensions(data) == null) {
+                markFailed(url)
+                return@use InlineImageResult.Failed
+            }
+            memoryCache.put(url, data.copyOf())
+            InlineImageResult.Loaded(data)
         }
-        if (exceeded) return null
-        return buffer.toByteArray()
     }
 
     private suspend fun markFailed(url: String) {

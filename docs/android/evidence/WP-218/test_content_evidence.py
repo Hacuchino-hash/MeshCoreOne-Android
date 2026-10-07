@@ -32,7 +32,10 @@ class ContentFixture:
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes((collector.ROOT / path).read_bytes().replace(b"\r\n", b"\n"))
         self.aliases = dict(collector.source_bindings.ALIASES)
-        self.original_blockers = dict(collector.source_bindings.BLOCKED)
+        self.original_blockers = {
+            ("LinkPreviewServiceTests", "loadImageData rejects a redirect to a private host"):
+                "Fixture-only missing original behavior; unrelated cases cannot replace it.",
+        }
         fixture_path = self.repo / (
             "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/content/FixtureOriginalTest.kt"
         )
@@ -95,7 +98,10 @@ class ContentFixture:
                     if not owners:
                         raise AssertionError("Fixture has an unaccounted native declaration")
                     name = method[1] or method[2]
-                    rows.append((prefix + owners[-1][1], name + ("()" if module == "services" else "")))
+                    sdks = collector.configured_sdks(text)
+                    for sdk in sorted(sdks) if sdks else [None]:
+                        suffix = f"[{sdk}]" if sdks and sdk != max(sdks) else ""
+                        rows.append((prefix + owners[-1][1], name + suffix + ("()" if module == "services" else "")))
             root = ET.Element("testsuite", {
                 "tests": str(len(rows)), "failures": "0", "errors": "0", "skipped": "0",
                 "name": "fixture-only schema assertions, not native execution",
@@ -146,12 +152,12 @@ class ContentEvidenceTests(unittest.TestCase):
     def test_missing_real_behavior_is_blocked_not_substituted_by_unrelated_typed_or_fake_cases(self):
         with patch.dict(collector.source_bindings.BLOCKED, self.fixture.original_blockers, clear=True):
             snapshot = self.fixture.capture()
-            with self.assertRaisesRegex(PortError, "5 of 154"):
+            with self.assertRaisesRegex(PortError, str(len(self.fixture.original_blockers)) + " of 154"):
                 self.fixture.verify(snapshot)
         value = json.loads((self.fixture.output / "content-result.json").read_text())
         self.assertEqual(value["result"], "BLOCKED")
-        self.assertEqual(value["executed_families"], 149)
-        self.assertEqual(len([row for row in value["source_cases"] if row["blocker"]]), 5)
+        self.assertEqual(value["executed_families"], 154 - len(self.fixture.original_blockers))
+        self.assertEqual(len([row for row in value["source_cases"] if row["blocker"]]), len(self.fixture.original_blockers))
 
     def test_all_raw_report_bytes_are_retained_before_malformed_xml_is_rejected(self):
         invalid = b"<testsuite><not-closed"

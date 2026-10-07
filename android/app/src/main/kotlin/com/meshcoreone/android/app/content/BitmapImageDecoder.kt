@@ -18,6 +18,8 @@ package com.meshcoreone.android.app.content
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import com.meshcoreone.android.core.services.content.DecodedImageHandle
 import com.meshcoreone.android.core.services.content.ImageDecodeOutcome
 import com.meshcoreone.android.core.services.content.ImageDecoding
@@ -26,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
+import java.io.IOException
+import java.util.logging.Logger
 
 /** Real [DecodedImageHandle] wrapping an actually-decoded [android.graphics.Bitmap]. */
 class BitmapDecodedImageHandle(val bitmap: Bitmap) : DecodedImageHandle {
@@ -38,7 +42,7 @@ class BitmapDecodedImageHandle(val bitmap: Bitmap) : DecodedImageHandle {
      * `cgImage.bytesPerRow * cgImage.height` arithmetic models, now available for real because
      * this handle holds an actual allocated bitmap.
      */
-    override val costBytes: Int get() = bitmap.rowBytes * bitmap.height
+    override val costBytes: Int get() = Math.toIntExact(bitmap.rowBytes.toLong() * bitmap.height)
 }
 
 /**
@@ -50,45 +54,92 @@ class BitmapImageDecoder(private val dispatcher: kotlinx.coroutines.CoroutineDis
     ImageDecoding {
     override suspend fun decode(data: ByteArray, maxDimension: Int?): ImageDecodeOutcome =
         withContext(dispatcher) {
+            var bitmap: Bitmap? = null
+            var delivered = false
             try {
                 if (data.isEmpty()) return@withContext ImageDecodeOutcome.Failed("empty payload")
-
-                val sampleSize = if (maxDimension != null) {
-                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
-                    coroutineContext.ensureActive()
-                    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-                        return@withContext ImageDecodeOutcome.Failed("not a decodable image")
-                    }
-                    sampleSizeFor(bounds.outWidth, bounds.outHeight, maxDimension)
-                } else {
-                    1
+                if (maxDimension != null && maxDimension <= 0) {
+                    return@withContext ImageDecodeOutcome.Failed("maximum image dimension must be positive")
                 }
-
-                val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-                val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
                 coroutineContext.ensureActive()
-
-                if (bitmap == null) {
-                    ImageDecodeOutcome.Failed("BitmapFactory could not decode the payload")
-                } else {
-                    ImageDecodeOutcome.Decoded(BitmapDecodedImageHandle(bitmap))
+                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                    return@withContext ImageDecodeOutcome.Failed("not a decodable image")
                 }
+                val sampleSize = maxDimension?.let { sampleSizeFor(bounds.outWidth, bounds.outHeight, it) } ?: 1
+                val width = (bounds.outWidth.toLong() + sampleSize - 1) / sampleSize
+                val height = (bounds.outHeight.toLong() + sampleSize - 1) / sampleSize
+                if (width * height > MAX_DECODED_BYTES / 4) {
+                    return@withContext ImageDecodeOutcome.Failed("decoded pixels exceed the image byte bound")
+                }
+                val options = BitmapFactory.Options().apply {
+                    inSampleSize = sampleSize
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                }
+                val decoded = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+                    ?: return@withContext ImageDecodeOutcome.Failed("BitmapFactory could not decode the payload")
+                bitmap = decoded
+                coroutineContext.ensureActive()
+                if (decoded.rowBytes.toLong() * decoded.height > MAX_DECODED_BYTES) {
+                    return@withContext ImageDecodeOutcome.Failed("decoded allocation exceeds the image byte bound")
+                }
+                val transformed = applyOrientation(decoded, data)
+                if (transformed !== decoded) {
+                    decoded.recycle()
+                    bitmap = transformed
+                }
+                coroutineContext.ensureActive()
+                delivered = true
+                ImageDecodeOutcome.Decoded(BitmapDecodedImageHandle(transformed))
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (error: OutOfMemoryError) {
                 ImageDecodeOutcome.Failed("decode exceeded available memory: ${error.message}")
             } catch (error: IllegalArgumentException) {
                 ImageDecodeOutcome.Failed(error.message ?: "invalid image payload")
+            } catch (_: ArithmeticException) {
+                ImageDecodeOutcome.Failed("image dimensions exceed supported bounds")
+            } finally {
+                if (!delivered) bitmap?.recycle()
             }
         }
 
     /** Smallest power-of-two `inSampleSize` that keeps both dimensions at or under [maxDimension]. */
     private fun sampleSizeFor(width: Int, height: Int, maxDimension: Int): Int {
         var sampleSize = 1
-        while (width / (sampleSize * 2) >= maxDimension && height / (sampleSize * 2) >= maxDimension) {
+        val side = maxOf(width, height).toLong()
+        while ((side + sampleSize - 1) / sampleSize > maxDimension) {
+            if (sampleSize > Int.MAX_VALUE / 2) throw ArithmeticException("Image sample size overflow")
             sampleSize *= 2
         }
         return sampleSize
+    }
+
+    private fun applyOrientation(bitmap: Bitmap, data: ByteArray): Bitmap {
+        val orientation = try {
+            data.inputStream().use {
+                ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            }
+        } catch (error: IOException) {
+            Logger.getLogger("MeshCore.ImageDecoder").fine("Image orientation metadata unavailable: ${error.javaClass.simpleName}")
+            ExifInterface.ORIENTATION_NORMAL
+        }
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.setScale(-1f, 1f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.setRotate(180f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.setScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> { matrix.setRotate(90f); matrix.postScale(-1f, 1f) }
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.setRotate(90f)
+            ExifInterface.ORIENTATION_TRANSVERSE -> { matrix.setRotate(-90f); matrix.postScale(-1f, 1f) }
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.setRotate(-90f)
+            else -> return bitmap
+        }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+
+    private companion object {
+        const val MAX_DECODED_BYTES = 100L * 1024 * 1024
     }
 }

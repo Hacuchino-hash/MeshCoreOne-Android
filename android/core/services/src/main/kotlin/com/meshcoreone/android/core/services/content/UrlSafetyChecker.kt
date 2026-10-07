@@ -39,7 +39,7 @@ object UrlSafetyChecker {
         val scheme = uri.scheme?.lowercase()
         if (scheme != "http" && scheme != "https") return false
 
-        val host = uri.host ?: return false
+        val host = uri.host?.removeSurrounding("[", "]") ?: return false
 
         if (host in allowedHosts) return true
 
@@ -98,9 +98,15 @@ object UrlSafetyChecker {
         resolveHost: suspend (String) -> List<InetAddress>,
     ): Boolean {
         val result = withTimeoutOrNull(dnsTimeout) {
-            runCatching { resolveHost(host) }.getOrNull()
+            try {
+                resolveHost(host)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: UnknownHostException) {
+                null
+            }
         }
-        if (result == null) return false
+        if (result.isNullOrEmpty()) return false
         return result.all { !isPrivateOrReserved(it.hostAddress ?: return@all false) }
     }
 

@@ -30,11 +30,12 @@ enum class LocationAuthorizationStatus {
     RESTRICTED,
 }
 
-/** Mirrors the Swift `LocationServiceError` enum's cases and branch-relevant payloads exactly. */
+/** Source errors plus the explicit native permission-request capability boundary. */
 sealed class LocationServiceError : Exception() {
     data class NotAuthorized(val status: LocationAuthorizationStatus) : LocationServiceError()
     object RequestInProgress : LocationServiceError()
     object PermissionTimeout : LocationServiceError()
+    object PermissionRequestUnavailable : LocationServiceError()
     object LocationTimeout : LocationServiceError()
     data class RequestFailed(override val message: String) : LocationServiceError()
 }

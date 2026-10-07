@@ -1,23 +1,7 @@
 // PortedFrom: MC1/Services/Geocoder.swift@db14559b39d32322b06477c6ae676112f583db50
-// Native adaptation (many-to-many port): core:services/content.Geocoder is the pure-JVM typed
-// contract (android.location.Geocoder is not a pure-JVM API); this file is the real Android
-// runtime reverse-geocoding producer the coordinator admitted into app/content. This header
-// names the actual production Swift source this file's behavior derives from; it does NOT
-// claim this file carries any of WP-218's 154 original test-assertion credit -- that credit is
-// claimed by core:services' own Geocoder role/GeocodeResult port and RegionResolver's tests
-// (pure-JVM, run against a fake Geocoder), which this adapter supplements rather than
-// duplicates.
-//
-// Android's `android.location.Geocoder.getFromLocation(lat, lng, maxResults): List<Address>?`
-// (the only form available below API 33) is a *blocking* call -- unlike `CLGeocoder`'s inherently
-// async `reverseGeocodeLocation`, so it is run on `Dispatchers.IO` here, never the caller's
-// dispatcher. API 33+ additionally exposes a non-blocking `getFromLocation(..., GeocodeListener)`
-// overload, used when available. Mirrors the source's own doc-comment-disclosed "a fresh
-// CLGeocoder per call would make [cancelGeocode] a no-op": this adapter likewise constructs a
-// new `android.location.Geocoder` per [reverseGeocode] call (Android's Geocoder constructor does
-// no network I/O itself, so this is cheap), so [cancelGeocode] is correspondingly a documented
-// no-op here too -- not a silently-dropped feature, the exact same disclosed shape as the pure
-// role's own doc comment already describes.
+// One retained operation owns its continuation and legacy IO job. Android exposes no physical
+// geocoder cancellation API: cancellation completes the caller immediately and rejects late
+// platform results; a legacy Binder call may finish later inside this adapter's owned scope.
 package com.meshcoreone.android.app.content
 
 import android.content.Context
@@ -28,10 +12,19 @@ import androidx.annotation.RequiresApi
 import com.meshcoreone.android.core.services.content.GeoCoordinate
 import com.meshcoreone.android.core.services.content.Geocoder
 import com.meshcoreone.android.core.services.content.GeocodeResult
+import com.meshcoreone.android.core.services.content.GeocoderError
 import java.util.Locale
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 
 /**
  * Real [Geocoder] producer using [android.location.Geocoder]. Field mapping to [GeocodeResult]
@@ -49,60 +42,122 @@ class AndroidGeocoderAdapter(
      * this does not change production behavior, which always takes this default.
      */
     private val geocoderFactory: (Locale) -> AndroidGeocoder = { locale -> AndroidGeocoder(context, locale) },
-) : Geocoder {
-    override suspend fun reverseGeocode(coordinate: GeoCoordinate, preferredLocale: Locale?): GeocodeResult? {
-        val locale = preferredLocale ?: Locale.getDefault()
-        if (!AndroidGeocoder.isPresent()) return null
-        val geocoder = geocoderFactory(locale)
-        val addresses = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            geocodeAsync(geocoder, coordinate)
-        } else {
-            geocodeBlocking(geocoder, coordinate)
-        }
-        return addresses?.firstOrNull()?.let { address ->
-            GeocodeResult(
-                countryCode = address.countryCode,
-                administrativeArea = address.adminArea,
-                subAdministrativeArea = address.subAdminArea,
-            )
-        }
-    }
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+) : Geocoder, AutoCloseable {
+        private val lock = Any()
+        private val workers = CoroutineScope(SupervisorJob() + dispatcher)
+        private var active: Request? = null
+        private var closed = false
 
-    /** Documented no-op: see the file header's "fresh Geocoder per call" disclosure. */
-    override fun cancelGeocode() {
-        // Intentionally empty.
-    }
+        private class Request(val continuation: CancellableContinuation<GeocodeResult?>) {
+            var worker: Job? = null
+        }
 
-    private suspend fun geocodeBlocking(geocoder: AndroidGeocoder, coordinate: GeoCoordinate): List<Address>? =
-        withContext(Dispatchers.IO) {
-            try {
-                @Suppress("DEPRECATION")
-                geocoder.getFromLocation(coordinate.latitude, coordinate.longitude, 1)
-            } catch (error: java.io.IOException) {
-                null
+        override suspend fun reverseGeocode(coordinate: GeoCoordinate, preferredLocale: Locale?): GeocodeResult? =
+            suspendCancellableCoroutine { continuation ->
+                val request = Request(continuation)
+                val failure = synchronized(lock) {
+                    when {
+                        closed -> GeocoderError.Closed
+                        active != null -> GeocoderError.RequestInProgress
+                        !AndroidGeocoder.isPresent() -> GeocoderError.Unavailable
+                        else -> {
+                            active = request
+                            null
+                        }
+                    }
+                }
+                if (failure != null) {
+                    continuation.resumeWith(Result.failure(failure))
+                    return@suspendCancellableCoroutine
+                }
+                continuation.invokeOnCancellation { cancel(request) }
+                if (!owns(request)) return@suspendCancellableCoroutine
+                try {
+                    val geocoder = geocoderFactory(preferredLocale ?: Locale.getDefault())
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        geocodeAsync(request, geocoder, coordinate)
+                    } else {
+                        val worker = workers.launch {
+                            try {
+                                ensureActive()
+                                @Suppress("DEPRECATION")
+                                val addresses = geocoder.getFromLocation(coordinate.latitude, coordinate.longitude, 1)
+                                complete(request, Result.success(addresses.toResult()))
+                            } catch (cancellation: CancellationException) {
+                                cancel(request)
+                                throw cancellation
+                            } catch (cancellation: CancellationException) {
+                                cancel(request)
+                                throw cancellation
+                            } catch (error: Exception) {
+                                complete(request, Result.failure(GeocoderError.RequestFailed("Reverse geocoding failed", error)))
+                            }
+                        }
+                        synchronized(lock) {
+                            if (active === request) request.worker = worker else worker.cancel()
+                        }
+                    }
+                } catch (error: Exception) {
+                    complete(request, Result.failure(GeocoderError.RequestFailed("Reverse geocoding could not start", error)))
+                }
+            }
+
+        private fun owns(request: Request): Boolean = synchronized(lock) { active === request }
+
+        private fun complete(request: Request, result: Result<GeocodeResult?>) {
+            val claimed = synchronized(lock) {
+                if (active !== request) false else {
+                    active = null
+                    true
+                }
+            }
+            if (claimed) request.continuation.resumeWith(result)
+        }
+
+        private fun cancel(request: Request) {
+            val claimed = synchronized(lock) {
+                if (active !== request) false else {
+                    active = null
+                    true
+                }
+            }
+            if (claimed) {
+                request.worker?.cancel()
+                request.continuation.cancel(CancellationException("Reverse geocoding cancelled"))
             }
         }
 
-    // The 4-arg GeocodeListener overload below is API 33+ only. This function is only ever
-    // called from reverseGeocode's `Build.VERSION.SDK_INT >= TIRAMISU` branch, but that guard
-    // lives in a different function; Android Lint's version-check propagation does not carry
-    // across a function-call boundary unless the callee itself is annotated, so the real,
-    // already-true version constraint is made explicit here with @RequiresApi rather than
-    // suppressed.
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private suspend fun geocodeAsync(geocoder: AndroidGeocoder, coordinate: GeoCoordinate): List<Address>? =
-        suspendCancellableCoroutine { continuation ->
+        override fun cancelGeocode() {
+            synchronized(lock) { active }?.let(::cancel)
+        }
+
+        override fun close() {
+            synchronized(lock) { closed = true }
+            cancelGeocode()
+            workers.cancel()
+        }
+
+        private fun List<Address>?.toResult(): GeocodeResult? = this?.firstOrNull()?.let {
+            GeocodeResult(it.countryCode, it.adminArea, it.subAdminArea)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+        private fun geocodeAsync(request: Request, geocoder: AndroidGeocoder, coordinate: GeoCoordinate) {
+            if (!owns(request)) return
             geocoder.getFromLocation(
                 coordinate.latitude,
                 coordinate.longitude,
                 1,
                 object : AndroidGeocoder.GeocodeListener {
                     override fun onGeocode(addresses: MutableList<Address>) {
-                        if (continuation.isActive) continuation.resumeWith(Result.success(addresses))
+                        complete(request, Result.success(addresses.toResult()))
                     }
 
                     override fun onError(errorMessage: String?) {
-                        if (continuation.isActive) continuation.resumeWith(Result.success(null))
+                        complete(request, Result.failure(
+                            GeocoderError.RequestFailed(errorMessage ?: "Reverse geocoding provider failed"),
+                        ))
                     }
                 },
             )

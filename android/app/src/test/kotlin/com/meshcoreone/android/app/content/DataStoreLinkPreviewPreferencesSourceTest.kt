@@ -26,7 +26,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [31])
+@Config(sdk = [31, 37])
 class DataStoreLinkPreviewPreferencesSourceTest {
     @get:Rule val temporary = TemporaryFolder()
 

@@ -5,10 +5,16 @@ import com.meshcoreone.android.core.contracts.domain.LinkPreviewPersisting
 import com.meshcoreone.android.core.model.LinkPreviewDataDTO
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import java.util.logging.Logger
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
@@ -34,8 +40,11 @@ private object CacheConfig {
 class LinkPreviewCache(
     private val service: LinkMetadataFetching,
     private val preferences: LinkPreviewPreferences,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-) : LinkPreviewCaching {
+    scope: CoroutineScope? = null,
+) : LinkPreviewCaching, AutoCloseable {
+    private val workers = CoroutineScope(
+        (scope?.coroutineContext ?: Dispatchers.Default) + SupervisorJob(scope?.coroutineContext?.get(Job)),
+    )
     private val memoryCache = ThreadSafeLruCostBoundedCache<String, LinkPreviewDataDTO>(
         maxEntryCount = CacheConfig.MAX_ENTRY_COUNT,
         maxTotalCostBytes = CacheConfig.MAX_TOTAL_COST_BYTES,
@@ -50,7 +59,7 @@ class LinkPreviewCache(
      * placeholder that would strand a follower's preview state with no path back to
      * [LinkPreviewResult.Loaded].
      */
-    private val inFlightTasks = mutableMapOf<String, Deferred<LinkPreviewResult>>()
+    private val inFlightTasks = ConcurrentHashMap<String, Deferred<LinkPreviewResult>>()
 
     /** URLs that have been fetched but have no preview available. */
     private val noPreviewAvailable = mutableSetOf<String>()
@@ -84,7 +93,7 @@ class LinkPreviewCache(
         return fetchFromNetwork(url, dataStore)
     }
 
-    override suspend fun isFetching(url: String): Boolean = mutex.withLock { url in inFlightTasks }
+    override suspend fun isFetching(url: String): Boolean = inFlightTasks.containsKey(url)
 
     override suspend fun cachedPreview(url: String): LinkPreviewDataDTO? = memoryCache.get(url)
 
@@ -99,10 +108,13 @@ class LinkPreviewCache(
         // Tier 2: Database lookup.
         return try {
             dataStore.fetchLinkPreview(url)?.also { memoryCache.put(url, it) }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
         } catch (error: Exception) {
             // Matches the Swift original's log-and-continue behavior: a database read failure is
             // treated as a cache miss, not a fetch failure - the caller still falls through to a
             // genuine network fetch attempt, it is not a fabricated success.
+            Logger.getLogger("MeshCore.LinkPreviewCache").fine("Preview database read failed: ${error.javaClass.simpleName}")
             null
         }
     }
@@ -116,20 +128,19 @@ class LinkPreviewCache(
         // A single locked check-and-create avoids the TOCTOU race a separate check then store
         // would introduce under concurrent callers: only the caller that actually creates the
         // entry ("owner") is responsible for removing it once the fetch resolves.
-        val (deferred, isOwner) = mutex.withLock {
+        val (deferred, created) = mutex.withLock {
             val existing = inFlightTasks[url]
             if (existing != null) {
                 existing to false
             } else {
-                val created = scope.async { performNetworkFetch(url, dataStore) }
+                val created = workers.async(start = CoroutineStart.LAZY) { performNetworkFetch(url, dataStore) }
                 inFlightTasks[url] = created
                 created to true
             }
         }
-
-        val result = deferred.await()
-        if (isOwner) mutex.withLock { inFlightTasks.remove(url) }
-        return result
+        if (created) deferred.invokeOnCompletion { inFlightTasks.remove(url, deferred) }
+        deferred.start()
+        return deferred.await()
     }
 
     private suspend fun performNetworkFetch(url: String, dataStore: LinkPreviewPersisting): LinkPreviewResult =
@@ -161,13 +172,22 @@ class LinkPreviewCache(
             // Persist to database.
             try {
                 dataStore.saveLinkPreview(dto)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
             } catch (error: Exception) {
                 // Matches the Swift original's log-and-continue behavior: a persistence failure
                 // does not invalidate the freshly fetched (and already memory-cached) result.
+                Logger.getLogger("MeshCore.LinkPreviewCache").fine("Preview database write failed: ${error.javaClass.simpleName}")
             }
 
             LinkPreviewResult.Loaded(dto)
         }
 
     private fun Bytes?.costOf(): Long = this?.size?.toLong() ?: 0L
+
+    fun clearMemory() = memoryCache.clear()
+
+    override fun close() {
+        workers.cancel()
+    }
 }

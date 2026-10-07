@@ -9,6 +9,12 @@ import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.process.CommandLineArgumentProvider
 
 plugins {
     id("mesh.android.application")
@@ -42,6 +48,52 @@ dependencies {
     implementation(project(":platform:shortcuts"))
     implementation(project(":platform:translation"))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
+}
+
+class ContentPlatformSdkArguments(
+    @get:InputDirectory @get:PathSensitive(PathSensitivity.RELATIVE)
+    val directory: Provider<Directory>,
+) : CommandLineArgumentProvider {
+    override fun asArguments(): Iterable<String> =
+        listOf("-Drobolectric.dependency.dir=${directory.get().asFile.absolutePath}")
+}
+tasks.withType<Test>().configureEach {
+    dependsOn(":core:designsystem:prepareThemePlatformSdks")
+    jvmArgumentProviders.add(ContentPlatformSdkArguments(
+        rootProject.project(":core:designsystem").layout.buildDirectory.dir("theme-platform-sdks"),
+    ))
+    jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
+}
+
+tasks.register("resolveContentHttpDependencies") {
+    group = "verification"
+    description = "Resolve only the eleven admitted App content HTTP classpaths and retain their actual graphs."
+    val names = listOf(
+        "debugCompileClasspath", "debugRuntimeClasspath",
+        "debugUnitTestCompileClasspath", "debugUnitTestRuntimeClasspath",
+        "debugAndroidTestCompileClasspath", "releaseCompileClasspath", "releaseRuntimeClasspath",
+        "debugLintChecksClasspath", "debugUnitTestLintChecksClasspath",
+        "debugAndroidTestLintChecksClasspath", "releaseLintChecksClasspath",
+    )
+    doLast {
+        val directory = layout.buildDirectory.dir("reports/wp218/http-dependencies").get().asFile
+        directory.mkdirs()
+        names.forEach { name ->
+            val configuration = configurations.findByName(name)
+                ?: throw GradleException("Missing admitted HTTP configuration: $name")
+            check(configuration.isCanBeResolved) { "Unresolvable admitted HTTP configuration: $name" }
+            val graph = configuration.incoming.resolutionResult
+            val rows = graph.allComponents.map {
+                "${it.id.displayName}\t${it.moduleVersion?.version.orEmpty()}"
+            }.sorted()
+            check(rows.isNotEmpty()) { "Empty admitted HTTP dependency graph: $name" }
+            directory.resolve("$name.tsv").writeText("component\tversion\n" + rows.joinToString("\n") + "\n")
+            configuration.incoming.artifactView {
+                componentFilter { it is org.gradle.api.artifacts.component.ModuleComponentIdentifier }
+            }.files.files
+        }
+    }
 }
 
 val contentRepository = rootProject.projectDir.parentFile
@@ -57,9 +109,15 @@ val retainContentAppReports by tasks.registering(Exec::class) {
     }.getOrElse(layout.buildDirectory.dir("reports/wp218/app-raw").get().asFile.absolutePath)
     commandLine("python", "-B", contentCollector.absolutePath, "--retain-only", "app", "--output", destination)
     contentInvocation.orNull?.let { args("--invocation", it) }
+    contentInvocation.orNull?.let {
+        args("--pretest", file(it).parentFile.resolve("wp218-native").resolve("pretest-binding.json").absolutePath)
+    }
 }
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest") finalizedBy(retainContentAppReports)
+    if (name == "testDebugUnitTest") {
+        dependsOn(":core:services:prepareContentInvocation")
+        finalizedBy(retainContentAppReports)
+    }
 }
 
 // WP-218 diagnostic-only addition: hosted CI invokes the root verify stage with Gradle's

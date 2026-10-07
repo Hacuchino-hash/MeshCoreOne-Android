@@ -35,7 +35,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBitmapFactory
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [31])
+@Config(sdk = [31, 37])
 class BitmapImageDecoderTest {
     private fun realPngBytes(width: Int, height: Int): ByteArray {
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
@@ -65,7 +65,7 @@ class BitmapImageDecoderTest {
         val outcome = decoder.decode(png, maxDimension = 128)
 
         assertIs<ImageDecodeOutcome.Decoded>(outcome)
-        assertTrue(outcome.handle.width <= 256, "expected a downsampled width, got ${outcome.handle.width}")
+        assertTrue(outcome.handle.width <= 128, "expected a downsampled width, got ${outcome.handle.width}")
         assertTrue(outcome.handle.height <= 128, "expected a downsampled height, got ${outcome.handle.height}")
     }
 
@@ -99,11 +99,11 @@ class BitmapImageDecoderTest {
         val png = realPngBytes(4, 4)
         val fetching = object : BoundedHttpFetching {
             override suspend fun fetch(url: String, timeoutMs: Long, rangeHeader: String?): HttpFetchAttempt =
-                HttpFetchAttempt.Started(200, "image/png", png.size.toLong()) { receive ->
+                HttpFetchAttempt.Started(200, "image/png", png.size.toLong(), closeResponse = {}) { receive ->
                     receive(png)
                 }
         }
-        val scraper = LinkPreviewScraper(fetching, isUrlSafe = { true })
+        val scraper = LinkPreviewScraper(fetching, BitmapPreviewImageProcessor(), isUrlSafe = { true })
         val fetched = assertNotNull(scraper.loadImageData("https://example.com/photo.png"))
         val outcome = BitmapImageDecoder(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined).decode(fetched)
 

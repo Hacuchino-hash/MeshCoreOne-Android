@@ -8,6 +8,7 @@ package com.meshcoreone.android.core.services.content
 
 /** Result of scanning a page's `<meta>` tags for Open Graph / Twitter Card hints. */
 data class ScrapedPageMetadata(val title: String?, val imageUrl: String?)
+data class PagePreviewMetadata(val title: String?, val imageUrl: String?, val iconUrl: String?)
 
 object LinkPreviewHtmlMetadata {
     private const val METADATA_PROPERTY_ATTRIBUTE = "property"
@@ -65,6 +66,23 @@ object LinkPreviewHtmlMetadata {
 
         if (imageUrl == null && title == null) return null
         return ScrapedPageMetadata(title = title, imageUrl = imageUrl)
+    }
+
+    fun parsePageMetadata(html: String, baseUrl: String): PagePreviewMetadata? {
+        val openGraph = parseHtmlMetadata(html, baseUrl)
+        val title = openGraph?.title ?: Regex(
+            """<title\b[^>]*>(.*?)</title>""",
+            setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
+        ).find(html)?.groupValues?.get(1)?.let(::unescapeHtmlEntities)?.trim()
+        val icon = Regex("""<link\b[^>]*>""", RegexOption.IGNORE_CASE).findAll(html).mapNotNull { match ->
+            val attributes = parseAttributes(match.value)
+            val rel = attributes["rel"]?.lowercase()?.split(Regex("\\s+")).orEmpty()
+            if ("icon" !in rel) null else attributes["href"]?.let(::unescapeHtmlEntities)?.let {
+                resolveAgainst(baseUrl, it)
+            }?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
+        }.firstOrNull()
+        if (title == null && openGraph?.imageUrl == null && icon == null) return null
+        return PagePreviewMetadata(title, openGraph?.imageUrl, icon)
     }
 
     /** Returns the raw text of every `<meta ...>` tag in [html], in document order. */
