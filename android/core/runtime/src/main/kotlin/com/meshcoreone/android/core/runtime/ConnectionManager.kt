@@ -911,16 +911,8 @@ class ConnectionManager(
 
     suspend fun switchDevice(target: ConnectionTarget) {
         synchronized(lock) { cleanSync = null; attemptedSync = null }
-        try {
-            connectAttempt(target, forceFullSync = true, forceReconnect = false)
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Exception) {
-            // Swift's switchDevice catch: the old radio's services are already gone, so observers would stay on its
-            // connected state unless the failed switch is reported through the same loss callback.
-            observer.onConnectionLost()
-            throw failure
-        }
+        // The owned submission reports connection loss once, after its captured generation is torn down.
+        connectAttempt(target, forceFullSync = true, forceReconnect = false)
         if (connectionState.isOperational) resetPreserveBudgetAfterDeviceSwitch()
     }
 
