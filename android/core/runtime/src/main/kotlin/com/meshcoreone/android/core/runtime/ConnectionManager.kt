@@ -242,6 +242,8 @@ class ConnectionManager(
             throw ConnectionError.ConnectionFailed("Connection blocked by circuit breaker (cooling down)")
         }
         val deviceId = (normalized as? ConnectionTarget.Bluetooth)?.deviceId
+        // Swift evaluates both break-glass conditions before any state change; capture it before CONNECTING is published.
+        val breakGlass = forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED
         if (deviceId != null && activeReconnectDeviceId == deviceId) {
             if (forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED && synchronized(lock) { rebuildDevice } != deviceId) {
                 reconnectionCoordinator.clearReconnectingDevice()
@@ -290,7 +292,7 @@ class ConnectionManager(
                         throw ConnectionError.DeviceNotFound()
                     }
                     requireRevision(claimedRevision)
-                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync)) return@withOperation
+                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync, breakGlass = breakGlass)) return@withOperation
                     // An owned link whose adoption failed published DISCONNECTED; Swift sets .connecting again.
                     if (connectionState != DeviceConnectionState.CONNECTING) publish(claimedRevision) { connectingSnapshot() }
                     val attempts = if (deviceId == null) 1 else
@@ -315,7 +317,9 @@ class ConnectionManager(
                                 owner.ownsPhysical = false
                             }
                             lastFailure = failure
-                            if (!isRetained(owner)) closeGeneration(owner, true, failure)
+                            // Swift's cleanupResources leaves state at .connecting between retries; only a terminal
+                            // failure publishes DISCONNECTED (finishFailedSubmission), so observers do not flicker.
+                            if (!isRetained(owner)) closeGeneration(owner, true, failure, publishDisconnected = false)
                             requireRevision(claimedRevision)
                             val classified = platform.classifyFailure(failure)
                             if (classified is LinkFailure.AuthenticationFailed && deviceId != null) surfaceAuthenticationFailure(deviceId)
@@ -507,9 +511,10 @@ class ConnectionManager(
             listOf(ConnectionMethod.WiFi(it.host, it.port))
         } ?: emptyList()
         val device = DeviceDTO.fromConnection(deviceId, radioId, info, capabilities, autoAdd, prior, methods, clock.instant)
-        synchronized(lock) { requireCurrent(owner); owner.device = device }
         val ownership = FactoryOwnership(token)
-        owner.ownership = ownership
+        // Publish the ownership under the same lock closeGeneration takes: either teardown already ended this
+        // generation (requireCurrent throws before the factory allocates anything) or it sees and closes it.
+        synchronized(lock) { requireCurrent(owner); owner.device = device; owner.ownership = ownership }
         val services = serviceFactory.create(RuntimeServiceInputs(
             SessionInputs(token, session, this, owner.scope), device,
             RuntimeServiceCallbacks(
@@ -996,6 +1001,7 @@ class ConnectionManager(
 
     private suspend fun closeGeneration(
         owner: RadioGeneration, disconnectPhysical: Boolean, primary: Throwable? = null,
+        publishDisconnected: Boolean = true,
     ): TeardownReport {
         synchronized(lock) {
             if (primary != null && provenForeignAdmission(primary, owner)) {
@@ -1008,7 +1014,9 @@ class ConnectionManager(
                 active = null
                 deviceValue = null
                 repeatRanges = SnapshotList.empty()
-                if (revision == owner.revision) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                if (publishDisconnected && revision == owner.revision) {
+                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                }
             }
         }
         val serviceWork = synchronized(owner.lock) {
@@ -1139,13 +1147,25 @@ class ConnectionManager(
         lastConnection.persistDisconnectDiagnostic("source=bleStateMachine.autoReconnectingHandler, error=$details, intent=${intentSummary()}")
     }
 
-    private suspend fun tryAdoptOrReject(target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false): Boolean {
+    private suspend fun tryAdoptOrReject(
+        target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false, breakGlass: Boolean = false,
+    ): Boolean {
         val expectedRevision = synchronized(lock) { revision }
         val deviceId = (target as? ConnectionTarget.Bluetooth)?.deviceId ?: return false
         val state = platform.state(target)
         if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded platform query")
         if (state.autoReconnecting) {
             if (state.connectedDeviceId != deviceId) return false
+            if (breakGlass) {
+                // Swift's second break-glass (connect(to:) → abandonStuckReconnect): the coordinator's cycle is already
+                // gone but the transport is still auto-reconnecting this device, so a user-forced connect from
+                // DISCONNECTED tears the pending connect down and falls through to a fresh attempt that can surface
+                // the real failure (e.g. an invalidated bond) instead of deferring to the same doomed wait again.
+                reconnectionCoordinator.clearReconnectingDevice()
+                closeGeneration(ensureRestorationRoute(target, expectedRevision), disconnectPhysical = true)
+                if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded break-glass")
+                return false
+            }
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
             ensureRestorationRoute(target, expectedRevision)
             reconnectionCoordinator.restartTimeout(deviceId)
