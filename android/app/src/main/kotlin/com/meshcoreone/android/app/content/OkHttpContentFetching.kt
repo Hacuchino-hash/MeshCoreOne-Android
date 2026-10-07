@@ -155,7 +155,12 @@ class OkHttpContentFetching internal constructor(
             val buffer = Buffer()
             while (true) {
                 ensureActive()
-                val count = source.read(buffer, CHUNK_BYTES)
+                val count = try {
+                    source.read(buffer, CHUNK_BYTES)
+                } catch (error: IOException) {
+                    ensureActive()
+                    throw error
+                }
                 if (count == -1L) break
                 if (!receive(buffer.readByteArray(count))) break
             }
@@ -163,8 +168,9 @@ class OkHttpContentFetching internal constructor(
         try {
             reader.await()
         } catch (cancellation: CancellationException) {
+            // Interrupt the socket read first. Response.close can itself read the body and
+            // must wait until coroutineScope has joined the reader.
             call.cancel()
-            response.close()
             throw cancellation
         }
     }

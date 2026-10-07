@@ -11,12 +11,19 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -27,7 +34,11 @@ import org.robolectric.annotation.Implementation
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31, 37], shadows = [FixtureNetworkSecurityPolicyShadow::class])
 class OkHttpContentFetchingTest {
-    private class HttpFixture(private val respond: (String) -> ByteArray) : AutoCloseable {
+    private class HttpFixture(
+        private val beforeResponse: (Socket) -> Unit = {},
+        private val afterResponse: (Socket) -> Unit = {},
+        private val respond: (String) -> ByteArray,
+    ) : AutoCloseable {
         private val server = ServerSocket(0, 4, InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)))
         private val sockets = ConcurrentLinkedQueue<Socket>()
         val requests = ConcurrentLinkedQueue<String>()
@@ -52,8 +63,10 @@ class OkHttpContentFetchingTest {
                         headers.add(header)
                     }
                     requests.add(headers.joinToString("\n"))
+                    beforeResponse(it)
                     it.getOutputStream().write(respond(request))
                     it.getOutputStream().flush()
+                    afterResponse(it)
                 }
             }
         }.apply { name = "WP218-owned-http-fixture"; start() }
@@ -141,6 +154,105 @@ class OkHttpContentFetchingTest {
                     assertNull(it.expectedContentLength)
                     assertNull(it.readBounded(8_192))
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `cancelling before headers closes the actual socket and never returns a response`() = runBlocking {
+        val requestReceived = CompletableDeferred<Unit>()
+        val socketClosed = CompletableDeferred<Boolean>()
+        HttpFixture(beforeResponse = { socket ->
+            requestReceived.complete(Unit)
+            socketClosed.complete(socket.getInputStream().read() == -1)
+        }) { ByteArray(0) }.use { server ->
+            controlledClient().use { client ->
+                val pending = async { client.fetch("http://$fixtureHost:${server.port}/waiting.png", 10_000) }
+                withTimeout(5_000) {
+                    requestReceived.await()
+                    pending.cancelAndJoin()
+                    assertTrue(socketClosed.await())
+                }
+                assertTrue(pending.isCancelled)
+                assertEquals(1, server.accepts.get())
+            }
+        }
+    }
+
+    @Test
+    fun `cancelling a blocked body read closes the real response without leaking its IO child`() = runBlocking {
+        val chunkReceived = CompletableDeferred<Unit>()
+        val socketClosed = CompletableDeferred<Boolean>()
+        HttpFixture(afterResponse = { socket ->
+            socketClosed.complete(socket.getInputStream().read() == -1)
+        }) {
+            "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: 4096\r\n\r\nx"
+                .toByteArray(Charsets.US_ASCII)
+        }.use { server ->
+            controlledClient().use { client ->
+                val attempt = client.fetch("http://$fixtureHost:${server.port}/waiting.png", 10_000)
+                assertIs<HttpFetchAttempt.Started>(attempt)
+                attempt.use {
+                    val reading = async(Dispatchers.Default) {
+                        it.chunks { chunk ->
+                            assertEquals(listOf('x'.code.toByte()), chunk.toList())
+                            chunkReceived.complete(Unit)
+                            true
+                        }
+                    }
+                    withTimeout(5_000) {
+                        chunkReceived.await()
+                        reading.cancelAndJoin()
+                        assertTrue(socketClosed.await())
+                    }
+                    assertTrue(reading.isCancelled)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `call deadline still applies after headers while the body is blocked`() = runBlocking {
+        val socketClosed = CompletableDeferred<Boolean>()
+        HttpFixture(afterResponse = { socket ->
+            socketClosed.complete(socket.getInputStream().read() == -1)
+        }) {
+            "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: 4096\r\n\r\nx"
+                .toByteArray(Charsets.US_ASCII)
+        }.use { server ->
+            controlledClient().use { client ->
+                val attempt = client.fetch("http://$fixtureHost:${server.port}/waiting.png", 1_000)
+                assertIs<HttpFetchAttempt.Started>(attempt)
+                attempt.use {
+                    withTimeout(5_000) {
+                        assertFailsWith<IOException> { it.readBounded(4096) }
+                        assertTrue(socketClosed.await())
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `HTTPS sends a real TLS handshake and rejects plaintext rather than downgrading`() = runBlocking {
+        ServerSocket(0, 1, loopback).use { server ->
+            server.soTimeout = 3_000
+            val handshake = async(Dispatchers.IO) {
+                server.accept().use { socket ->
+                    socket.soTimeout = 3_000
+                    val record = socket.getInputStream().readNBytes(5)
+                    socket.getOutputStream().write(response(ByteArray(0)))
+                    socket.getOutputStream().flush()
+                    record
+                }
+            }
+            controlledClient().use { client ->
+                assertIs<HttpFetchAttempt.Failed>(
+                    client.fetch("https://$fixtureHost:${server.localPort}/photo.png", 2_000),
+                )
+                val record = withTimeout(5_000) { handshake.await() }
+                assertEquals(5, record.size)
+                assertEquals(0x16, record[0].toInt() and 255, "The first record must be a TLS handshake, not HTTP")
             }
         }
     }
