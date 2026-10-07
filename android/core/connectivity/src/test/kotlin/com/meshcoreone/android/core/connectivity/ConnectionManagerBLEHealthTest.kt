@@ -10,6 +10,7 @@ import com.meshcoreone.android.core.contracts.domain.ConnectionIntent
 import com.meshcoreone.android.core.contracts.domain.ConnectionTarget
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.runtime.ConnectionError
+import com.meshcoreone.android.core.runtime.RuntimeDiagnostic
 import com.meshcoreone.android.core.runtime.RuntimeDisconnectReason
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -33,8 +34,6 @@ class ConnectionManagerBLEHealthTest {
         companion.setPairedAccessories(emptyList())
         return id
     }
-
-    private suspend fun RuntimeHarness.healthCatching(): Throwable? = runCatching { manager.checkBLEConnectionHealth() }.exceptionOrNull()
 
     @Test @OriginalCase("ConnectionManagerBLEHealthTests::returns early when transport type is WiFi()")
     fun `returns early when transport type is WiFi`() = runtimeScenario {
@@ -192,7 +191,7 @@ class ConnectionManagerBLEHealthTest {
         stub.phase = BlePhase.RestoringState
         stub.systemConnected = { true }
         stub.adoptionSucceeds = true
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertTrue(adoptions.isEmpty())
     }
 
@@ -210,9 +209,14 @@ class ConnectionManagerBLEHealthTest {
     fun `detects stale state when connectionState is ready but BLE disconnected`() = runtimeScenario {
         readyThenUnregistered()
         assertEquals(DeviceConnectionState.READY, manager.connectionState)
-        // The opportunistic reconnect after cleanup fails typed (unregistered); see coordinator note C-04.
-        assertIs<ConnectionError.DeviceNotFound>(healthCatching())
+        val lossesBefore = lossCount
+        manager.checkBLEConnectionHealth()
+        val reported = diagnostics.filterIsInstance<RuntimeDiagnostic.Failure>()
+            .single { it.operation == "health.reconnect" }
+        assertIs<ConnectionError.DeviceNotFound>(reported.cause)
         assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+        assertEquals(lossesBefore + 1, lossCount)
+        assertTrue(manager.connectionIntent.wantsConnection)
     }
 
     @Test @OriginalCase("ConnectionManagerBLEHealthTests::detects stale state when connectionState is .connected but BLE disconnected()")
@@ -221,7 +225,7 @@ class ConnectionManagerBLEHealthTest {
         // A sync-in-progress generation reports CONNECTED transport before promotion.
         manager.setConnectionState(DeviceConnectionState.CONNECTED)
         assertEquals(DeviceConnectionState.CONNECTED, manager.connectionState)
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
     }
 
@@ -234,7 +238,7 @@ class ConnectionManagerBLEHealthTest {
         settle()
         assertEquals(DeviceConnectionState.SYNCING, manager.connectionState)
         companion.setPairedAccessories(emptyList())
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
     }
 
@@ -243,7 +247,7 @@ class ConnectionManagerBLEHealthTest {
         connectThenLose()
         companion.setPairedAccessories(emptyList())
         val lossesBefore = lossCount
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
         assertEquals(lossesBefore, lossCount, "No second connection-loss cleanup")
     }
@@ -252,7 +256,7 @@ class ConnectionManagerBLEHealthTest {
     fun `calls onConnectionLost when stale state detected`() = runtimeScenario {
         readyThenUnregistered()
         val lossesBefore = lossCount
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertEquals(lossesBefore + 1, lossCount)
     }
 
@@ -261,7 +265,7 @@ class ConnectionManagerBLEHealthTest {
         readyThenUnregistered()
         manager.disconnect(RuntimeDisconnectReason.RESYNC_FAILED)
         assertTrue(manager.connectionIntent.wantsConnection)
-        healthCatching()
+        manager.checkBLEConnectionHealth()
         assertTrue(manager.connectionIntent.wantsConnection)
     }
 
