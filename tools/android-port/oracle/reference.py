@@ -7,6 +7,7 @@ from pathlib import Path, PurePosixPath
 
 from controller.errors import PortError
 from controller.model import load_manifest
+from controller.schema import load_json
 
 SOURCE_SHA = "db14559b39d32322b06477c6ae676112f583db50"
 REPO = Path(__file__).resolve().parents[3]
@@ -30,6 +31,10 @@ def git(repo: Path, *arguments: str, data: bytes | None = None) -> bytes:
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def git_blob_sha1(data: bytes) -> str:
+    return hashlib.sha1(("blob %d\0" % len(data)).encode("ascii") + data).hexdigest()
 
 
 def json_bytes(value) -> bytes:
@@ -71,6 +76,10 @@ class FrozenReference:
         self.manifest_sha256 = manifest.sha256
         if self.manifest["reference"]["commit"] != SOURCE_SHA:
             raise OracleError("Manifest/reference pin drift")
+        amendments = load_json(self.repo / "docs" / "android" / "reference-amendments.json")
+        if amendments["reference_sha"] != SOURCE_SHA:
+            raise OracleError("Manifest/reference pin drift")
+        self.amendments = {entry["path"]: entry["approved_blob_sha"] for entry in amendments["entries"]}
         self.inventory = {}
         for entry in self.manifest["inventory"]:
             path = entry["path"]
@@ -150,7 +159,9 @@ class FrozenReference:
                 raise OracleError(f"Missing or redirected read-only source: {path}")
             content = local.read_bytes().replace(b"\r\n", b"\n")
             if content != self._cache[path].encode("utf-8"):
-                raise OracleError(f"Read-only source drift: {path}@{SOURCE_SHA}")
+                approved = self.amendments.get(path)
+                if approved is None or git_blob_sha1(content) != approved:
+                    raise OracleError(f"Read-only source drift: {path}@{SOURCE_SHA}")
         return {path: self._cache[path] for path in paths}
 
     def provenance(self, path: str, text: str) -> dict:
