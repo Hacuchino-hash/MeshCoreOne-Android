@@ -23,6 +23,8 @@ import com.meshcoreone.android.core.ble.BleError
 import com.meshcoreone.android.core.ble.BleTransportException
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.TimeoutError
+import com.meshcoreone.android.core.connectivity.pairing.CompanionSetupError
+import com.meshcoreone.android.core.services.sync.SyncCoordinatorError
 import com.meshcoreone.android.core.services.contacts.AdvertisementError
 import com.meshcoreone.android.core.services.contacts.ChannelServiceError
 import com.meshcoreone.android.core.services.contacts.ContactServiceError
@@ -46,7 +48,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31], qualifiers = "en-rUS")
 class ErrorDispatchCoverageTest : SourceCaseProof() {
-    @ProducerBindingPending("WP-206-214")
     @OriginalCase("ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()")
     @Test fun everyOriginalLocalizedErrorHasCopyAccountingOrTheOriginalControlFlowAllowlist() = prove {
         val root = File(requireNotNull(System.getProperty("repositoryDirectory")))
@@ -86,6 +87,8 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
             "RemoteNodeError" to (RemoteNodeError.PermissionDenied() to L.errorRemoteNodePermissionDenied),
             "RoomServerError" to (RoomServerError.PermissionDenied() to L.errorRoomServerPermissionDenied),
             "BinaryProtocolError" to (BinaryProtocolError.Timeout() to L.errorBinaryProtocolTimeout),
+            "AccessorySetupKitError" to (CompanionSetupError.SessionNotActive() to L.errorAccessorySetupSessionNotActive),
+            "SyncCoordinatorError" to (SyncCoordinatorError.AlreadySyncing() to L.errorSyncCoordinatorAlreadySyncing),
         )
         for ((source, pair) in actualBindings) {
             assertTrue(source in discovered)
@@ -99,8 +102,7 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
         assertTrue("NodeConfigServiceError" in discovered)
         val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling -
             setOf("ProtocolError", "KeychainError", "NodeConfigServiceError")
-        assertTrue(nativeMissing.isNotEmpty(), "Unavailable producer families must not be silently credited as native dispatch")
-        assertEquals(setOf("AccessorySetupKitError", "SyncCoordinatorError"), nativeMissing)
+        assertEquals(emptySet(), nativeMissing, "Every original producer must execute through a real native dispatch")
         assertFalse(nativeMissing.any { it in setOf("MessageServiceError", "MessagePollingError", "ChatSendQueueServiceError",
             "BLEError", "ConnectionError", "TimeoutError") })
         assertTrue(discovered.isNotEmpty())

@@ -24,6 +24,12 @@ FROZEN_SERVICE_CARRIES = {
         "bc2d9b387d6183062ba90fa6f23be1197bacf1c1",
 }
 PROJECTION_INPUTS = (
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/CompanionSetupFaults.kt",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/SyncFaults.kt",
+    "android/core/connectivity/src/main/kotlin/com/meshcoreone/android/core/connectivity/pairing/CompanionSetupService.kt",
+    "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/sync/SyncTypes.kt",
+    "android/core/connectivity/src/test/kotlin/com/meshcoreone/android/core/connectivity/CompanionFaultProjectionTest.kt",
+    "android/core/services/src/test/kotlin/com/meshcoreone/android/core/services/sync/SyncFaultProjectionTest.kt",
     "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/RuntimeFaults.kt",
     "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/BleFaults.kt",
     "android/core/runtime/src/main/kotlin/com/meshcoreone/android/core/runtime/ConnectionError.kt",
@@ -48,6 +54,27 @@ FROZEN_SERVICE_PROJECTION_TESTS = {
         "a844d0565d78d65ad10191f886c62e9b09f574a0",
 }
 PROJECTION_SUITES = {
+    "companion": {
+        "directory": "android/core/connectivity/build/test-results/testDebugUnitTest",
+        "classname": "com.meshcoreone.android.core.connectivity.CompanionFaultProjectionTest",
+        "module": "connectivity",
+        "declaration_kind": "junit-method",
+        "methods": {
+            "everyCasePreservesDiagnosticCauseAndItsExactNeutralPayload",
+            "actualUnsupportedActivationThrowsTheSameProjectedType",
+            "actualPickerCancellationRemainsCancellationAndDoesNotAcquireAFaultCarrier",
+        },
+    },
+    "sync": {
+        "directory": "android/core/services/build/test-results/test",
+        "classname": "com.meshcoreone.android.core.services.sync.SyncFaultProjectionTest",
+        "module": "services",
+        "declaration_kind": "junit-method",
+        "methods": {
+            "everyCasePreservesDiagnosticCauseReasonAndItsNeutralPayload",
+            "projectionDoesNotChangeFailedStateEqualityOrCancellationIdentity",
+        },
+    },
     "runtime": {
         "directory": "android/core/runtime/build/test-results/test",
         "classname": "com.meshcoreone.android.core.runtime.RuntimeFaultProjectionTest",

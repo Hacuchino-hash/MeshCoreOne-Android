@@ -357,13 +357,13 @@ class NativeTest {
             self.assertEqual(hashlib.sha256(raw).hexdigest(), result["sha256"])
             self.assertEqual(len(raw), result["bytes"])
 
-    def test_granted_and_landed_producer_registry_has_all_four_independent_suites(self):
-        self.assertEqual({"runtime", "ble", "contacts", "remote"}, set(retain_raw.PROJECTION_SUITES))
+    def test_granted_and_landed_producer_registry_has_all_six_independent_suites(self):
+        self.assertEqual({"runtime", "ble", "contacts", "remote", "companion", "sync"}, set(retain_raw.PROJECTION_SUITES))
         for suite in retain_raw.PROJECTION_SUITES.values():
             self.assertEqual({"directory", "classname", "module", "declaration_kind"} |
-                ({"methods"} if suite["module"] != "services" else {"case_count"}), set(suite))
-            self.assertIn(suite["module"], {"runtime", "ble", "services"})
-            self.assertEqual(4 if suite["module"] != "services" else suite["case_count"],
+                ({"methods"} if "methods" in suite else {"case_count"}), set(suite))
+            self.assertIn(suite["module"], {"runtime", "ble", "services", "connectivity"})
+            self.assertEqual(len(suite["methods"]) if "methods" in suite else suite["case_count"],
                 len(reader.projection_declaration_methods(suite)))
 
     def test_producer_missing_failed_error_skipped_zero_or_counter_mismatch_blocks(self):

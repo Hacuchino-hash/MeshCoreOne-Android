@@ -10,6 +10,8 @@ import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings as S
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.TimeoutError
+import com.meshcoreone.android.core.connectivity.pairing.CompanionSetupError
+import com.meshcoreone.android.core.services.sync.SyncCoordinatorError
 import java.io.IOException
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
@@ -24,6 +26,57 @@ import org.robolectric.annotation.Config
 class SourceFaultPresentationTest {
     private val resources get() = ApplicationProvider.getApplicationContext<Context>().resources
     private val mapper = UiErrorMapper(reporter = UiErrorReporter {})
+
+    @Test fun everyCompanionProducerDispatchesWithoutConfusingNativeRemovalAndPickerCancellation() {
+        val reason = "pairing rejected \u4e2d\u6587"
+        val cases = listOf(
+            CompanionSetupError.SessionNotActive() to ErrorCopy.static("AccessorySetupKitError", "sessionNotActive"),
+            CompanionSetupError.SessionInvalidated() to ErrorCopy.static("AccessorySetupKitError", "sessionInvalidated"),
+            CompanionSetupError.PickerDismissed() to ErrorCopy.static("AccessorySetupKitError", "pickerDismissed"),
+            CompanionSetupError.PickerRestricted() to ErrorCopy.static("AccessorySetupKitError", "pickerRestricted"),
+            CompanionSetupError.PickerAlreadyActive() to ErrorCopy.static("AccessorySetupKitError", "pickerAlreadyActive"),
+            CompanionSetupError.PairingFailed(reason) to ErrorCopy.accessoryPairingFailed(reason),
+            CompanionSetupError.NoBluetoothIdentifier() to ErrorCopy.static("AccessorySetupKitError", "noBluetoothIdentifier"),
+            CompanionSetupError.DiscoveryTimeout() to ErrorCopy.static("AccessorySetupKitError", "discoveryTimeout"),
+            CompanionSetupError.ConnectionFailed() to ErrorCopy.static("AccessorySetupKitError", "connectionFailed"),
+            CompanionSetupError.UserCancelled() to ErrorCopy.static("RemoteNodeError", "cancelled"),
+        )
+        assertEquals(10, cases.size)
+        val cause = IOException("private producer cause")
+        for ((failure, expected) in cases) {
+            failure.initCause(cause)
+            val presented = mapper.present(failure)
+            assertSame(failure, presented.originalFailure)
+            assertSame(cause, presented.originalFailure.cause)
+            assertEquals(failure.sourceServiceFault, presented.content.sourceFault)
+            assertEquals(expected.resolve(resources), presented.content.message.resolve(resources))
+            assertEquals(UiRecovery.INSPECT_FAILURE, presented.content.recovery)
+            assertFalse(presented.content.message.resolve(resources).contains("private producer cause"))
+        }
+        assertEquals(CompanionSetupFault.UserCancelled, cases.last().first.sourceServiceFault)
+        assertNotEquals(cases[2].second.resolve(resources), cases.last().second.resolve(resources))
+        assertFailsWith<CancellationException> { mapper.present(CancellationException("cooperative cancel")) }
+    }
+
+    @Test fun everySyncProducerDispatchesWithReadableSourceDescriptionAndUnmodifiedReason() {
+        val reason = "storage unavailable \u4e2d\u6587"
+        val cases = listOf(
+            SyncCoordinatorError.NotConnected() to ErrorCopy.static("SyncCoordinatorError", "notConnected"),
+            SyncCoordinatorError.SyncFailed(reason) to ErrorCopy.syncFailed(reason),
+            SyncCoordinatorError.AlreadySyncing() to ErrorCopy.static("SyncCoordinatorError", "alreadySyncing"),
+        )
+        assertEquals(3, cases.size)
+        for ((failure, expected) in cases) {
+            val presented = mapper.present(failure)
+            assertSame(failure, presented.originalFailure)
+            assertEquals(failure.sourceServiceFault, presented.content.sourceFault)
+            assertEquals(expected.resolve(resources), presented.content.message.resolve(resources))
+            assertEquals(UiRecovery.INSPECT_FAILURE, presented.content.recovery)
+            assertNotNull(failure.message)
+        }
+        assertEquals(SyncFault.SyncFailed(reason), cases[1].first.sourceServiceFault)
+        assertTrue(mapper.message(cases[1].first).resolve(resources).contains(reason))
+    }
 
     // This fixture tests neutral copy policy only; no original service-family receipt is emitted.
     private class NeutralPolicyFixture(override val sourceServiceFault: SourceServiceFault) :

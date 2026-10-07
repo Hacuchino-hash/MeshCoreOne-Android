@@ -1,10 +1,23 @@
 # WP-304 candidate evidence
 
-**Status: remote PR33 remains efe528cc. The latest local main4033-integrated
-candidate155c258c verifies202 passing UI cases, ten PNGs and74 real producer
-projection assertions.126/130 families and154/158 scenarios are bound; only four
-Companion/Sync/complete-dispatch families remain blocked. No full local-cycle
-pass, new-code push or macro acceptance.**
+**Status: final Companion/Sync amendment is issued and implemented locally.
+All130 original families/158 scenarios now declare actual producer bindings;
+static completeness is not executed parity. The final committed-head full
+local cycle remains required before publication to the existing PR33.**
+
+The final phase adds only two neutral families, getter-only projections on the
+actual Companion/Sync errors and paired producer assertions. Constructors,
+diagnostics, reasons, causes, cancellation, callers and business behavior stay
+unchanged. The connectivity module is a test-only UI dependency. Every source
+and native Companion case and all three Sync cases execute through the neutral
+UI mapper. The four original consumer receipts no longer use copy fixtures.
+Six independently declared producer suites must join their actual source
+methods, raw JUnit and current immutable input hashes. No zero, failed, skipped,
+missing, stale or declaration-only suite qualifies.
+
+The previous155c258c measurement remains historical:202 UI cases, ten PNGs,
+74 producer assertions,126/130 families and154/158 scenarios passed; four
+producer families blocked the full cycle. It is not final-phase proof.
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its

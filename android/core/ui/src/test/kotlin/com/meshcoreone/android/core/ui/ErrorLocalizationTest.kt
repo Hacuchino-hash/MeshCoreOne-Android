@@ -18,6 +18,7 @@ import com.meshcoreone.android.core.services.contacts.ChannelServiceError
 import com.meshcoreone.android.core.services.remote.BinaryProtocolError
 import com.meshcoreone.android.core.services.remote.RemoteNodeError
 import com.meshcoreone.android.core.services.remote.RoomServerError
+import com.meshcoreone.android.core.services.sync.SyncCoordinatorError
 import kotlin.test.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -146,10 +147,12 @@ class ErrorLocalizationTest : SourceCaseProof() {
         assertEquals(resources.getString(L.errorBinaryProtocolTimeout), mapper.message(failure).resolve(resources))
         assertSame(failure, mapper.present(failure).originalFailure)
     }
-    @ProducerBindingPending("WP-214")
     @OriginalCase("ErrorLocalizationTests::SyncCoordinatorError.alreadySyncing produces readable description()")
-    @Test fun syncPolicy() = prove {
-        assertEquals(resources.getString(L.errorSyncCoordinatorAlreadySyncing), copy("SyncCoordinatorError", "alreadySyncing"))
+    @Test fun actualSyncAlreadyRunningHasReadableProducerDescriptionAndLocalizedCopy() = prove {
+        val failure = SyncCoordinatorError.AlreadySyncing()
+        assertEquals("A sync is already in progress.", failure.message)
+        assertEquals(resources.getString(L.errorSyncCoordinatorAlreadySyncing), mapper.message(failure).resolve(resources))
+        assertSame(failure, mapper.present(failure).originalFailure)
     }
     @OriginalCase("ErrorLocalizationTests::PersistenceStoreError.contactNotFound produces readable description()")
     @Test fun persistenceDescription() = prove {

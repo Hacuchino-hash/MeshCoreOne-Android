@@ -183,15 +183,19 @@ def main():
     parser.add_argument("--runtime-junit", type=Path)
     parser.add_argument("--ble-junit", type=Path)
     parser.add_argument("--services-junit", type=Path)
+    parser.add_argument("--connectivity-junit", type=Path)
     args = parser.parse_args()
     try:
         require((args.runtime_junit is None) == (args.ble_junit is None),
             "Both actual producer projection directories are required")
         require((args.runtime_junit is None) == (args.services_junit is None),
             "Actual landed service projection directory is required with the producer closure")
+        require((args.runtime_junit is None) == (args.connectivity_junit is None),
+            "Actual companion projection directory is required with the producer closure")
         producers = None if args.runtime_junit is None else {
             "runtime": args.runtime_junit, "ble": args.ble_junit,
             "contacts": args.services_junit, "remote": args.services_junit,
+            "companion": args.connectivity_junit, "sync": args.services_junit,
         }
         result = retain(args.junit, args.output, args.emit, args.images, invocation_path=args.invocation,
             producer_junit=producers)

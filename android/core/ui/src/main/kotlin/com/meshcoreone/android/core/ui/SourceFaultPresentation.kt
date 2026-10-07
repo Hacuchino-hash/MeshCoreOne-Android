@@ -85,6 +85,23 @@ internal fun sourceFaultPresentation(
             is BinaryProtocolFault.SessionError -> underlying(fault.error)
         }
         is NodeConfigServiceFault -> nodeConfigFaultCopy(fault)
+        is CompanionSetupFault -> when (fault) {
+            CompanionSetupFault.SessionNotActive -> ErrorCopy.static("AccessorySetupKitError", "sessionNotActive")
+            CompanionSetupFault.SessionInvalidated -> ErrorCopy.static("AccessorySetupKitError", "sessionInvalidated")
+            CompanionSetupFault.PickerDismissed -> ErrorCopy.static("AccessorySetupKitError", "pickerDismissed")
+            CompanionSetupFault.UserCancelled -> ErrorCopy.static("RemoteNodeError", "cancelled")
+            CompanionSetupFault.PickerRestricted -> ErrorCopy.static("AccessorySetupKitError", "pickerRestricted")
+            CompanionSetupFault.PickerAlreadyActive -> ErrorCopy.static("AccessorySetupKitError", "pickerAlreadyActive")
+            is CompanionSetupFault.PairingFailed -> ErrorCopy.accessoryPairingFailed(fault.reason)
+            CompanionSetupFault.NoBluetoothIdentifier -> ErrorCopy.static("AccessorySetupKitError", "noBluetoothIdentifier")
+            CompanionSetupFault.DiscoveryTimeout -> ErrorCopy.static("AccessorySetupKitError", "discoveryTimeout")
+            CompanionSetupFault.ConnectionFailed -> ErrorCopy.static("AccessorySetupKitError", "connectionFailed")
+        }
+        is SyncFault -> when (fault) {
+            SyncFault.NotConnected -> ErrorCopy.static("SyncCoordinatorError", "notConnected")
+            is SyncFault.SyncFailed -> ErrorCopy.syncFailed(fault.reason)
+            SyncFault.AlreadySyncing -> ErrorCopy.static("SyncCoordinatorError", "alreadySyncing")
+        }
     }
     val recovery = when (fault) {
         is RuntimeTimeoutFault -> UiRecovery.RETRY

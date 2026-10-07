@@ -1,5 +1,5 @@
 // PortedFrom: MC1Tests/Extensions/ErrorUserFacingMessageTests.swift@db14559b39d32322b06477c6ae676112f583db50
-// Concrete available faults execute through UiErrorMapper. Copy-only producer bindings remain explicitly pending, not accepted parity.
+// Actual producers execute through UiErrorMapper; original credit requires paired producer evidence.
 package com.meshcoreone.android.core.ui
 
 import android.content.Context
@@ -36,6 +36,10 @@ import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
 import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.TimeoutError
+import com.meshcoreone.android.core.connectivity.pairing.CompanionSetupError
+import com.meshcoreone.android.core.services.sync.SyncCoordinatorError
+import com.meshcoreone.android.core.contracts.domain.errors.CompanionSetupFault
+import com.meshcoreone.android.core.contracts.domain.errors.SyncFault
 import com.meshcoreone.android.core.services.contacts.AdvertisementError
 import com.meshcoreone.android.core.services.contacts.ChannelServiceError
 import com.meshcoreone.android.core.services.contacts.ContactServiceError
@@ -110,11 +114,13 @@ class ErrorUserFacingTest : SourceCaseProof() {
     @Test fun wifi() = prove {
         assertEquals(resources.getString(L.errorWifiInvalidHost), message(WiFiTransportException(WiFiTransportError.InvalidHost)))
     }
-    @ProducerBindingPending("WP-206")
     @OriginalCase("ErrorUserFacingMessageTests::accessory setup kit error dispatches to concrete mapping()")
-    @Test fun pickerCopyPolicy() = prove {
+    @Test fun actualCompanionPairingFailureRetainsItsRawReasonAndLocalizedCopy() = prove {
+        val failure = CompanionSetupError.PairingFailed("user declined")
         assertEquals(L.errorAccessorySetupPairingFailed(resources, "user declined"),
-            ErrorCopy.accessoryPairingFailed("user declined").resolve(resources))
+            message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertEquals(CompanionSetupFault.PairingFailed(failure.reason), mapper.present(failure).content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::contact service error dispatches to concrete mapping()")
     @Test fun actualContactTableFailureUsesItsProducerProjection() = prove {
@@ -195,10 +201,12 @@ class ErrorUserFacingTest : SourceCaseProof() {
         assertEquals(L.errorPersistenceSaveFailed(resources, "store unavailable"),
             message(PersistenceStoreException(PersistenceStoreError.SaveFailed("store unavailable"))))
     }
-    @ProducerBindingPending("WP-214")
     @OriginalCase("ErrorUserFacingMessageTests::sync coordinator error dispatches to concrete mapping()")
-    @Test fun syncCopyPolicy() = prove {
-        assertEquals(resources.getString(L.errorSyncCoordinatorAlreadySyncing), copy("SyncCoordinatorError", "alreadySyncing"))
+    @Test fun actualSyncAlreadyRunningUsesItsOriginalProducer() = prove {
+        val failure = SyncCoordinatorError.AlreadySyncing()
+        assertEquals(resources.getString(L.errorSyncCoordinatorAlreadySyncing), message(failure))
+        assertSame(failure, mapper.present(failure).originalFailure)
+        assertSame(SyncFault.AlreadySyncing, mapper.present(failure).content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::device service error dispatches to concrete mapping()")
     @Test fun deviceConcreteDispatch() = prove {
