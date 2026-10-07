@@ -1,0 +1,894 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 111,
+ "bound_case_count": 110,
+ "unbound": [
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::clearing the surfaced-auth latch lets the same device re-alert()",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "reason": "missing runtime seam ConnectionManager.clearSurfacedAuthenticationFailure(); see WP-206.md C-02"
+  }
+ ],
+ "cases": [
+  {
+   "id": "AccessorySetupKitDiscoveryCriteriaTests::picker discovers by Nordic UART service UUID only()",
+   "class": "com.meshcoreone.android.core.connectivity.CompanionDiscoveryCriteriaTest",
+   "method": "picker discovers by Nordic UART service UUID only",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Services/AccessorySetupKitDiscoveryCriteriaTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AccessorySetupKitDiscoveryCriteriaTests::picker opts into filtered discovery so matches can be relabeled with advertised names()",
+   "class": "com.meshcoreone.android.core.connectivity.CompanionDiscoveryCriteriaTest",
+   "method": "picker opts into filtered discovery so matches can be relabeled with advertised names",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Services/AccessorySetupKitDiscoveryCriteriaTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::a new discovery resolves a stranded prior discovery()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "a new discovery resolves a stranded prior discovery",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::a selection racing a cancelled discovery task surfaces cancelled, not the selection()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "a selection racing a cancelled discovery task surfaces cancelled, not the selection",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::cancel surfaces DevicePairingError.cancelled and lowers presentation()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "cancel surfaces DevicePairingError_cancelled and lowers presentation",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::cancelling the discovery task resolves it and lowers presentation()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "cancelling the discovery task resolves it and lowers presentation",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::discoverDevice presents the picker and resolves with the selected id()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "discoverDevice presents the picker and resolves with the selected id",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BluetoothScanPairingServiceTests::system-registry operations are inert on the macOS path()",
+   "class": "com.meshcoreone.android.core.connectivity.BluetoothScanPairingServiceTest",
+   "method": "system-registry operations are inert on the scan fallback path",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BluetoothScanPairingServiceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::awaited forget clears bond before encryption-timeout budget classifies as bondSuspect()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "awaited forget clears bond before encryption-timeout budget classifies as bondSuspect",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::clearPersistedConnection clears forgotten device bond and leaves the other intact()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "clearPersistedConnection clears forgotten device bond and leaves the other intact",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::empty bond slot still clears forgotten device in-memory verification()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "empty bond slot still clears forgotten device in-memory verification",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::forgetting a non-last-connected device still clears its bond verification()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "forgetting a non-last-connected device still clears its bond verification",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::holder bond slot survives forgetting a non-holder()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "holder bond slot survives forgetting a non-holder",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BondLossPairingRecoveryTests::removeFailedPairing keeps the radio's data reachable when the same radio re-pairs()",
+   "class": "com.meshcoreone.android.core.connectivity.BondLossPairingRecoveryTest",
+   "method": "removeFailedPairing keeps the radio's data reachable when the same radio re-pairs",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/BondLossPairingRecoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::connection loss with a non-auth error does not fire the callback()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "connection loss with a non-auth error does not fire the callback",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::connection loss with authenticationFailed fires the callback once per episode()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "connection loss with authenticationFailed fires the callback once per episode",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::connection loss with no error does not fire the callback()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "connection loss with no error does not fire the callback",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::explicit disconnect clears the latch so a new failure episode re-alerts()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "explicit disconnect clears the latch so a new failure episode re-alerts",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::launch auto-reconnect throwing authenticationFailed surfaces recovery without the watchdog()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "launch auto-reconnect throwing authenticationFailed surfaces recovery without the watchdog",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::opportunistic reconnect stays silent for non-auth connect failures()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "opportunistic reconnect stays silent for non-auth connect failures",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::opportunistic reconnect surfaces authenticationFailed thrown by connect()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "opportunistic reconnect surfaces authenticationFailed thrown by connect",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerAuthFailureRoutingTests::ready promotion clears the latch so a new failure episode re-alerts()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerAuthFailureRoutingTest",
+   "method": "ready promotion clears the latch so a new failure episode re-alerts",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerAuthFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::BLE connected ready state restarts missing event monitoring()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "BLE connected ready state restarts missing event monitoring",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::BLE connected skips duplicate recovery while session rebuild is active()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "BLE connected skips duplicate recovery while session rebuild is active",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::BLE connected with healthy listeners does not rebuild()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "BLE connected with healthy listeners does not rebuild",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::BLE connected with missing session and services rebuilds app stack()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "BLE connected with missing session and services rebuilds app stack",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidBecomeActive does not arm watchdog during auto-reconnect()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidBecomeActive does not arm watchdog during auto-reconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidBecomeActive does not arm watchdog when user does not want connection()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidBecomeActive does not arm watchdog when user does not want connection",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidBecomeActive forwards to state machine and triggers health check()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidBecomeActive forwards to the platform and triggers health check",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidBecomeActive re-arms watchdog when disconnected and wants connection()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidBecomeActive re-arms watchdog when disconnected and wants connection",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidEnterBackground forwards to state machine()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidEnterBackground forwards to the platform",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::appDidEnterBackground stops running watchdog()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "appDidEnterBackground stops running watchdog",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::calls onConnectionLost when stale state detected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "calls onConnectionLost when stale state detected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::detects stale state when connectionState is .connected but BLE disconnected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "detects stale state when connectionState is connected but BLE disconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::detects stale state when connectionState is .ready but BLE disconnected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "detects stale state when connectionState is ready but BLE disconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::detects stale state when connectionState is .syncing but BLE disconnected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "detects stale state when connectionState is syncing but BLE disconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::does not trigger cleanup when already disconnected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "does not trigger cleanup when already disconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::health check does not attempt adoption while BLE restoration is already in progress()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "health check does not attempt adoption while BLE restoration is already in progress",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::health check skips reconnection when Bluetooth is powered off()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "health check skips reconnection when Bluetooth is powered off",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::preserves wantsConnection intent after resyncFailed disconnect()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "preserves wantsConnection intent after resyncFailed disconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::returns early when BLE is connected and app stack is healthy()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "returns early when BLE is connected and app stack is healthy",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::returns early when no lastConnectedDeviceID()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "returns early when no lastConnectedDeviceID",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::returns early when shouldBeConnected is false()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "returns early when shouldBeConnected is false",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::returns early when transport type is WiFi()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "returns early when transport type is WiFi",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::skips foreground reconnect while pairing flow is active()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "skips foreground reconnect while pairing flow is active",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::skips foreground reconnect while pairing is in progress()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "skips foreground reconnect while pairing is in progress",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::skips reconnect during iOS auto-reconnect()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "skips reconnect during an owner auto-reconnect",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEHealthTests::skips reconnect while session rebuild is in progress()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEHealthTest",
+   "method": "skips reconnect while session rebuild is in progress",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEHealthTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEScanningTests::older stream termination does not stop newer scan()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEScanningTest",
+   "method": "older stream termination does not stop newer scan",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEScanningTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEScanningTests::startBLEScanning starts scan and forwards discoveries()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEScanningTest",
+   "method": "startBLEScanning starts scan and forwards discoveries",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEScanningTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerBLEScanningTests::terminated scan stream does not leave scanning active()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerBLEScanningTest",
+   "method": "terminated scan stream does not leave scanning active",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerBLEScanningTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::clearPreRepeatSettings clears saved settings()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "clearPreRepeatSettings clears saved settings",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::deleteDevice clears the persisted connection when removing the last-connected radio()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "deleteDevice clears the persisted connection when removing the last-connected radio",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::deleteDevice completes without error for non-existent device()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "deleteDevice completes without error for non-existent device",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::deleteDevice preserves the persisted connection when removing a different radio()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "deleteDevice preserves the persisted connection when removing a different radio",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::fetchSavedDevices returns empty array when no devices saved()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "fetchSavedDevices returns empty array when no devices saved",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::forgetDevice clears the persisted connection when removing the last-connected radio()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "forgetDevice clears the persisted connection when removing the last-connected radio",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::forgetDevice preserves the persisted connection when removing a different radio()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "forgetDevice preserves the persisted connection when removing a different radio",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::pairNewDevice rejects re-entry without clearing the outer call's flag()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "pairNewDevice rejects re-entry without clearing the outer call's flag",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::pairNewDevice stops BLE scanning before showing ASK picker()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "pairNewDevice stops BLE scanning before showing the companion picker",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::removeStaleNodes throws when not connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "removeStaleNodes throws when not connected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::removeUnfavoritedNodes throws when not connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "removeUnfavoritedNodes throws when not connected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::savePreRepeatSettings changes connectedDevice()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "savePreRepeatSettings changes connectedDevice",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::unfavoritedNodeCount throws when not connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "unfavoritedNodeCount throws when not connected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateAutoAddConfig does nothing when not connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateAutoAddConfig does nothing when not connected",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateAutoAddConfig updates config when connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateAutoAddConfig updates config when connected",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateClientRepeat updates repeat flag when connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateClientRepeat updates repeat flag when connected",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateDevice clears appliedRadioPresetID when RF no longer matches()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateDevice clears appliedRadioPresetID when RF no longer matches",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateDevice keeps appliedRadioPresetID during Repeat Mode()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateDevice keeps appliedRadioPresetID during Repeat Mode",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateDevice keeps appliedRadioPresetID when RF still matches()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateDevice keeps appliedRadioPresetID when RF still matches",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateDevice stamps appliedRadioPresetID from the event()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateDevice stamps appliedRadioPresetID from the event",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updateDevice(with:) updates connectedDevice()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updateDevice(with) updates connectedDevice",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::updatePathHashMode updates hash mode when connected()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "updatePathHashMode updates hash mode when connected",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::waitForOtherAppReconnection detects delayed reconnection()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "waitForOtherAppReconnection detects delayed reconnection",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::waitForOtherAppReconnection returns false after all checks()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "waitForOtherAppReconnection returns false after all checks",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPairingTests::waitForOtherAppReconnection returns true on immediate detection()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPairingTest",
+   "method": "waitForOtherAppReconnection returns true on immediate detection",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPairingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady calls onDeviceSynced when sync succeeded()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady calls onDeviceSynced when sync succeeded",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady does NOT call onDeviceSynced when sync failed()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady does NOT call onDeviceSynced when sync failed",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady sets .ready and fires onDeviceSynced on successful sync()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady sets ready and fires onDeviceSynced on successful sync",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady sets .ready when sync succeeded()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady sets ready when sync succeeded",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady sets .syncing when sync failed()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady sets syncing when sync failed",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady skips onDeviceSynced when sync failed()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady skips onDeviceSynced when sync failed",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady suppressed when additionalGuard returns false()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady suppressed when the generation guard fails",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady suppressed when services nil (disconnected)()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady suppressed when services nil (disconnected)",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady suppressed when services replaced during sync()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady suppressed when services replaced during sync",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerPromotionTests::promoteToReady suppressed when user disconnected during sync()",
+   "class": "com.meshcoreone.android.core.connectivity.ConnectionManagerPromotionTest",
+   "method": "promoteToReady suppressed when user disconnected during sync",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ConnectionManagerPromotionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingCancellationTests::cancellation before connect(to:) bails before transport.connect runs()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "cancellation before connect bails before transport connect runs",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingCancellationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingCancellationTests::cancellation in connect(to:) phase removes accessory from ASK()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "cancellation in the connect phase removes the association",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingCancellationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingRaceIntegrationTests::opportunistic reconnect to old device is gated while pairing is suspended in waitForOtherAppReconnection()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "opportunistic reconnect to old device is gated while pairing is suspended in the other-app wait",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingRaceIntegrationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::connect after last-connected cleared does not throw other-app for an ASK-owned radio()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "connect after last-connected cleared does not throw other-app for a companion-owned radio",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::connect still throws other-app for a system-connected radio this app does not own()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "connect still throws other-app for a system-connected radio this app does not own",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::discoverDevice maps pickerRestricted to DevicePairingError.pickerUnavailable()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "discoverDevice maps pickerRestricted to DevicePairingError_pickerUnavailable",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::fresh-pair authentication failure removes no association and reports connectionFailed()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "fresh-pair authentication failure removes no association and reports connectionFailed",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::pairNewDevice does not remove an unsaved ASK accessory()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "pairNewDevice does not remove an unsaved companion association",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::pairNewDevice does not treat a just-paired system-connected radio as another app()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "pairNewDevice does not treat a just-paired system-connected radio as another app",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::removeDevice maps ASError.userCancelled to DevicePairingError.cancelled()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "removeDevice maps a declined removal to DevicePairingError_cancelled",
+   "disposition": "platform-adaptation",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::removeSystemAccessoriesMissingDeviceRecord removes only the requested unsaved ids()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "removeSystemAccessoriesMissingDeviceRecord removes only the requested unsaved ids",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::settings-removal ghosts the Device row when ASK no longer lists the accessory()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "settings-removal ghosts the Device row when the registry no longer lists the association",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::settings-removal keeps the Device row when ASK still lists the accessory()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "settings-removal keeps the Device row when the registry still lists the association",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::systemAccessoriesMissingDeviceRecord activates before enumerating()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "systemAccessoriesMissingDeviceRecord activates before enumerating",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::systemAccessoriesMissingDeviceRecord omits a connected id with no Device row()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "systemAccessoriesMissingDeviceRecord omits a connected id with no Device row",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::systemAccessoriesMissingDeviceRecord omits an in-flight attempt id with no Device row()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "systemAccessoriesMissingDeviceRecord omits an in-flight attempt id with no Device row",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::systemAccessoriesMissingDeviceRecord omits saved radios and reports unsaved ASK accessories()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "systemAccessoriesMissingDeviceRecord omits saved radios and reports unsaved associations",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::systemAccessoriesMissingDeviceRecord skips an id when fetchDevice throws()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "systemAccessoriesMissingDeviceRecord skips an id when fetchDevice throws",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::transient connect failure during pairing removes no association()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "transient connect failure during pairing removes no association",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingStrandedAssociationTests::waitForPairingAdoptionToSettle times out while still connected()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingStrandedAssociationTest",
+   "method": "waitForPairingAdoptionToSettle times out while still connected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingStrandedAssociationTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingWhileConnectedTests::auto-reconnect completion during pair-wait does not run rebuildSession()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "auto-reconnect completion during pair-wait does not run rebuildSession",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingWhileConnectedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingWhileConnectedTests::auto-reconnect during waitForOtherAppReconnection tears down old-device session without claiming coordinator()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "auto-reconnect during the other-app wait tears down old-device session without claiming coordinator",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingWhileConnectedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingWhileConnectedTests::failed switchDevice fires onConnectionLost so observers tear down()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "failed switch publishes a disconnected transition so observers tear down",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingWhileConnectedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PairingWhileConnectedTests::pair-while-connected with switchDevice throw leaves state .disconnected()",
+   "class": "com.meshcoreone.android.core.connectivity.PairingFlowRaceTest",
+   "method": "pair-while-connected with a failing switch leaves state disconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/PairingWhileConnectedTests.swift",
+   "junit": "passed"
+  }
+ ]
+}
