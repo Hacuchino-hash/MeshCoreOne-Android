@@ -1,0 +1,49 @@
+// PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
+// AndroidOnly: WP-302 Caller owns service/connection lifetimes and serializes registration/close; this adapter owns no scope.
+package com.meshcoreone.android.app.navigation
+
+import com.meshcoreone.android.core.contracts.domain.EntityKey
+import com.meshcoreone.android.core.model.DeviceDTO
+import com.meshcoreone.android.core.model.RadioId
+import com.meshcoreone.android.core.services.notifications.NotificationService
+import java.util.UUID
+
+class NotificationNavigationBinding(
+    private val service: NotificationService,
+    coordinator: NavigationCoordinator,
+    lookup: NavigationLookup,
+    connectedDevice: () -> DeviceDTO?,
+    onOutcome: (NavigationOutcome) -> Unit,
+) : AutoCloseable {
+    private val generation = coordinator.state.value.generation
+    private val route: suspend (NotificationNavigationRequest) -> Unit = { request ->
+        onOutcome(coordinator.handleNotificationRequest(request, lookup, generation))
+    }
+    private val direct: suspend (EntityKey) -> Unit = { route(NotificationNavigationRequest.Direct(it)) }
+    private val newContact: suspend (EntityKey) -> Unit = {
+        route(NotificationNavigationRequest.NewContact(it, connectedDevice()?.manualAddContacts == true))
+    }
+    private val channel: suspend (RadioId, UByte) -> Unit = { radio, index ->
+        route(NotificationNavigationRequest.Channel(radio, index))
+    }
+    private val room: suspend (EntityKey) -> Unit = { route(NotificationNavigationRequest.Room(it)) }
+    private val reaction: suspend (EntityKey?, UByte?, RadioId?, UUID) -> Unit = { contact, index, radio, message ->
+        route(NotificationNavigationRequest.Reaction(contact, index, radio, message))
+    }
+
+    init {
+        service.onNotificationTapped = direct
+        service.onNewContactNotificationTapped = newContact
+        service.onChannelNotificationTapped = channel
+        service.onRoomNotificationTapped = room
+        service.onReactionNotificationTapped = reaction
+    }
+
+    override fun close() {
+        if (service.onNotificationTapped === direct) service.onNotificationTapped = null
+        if (service.onNewContactNotificationTapped === newContact) service.onNewContactNotificationTapped = null
+        if (service.onChannelNotificationTapped === channel) service.onChannelNotificationTapped = null
+        if (service.onRoomNotificationTapped === room) service.onRoomNotificationTapped = null
+        if (service.onReactionNotificationTapped === reaction) service.onReactionNotificationTapped = null
+    }
+}

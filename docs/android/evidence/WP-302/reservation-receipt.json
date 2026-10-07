@@ -19,8 +19,11 @@
       "android/app/src/main/kotlin/com/meshcoreone/android/app/MainActivity.kt",
       "android/app/src/androidTest/kotlin/com/meshcoreone/android/app/navigation/",
       "docs/android/deviations/WP-302.md",
-      "docs/android/evidence/WP-302/"
+      "docs/android/evidence/WP-302/",
+      "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
+      "android/gradle/libs.versions.toml",
+      "android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/"
     ],
-    "authorization": "User explicitly selected Start WP-302 now; five exact manifest primary paths; dedicated session 53768196-935e-4bee-8973-927411658acf"
+    "authorization": "Coordinator message 2026-10-07T17:06:21 explicitly APPROVED three nonoverlapping WP302 support paths: existing MainActivity thin preserved-identity delegate only, libs.versions.toml additive reviewed Nav3/adaptive/test coordinates with NO incumbent pin updates, App navigation unit-test prefix. Preserve original five paths, base67857474, sourceDB145, manifest78a229, policy56bdc5 and every other owner. App build/lock/checksum remain solely D0 producer."
   }
 }

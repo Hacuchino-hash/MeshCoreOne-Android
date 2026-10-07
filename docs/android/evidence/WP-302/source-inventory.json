@@ -2,11 +2,11 @@
   "wp": "WP-302",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
   "inspected_head": "67857474ef3d3012ab73c19a4943ec1334c20676",
-  "status": "unported",
+  "status": "implemented-not-executed",
   "native_cases_executed": 0,
   "declared_original_families": 50,
   "parameter_family": "single",
-  "coverage_claim": "Inventory only; no native assertion, equivalent, exclusion or WP304 credit.",
+  "coverage_claim": "Fifty original assertion bodies implemented, configured for real policy callbacks and seeded Room on API31/37; static declaration is not execution or parity approval. Extracted map forwarding is a transparent native equivalent pending review. No WP304 credit.",
   "inputs": [
     {
       "path": "MC1/ContentView.swift",

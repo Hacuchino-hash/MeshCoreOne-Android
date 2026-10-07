@@ -1,6 +1,10 @@
 {
   "wp": "WP-302",
-  "status": "proposed-not-authorized",
+  "status": "three-nonoverlapping-paths-approved-and-canonically-leased-producer-three-remain-D0",
+  "historical_status_at_d6826d81": "proposed-not-authorized",
+  "approval": "Coordinator user-directed message 2026-10-07T17:06:21 explicitly approves actual launcher thin delegate, additive catalog coordinates without incumbent pin updates, and navigation unit-test prefix.",
+  "canonical_receipt": "reservation-receipt.json",
+  "original_cas_receipt": "reservation-before-reconcile.json",
   "session_id": "53768196-935e-4bee-8973-927411658acf",
   "base_sha": "67857474ef3d3012ab73c19a4943ec1334c20676",
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
@@ -36,11 +40,11 @@
       "active_overlap": null
     }
   ],
-  "coordination": "Approval and a serialized shared lease or separately authorized producer handoff are required before any support-path edit. Do not steal, release or modify D0's reservation.",
+  "coordination": "Official installed reconcile succeeded for precisely the three nonoverlapping additions, retaining the original five paths/base/source/manifest/policy and all other owners. D0 alone produces App build/lock/checksum wiring and a reviewed Nav-only carry; WP302 never edits those files concurrently or transfers its reservation.",
   "excluded_actions": [
     "No AndroidManifest or shared APK-inspector change in this minimal proposal.",
     "No core-contract/feature implementation, process graph assembly or additional WP.",
     "No weakening of existing native tests, evidence readers or complete pre-push cycle.",
-    "No dependency installation, pin selection, license approval or instrumentation-host claim."
+    "No dependency/tool/license installation by WP302, incumbent catalog pin updates, license approval or instrumentation-host claim."
   ]
 }

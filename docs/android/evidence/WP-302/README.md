@@ -1,6 +1,90 @@
 # WP-302 execution admission
 
-**BLOCKED before product implementation; not WP-302 acceptance or feature parity.**
+**Product implementation active; native compilation/execution awaits D0's
+serialized dependency support. Not WP-302 acceptance or feature parity.**
+
+## Current product implementation and producer contract
+
+The coordinator's three-path approval is effective, not pending. Official
+installed `reserve.py reconcile` extended the original lease to eight paths:
+the actual launcher thin subclass, additive version catalog and unit-test prefix,
+plus the five primary paths. `reservation-before-reconcile.json` preserves the
+full CAS input; `reservation-receipt.json` is the actual current receipt.
+D0's App build/lock/checksum paths remain solely D0; none were edited here.
+
+Implemented source includes immutable five-tab state, Navigation3 per-tab entries,
+current-width Material bar/rail/list-detail, native Back target scenes, edge-to-edge
+host, public/redacted process restoration, real notification-service callback
+binding, process-store lookup and queued generation-safe cold-route delivery.
+The existing feature entries still state **Not yet ported**. No process/radio
+graph, service owner or future feature success is manufactured.
+
+The fifty original bodies are in the exact shared `androidTest/.../navigation/cases`
+directory. Local concrete tests use actual seeded Room and policy callbacks on
+SDK31/37; the separately named instrumentation class executes the same bodies
+only on a real admitted runner. Static inventory currently declares **140**
+local native nodes and **108** SDK-bound rendered states. **Executed native
+WP-302 nodes remain 0**. The map-consumer assertion uses an extracted real
+forwarding body rather than the earlier function-reference proxy; that narrow
+equivalent is explicitly pending parity review.
+
+Actual reader command:
+
+```powershell
+python -B -m unittest discover -s docs\android\evidence\WP-302 -p test_evidence_reader.py -v
+python docs\android\evidence\WP-302\collect_evidence.py --inventory
+```
+
+Results: **15 reader regressions passed**, no skips; static inventory maps all
+50 families and declares 140 native nodes. Synthetic reader XML is **not**
+native execution. No native assertion, screenshot, instrumentation or complete
+committed-head cycle is claimed from either command.
+
+The owned collector fails on source drift, zero/skipped/malformed/mismatched
+XML, absent per-test SDK/head/tree/nonce/input bindings, missing native screen
+states and altered hashes. It checks literal compiled checkout bytes against
+candidate Git blobs; no CRLF reader waiver. Full raw XML is retained before
+validation. It never approves a hardware/license/signing/parity gate.
+
+The D0-only build producer must declare the five catalog aliases as actual App
+dependencies, admit App transitive lifecycle2.10/savedstate1.4/navigationevent1.1.1,
+and preserve existing Content/HTTP hooks. Test dependencies need the existing
+coroutine-test and Room-runtime pins, instrumentation Compose/core/ext-junit/
+runner, and the exact shared `cases` source directory in the unit source set.
+Use the existing SDK31/37 Robolectric Sync/argument-provider/native export prior
+art, not a substituted SDK or new incumbent pin.
+
+Before `testDebugUnitTest` executes, call this actual owned CLI in the isolated
+snapshot and declare its resulting `.properties` file as the test JVM's
+`navigationInputBinding`:
+
+```text
+python docs/android/evidence/WP-302/collect_evidence.py --bind-inputs
+```
+
+Declare `navigationArtifactDirectory` under App's private build reports.
+After real unit execution, the owned CLI is:
+
+```text
+python docs/android/evidence/WP-302/collect_evidence.py --check --self-test
+```
+
+`verifyWp302NavigationTests` is a **proposed producer task, not yet declared or
+executed**. It must depend on the actual App unit task and retain existing
+`verifyScaffoldTests` dependencies. The producer must freeze a reviewed Nav-only
+carry applicable to base678; full D0 blobs referencing absent Content collectors
+must not be blindly copied here.
+
+Real OS keyboard/inset/Back assertions are declared separately in
+`NavigationKeyboardBackTest`; they are unexecuted. Local native Back-dispatch
+assertions do not establish Android37 predictive gesture progress/cancellation,
+physical keyboard/TalkBack order, OEM/radio behavior or license/signing acceptance.
+Those remain explicit evidence gaps, not skipped successes.
+
+## Historical admission at d6826d81
+
+The remaining sections preserve the initial blocker/preflight facts. Their
+proposal/unported/five-path wording describes that admission, not current scope.
 
 The user authorized WP-302 alone. The canonical shared reservation is recorded
 for app session `53768196-935e-4bee-8973-927411658acf`, managed branch
