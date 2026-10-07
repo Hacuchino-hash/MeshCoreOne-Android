@@ -283,6 +283,7 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
     var onAvailable: suspend () -> Unit = {}
     var onRegistration: (LinkCallbacks) -> Unit = {}
     var onSubmission: () -> Unit = {}
+    var warmUpFailure: Exception? = null
     val manager = ConnectionManager(
         devices,
         object : RoomPersisting by rejectingRole(RoomPersisting::class.java) {
@@ -290,7 +291,10 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
         },
         rejectingRole(ContactPersisting::class.java),
         object : ProcessRuntimeMaintenance {
-            override suspend fun warmUp() { warmed++; assertTrue(devices.rows.isNotEmpty()); order += "warmUp" }
+            override suspend fun warmUp() {
+                warmed++; assertTrue(devices.rows.isNotEmpty()); order += "warmUp"
+                warmUpFailure?.let { throw it }
+            }
             override suspend fun initializeDevicePreferences(device: DeviceDTO) { initializedDefaults++; order += "defaults" }
         },
         last, platform,

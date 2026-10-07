@@ -475,12 +475,12 @@ class ConnectionManager(
         val radioId = prior?.radioId ?: RadioId(DeviceIdentity.deriveUUID(info.publicKey))
         val token = SessionToken(processEpoch, Generation(owner.number), radioId)
         synchronized(lock) { requireCurrent(owner); owner.token = token }
-        // Native firmware older than auto-add configuration reports a typed DeviceError, not an empty connection.
-        val autoAdd = try { session.getAutoAddConfig() }
-        catch (failure: MeshCoreException.DeviceError) {
-            reporter.report(RuntimeDiagnostic.Failure("getAutoAddConfig.unsupported", failure))
-            com.meshcoreone.android.core.protocol.model.AutoAddConfig(0u)
-        }
+        // Swift: `(try? autoAddConfigResult) ?? AutoAddConfig(bitmask: 0)`. Older firmware reports a typed
+        // DeviceError; any other failure is likewise non-fatal, but reported rather than silently defaulted (A-04).
+        val autoAdd = bestEffort(
+            { if (it is MeshCoreException.DeviceError) "getAutoAddConfig.unsupported" else "getAutoAddConfig" },
+            com.meshcoreone.android.core.protocol.model.AutoAddConfig(0u),
+        ) { session.getAutoAddConfig() }
         requireCurrent(owner)
         val methods = (owner.target as? ConnectionTarget.WiFi)?.let {
             listOf(ConnectionMethod.WiFi(it.host, it.port))
@@ -506,16 +506,21 @@ class ConnectionManager(
         devices.saveDevice(device)
         requireCurrent(owner)
         if (byKey != null && byKey.id != deviceId) {
-            devices.deleteDevice(byKey.id)
+            // Swift: `try? deleteDevice` for the orphaned backup-import row.
+            bestEffort({ "deleteOrphanDevice" }, Unit) { devices.deleteDevice(byKey.id) }
             requireCurrent(owner)
         }
-        maintenance.warmUp()
+        // Swift logs and continues: warmUp's hygiene purges are best-effort.
+        bestEffort({ "maintenance.warmUp" }, Unit) { maintenance.warmUp() }
         requireCurrent(owner)
         maintenance.initializeDevicePreferences(device)
         requireCurrent(owner)
         services.hydrate()
         requireCurrent(owner)
-        val ranges = if (capabilities.clientRepeat) session.getRepeatFreq().snapshot() else SnapshotList.empty()
+        // Swift: `(try? session.getRepeatFreq()) ?? []`.
+        val ranges = if (capabilities.clientRepeat) {
+            bestEffort({ "getRepeatFreq" }, SnapshotList.empty()) { session.getRepeatFreq().snapshot() }
+        } else SnapshotList.empty()
         requireCurrent(owner)
         synchronized(lock) {
             requireCurrent(owner)
@@ -1330,6 +1335,14 @@ class ConnectionManager(
         values.value = next
         transitions.yield(next)
     }
+    /** Source `try?` paths: cancellation propagates; any other failure is reported, then [fallback] is used. */
+    private suspend fun <T> bestEffort(operation: (Exception) -> String, fallback: T, block: suspend () -> T): T =
+        try { block() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) {
+            reporter.report(RuntimeDiagnostic.Failure(operation(failure), failure))
+            fallback
+        }
     private fun issueFor(failure: Throwable, stage: LifecycleStage): ConnectionIssue = when (failure) {
         is MeshCoreException -> ConnectionIssue.Protocol(failure)
         is PersistenceStoreException -> ConnectionIssue.Storage(failure)
