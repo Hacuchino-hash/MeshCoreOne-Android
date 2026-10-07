@@ -1,0 +1,28 @@
+// Oracle for WP-215 text semantics: NotificationActionHandler.reactionPreview and String ==.
+func reactionPreview(_ text: String) -> String {
+  text.count > 50 ? String(text.prefix(47)) + "..." : text
+}
+func scalars(_ s: String) -> String { s.unicodeScalars.map { String($0.value, radix: 16, uppercase: true) }.joined(separator: " ") }
+let family = "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}"
+let flag = "\u{1F1FA}\u{1F1F8}"
+let eAcute = "e\u{301}"
+let cases: [(String, String)] = [
+  ("ascii49", String(repeating: "a", count: 49)),
+  ("ascii50", String(repeating: "b", count: 50)),
+  ("ascii51", String(repeating: "c", count: 51)),
+  ("family50", String(repeating: family, count: 50)),
+  ("family51", String(repeating: family, count: 51)),
+  ("flag51", String(repeating: flag, count: 51)),
+  ("combining51", String(repeating: eAcute, count: 51)),
+  ("crlf51", String(repeating: "\r\n", count: 51)),
+  ("mixed", String(repeating: "x", count: 46) + family + eAcute + "yz" + flag),
+]
+for (name, text) in cases {
+  let p = reactionPreview(text)
+  print("\(name) count=\(text.count) utf16=\(text.utf16.count) previewCount=\(p.count) previewUtf16=\(p.utf16.count) unchanged=\(p == text)")
+}
+print("mixedPreviewScalars=\(scalars(reactionPreview(cases[8].1)))")
+print("eq_nfc_nfd=\("\u{E9}" == eAcute)")
+print("eq_case=\("Bob" == "bob")")
+print("eq_angstrom=\("\u{212B}" == "\u{C5}")")
+print("eq_ligature=\("\u{FB01}" == "fi")")

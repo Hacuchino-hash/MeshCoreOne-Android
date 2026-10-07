@@ -1,0 +1,109 @@
+"""Apply one deliberate break at a time, run :core:services:test, record failures, restore the file."""
+import os
+import shutil
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+import glob
+
+WT = "/Users/joshreign/Documents/MC1/wp215"
+PKG = WT + "/android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/notifications/"
+SCRATCH = "/private/tmp/claude-501/-Users-joshreign-Documents-MC1/b41ba9cf-92cb-416e-89c4-2780242ee684/scratchpad/"
+ENV = dict(
+    os.environ,
+    PATH=SCRATCH + "bin:" + os.environ["PATH"],
+    JAVA_HOME="/opt/homebrew/opt/openjdk@21",
+    ANDROID_HOME="/opt/homebrew/share/android-commandlinetools",
+    GRADLE_USER_HOME=os.path.expanduser("~/.cache/meshcore-android/gradle"),
+    ANDROID_USER_HOME=os.path.expanduser("~/.cache/meshcore-android/android-user"),
+)
+
+MUTATIONS = [
+    ("suppression (room post ignores isSuppressingNotifications)", "NotificationService.kt",
+     "if (!prefs.roomMessagesEnabled || isSuppressingNotifications) return",
+     "if (!prefs.roomMessagesEnabled) return"),
+    ("suppression (DM post ignores isSuppressingNotifications)", "NotificationService.kt",
+     "        if (isSuppressingNotifications) return\n        deliver(", "        deliver("),
+    ("active-conversation skip removed", "NotificationService.kt",
+     "if (foreground && !shouldPresentWhileForeground(request.payload)) return", "if (false) return"),
+    ("active channel ignores radio", "NotificationResponses.kt",
+     "keys.channelIndex == active.channelIndex && keys.channelRadioId == active.channelRadioId",
+     "keys.channelIndex == active.channelIndex"),
+    ("preview truncation off by one", "NotificationActionHandler.kt",
+     "characterCount(text) > REACTION_PREVIEW_MAX_LENGTH", "characterCount(text) >= REACTION_PREVIEW_MAX_LENGTH"),
+    ("preview counts UTF-16 units", "NotificationActionHandler.kt",
+     "NotificationSwiftText.characterCount(text) >", "text.length >"),
+    ("mark-read targets the session radio", "NotificationActionHandler.kt",
+     "dataStore.markMessageAsRead(EntityKey(contact.radioId, messageID))", "dataStore.markMessageAsRead(EntityKey(radioId, messageID))"),
+    ("stale-radio reply guard removed", "NotificationActionHandler.kt",
+     "connectionReady() && contact.radioId == radioId && stored.radioId == radioId", "connectionReady()"),
+    ("badge ignores disabled channel preference", "NotificationService.kt",
+     "if (prefs.channelMessagesEnabled) total += counts.channels", "total += counts.channels"),
+]
+
+REVIEW_MUTATIONS = [
+    ("DM quick-reply tail cancellable", "NotificationActionHandler.kt",
+     "                withContext(NonCancellable) {\n                    // Clear unread state - user replied so they've seen the chat.",
+     "                run {\n                    // Clear unread state - user replied so they've seen the chat."),
+    ("channel quick-reply tail cancellable", "NotificationActionHandler.kt",
+     "        withContext(NonCancellable) {\n            // Clear unread state - user replied so they've seen the channel.",
+     "        run {\n            // Clear unread state - user replied so they've seen the channel."),
+    ("mark-read tail cancellable", "NotificationActionHandler.kt",
+     "            withContext(NonCancellable) {\n                notificationService.removeDeliveredNotification(messageID)",
+     "            run {\n                notificationService.removeDeliveredNotification(messageID)"),
+    ("draft lost on cancelled send", "NotificationActionHandler.kt",
+     "withContext(NonCancellable) { replyNotSent(contact, stored.displayName, text) }", "Unit"),
+    ("channel failure not posted on cancelled send", "NotificationActionHandler.kt",
+     "            withContext(NonCancellable) {\n                notificationService.postChannelQuickReplyFailedNotification(channelName, radioId, channelIndex)\n            }",
+     "            Unit"),
+    ("badge computations not serialized", "NotificationService.kt",
+     "badgeUpdateMutex.withLock { contained(\"badgeUpdate\", Unit) { performBadgeUpdate() } }",
+     "contained(\"badgeUpdate\", Unit) { performBadgeUpdate() }"),
+    ("badge computation cancellable", "NotificationService.kt",
+     "withContext(NonCancellable) { badgeUpdateMutex", "run { badgeUpdateMutex"),
+    ("badge debounce 50 ms", "NotificationService.kt",
+     "val BADGE_DEBOUNCE = 100.milliseconds", "val BADGE_DEBOUNCE = 50.milliseconds"),
+    ("contained() swallows cancellation", "NotificationService.kt",
+     "        } catch (cancelled: CancellationException) {\n            throw cancelled\n        } catch (failure: Exception) {\n            logger.log(Level.WARNING, \"Notification $operation failed\", failure)",
+     "        } catch (failure: Exception) {\n            logger.log(Level.WARNING, \"Notification $operation failed\", failure)"),
+    ("drafts keyed by bare UUID", "NotificationService.kt",
+     "synchronized(lock) { pendingDrafts.remove(contact) }",
+     "synchronized(lock) { pendingDrafts.keys.firstOrNull { it.id == contact.id }?.let { pendingDrafts.remove(it) } }"),
+]
+
+
+def failing_tests():
+    names = []
+    for path in glob.glob(WT + "/android/core/services/build/test-results/test/TEST-*.xml"):
+        for case in ET.parse(path).getroot().iter("testcase"):
+            if any(child.tag in ("failure", "error") for child in case):
+                names.append(case.get("name"))
+    return names
+
+
+def run(label, filename, old, new):
+    path = PKG + filename
+    backup = SCRATCH + "wp215_backup_" + filename
+    shutil.copyfile(path, backup)
+    try:
+        source = open(path, encoding="utf-8").read()
+        if source.count(old) != 1:
+            return f"{label}: SKIPPED (pattern count {source.count(old)})"
+        open(path, "w", encoding="utf-8").write(source.replace(old, new))
+        result = subprocess.run(
+            ["timeout", "1200", "./gradlew", ":core:services:test", "--rerun", "--console=plain", "-q"],
+            cwd=WT + "/android", env=ENV, capture_output=True, text=True,
+        )
+        failed = failing_tests()
+        verdict = "KILLED" if result.returncode != 0 and failed else "SURVIVED"
+        return f"{label}: {verdict} ({len(failed)} failing) {failed}"
+    finally:
+        shutil.copyfile(backup, path)
+        os.remove(backup)
+
+
+if __name__ == "__main__":
+    selected = {"review": REVIEW_MUTATIONS, "room": MUTATIONS[:1]}.get(" ".join(sys.argv[1:]), MUTATIONS + REVIEW_MUTATIONS)
+    for mutation in selected:
+        print(run(*mutation), flush=True)
+    sys.exit(0)
