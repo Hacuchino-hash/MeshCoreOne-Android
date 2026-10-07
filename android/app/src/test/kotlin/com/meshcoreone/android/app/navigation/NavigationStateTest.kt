@@ -80,6 +80,10 @@ class NavigationStateTest {
         val before = n.state.value.activeStack
         n.navigateToChat(contact, message)
         assertEquals(before, n.state.value.activeStack); assertEquals(message, n.state.value.pendingScrollToMessageID)
+        val failed = NavigationCoordinator(n.state.value.copy(failure = NavigationFailure.UnsupportedNotification))
+        failed.navigateToChat(contact, message)
+        assertEquals(before, failed.state.value.activeStack)
+        assertNull("A successful duplicate route must dismiss the superseded failure", failed.state.value.failure)
     }
     @Test fun auxiliaryRoutesAreOwnedByTheSelectedTabAndDoNotCreateAnotherRoot() {
         val n = NavigationCoordinator(); n.selectTab(AppTab.NODES)
@@ -99,6 +103,19 @@ class NavigationStateTest {
             assertEquals(detail.takeUnless { it.requiresDevice }, n.state.value.selectedSetting)
             assertEquals(if (detail.requiresDevice) 1 else 2, n.state.value.stacks.getValue(AppTab.SETTINGS).size)
         }
+        val layered = NavigationCoordinator()
+        layered.navigateToTool(ToolSelection.LINE_OF_SIGHT)
+        layered.navigateToTool(ToolSelection.CLI)
+        layered.navigateToSetting(SettingsDetail.LANGUAGE)
+        layered.navigateToSetting(SettingsDetail.RADIO)
+        layered.manuallyDisconnect()
+        assertEquals(ToolSelection.LINE_OF_SIGHT, layered.state.value.selectedTool)
+        assertEquals(NavigationDestination.Tool(ToolSelection.LINE_OF_SIGHT),
+            layered.state.value.stacks.getValue(AppTab.TOOLS).last().destination)
+        assertEquals(SettingsDetail.LANGUAGE, layered.state.value.selectedSetting)
+        assertEquals(NavigationDestination.Setting(SettingsDetail.LANGUAGE), layered.state.value.activeStack.last().destination)
+        assertEquals(2, layered.state.value.stacks.getValue(AppTab.TOOLS).size)
+        assertEquals(2, layered.state.value.activeStack.size)
     }
     @Test fun manualDisconnectRetainsCachedDetailsButReplacementRedactsEveryRadioSelection() {
         val n = NavigationCoordinator(); n.replaceRadio(radio)
@@ -199,12 +216,20 @@ class NavigationStateTest {
         }
         assertEquals(NavigationOutcome.Failed(NavigationFailure.Repository(error)), n.handleNotification(payload, broken))
         assertEquals(NavigationFailure.Repository(error), n.state.value.failure)
+        n.navigateToMap(1.0, 2.0)
+        NotificationFixture(this, radio, n, broken).use {
+            requireNotNull(it.service.onNewContactNotificationTapped)(EntityKey(radio, contact.id))
+            assertEquals(listOf(NavigationOutcome.Fallback(NavigationFailure.Repository(error))), it.outcomes)
+        }
+        assertEquals(AppTab.NODES, n.state.value.selectedTab)
+        assertEquals(NavigationFailure.Repository(error), n.state.value.failure)
         assertEquals(NavigationOutcome.Failed(NavigationFailure.UnsupportedNotification),
             n.handleNotification(NotificationPayload.LowBattery(20), lookup()))
     }
     @Test fun unconnectedRoomRequestsAuthenticationAndConnectedRoomNavigatesThroughRealCallback() = runTest {
         for (connected in listOf(false, true)) {
-            val n = NavigationCoordinator(); val value = room.copy(isConnected = connected)
+            val n = NavigationCoordinator(NavigationState(failure = NavigationFailure.UnsupportedNotification))
+            val value = room.copy(isConnected = connected)
             NotificationFixture(this, radio, n, lookup(room = value)).use {
                 requireNotNull(it.service.onRoomNotificationTapped)(EntityKey(radio, value.id))
                 assertEquals(listOf(NavigationOutcome.Navigated), it.outcomes)
@@ -212,6 +237,7 @@ class NavigationStateTest {
             assertEquals(AppTab.CHATS, n.state.value.selectedTab)
             assertEquals(if (connected) ChatSelection.Room(value) else null, n.state.value.chatsSelectedRoute)
             assertEquals(if (connected) null else value, n.state.value.pendingRoomAuthentication)
+            assertNull(n.state.value.failure)
         }
     }
     @Test fun reactionPrioritizesContactThenFallsBackToChannelAndPreservesMessageIdentity() = runTest {
@@ -225,6 +251,21 @@ class NavigationStateTest {
         assertEquals(ChatSelection.Direct(contact), n.state.value.chatsSelectedRoute)
         n.handleNotification(NotificationPayload.ChannelQuickReplyFailed(radio, channel.index), lookup())
         assertEquals(ChatSelection.Channel(channel), n.state.value.chatsSelectedRoute)
+        val error = PersistenceStoreError.FetchFailed("fixture contact lookup")
+        val contactFailed = object : NavigationLookup by lookup() {
+            override suspend fun contact(key: EntityKey): ContactDTO? = throw PersistenceStoreException(error)
+        }
+        NotificationFixture(this, radio, n, contactFailed).use {
+            requireNotNull(it.service.onReactionNotificationTapped)(EntityKey(radio, contact.id), channel.index, radio, message)
+            assertEquals(listOf(NavigationOutcome.Fallback(NavigationFailure.Repository(error))), it.outcomes)
+        }
+        assertEquals(ChatSelection.Channel(channel), n.state.value.chatsSelectedRoute)
+        assertEquals(message, n.state.value.pendingScrollToMessageID)
+        assertEquals(NavigationFailure.Repository(error), n.state.value.failure)
+        assertEquals(NavigationOutcome.Failed(NavigationFailure.Repository(error)),
+            n.handleNotification(request, object : NavigationLookup by contactFailed {
+                override suspend fun channel(radioId: RadioId, index: UByte): ChannelDTO? = null
+            }))
     }
     @Test fun callbackTeardownDoesNotClearReplacementOrQuickReplyHandlersAndOldGenerationIsRejected() = runTest {
         val n = NavigationCoordinator(); n.replaceRadio(radio)
@@ -247,8 +288,10 @@ class NavigationStateTest {
                 throw PersistenceStoreException(PersistenceStoreError.FetchFailed("fixture"), CancellationException("fixture"))
         }
         val n = NavigationCoordinator()
-        try { n.handleNotification(payload, cancelled); fail("Cancellation must propagate") }
-        catch (_: CancellationException) { assertNull(n.state.value.failure) }
+        for (request in listOf(payload, NotificationPayload.Reaction(message, EntityKey(radio, contact.id), channel.index, radio))) {
+            try { n.handleNotification(request, cancelled); fail("Cancellation must propagate instead of starting recovery") }
+            catch (_: CancellationException) { assertNull(n.state.value.failure) }
+        }
         val unexpected = object : NavigationLookup by lookup() {
             override suspend fun contact(key: EntityKey): ContactDTO? = error("fixture programming failure")
         }

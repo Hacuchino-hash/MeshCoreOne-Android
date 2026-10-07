@@ -4,6 +4,7 @@ package com.meshcoreone.android.app.navigation
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Build
+import androidx.activity.BackEventCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -153,14 +154,31 @@ class NavigationComposeTest {
         assertEquals(ToolSelection.TRACE_PATH, navigation.state.value.selectedTool)
     }
     @Test fun actualActivityBackDispatcherPopsDetailThenReturnsToChats() {
-        compose.runOnIdle { navigation.navigateToSetting(SettingsDetail.LANGUAGE) }
-        compose.onNodeWithTag("fixture:setting-language").assertIsDisplayed()
-        compose.runOnUiThread { host.get().onBackPressedDispatcher.onBackPressed() }
-        compose.onNodeWithTag("fixture:root-SETTINGS").assertIsDisplayed()
-        assertNull(navigation.state.value.selectedSetting)
-        compose.runOnUiThread { host.get().onBackPressedDispatcher.onBackPressed() }
-        compose.onNodeWithTag("fixture:root-CHATS").assertIsDisplayed()
-        assertEquals(AppTab.CHATS, navigation.state.value.selectedTab)
+        for (value in listOf(360, 834)) {
+            compose.runOnIdle { width.value = value.dp; navigation.navigateToSetting(SettingsDetail.LANGUAGE) }
+            compose.onNodeWithTag("fixture:setting-language").assertIsDisplayed()
+            compose.onNodeWithTag("editor:setting-language").performClick().performTextInput("cancelled Back draft")
+            val before = navigation.state.value
+            compose.runOnUiThread {
+                host.get().onBackPressedDispatcher.dispatchOnBackStarted(BackEventCompat(0f, 100f, 0f, BackEventCompat.EDGE_LEFT))
+                host.get().onBackPressedDispatcher.dispatchOnBackProgressed(BackEventCompat(80f, 100f, 0.5f, BackEventCompat.EDGE_LEFT))
+            }
+            compose.waitForIdle()
+            assertEquals("Progress must not commit the stack", before, navigation.state.value)
+            compose.runOnUiThread { host.get().onBackPressedDispatcher.dispatchOnBackCancelled() }
+            compose.onNodeWithTag("editor:setting-language").assertTextContains("cancelled Back draft").assertIsFocused()
+            assertEquals("Cancellation must preserve selection and entry identities", before, navigation.state.value)
+            compose.runOnUiThread {
+                host.get().onBackPressedDispatcher.dispatchOnBackStarted(BackEventCompat(0f, 100f, 0f, BackEventCompat.EDGE_LEFT))
+                host.get().onBackPressedDispatcher.dispatchOnBackProgressed(BackEventCompat(120f, 100f, 0.8f, BackEventCompat.EDGE_LEFT))
+            }
+            compose.runOnUiThread { host.get().onBackPressedDispatcher.onBackPressed() }
+            compose.onNodeWithTag("fixture:root-SETTINGS").assertIsDisplayed()
+            assertNull(navigation.state.value.selectedSetting)
+            compose.runOnUiThread { host.get().onBackPressedDispatcher.onBackPressed() }
+            compose.onNodeWithTag("fixture:root-CHATS").assertIsDisplayed()
+            assertEquals(AppTab.CHATS, navigation.state.value.selectedTab)
+        }
         capture("native-back-root")
     }
     @Test fun twoHundredPercentFontRtlCjkAndShortRailKeepActionsAndTextAccessible() {

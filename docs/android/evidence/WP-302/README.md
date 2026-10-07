@@ -111,18 +111,62 @@ After correcting the mixed declarations, the exact documented validator
 Its manifest-only Android-only ownership check has no consumer for the approved
 canonical additive paths. The root launcher and pure native unit-test helpers
 are genuinely Android-only; relabeling them as Swift ports or another WP would
-be false provenance. Minimal shared support is required in
-`tools/android-port/portmap.py` and its existing
+be false provenance. Shared support is required in `tools/android-port/portmap.py` and its existing
 `tools/android-port/tests/test_cli.py` regression surface to consume a trusted
 bounded additive-scope admission, preserving rejection of unapproved paths.
-These two paths are **not leased here and were not edited**. The exact failed
-validator output is `traceability-after-header-fix.log`. This remains distinct
-from the outstanding D0 App graph/test-wiring handoff.
+The refreshed canonical D0 receipt already includes both paths in its existing
+30-path cleanup scope: the earlier request for an additional amendment for
+these two was unnecessary and has been corrected through the producer handoff.
+They are **not leased here and were not edited**. The exact failed validator
+output is `traceability-after-header-fix.log`. This remains distinct from the
+outstanding D0 App graph/test-wiring handoff.
 
 The earlier receipt equality probe incorrectly compared the retained
 `{ledger,result}` wrapper with the raw receipt. Its corrected comparison
 against `reservation-receipt.json`'s `result` passed, confirming the exact
 eight-path canonical receipt; the failed probe did not indicate a lease change.
+
+## Subsequent bounded correctness review
+
+Device cleanup now synchronizes the selected tool/settings fields with retained
+offline/app-wide stack entries. Previously, dropping a radio-only top entry
+could expose a retained Line of Sight or Language detail while leaving its
+selection null (and therefore deriving incorrect sidebar collapse). The native
+lifetime family now asserts both layered stacks and their surviving selections.
+Successful duplicate routes and disconnected-room authentication requests also
+clear a superseded navigation failure rather than displaying an old error after
+the new transition. Both connected/disconnected callback branches assert this.
+
+The existing native Back family now drives the published Activity1.13 dispatcher
+start/progress/cancel/completion methods at both 360dp and 834dp, asserting no
+premature stack commit and retaining draft/focus/selection on cancellation.
+Scene equality and remembered transition metadata avoid incidental scene churn.
+These are **unexecuted**
+SDK31/37 local-host assertions, not actual OS predictive gesture evidence.
+The node/render declarations remain 140/108; no acceptance count was increased.
+
+The source notification failure routes are also preserved: new-contact lookup
+failure still selects Nodes, and a reaction's failed contact lookup can recover
+through its channel while preserving the message ID. Unlike Swift's `try?`, the
+native recovery retains the typed repository failure in state and returns
+`NavigationOutcome.Fallback`; it does not pretend an unconditional clean success.
+If the channel is absent or not found, the original repository failure is surfaced.
+Cancellation still propagates instead of starting fallback. Actual callback and
+wrapped-cancellation assertions cover these branches, but remain unexecuted.
+
+Published API review used unchanged coordinates. Navigation-suite Android1.4.0
+sources SHA256 is
+`877bb57e1c5c96c716abeb574454fe8cefe336f8fba015ceebec1b4313380c82`;
+Activity1.13.0 sources SHA256 is
+`c7cf1b2e315e08867b10ef4505945d1993d90281445c65b929e81b9420216ce9`.
+Nav3 Android1.2.0 runtime/UI sources are respectively
+`34ee8af5cde26c77c902c69a556ddde67dc7d7afba7df4c35132ca41008a6ab1` and
+`7426b905f04b46a7adfe573f844a08a96ab73dcf3dcdc7b3108227fd6fea1cde`;
+the real UI scene decorator owns movable/shared entry content, not a shell
+workaround for duplicate composition.
+The suite's explicit `NavigationRail` still renders the 80dp Material rail;
+its newer bar overload permits scalable labels. Reading licensed public source
+APIs is not binary checksum admission, Kotlin compilation or native execution.
 
 ## Historical admission at d6826d81
 

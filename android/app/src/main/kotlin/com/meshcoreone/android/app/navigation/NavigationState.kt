@@ -149,7 +149,7 @@ data class NavigationState(
     internal fun push(tab: AppTab, destination: NavigationDestination): NavigationState {
         val base = select(tab)
         val stack = base.stacks.getValue(tab)
-        if (stack.last().destination == destination) return base
+        if (stack.last().destination == destination) return base.copy(failure = null)
         val entry = NavigationEntry(base.nextEntryId, destination)
         return base.copy(
             selectedTab = tab,

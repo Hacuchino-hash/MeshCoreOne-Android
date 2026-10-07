@@ -247,7 +247,12 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
             } catch (error: PersistenceStoreException) {
                 (error.cause as? CancellationException)?.let { throw it }
                 currentCoroutineContext().ensureActive()
-                commitNotification(Resolved.Failure(NavigationFailure.Repository(error.error)), expectedGeneration)
+                val failure = NavigationFailure.Repository(error.error)
+                commitNotification(
+                    if (request is NotificationNavigationRequest.NewContact) Resolved.Fallback(failure)
+                    else Resolved.Failure(failure),
+                    expectedGeneration,
+                )
             }
         }
     }
@@ -271,6 +276,7 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
                         current.push(AppTab.CHATS, NavigationDestination.Chat(selection)).copy(
                             pendingChannel = resolved.channel, chatsSelectedRoute = selection,
                             pendingScrollToMessageID = resolved.messageId, tabBarVisible = false,
+                            failure = resolved.recoveryFailure,
                         )
                     }
                     is Resolved.Room -> {
@@ -280,7 +286,7 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
                                 pendingRoomSession = resolved.session, chatsSelectedRoute = selection, tabBarVisible = false,
                             )
                         } else {
-                            current.select(AppTab.CHATS).copy(pendingRoomAuthentication = resolved.session)
+                            current.select(AppTab.CHATS).copy(pendingRoomAuthentication = resolved.session, failure = null)
                         }
                     }
                     is Resolved.Contact -> current.push(
@@ -296,6 +302,8 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
                 return when (resolved) {
                     is Resolved.Fallback -> NavigationOutcome.Fallback(resolved.failure)
                     is Resolved.Failure -> NavigationOutcome.Failed(resolved.failure)
+                    is Resolved.Channel -> resolved.recoveryFailure?.let { NavigationOutcome.Fallback(it) }
+                        ?: NavigationOutcome.Navigated
                     else -> NavigationOutcome.Navigated
                 }
             }
@@ -316,7 +324,15 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
         }
         is NotificationNavigationRequest.Channel -> resolveChannel(lookup, request.radioId, request.index)
         is NotificationNavigationRequest.Reaction -> {
-            val contact = request.contact?.let { lookup.contact(it) }
+            var contactFailure: NavigationFailure.Repository? = null
+            val contact = try {
+                request.contact?.let { lookup.contact(it) }
+            } catch (error: PersistenceStoreException) {
+                (error.cause as? CancellationException)?.let { throw it }
+                currentCoroutineContext().ensureActive()
+                contactFailure = NavigationFailure.Repository(error.error)
+                null
+            }
             if (contact != null) {
                 val key = requireNotNull(request.contact)
                 val expected = key.radioId
@@ -327,8 +343,13 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
                 val currentRadio = state.value.radioId
                 if (currentRadio != null && currentRadio != request.channelRadioId)
                     Resolved.Failure(NavigationFailure.WrongRadio(currentRadio, request.channelRadioId))
-                else resolveChannel(lookup, request.channelRadioId, request.channelIndex, request.messageId)
-            } else Resolved.Failure(NavigationFailure.TargetNotFound(NavigationTarget.REACTION))
+                else when (val channel = resolveChannel(lookup, request.channelRadioId, request.channelIndex, request.messageId)) {
+                    is Resolved.Channel -> channel.copy(recoveryFailure = contactFailure)
+                    is Resolved.Failure -> if (channel.failure is NavigationFailure.TargetNotFound)
+                        Resolved.Failure(contactFailure ?: channel.failure) else channel
+                    else -> channel
+                }
+            } else Resolved.Failure(contactFailure ?: NavigationFailure.TargetNotFound(NavigationTarget.REACTION))
         }
         is NotificationNavigationRequest.Room -> lookup.room(request.session)?.let {
             if (it.radioId != request.session.radioId)
@@ -356,7 +377,10 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
 
     private sealed interface Resolved {
         data class Chat(val contact: ContactDTO, val messageId: UUID? = null) : Resolved
-        data class Channel(val channel: ChannelDTO, val messageId: UUID? = null) : Resolved
+        data class Channel(
+            val channel: ChannelDTO, val messageId: UUID? = null,
+            val recoveryFailure: NavigationFailure.Repository? = null,
+        ) : Resolved
         data class Room(val session: RemoteNodeSessionDTO) : Resolved
         data class Contact(val contact: ContactDTO) : Resolved
         data object Discovery : Resolved
@@ -365,14 +389,22 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
     }
 
     private companion object {
-        fun clearDeviceSelection(state: NavigationState): NavigationState =
-            state.removeDestinations {
+        fun clearDeviceSelection(state: NavigationState): NavigationState {
+            val retained = state.removeDestinations {
                 (it is NavigationDestination.Tool && it.selection.requiresRadio) ||
                     (it is NavigationDestination.Setting && it.selection.requiresDevice)
-            }.copy(
-                selectedTool = state.selectedTool?.takeUnless { it.requiresRadio },
-                selectedSetting = state.selectedSetting?.takeUnless { it.requiresDevice },
+            }
+            return retained.copy(
+                selectedTool = if (state.selectedTool?.requiresRadio == true) {
+                    retained.stacks.getValue(AppTab.TOOLS)
+                        .mapNotNull { (it.destination as? NavigationDestination.Tool)?.selection }.lastOrNull()
+                } else state.selectedTool,
+                selectedSetting = if (state.selectedSetting?.requiresDevice == true) {
+                    retained.stacks.getValue(AppTab.SETTINGS)
+                        .mapNotNull { (it.destination as? NavigationDestination.Setting)?.selection }.lastOrNull()
+                } else state.selectedSetting,
             )
+        }
 
         fun clearRadioSelection(state: NavigationState): NavigationState =
             clearDeviceSelection(state).removeDestinations {

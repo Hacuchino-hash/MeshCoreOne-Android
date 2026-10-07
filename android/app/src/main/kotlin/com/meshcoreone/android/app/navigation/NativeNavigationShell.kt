@@ -159,6 +159,11 @@ fun NativeNavigationShell(
         }
     }
     val motionScale = LocalMeshTheme.current.motionScale
+    val predictiveTransition = remember(motionScale) {
+        NavDisplay.predictivePopTransitionSpec {
+            if (motionScale == 0f) EnterTransition.None togetherWith ExitTransition.None else null
+        }
+    }
     val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
     BoxWithConstraints(
         modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
@@ -266,9 +271,7 @@ fun NativeNavigationShell(
                         NavEntry(
                             entry, contentKey = "entry-${entry.id}",
                             metadata = mapOf("destination" to entry.destination, "ownerTab" to owners.getValue(entry.id)) +
-                                NavDisplay.predictivePopTransitionSpec {
-                                    if (motionScale == 0f) EnterTransition.None togetherWith ExitTransition.None else null
-                                },
+                                predictiveTransition,
                         ) {
                             Box(Modifier.fillMaxSize().focusRestorer().focusGroup().testTag("entry:${entry.id}")) {
                                 content(entry.destination, coordinator::navigate)
@@ -300,7 +303,7 @@ private class ListDetailStrategy(
 }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
-private class ListDetailScene(
+private data class ListDetailScene(
     override val key: Any,
     override val entries: List<NavEntry<NavigationEntry>>,
     override val previousEntries: List<NavEntry<NavigationEntry>>,
