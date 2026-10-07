@@ -343,6 +343,75 @@ class NativeTest {
             with self.assertRaisesRegex(EvidenceError, "Missing actual native pipeline invocation identity"):
                 retain_raw.pipeline_invocation(path)
 
+    def test_complete_actual_producer_methods_and_raw_hash_are_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "TEST-producer.xml"
+            raw = ('<testsuite name="Producer" tests="2" failures="0" errors="0" skipped="0">'
+                '<testcase classname="Producer" name="first()"/>'
+                '<testcase classname="Producer" name="second"/>'
+                '</testsuite>').encode()
+            path.write_bytes(raw)
+            result = reader.verify_projection_suite(path, "Producer", {"first", "second"})
+            self.assertEqual(2, result["passed"])
+            self.assertEqual(["first", "second"], result["methods"])
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), result["sha256"])
+            self.assertEqual(len(raw), result["bytes"])
+
+    def test_producer_missing_failed_error_skipped_zero_or_counter_mismatch_blocks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "TEST-producer.xml"
+            with self.assertRaisesRegex(EvidenceError, "Missing/linked"):
+                reader.verify_projection_suite(path, "Producer", {"method"})
+            variants = [
+                '<testsuite name="Producer" tests="0" failures="0" errors="0" skipped="0"/>',
+                '<testsuite name="Producer" tests="2" failures="0" errors="0" skipped="0">'
+                    '<testcase classname="Producer" name="method"/></testsuite>',
+            ]
+            for status, plural in (("failure", "failures"), ("error", "errors"), ("skipped", "skipped")):
+                counters = {"failures": 0, "errors": 0, "skipped": 0} | {plural: 1}
+                variants.append('<testsuite name="Producer" tests="1" ' +
+                    " ".join(f'{key}="{value}"' for key, value in counters.items()) + '>'
+                    f'<testcase classname="Producer" name="method"><{status}/></testcase></testsuite>')
+            for raw in variants:
+                path.write_text(raw)
+                with self.subTest(raw=raw), self.assertRaises(EvidenceError):
+                    reader.verify_projection_suite(path, "Producer", {"method"})
+
+    def test_producer_duplicate_unknown_or_missing_method_cannot_be_credited(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "TEST-producer.xml"
+            for names, methods in ((["method", "method"], {"method"}),
+                    (["other"], {"method"}), (["method"], {"method", "missing"})):
+                raw = f'<testsuite name="Producer" tests="{len(names)}" failures="0" errors="0" skipped="0">' + \
+                    "".join(f'<testcase classname="Producer" name="{name}"/>' for name in names) + '</testsuite>'
+                path.write_text(raw)
+                with self.subTest(names=names), self.assertRaises(EvidenceError):
+                    reader.verify_projection_suite(path, "Producer", methods)
+
+    def test_producer_raw_reports_export_before_assertion_or_identity_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"; source.mkdir()
+            ui = b'<testsuite tests="1"><testcase name="actual"/></testsuite>'
+            (source / "TEST-ui.xml").write_bytes(ui)
+            sources = {}
+            raw = b'<testsuite tests="1" failures="1"><testcase name="failed"><failure>original producer stack</failure></testcase></testsuite>'
+            for owner, suite in retain_raw.PROJECTION_SUITES.items():
+                directory = root / owner
+                directory.mkdir()
+                (directory / ("TEST-" + suite["classname"] + ".xml")).write_bytes(raw)
+                sources[owner] = directory
+            with patch.object(retain_raw, "native_inputs", return_value={"real-producer": {}}), \
+                    patch.object(retain_raw, "git", return_value=b"b" * 40):
+                result = retain_raw.retain(source, root / "raw", pipeline_output=root / "pipeline",
+                    producer_junit=sources)
+            self.assertEqual({"runtime", "ble"}, set(result["producer_reports"]))
+            for owner, receipt in result["producer_reports"].items():
+                path = root / "pipeline" / "wp304-native" / "producers" / owner / receipt["name"]
+                self.assertEqual(raw, path.read_bytes())
+                self.assertEqual(hashlib.sha256(raw).hexdigest(), receipt["sha256"])
+            self.assertEqual("raw-retained-unvalidated", result["result"])
+
     def test_local_raw_xml_png_and_binding_export_only_to_the_local_evidence_subtree(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

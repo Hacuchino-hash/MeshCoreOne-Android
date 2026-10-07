@@ -147,6 +147,58 @@ reserved only this retainer, its regressions and the owned evidence/deviation
 documents under its existing WP-304 assignment. No producer/shared support path
 was added to that reservation.
 
+## Actual Runtime/BLE producer phase
+
+The coordinator subsequently granted concrete205/207 implementation and closed
+the old runtime integration writer. Exactly nine support paths are enumerated
+in authorization; the existing own reservation was reconciled atomically with
+unchanged identity/revisions and every overlap guard. No manual producer hold,
+competing source writer or blanket shared-file permission is inferred.
+
+The external3f1f2077/bc2d9b38 declarations were carried at their exact approved
+3047/4653 LF bytes, hashes and blobs, then frozen. They supply the existing
+`SourceServiceFaultCarrier` and sealed root; no replacement root or UI-local
+fault family was introduced. Runtime preserves its actual four source plus five
+native connection cases and timeout name/Duration. BLE preserves all14 source
+plus18 native cases and typed operation/status/domain/recovery/property/bond/
+size/generation metadata. Existing constructors, diagnostics, raw fields and
+causes remain; additions are exhaustive projection getters/pure enum mappings.
+
+Actual producer assertions use the existing runtime `nativeCase` helper and
+BLE JUnit pattern. The unchanged runtime reader verifies154 original families
+and230 assertions. UI production consumes neutral payloads only; Runtime/BLE
+are testImplementation edges. The UI reader now requires both genuine four-case
+projection XML suites and exact current source/input joins; the raw retainer
+copies them before identity or success validation.
+
+[`runtime-ble-phase1.json`](runtime-ble-phase1.json) retains the genuine
+working-tree iteration:202 UI methods passed, zero failures/errors/skips,
+19 raw reports, ten verified PNGs and107 current input bindings. Only the
+original timeout/connection/BLE dispatch families are newly bound. Accounting
+stays130/158 with112/140 nonpending and18 still policy-only. The service-carrier
+fixtures test all55 copy/payload policies but emit no original producer receipt.
+The five new UI tests add coverage; none of the prior197 methods was removed.
+
+The remaining overall failure is the unweakened18-family verifier, so this
+iteration is not a complete local cycle or new-code push receipt. Runtime/BLE
+producer XML reused their actual previous executions with identical inputs;
+UI202 executed in this iteration. Historical plain-JUnit discovery and enum/
+struct scanner failures are retained, not relabeled. Paired tests now follow
+existing producer conventions without editing their validators.
+
+Strict compile/runtime resolution succeeded with the incumbent UI lock. A
+separate read-only graph probe failed before the resolver because the hook's
+working-tree overlay does not satisfy that data reader's exact checkout-byte
+contract. No new test context, generated lock or hash waiver was claimed.
+Clean committed graph proof remains required; any real membership consequence
+will be proposed from actual selected coordinates/checksums, not blocked on an
+arbitrary historical file-size cap or silently copied.
+
+The user now directs integration of actual main e04afa92/PR61 before publication.
+Its connectivity and WP211 reader repairs are independently owned and must be
+carried unchanged, not duplicated here. Companion/Sync neutral projections and
+the unmerged209/210 actual producer consumers remain the next bounded phase.
+
 ## Linux resolution/execution proposal, not a command already run
 
 The coordinator explicitly admitted the owned resolver and one bounded workflow

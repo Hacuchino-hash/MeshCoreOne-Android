@@ -16,6 +16,12 @@ import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueService
 import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.BleFault
+import com.meshcoreone.android.core.contracts.domain.errors.BleTransportFault
+import com.meshcoreone.android.core.contracts.domain.errors.ConnectionFault
+import com.meshcoreone.android.core.contracts.domain.errors.RuntimeTimeoutFault
+import com.meshcoreone.android.core.ble.BleError
+import com.meshcoreone.android.core.ble.BleTransportException
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.datastore.StorageOperation
@@ -28,6 +34,9 @@ import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.protocol.model.ErrorCode
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
+import com.meshcoreone.android.core.runtime.ConnectionError
+import com.meshcoreone.android.core.runtime.TimeoutError
+import kotlin.time.Duration.Companion.seconds
 import kotlin.test.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,24 +57,43 @@ class ErrorUserFacingTest : SourceCaseProof() {
     @Test fun protocol() = prove {
         assertEquals(resources.getString(L.errorDeviceStorageFull), mapper.protocolError(ErrorCode.TABLE_FULL).resolve(resources))
     }
-    @ProducerBindingPending("WP-207")
     @OriginalCase("ErrorUserFacingMessageTests::timeout error dispatches to concrete mapping()")
-    @Test fun timeoutPolicy() = prove { assertEquals(resources.getString(L.errorTimeoutOperationTimedOut), copy("TimeoutError", "timeout")) }
+    @Test fun actualRuntimeTimeoutHidesTheOperationNameAndPreservesItsDuration() = prove {
+        val failure = TimeoutError("sync", 5.seconds)
+        val presented = mapper.present(failure)
+        assertEquals(resources.getString(L.errorTimeoutOperationTimedOut), presented.content.message.resolve(resources))
+        assertFalse(presented.content.message.resolve(resources).contains("sync"))
+        assertSame(failure, presented.originalFailure)
+        assertEquals(RuntimeTimeoutFault("sync", 5.seconds), presented.content.sourceFault)
+        assertEquals(UiRecovery.RETRY, presented.content.recovery)
+    }
     @OriginalCase("ErrorUserFacingMessageTests::app backup error dispatches to concrete mapping()")
     @Test fun backup() = prove {
         assertEquals(resources.getString(S.settingsBackupErrorInvalidFile), message(AppBackupException(AppBackupError.InvalidFile)))
     }
-    @ProducerBindingPending("WP-205")
     @OriginalCase("ErrorUserFacingMessageTests::ble error dispatches to concrete mapping()")
-    @Test fun bleCopyPolicy() = prove {
-        assertEquals(L.errorBleConnectionFailed(resources, "peripheral unreachable"),
-            ErrorCopy.bleConnectionFailed("peripheral unreachable").resolve(resources))
+    @Test fun actualBleFailureDispatchesWithTheOriginalPayloadAndCause() = prove {
+        val fault = BleError.ConnectionFailed("peripheral unreachable")
+        val cause = IllegalStateException("synthetic original cause")
+        val failure = BleTransportException(fault, cause = cause)
+        val presented = mapper.present(failure)
+        assertEquals(L.errorBleConnectionFailed(resources, fault.reason), presented.content.message.resolve(resources))
+        assertSame(failure, presented.originalFailure)
+        assertSame(cause, presented.originalFailure.cause)
+        assertSame(fault, failure.error)
+        assertEquals(BleFault.ConnectionFailed(fault.reason),
+            assertIs<BleTransportFault>(presented.content.sourceFault).error)
     }
-    @ProducerBindingPending("WP-207")
     @OriginalCase("ErrorUserFacingMessageTests::connection error dispatches to concrete mapping()")
-    @Test fun connectionCopyPolicy() = prove {
-        assertEquals(L.errorConnectionInitializationFailed(resources, "handshake rejected"),
-            ErrorCopy.initializationFailed("handshake rejected").resolve(resources))
+    @Test fun actualRuntimeConnectionFailureKeepsItsReasonAndCause() = prove {
+        val cause = IllegalStateException("synthetic original cause")
+        val failure = ConnectionError.InitializationFailed("handshake rejected", cause)
+        val presented = mapper.present(failure)
+        assertEquals(L.errorConnectionInitializationFailed(resources, failure.reason),
+            presented.content.message.resolve(resources))
+        assertSame(failure, presented.originalFailure)
+        assertSame(cause, presented.originalFailure.cause)
+        assertEquals(ConnectionFault.InitializationFailed(failure.reason), presented.content.sourceFault)
     }
     @OriginalCase("ErrorUserFacingMessageTests::wifi transport error dispatches to concrete mapping()")
     @Test fun wifi() = prove {

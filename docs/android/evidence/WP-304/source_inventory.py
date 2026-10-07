@@ -17,6 +17,45 @@ FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/andr
 FROZEN_FAULT_BLOB = "b2a6b84a3846c016184e06772da4800700e3e8af"
 FROZEN_MESSAGING_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt"
 FROZEN_MESSAGING_BLOB = "d6f96917b135f12d3fa62c0e5c456aac709257bc"
+FROZEN_SERVICE_CARRIES = {
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/ContactsChannelAdvertisementFaults.kt":
+        "3f1f2077a0846242b1bbec669ce6e0ac913d1bae",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/RemoteRoomNodeConfigFaults.kt":
+        "bc2d9b387d6183062ba90fa6f23be1197bacf1c1",
+}
+PROJECTION_INPUTS = (
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/RuntimeFaults.kt",
+    "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/BleFaults.kt",
+    "android/core/runtime/src/main/kotlin/com/meshcoreone/android/core/runtime/ConnectionError.kt",
+    "android/core/runtime/src/main/kotlin/com/meshcoreone/android/core/runtime/TimeoutUtility.kt",
+    "android/core/ble/src/main/kotlin/com/meshcoreone/android/core/ble/BleError.kt",
+    "android/core/runtime/src/test/kotlin/com/meshcoreone/android/core/runtime/RuntimeFaultProjectionTest.kt",
+    "android/core/ble/src/test/kotlin/com/meshcoreone/android/core/ble/BleFaultProjectionTest.kt",
+)
+PROJECTION_SUITES = {
+    "runtime": {
+        "directory": "android/core/runtime/build/test-results/test",
+        "classname": "com.meshcoreone.android.core.runtime.RuntimeFaultProjectionTest",
+        "declaration_kind": "runtime-native-case",
+        "methods": {
+            "WP-207::runtime faults preserve every connection payload cause and diagnostic",
+            "WP-207::runtime timeout projection preserves operation Duration and constructor behavior",
+            "WP-207::actual runtime deadline projects its fault and joins the cancelled child",
+            "WP-207::cooperative runtime deadline remains cancellation without a fault carrier",
+        },
+    },
+    "ble": {
+        "directory": "android/core/ble/build/test-results/testDebugUnitTest",
+        "classname": "com.meshcoreone.android.core.ble.BleFaultProjectionTest",
+        "declaration_kind": "junit-method",
+        "methods": {
+            "allSourceAndNativeCasesKeepTheirPayloadCauseRecoveryAndDiagnostics",
+            "everyMetadataEnumAndNullableOrExtremeStatusProjectsWithoutOrdinalCoercion",
+            "actualGattThrowSitesStillDistinguishAttAndConnectionStateStatusEight",
+            "sourceAndNeutralCasesAreExactlyOneToOneAndAllRecoveryValuesAreRepresented",
+        },
+    },
+}
 COMMITTED_PRODUCER_INPUTS = (
     "android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/CommittedBackupPreferenceFailure.kt",
     "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/AppBackupService.kt",
@@ -89,6 +128,12 @@ def inventory():
     messaging = ROOT.joinpath(*FROZEN_MESSAGING_PATH.split("/"))
     require(messaging.is_file() and git("hash-object", "--", str(messaging)).decode().strip() == FROZEN_MESSAGING_BLOB,
         "Frozen producer Message/Polling/Queue fault carry missing or changed")
+    for relative, expected in FROZEN_SERVICE_CARRIES.items():
+        path = ROOT.joinpath(*relative.split("/"))
+        require(path.is_file() and git("hash-object", "--", str(path)).decode().strip() == expected,
+            "Frozen external service fault declaration missing or changed")
+    for relative in PROJECTION_INPUTS:
+        require(ROOT.joinpath(*relative.split("/")).is_file(), "Missing granted actual Runtime/BLE projection input")
     catalog = unique_json(ROOT / "docs" / "android" / "test-cases.json")
     require(catalog["source_sha"] == PIN, "Original case pin drift")
     owned_paths = {row["path"] for row in inputs}
@@ -150,7 +195,8 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
-    for relative in (FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS):
+    for relative in (FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS,
+            *FROZEN_SERVICE_CARRIES, *PROJECTION_INPUTS):
         path = ROOT.joinpath(*relative.split("/"))
         require(path.is_file(), "Missing actual frozen/projection producer input")
         raw = path.read_bytes()

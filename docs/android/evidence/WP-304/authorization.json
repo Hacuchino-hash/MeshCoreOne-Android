@@ -63,6 +63,42 @@
     "owned_repair": "Explicit local-only committed-input binding and wp304-local raw retention; hosted pipeline_invocation remains strict. No fabricated hosted run identity, hook/executor/allowlist edit or producer verifier bypass.",
     "publication": "No new code push is authorized by historical hosted/native/Python proof or a partial local cycle; all21 original producer families still block."
   },
+  "runtime_ble_phase": {
+    "authority": "Direct coordinator concrete implementation amendment received2026-10-07T14:07; completed runtime integration write lease closed before assignment.",
+    "owner": "b4682f12-ba0c-4fa2-a9f1-a21ccac74b01",
+    "scope": "Live immutable RuntimeFaults/BleFaults, only exhaustive producer projection getters/pure enum projection in ConnectionError/TimeoutUtility/BleError, and paired Runtime/BLE tests. Existing constructors, diagnostics, causes, public fields, source recovery/retry and runtime/GATT behavior remain unchanged.",
+    "frozen_carries": {
+      "ContactsChannelAdvertisementFaults.kt": {
+        "producer_head": "e766fb3efbeecd778ea7a04b900884b3aefbc9d3",
+        "blob": "3f1f2077a0846242b1bbec669ce6e0ac913d1bae",
+        "bytes": 3047,
+        "sha256": "1b7f21f5ff827e88462a2ac6c722a681c8c24dd9d496d130da9b3139d6e5a592"
+      },
+      "RemoteRoomNodeConfigFaults.kt": {
+        "producer_head": "c485a1383980830ff7be5e9009381149150511f1",
+        "blob": "bc2d9b387d6183062ba90fa6f23be1197bacf1c1",
+        "bytes": 4653,
+        "sha256": "356fe4521787b7a09aee8a372de266b17a271c5068d07fc7af7a4136fd852f13"
+      }
+    },
+    "support_paths": [
+      "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/ContactsChannelAdvertisementFaults.kt",
+      "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/RemoteRoomNodeConfigFaults.kt",
+      "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/RuntimeFaults.kt",
+      "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/BleFaults.kt",
+      "android/core/runtime/src/main/kotlin/com/meshcoreone/android/core/runtime/ConnectionError.kt",
+      "android/core/runtime/src/main/kotlin/com/meshcoreone/android/core/runtime/TimeoutUtility.kt",
+      "android/core/ble/src/main/kotlin/com/meshcoreone/android/core/ble/BleError.kt",
+      "android/core/runtime/src/test/kotlin/com/meshcoreone/android/core/runtime/RuntimeFaultProjectionTest.kt",
+      "android/core/ble/src/test/kotlin/com/meshcoreone/android/core/ble/BleFaultProjectionTest.kt"
+    ],
+    "reservation": "The installed idempotent claim command cannot expand an existing scope. Under the explicit amendment, only this existing session's reservation was reconciled in one BEGIN IMMEDIATE transaction, retaining base/identity/source/manifest/policy and all supervised/held-controller overlap guards. No active record was released or other owner row changed.",
+    "consumer": "Reuse the frozen SourceServiceFaultCarrier/sourceServiceFault/sealed root. UI gains only Runtime/BLE testImplementation project edges, not shipping concrete-module dependencies. Actual paired producer XML and current input hashes are required before crediting their original consumers.",
+    "verified_phase_originals": "Only actual timeout, connection and BLE original dispatch families are converted. Other18 families remain policy-only; service-payload fixture tests do not credit real209/210 producers.",
+    "not_granted": "No Connectivity/CompanionSetupService, WP211 reader, service implementation, App303, runtime/GATT policy, ROOT lock/catalog/checksum or new external dependency mutation.",
+    "current_main_integration": "User directs own-branch integration of actual main e04afa92ca5f494a8b5adefbd4384c04df23535f/mergedPR61 before publication, carrying the independently owned connectivity and WP211 local-evidence fixes unchanged. No duplicate producer repair.",
+    "test_context_gate": "The previous local UI size is not an arbitrary cap on necessary test-only memberships. Any actual new context needs a scoped selected-graph/checksum/input receipt and coordinator admission before owned-lock persistence; production pins and ROOT state remain immutable. No membership or lock replacement has been made in this phase."
+  },
   "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
   "original_managed_branch": "cbattlegear-refactored-spoon",
   "current_branch": "cbattlegear-refactored-spoon",

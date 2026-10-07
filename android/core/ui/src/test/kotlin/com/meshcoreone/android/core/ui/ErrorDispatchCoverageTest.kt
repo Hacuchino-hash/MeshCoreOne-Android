@@ -19,6 +19,11 @@ import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueService
 import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
+import com.meshcoreone.android.core.ble.BleError
+import com.meshcoreone.android.core.ble.BleTransportException
+import com.meshcoreone.android.core.runtime.ConnectionError
+import com.meshcoreone.android.core.runtime.TimeoutError
+import kotlin.time.Duration.Companion.seconds
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.model.AppBackupError
 import com.meshcoreone.android.core.model.AppBackupException
@@ -34,7 +39,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [31], qualifiers = "en-rUS")
 class ErrorDispatchCoverageTest : SourceCaseProof() {
-    @ProducerBindingPending("WP-205-206-207-209-210-214")
+    @ProducerBindingPending("WP-206-209-210-214")
     @OriginalCase("ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()")
     @Test fun everyOriginalLocalizedErrorHasCopyAccountingOrTheOriginalControlFlowAllowlist() = prove {
         val root = File(requireNotNull(System.getProperty("repositoryDirectory")))
@@ -66,15 +71,21 @@ class ErrorDispatchCoverageTest : SourceCaseProof() {
             "MessageServiceError" to (MessageServiceException(MessageServiceError.NotConnected) to L.errorMessageServiceNotConnected),
             "MessagePollingError" to (MessagePollingException(MessagePollingError.NotConnected) to L.errorMessagePollingNotConnected),
             "ChatSendQueueServiceError" to (ChatSendQueueServiceException(ChatSendQueueServiceError.NotConnected) to L.errorChatSendQueueNotConnected),
+            "BLEError" to (BleTransportException(BleError.NotConnected) to L.errorBleNotConnected),
+            "ConnectionError" to (ConnectionError.NotConnected() to L.errorConnectionNotConnected),
         )
         for ((source, pair) in actualBindings) {
             assertTrue(source in discovered)
             assertEquals(resources.getString(pair.second), mapper.message(pair.first).resolve(resources))
         }
+        val timeout = TimeoutError("sync", 5.seconds)
+        assertEquals(resources.getString(L.errorTimeoutOperationTimedOut), mapper.message(timeout).resolve(resources))
+        assertSame(timeout, mapper.present(timeout).originalFailure)
         val nativeMissing = discovered - actualBindings.keys - allowlist - removedBilling - setOf("ProtocolError", "KeychainError")
         assertTrue(nativeMissing.isNotEmpty(), "Unavailable producer families must not be silently credited as native dispatch")
         assertTrue(nativeMissing.containsAll(setOf("ChannelServiceError", "RemoteNodeError", "SyncCoordinatorError")))
-        assertFalse(nativeMissing.any { it in setOf("MessageServiceError", "MessagePollingError", "ChatSendQueueServiceError") })
+        assertFalse(nativeMissing.any { it in setOf("MessageServiceError", "MessagePollingError", "ChatSendQueueServiceError",
+            "BLEError", "ConnectionError", "TimeoutError") })
         assertTrue(discovered.isNotEmpty())
     }
 }

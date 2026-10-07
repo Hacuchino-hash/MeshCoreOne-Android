@@ -14,7 +14,7 @@ import unittest
 import xml.etree.ElementTree as ET
 import zlib
 
-from source_inventory import EvidenceError, ROOT, PIN, require, inventory, native_inputs, git
+from source_inventory import EvidenceError, ROOT, PIN, PROJECTION_SUITES, require, inventory, native_inputs, git
 
 
 def read_xml(path):
@@ -181,6 +181,18 @@ def declarations():
         methods.update(declared)
     require(set(identities) == set(cases), "Missing owned original family declarations")
     require(methods, "Zero declared native tests")
+    for owner, suite in PROJECTION_SUITES.items():
+        relative = "android/core/" + owner + "/src/test/kotlin/" + suite["classname"].replace(".", "/") + ".kt"
+        source = ROOT.joinpath(*relative.split("/"))
+        text = source.read_text(encoding="utf8")
+        if suite["declaration_kind"] == "runtime-native-case":
+            names = re.findall(r'nativeCase\("([^"]+)"', text)
+            require(len(names) == len(set(names)), "Duplicate producer runtime regression")
+            actual = {suite["classname"] + "#WP-207::" + name for name in names}
+        else:
+            actual = native_test_methods(text)
+        expected = {suite["classname"] + "#" + method for method in suite["methods"]}
+        require(actual == expected, "Actual producer projection source methods drifted")
     return cases, methods
 
 
@@ -215,6 +227,38 @@ def verify_source_receipt(identifier, disposition, method, kind, expected, obser
         "Source receipt is not bound to its actual current method/disposition")
     require(method in observed, "Source receipt method was not executed")
     require((kind == "POLICY_CASE") == disposition.startswith("pending-"), "Pending copy policy was credited as a ported equivalent")
+
+
+def verify_projection_suite(path, classname, methods):
+    require(path.is_file() and not path.is_symlink()
+        and not any(parent.is_symlink() for parent in path.parents), "Missing/linked actual producer projection report")
+    tree = read_xml(path)
+    nodes = list(tree.iter("testcase"))
+    require(tree.tag == "testsuite" and tree.get("name") == classname and nodes,
+        "Missing/ambiguous producer projection suite")
+    for name, expected in (("tests", len(nodes)), ("failures", sum(node.find("failure") is not None for node in nodes)),
+            ("errors", sum(node.find("error") is not None for node in nodes)),
+            ("skipped", sum(node.find("skipped") is not None for node in nodes))):
+        require(tree.get(name) is not None and int(tree.get(name)) == expected, "Producer JUnit counter/outcome mismatch")
+    observed = set()
+    for node in nodes:
+        method = node.get("name", "").removesuffix("()")
+        require(node.get("classname") == classname and method in methods and method not in observed,
+            "Duplicate/unknown producer projection method")
+        observed.add(method)
+        require(all(node.find(status) is None for status in ("failure", "error", "skipped")),
+            "Failed/error/skipped producer projection assertion")
+    require(observed == methods and len(observed) > 0, "Missing/zero producer projection assertions")
+    raw = path.read_bytes()
+    return {"name": path.name, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+        "classname": classname, "methods": sorted(observed), "passed": len(observed)}
+
+
+def producer_projection_evidence():
+    return {owner: verify_projection_suite(
+        ROOT.joinpath(*suite["directory"].split("/")) / ("TEST-" + suite["classname"] + ".xml"),
+        suite["classname"], suite["methods"],
+    ) for owner, suite in PROJECTION_SUITES.items()}
 
 
 def collect(junit, output=None):
@@ -270,6 +314,7 @@ def collect(junit, output=None):
     required = {"compact-light", "expanded-dark-hc", "resize", "font200-cjk-rtl", "failure-retry", "dialog", "tips", "crop",
         "storage-recovery-font200-rtl", "committed-preference-only"}
     require(required <= captures.keys(), "Missing required meaningful native PNG states")
+    projections = producer_projection_evidence()
     record = {
         "schema_version": 1, "work_package": "WP-304",
         "scope": "Native UI/source-presentation assertions only; missing producer bindings still block macro parity.",
@@ -279,6 +324,7 @@ def collect(junit, output=None):
         "ported_source_scenarios": sum(families[key] for key, value in bindings.items() if not value.startswith("pending-")),
         "reports": records, "captures": captures, "inputs": native_inputs(),
         "source_binding_dispositions": bindings,
+        "actual_producer_projection_suites": projections,
         "producer_binding_blockers": {key: value for key, value in bindings.items() if value.startswith("pending-")},
         "source_parity_accepted": False, "gate_or_hardware_accepted": False,
     }

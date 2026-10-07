@@ -92,7 +92,8 @@
     },
     {
       "implementation_paths": [
-        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
       ],
       "kind": "production",
       "original_cases": {},
@@ -132,7 +133,8 @@
     },
     {
       "implementation_paths": [
-        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
       ],
       "kind": "production",
       "original_cases": {},
@@ -162,6 +164,7 @@
     },
     {
       "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt",
         "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/UiErrorMapper.kt"
       ],
       "kind": "production",
@@ -223,7 +226,8 @@
     },
     {
       "implementation_paths": [
-        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
       ],
       "kind": "production",
       "original_cases": {},
@@ -293,7 +297,8 @@
     },
     {
       "implementation_paths": [
-        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
       ],
       "kind": "production",
       "original_cases": {},

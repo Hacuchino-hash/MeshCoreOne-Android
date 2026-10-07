@@ -10,7 +10,7 @@ import platform
 import re
 import shutil
 import sys
-from source_inventory import ROOT, PIN, MANIFEST, inventory, native_inputs, git, require, unique_json
+from source_inventory import ROOT, PIN, MANIFEST, PROJECTION_SUITES, inventory, native_inputs, git, require, unique_json
 
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
@@ -88,7 +88,7 @@ def local_invocation(path):
     return path.parent, value, local_execution_binding()
 
 
-def retain(junit, output, emit=False, images=None, pipeline_output=None, invocation_path=None):
+def retain(junit, output, emit=False, images=None, pipeline_output=None, invocation_path=None, producer_junit=None):
     require(junit.is_absolute() and output.is_absolute(), "Explicit absolute raw input/output paths required")
     require(not junit.is_symlink() and not output.is_symlink(), "Linked raw evidence path")
     reports = sorted(junit.glob("TEST-*.xml"))
@@ -100,6 +100,7 @@ def retain(junit, output, emit=False, images=None, pipeline_output=None, invocat
         "result": "raw-retained-unvalidated" if reports else "blocked-no-produced-junit",
         "inputs": native_inputs(), "reports": [], "images": [], "invocation": None,
         "execution_scope": "unforwarded", "local_execution": None,
+        "producer_reports": {},
     }
     directory = output / "junit"
     directory.mkdir(exist_ok=True)
@@ -126,6 +127,24 @@ def retain(junit, output, emit=False, images=None, pipeline_output=None, invocat
             if emit:
                 print("WP304_RAW_PNG|" + path.name + "|" + sha + "|" + base64.b64encode(raw).decode())
     try:
+        if producer_junit is not None:
+            require(set(producer_junit) == set(PROJECTION_SUITES), "Missing/unknown producer projection directories")
+            for owner, source in producer_junit.items():
+                require(source.is_absolute() and not source.is_symlink()
+                    and not any(parent.is_symlink() for parent in source.parents), "Unsafe producer projection directory")
+                name = "TEST-" + PROJECTION_SUITES[owner]["classname"] + ".xml"
+                path = source / name
+                require(path.is_file() and not path.is_symlink(), "Missing actual producer projection XML")
+                raw = path.read_bytes()
+                require(0 < len(raw) <= 64 * 1024 * 1024, "Empty/excessive producer projection XML")
+                target = output / "producers" / owner
+                target.mkdir(parents=True, exist_ok=True)
+                (target / name).write_bytes(raw)
+                sha = hashlib.sha256(raw).hexdigest()
+                record["producer_reports"][owner] = {"name": name, "bytes": len(raw), "sha256": sha}
+                if emit:
+                    print("WP304_RAW_PRODUCER|" + owner + "|" + name + "|" + sha + "|"
+                        + base64.b64encode(raw).decode())
         if invocation_path is not None:
             require(pipeline_output is None, "Ambiguous pipeline output forwarding")
             forwarded = invocation_document(invocation_path)
@@ -161,9 +180,15 @@ def main():
     parser.add_argument("--emit", action="store_true")
     parser.add_argument("--images", type=Path)
     parser.add_argument("--invocation", type=Path)
+    parser.add_argument("--runtime-junit", type=Path)
+    parser.add_argument("--ble-junit", type=Path)
     args = parser.parse_args()
     try:
-        result = retain(args.junit, args.output, args.emit, args.images, invocation_path=args.invocation)
+        require((args.runtime_junit is None) == (args.ble_junit is None),
+            "Both actual producer projection directories are required")
+        producers = None if args.runtime_junit is None else {"runtime": args.runtime_junit, "ble": args.ble_junit}
+        result = retain(args.junit, args.output, args.emit, args.images, invocation_path=args.invocation,
+            producer_junit=producers)
         if result["local_execution"] is not None:
             binding = result["local_execution"]["binding"]
             print("WP304_LOCAL_ONLY|" + binding["head_sha"] + "|" + binding["tree_sha"]

@@ -17,6 +17,8 @@ import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueService
 import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
 import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import com.meshcoreone.android.core.datastore.KeyGenerationFailure
 import com.meshcoreone.android.core.datastore.StorageFailure
 import com.meshcoreone.android.core.datastore.StorageOperation
@@ -48,6 +50,7 @@ data class UiErrorState(
     val id: UUID, val code: String, val message: UiText, val recovery: UiRecovery,
     val committedBackupReceipt: CommittedBackupReceipt? = null,
     val storageIssue: UiStorageIssue? = null,
+    val sourceFault: SourceServiceFault? = null,
 )
 data class UiStorageIssue(val operation: StorageOperation, val problem: StorageProblem)
 data class PresentedUiError(val originalFailure: Throwable, val content: UiErrorState)
@@ -55,6 +58,7 @@ data class UiErrorMapping(
     val message: UiText,
     val recovery: UiRecovery,
     val committedBackupReceipt: CommittedBackupReceipt? = null,
+    val sourceFault: SourceServiceFault? = null,
 )
 
 fun interface UiErrorReporter { fun report(failure: Throwable) }
@@ -98,7 +102,7 @@ class UiErrorMapper(
             else -> null
         }
         return PresentedUiError(error, UiErrorState(id, code, mapped.message, mapped.recovery, mapped.committedBackupReceipt,
-            storage?.let { UiStorageIssue(it.operation, it.problem) }))
+            storage?.let { UiStorageIssue(it.operation, it.problem) }, mapped.sourceFault))
     }
 
     fun message(error: Throwable): UiText =
@@ -120,6 +124,9 @@ class UiErrorMapper(
         }
         adapters.firstNotNullOfOrNull { adapter -> adapter.presentation(error) { message(it, visited) } }?.let { return it }
         if (error is StorageFailure) return storageErrorPresentation(error)
+        if (error is SourceServiceFaultCarrier) {
+            return sourceFaultPresentation(error.sourceServiceFault) { message(it, visited) }
+        }
         val copy = when (error) {
             is MeshCoreException -> when (error) {
                 is MeshCoreException.Timeout -> ErrorCopy.static("MeshCoreError", "timeout")
