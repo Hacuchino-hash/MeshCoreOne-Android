@@ -24,6 +24,7 @@ import com.meshcoreone.android.core.protocol.model.MeshContact
 import com.meshcoreone.android.core.protocol.session.MeshCoreSession
 import com.meshcoreone.android.core.protocol.session.SessionClock
 import com.meshcoreone.android.core.protocol.session.SessionCorrelationException
+import java.text.Normalizer
 import java.time.Instant
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.seconds
@@ -74,7 +75,7 @@ class RegionDiscoveryService(
 
     suspend fun discover(knownRegions: List<String>, supportsAdHocRequest: Boolean): Outcome = context.operation {
         discoveryLock.withLock {
-            val known = knownRegions.toSet()
+            val known = knownRegions.map(::canonicalRegionName).toSet()
             val responders = try {
                 listenForResponders()
             } catch (failure: MeshCoreException) {
@@ -96,15 +97,37 @@ class RegionDiscoveryService(
             }
             if (targets.isEmpty()) return@withLock Outcome.NoRepeatersResponded
             val results = coroutineScope { targets.map { target -> async { query(target) } }.awaitAll() }
-            val regions = results.filterIsInstance<QueryOutcome.Regions>().flatMap { it.names }.toSet()
+            // Compare canonically, but retain the advertised text for byte-sensitive flood-scope operations.
+            val regions = results.filterIsInstance<QueryOutcome.Regions>().flatMap { it.names }
+                .distinctBy(::canonicalRegionName)
+                .filterNot { canonicalRegionName(it) in known }
+                .sortedWith(::compareCanonicalRegions)
             val failures = results.filterIsInstance<QueryOutcome.Failed>().map { it.failure }.snapshot()
             if (failures.isNotEmpty()) Logger.getLogger("MeshCore.RegionDiscovery").warning("Region queries completed with typed failures")
             Outcome.Completed(
-                regions.subtract(known).sorted().snapshot(),
+                regions.snapshot(),
                 results.any { it == QueryOutcome.TableFull },
                 failures,
             )
         }
+    }
+
+    private fun canonicalRegionName(name: String): String = Normalizer.normalize(name, Normalizer.Form.NFC)
+
+    private fun compareCanonicalRegions(left: String, right: String): Int {
+        val first = canonicalRegionName(left)
+        val second = canonicalRegionName(right)
+        var firstOffset = 0
+        var secondOffset = 0
+        while (firstOffset < first.length && secondOffset < second.length) {
+            val firstScalar = first.codePointAt(firstOffset)
+            val secondScalar = second.codePointAt(secondOffset)
+            val comparison = firstScalar.compareTo(secondScalar)
+            if (comparison != 0) return comparison
+            firstOffset += Character.charCount(firstScalar)
+            secondOffset += Character.charCount(secondScalar)
+        }
+        return (first.length - firstOffset).compareTo(second.length - secondOffset)
     }
 
     private suspend fun listenForResponders(): Set<Bytes> = coroutineScope {

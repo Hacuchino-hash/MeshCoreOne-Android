@@ -47,12 +47,76 @@ separate from source parity.
 Fresh integrated-head Linux `verifyDeviceSettingsTests`/root/protocol/
 reciprocal backup evidence is **pending**. Neither historical814 native
 artifacts nor the isolated PR46 repair proof is rebound to the new base/head.
-Only the necessary existing per-WP collector/tests/evidence/deviation
-adjustments are authored here. Data build/local lock, services build/root
+That integration authored only the necessary existing per-WP collector/
+tests/evidence/deviation adjustments; bounded recovery changes are below.
+Data build/local lock, services build/root
 lock, schemas/contracts/resources/controllers and frozen producer paths
 receive no new worker edits. The exact run/head/source/base/artifact outcomes
 will be recorded in the **existing PR body**, without a further
 evidence-only commit/rerun once the integrated source is frozen.
+
+## Admitted single-owner recovery and canonical region identity
+
+The coordinator's direct 2026-10-07 transfer admits native session
+`88d414ff-da1d-48da-992f-ad44c80e9cce`, app session
+`bbb03d7a-f527-4d3e-8b3b-c1a97c44d631`, and the app-materialized
+`pr-42-cbattlegear-supreme-engine` checkout as the sole active recovery
+owner of receipt `autonomous-WP-211-d147865c`. The managed local branch is
+`pr/42/cbattlegear-supreme-engine`; only the existing PR42 remote head
+`cbattlegear-supreme-engine` is a push destination. The coordinator revoked
+the original native18dd writer permission and preserved its original
+worktree. Its historical owner/input/run receipts below are not relabelled.
+No second owner, raw branch rename, new PR or force update is authorized.
+
+The clean recovery entry point was actual local/remote HEAD
+`e706b971a81f31d5d584fd1099d43bfdb8cc02dc`, already containing genuine
+PR46 parent5f9a7fec and approved current main
+`e3369a97bf3a1e19b801c8d69ca8abf171da432b`. The recovery does not repeat
+those merges. The actual invocation still requires full equality with the
+approved integration base, current immutable HEAD, repository, original
+source/manifest/policy, Linux verify stage and positive run/attempt.
+Neither an arbitrary well-shaped base nor the genuine but wrong repair
+parent is accepted. Retained current evidence separately records and
+checks this recovery-owner receipt; it is traceability, not a CI execution
+identity or a trusted gate approval.
+
+The remaining live PR42 discovery finding is a source-parity defect:
+Swift `Set<String>` and default string ordering compare canonical Unicode
+representations, whereas the original Kotlin sets/sort compared raw UTF-16.
+Discovery now uses NFC comparison keys for deduplication and known-region
+subtraction, and canonical Unicode scalar ordering rather than UTF-16 or
+locale collation. It retains the first advertised spelling, including its
+original UTF-8 bytes. Normalizing the returned name itself would change the
+existing `FloodScope.Region` hash and the later verified write's wire bytes;
+that is not an approved adaptation.
+
+Three additive actual-session regressions require equivalent known names in
+both normalization forms, canonical deduplication with the original
+flood-scope write/readback and hash, and ordering across canonical forms,
+case/prefixes, BMP and supplementary scalars. Both reviewed PR46 close cases
+and every prior assertion remain mandatory. Owning WP-211 verification requires
+**306 JVM (213 original-expanded +93 native) and 12 real Room (7 original
++5 native), 318 total**. Original **163 families /220 expanded cases**,
+OCV15/15/15/16, all 24 primary input blobs and all eight frozen producer/test/
+helper blobs are unchanged. No data/services build or lock is edited.
+
+The source-only recovery commands are declared here in verbose form:
+
+```powershell
+python -B -m unittest discover -s .\docs\android\evidence\WP-211 -p test_*.py -v
+python -B .\docs\android\evidence\WP-211\collect_evidence.py --check-source-map
+python -B .\docs\android\evidence\WP-211\verify_producers.py
+```
+
+The declared local `python -B .\tools\android-port\controller\ci.py preflight`
+returned `BLOCKED: Explicit --state/ANDROID_CI_STATE is required`; this is
+not local native readiness. No Windows Gradle, tool installation or
+provisioning is performed. Actual native assertions must execute through
+the existing strict isolated Linux CI, including its own pinned readiness
+check. Fresh recovery-head owning/root/protocol/reciprocal-backup proof is
+pending; outcomes and complete artifact identities are recorded in the
+existing PR body after the source is frozen, not in another evidence-only
+commit. Historical814 and isolated repair results remain historical.
 
 ## Historical verified native implementation
 
@@ -135,7 +199,7 @@ restored WP-218 ownership; the eight geographic/fault files are unchanged.
 No further edits to these native-proven data carrier files are planned
 before the coordinator's serialized carry/ownership decision.
 
-## Immutable receipt and inputs
+## Original immutable receipt and inputs
 
 - Coordinator receipt: `autonomous-WP-211-d147865c`, active on 2026-10-05.
 - Native CLI session: `18dd9693-255c-4cb4-8154-86ee8040a8dc`.

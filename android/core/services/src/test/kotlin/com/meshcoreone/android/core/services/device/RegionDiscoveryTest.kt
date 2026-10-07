@@ -12,6 +12,7 @@ import com.meshcoreone.android.core.protocol.command.PacketBuilder
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 import com.meshcoreone.android.core.protocol.model.AnonRequestType
 import com.meshcoreone.android.core.protocol.model.ContactType
+import com.meshcoreone.android.core.protocol.model.FloodScope
 import com.meshcoreone.android.core.protocol.model.ResponseCode
 import java.util.UUID
 import kotlin.test.*
@@ -104,6 +105,64 @@ class RegionDiscoveryTest {
                 assertEquals(listOf("Alpha", "Zulu"), outcome.newRegions)
                 assertFalse(outcome.allRepeatersTableFull)
                 assertFalse(outcome.isPartial)
+            } finally { fixture.close() }
+        },
+        nativeAsync("discovery excludes canonically equivalent known regions in either normalization form") {
+            for (known in listOf("\u00E9", "e\u0301")) {
+                val fixture = settingsFixture()
+                try {
+                    val key = filled(0x11)
+                    val scan = request { discovery(fixture, ContactRows(listOf(contact(key)))).discover(listOf(known), false) }
+                    reply(fixture, 2, discoverRequest(), okPacket())
+                    fixture.radio.receive(discoverResponse(key))
+                    advanceTimeBy(15_000)
+                    reply(fixture, 3, PacketBuilder.sendAnonReq(key, AnonRequestType.REGIONS, 0u, Bytes.EMPTY), sentPacket())
+                    fixture.radio.receive(regionsPacket("e\u0301,\u00E9,Other"))
+                    runCurrent()
+                    val result = assertIs<RegionDiscoveryService.Outcome.Completed>(scan.await())
+                    assertEquals(listOf("Other"), result.newRegions)
+                    assertFalse(result.isPartial)
+                    assertFalse(result.allRepeatersTableFull)
+                } finally { fixture.close() }
+            }
+        },
+        nativeAsync("discovery deduplicates canonical regions without rewriting advertised UTF-8 or flood-scope keys") {
+            val fixture = settingsFixture()
+            try {
+                val key = filled(0x11)
+                val advertised = "e\u0301"
+                val scan = request { discovery(fixture, ContactRows(listOf(contact(key)))).discover(emptyList(), false) }
+                reply(fixture, 2, discoverRequest(), okPacket())
+                fixture.radio.receive(discoverResponse(key))
+                advanceTimeBy(15_000)
+                reply(fixture, 3, PacketBuilder.sendAnonReq(key, AnonRequestType.REGIONS, 0u, Bytes.EMPTY), sentPacket())
+                fixture.radio.receive(regionsPacket("$advertised,\u00E9,$advertised"))
+                runCurrent()
+                val result = assertIs<RegionDiscoveryService.Outcome.Completed>(scan.await())
+                assertEquals(listOf(advertised), result.newRegions)
+                val name = result.newRegions.single()
+                assertEquals(Bytes.utf8(advertised), Bytes.utf8(name))
+                assertNotEquals(FloodScope.Region("\u00E9").scopeKey(), FloodScope.Region(name).scopeKey())
+                val write = request { fixture.settings.setDefaultFloodScopeVerified(name) }
+                reply(fixture, 4, PacketBuilder.setDefaultFloodScope(advertised, FloodScope.Region(advertised)), okPacket())
+                reply(fixture, 5, PacketBuilder.getDefaultFloodScope(), floodScopePacket(advertised))
+                assertEquals(advertised, write.await())
+            } finally { fixture.close() }
+        },
+        nativeAsync("discovery sorts canonical Unicode scalar values rather than raw UTF-16") {
+            val fixture = settingsFixture()
+            try {
+                val key = filled(0x11)
+                val scan = request { discovery(fixture, ContactRows(listOf(contact(key)))).discover(emptyList(), false) }
+                reply(fixture, 2, discoverRequest(), okPacket())
+                fixture.radio.receive(discoverResponse(key))
+                advanceTimeBy(15_000)
+                reply(fixture, 3, PacketBuilder.sendAnonReq(key, AnonRequestType.REGIONS, 0u, Bytes.EMPTY), sentPacket())
+                fixture.radio.receive(regionsPacket("e\u0301,\uD83D\uDE80x,\uE000,z,aa,\uD83D\uDE80,a,A"))
+                runCurrent()
+                val result = assertIs<RegionDiscoveryService.Outcome.Completed>(scan.await())
+                assertEquals(listOf("A", "a", "aa", "z", "e\u0301", "\uE000", "\uD83D\uDE80", "\uD83D\uDE80x"),
+                    result.newRegions)
             } finally { fixture.close() }
         },
         nativeAsync("discovery rejects wrong-tag-only responses rather than fabricating targets") {

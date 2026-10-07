@@ -109,6 +109,7 @@ class JUnitReaderTests(unittest.TestCase):
         metadata = json.loads((output / "retention.json").read_text())
         self.assertEqual("a" * 40, metadata["head_sha"])
         self.assertEqual(reader.LEASE, metadata["lease"])
+        self.assertEqual(reader.RECOVERY_OWNER, metadata["recovery_owner_receipt"])
         self.assertEqual(1, len(metadata["raw_junit"]))
         self.assertTrue(metadata["missing_directories"])
 
@@ -164,10 +165,12 @@ class IdentityReaderTests(unittest.TestCase):
                     path.write_text(json.dumps(bad))
                     with self.assertRaises(ValueError):
                         reader.invocation(path)
-                value["identity"]["binding"]["base_sha"] = reader.RECEIPT_BASE
-                path.write_text(json.dumps(value))
-                with self.assertRaisesRegex(ValueError, "authorized current integration base"):
-                    reader.invocation(path)
+                for wrong_base in (reader.RECEIPT_BASE, "5f9a7fec22f81e75b42e220d141c342a3c735954", "f" * 40):
+                    value["identity"]["binding"]["base_sha"] = wrong_base
+                    path.write_text(json.dumps(value))
+                    with self.subTest(base=wrong_base), self.assertRaisesRegex(
+                            ValueError, "authorized current integration base"):
+                        reader.invocation(path)
                 value["identity"]["binding"]["base_sha"] = reader.BASE
                 value["identity"]["binding"]["head_sha"] = "c" * 40
                 path.write_text(json.dumps(value))
@@ -185,13 +188,13 @@ class IdentityReaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Reviewed producer blob drift"):
                 reader.frozen_producers()
 
-    def test_owned_partitions_derive_303_jvm_and_12_room_without_baseline_module_count_credit(self):
+    def test_owned_partitions_derive_306_jvm_and_12_room_without_baseline_module_count_credit(self):
         _, families, native, room = reader.source_map()
         self.assertEqual(
             {
                 "original_jvm_expanded": 213, "original_room_expanded": 7,
-                "native_device_regressions": 90, "native_room_regressions": 5,
-                "declared_device_jvm": 303, "declared_room": 12, "declared_owned_total": 315,
+                "native_device_regressions": 93, "native_room_regressions": 5,
+                "declared_device_jvm": 306, "declared_room": 12, "declared_owned_total": 318,
             },
             reader.partition_counts(families, native, room),
         )
@@ -206,11 +209,34 @@ class IdentityReaderTests(unittest.TestCase):
         _, families, native, _ = reader.source_map()
         self.assertTrue(reader.REQUIRED_CLOSE_CASES <= native.keys())
         self.assertEqual(2, len(reader.REQUIRED_CLOSE_CASES))
-        self.assertEqual(90, reader.MIN_NATIVE_CASES)
+        self.assertEqual(93, reader.MIN_NATIVE_CASES)
         self.assertEqual(163, len(families))
         self.assertEqual("db14559b39d32322b06477c6ae676112f583db50", reader.SOURCE)
         self.assertEqual("7e2835bad2c03dfb5a088063655f9fc4dbafd00f", reader.RECEIPT_BASE)
         self.assertEqual("e3369a97bf3a1e19b801c8d69ca8abf171da432b", reader.BASE)
+
+    def test_canonical_discovery_regressions_are_mandatory_in_addition_to_both_close_cases(self):
+        _, _, native, _ = reader.source_map()
+        self.assertEqual(3, len(reader.REQUIRED_DISCOVERY_CASES))
+        self.assertTrue(reader.REQUIRED_DISCOVERY_CASES <= native.keys())
+        self.assertTrue(reader.REQUIRED_CLOSE_CASES.isdisjoint(reader.REQUIRED_DISCOVERY_CASES))
+        with patch.object(reader, "REQUIRED_DISCOVERY_CASES", reader.REQUIRED_DISCOVERY_CASES | {"WP-211::missing"}):
+            with self.assertRaisesRegex(ValueError, "All canonical region discovery regressions"):
+                reader.source_map()
+
+    def test_historical_owner_cannot_be_relabelled_as_current_recovery_evidence(self):
+        metadata = {
+            "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
+            "source_sha": reader.SOURCE, "manifest_sha256": reader.MANIFEST,
+            "policy_revision": reader.POLICY, "lease": reader.LEASE,
+            "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
+            "recovery_owner_receipt": {
+                **reader.RECOVERY_OWNER, "native_session": "18dd9693-255c-4cb4-8154-86ee8040a8dc",
+            },
+        }
+        with patch.object(reader, "load_json", return_value=metadata):
+            with self.assertRaisesRegex(ValueError, "Retained recovery owner receipt drift"):
+                reader.validate_retained(Path("synthetic-retention"))
 
 
 class NativeHookTests(unittest.TestCase):
