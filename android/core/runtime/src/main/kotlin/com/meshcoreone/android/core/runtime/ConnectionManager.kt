@@ -54,6 +54,7 @@ class ConnectionManager(
         val revision: Long,
         val ownsAttempt: Boolean,
         val stop: Deferred<TeardownReport>?,
+        val detachedLive: Boolean = false,
     )
     internal class RadioGeneration(
         val number: Long,
@@ -219,15 +220,30 @@ class ConnectionManager(
     override suspend fun connect(target: ConnectionTarget) = connect(target, forceFullSync = false, forceReconnect = false)
 
     suspend fun connect(target: ConnectionTarget, forceFullSync: Boolean, forceReconnect: Boolean) {
+        // Swift connect(to:): while connected to a different radio, route through switchDevice, which forces a
+        // full sync, refills the preserve budget and reports a failed switch as a connection loss.
+        val requested = (target as? ConnectionTarget.Bluetooth)?.deviceId
+        val current = connectedDevice?.id
+        if (requested != null && current != null && requested != current && connectionState.isOperational) {
+            switchDevice(target)
+            return
+        }
+        connectAttempt(target, forceFullSync, forceReconnect)
+    }
+
+    private suspend fun connectAttempt(target: ConnectionTarget, forceFullSync: Boolean, forceReconnect: Boolean) {
         currentCoroutineContext().ensureActive()
         val initiatingJob = currentCoroutineContext()[Job]
         val reentrant = currentCoroutineContext()[RuntimeOperation]?.owner === operationIdentity
         requireOpen()
         val normalized = normalizeTarget(target)
-        if (!shouldAllowConnection(forceReconnect)) {
+        // Swift gates and counts the breaker only on the BLE path; WiFi connects never touch it.
+        if (normalized is ConnectionTarget.Bluetooth && !shouldAllowConnection(forceReconnect)) {
             throw ConnectionError.ConnectionFailed("Connection blocked by circuit breaker (cooling down)")
         }
         val deviceId = (normalized as? ConnectionTarget.Bluetooth)?.deviceId
+        // Swift evaluates both break-glass conditions before any state change; capture it before CONNECTING is published.
+        val breakGlass = forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED
         if (deviceId != null && activeReconnectDeviceId == deviceId) {
             if (forceReconnect && connectionState == DeviceConnectionState.DISCONNECTED && synchronized(lock) { rebuildDevice } != deviceId) {
                 reconnectionCoordinator.clearReconnectingDevice()
@@ -247,6 +263,8 @@ class ConnectionManager(
             revision = Math.incrementExact(revision)
             val claimedRevision = revision
             val previous = pending
+            // Swift connect(to:) routes a connected BLE radio through switchDevice, whose catch fires onConnectionLost.
+            val switching = deviceId != null && values.value.state.isConnected
             val oldOwners = detachOwnersLocked(DeviceConnectionState.CONNECTING, ConnectionIntent.WantsConnection(forceFullSync))
             val predecessor = precedingStop
             val oldStop = cleanupScope.async(start = CoroutineStart.LAZY) {
@@ -269,12 +287,14 @@ class ConnectionManager(
                         if (deviceValue?.id != deviceId) { cleanSync = null; attemptedSync = null }
                     }
                     setIntent(ConnectionIntent.WantsConnection(forceFullSync))
-                    publish(DeviceConnectionState.CONNECTING, transport = ConnectionState.Connecting, token = null, issue = null)
+                    publish(claimedRevision) { connectingSnapshot() }
                     if (deviceId != null && platform.registryActive && !platform.isRegistered(deviceId)) {
                         throw ConnectionError.DeviceNotFound()
                     }
                     requireRevision(claimedRevision)
-                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync)) return@withOperation
+                    if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync, breakGlass = breakGlass)) return@withOperation
+                    // An owned link whose adoption failed published DISCONNECTED; Swift sets .connecting again.
+                    if (connectionState != DeviceConnectionState.CONNECTING) publish(claimedRevision) { connectingSnapshot() }
                     val attempts = if (deviceId == null) 1 else
                         ConnectionRetryPolicy.connectAttempts(forceReconnect, platform.hasSystemPairingRegistry)
                     var lastFailure: Exception? = null
@@ -297,7 +317,9 @@ class ConnectionManager(
                                 owner.ownsPhysical = false
                             }
                             lastFailure = failure
-                            if (!isRetained(owner)) closeGeneration(owner, true, failure)
+                            // Swift's cleanupResources leaves state at .connecting between retries; only a terminal
+                            // failure publishes DISCONNECTED (finishFailedSubmission), so observers do not flicker.
+                            if (!isRetained(owner)) closeGeneration(owner, true, failure, publishDisconnected = false)
                             requireRevision(claimedRevision)
                             val classified = platform.classifyFailure(failure)
                             if (classified is LinkFailure.AuthenticationFailed && deviceId != null) surfaceAuthenticationFailure(deviceId)
@@ -309,17 +331,19 @@ class ConnectionManager(
                                 hasCause<SessionCorrelationException.ConcurrentTransportOwner>(failure)
                             ) throw failure
                             reporter.report(RuntimeDiagnostic.Failure("connect.attempt.$attempt", failure))
-                            publish(DeviceConnectionState.CONNECTING, token = null, issue = issueFor(failure, LifecycleStage.CONNECT))
+                            publish(claimedRevision) {
+                                copy(state = DeviceConnectionState.CONNECTING, token = null, issue = issueFor(failure, LifecycleStage.CONNECT))
+                            }
                             if (attempt < attempts) clock.sleep(ConnectionRetryPolicy.connectDelay(attempt, jitter()))
                         }
                     }
-                    recordConnectionFailure()
+                    if (deviceId != null) recordConnectionFailure()
                     throw checkNotNull(lastFailure)
                 }
             }
             pending = task
             pendingTarget = normalized
-            Submission(task, previous, claimedRevision, true, oldStop)
+            Submission(task, previous, claimedRevision, true, oldStop, switching && oldOwners.isNotEmpty())
         }
         val work = submission.work
         try {
@@ -370,13 +394,19 @@ class ConnectionManager(
                 }
             }
             catch (cleanup: Exception) { if (cleanup !== primary) primary.addSuppressed(cleanup) }
-            synchronized(lock) {
+            val lost = synchronized(lock) {
                 // A late reporter failure cannot invalidate a successfully completed shared attempt.
                 if (ownsSubmissionLocked(submission) && submission.work.isCancelled && active == null && retained == null) {
                     val issue = if (primary is CancellationException) values.value.issue
                         else issueFor(primary, LifecycleStage.CONNECT)
                     publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, issue)
-                }
+                    submission.detachedLive
+                } else false
+            }
+            // Swift switchDevice catch: cleanupConnection, transport.disconnect, then onConnectionLost before rethrow.
+            if (lost) {
+                try { observer.onConnectionLost() }
+                catch (failure: Exception) { if (failure !== primary) primary.addSuppressed(failure) }
             }
         }
     }
@@ -470,20 +500,21 @@ class ConnectionManager(
         val radioId = prior?.radioId ?: RadioId(DeviceIdentity.deriveUUID(info.publicKey))
         val token = SessionToken(processEpoch, Generation(owner.number), radioId)
         synchronized(lock) { requireCurrent(owner); owner.token = token }
-        // Native firmware older than auto-add configuration reports a typed DeviceError, not an empty connection.
-        val autoAdd = try { session.getAutoAddConfig() }
-        catch (failure: MeshCoreException.DeviceError) {
-            reporter.report(RuntimeDiagnostic.Failure("getAutoAddConfig.unsupported", failure))
-            com.meshcoreone.android.core.protocol.model.AutoAddConfig(0u)
-        }
+        // Swift: `(try? autoAddConfigResult) ?? AutoAddConfig(bitmask: 0)`. Older firmware reports a typed
+        // DeviceError; any other failure is likewise non-fatal, but reported rather than silently defaulted (A-04).
+        val autoAdd = bestEffort(
+            { if (it is MeshCoreException.DeviceError) "getAutoAddConfig.unsupported" else "getAutoAddConfig" },
+            com.meshcoreone.android.core.protocol.model.AutoAddConfig(0u),
+        ) { session.getAutoAddConfig() }
         requireCurrent(owner)
         val methods = (owner.target as? ConnectionTarget.WiFi)?.let {
             listOf(ConnectionMethod.WiFi(it.host, it.port))
         } ?: emptyList()
         val device = DeviceDTO.fromConnection(deviceId, radioId, info, capabilities, autoAdd, prior, methods, clock.instant)
-        synchronized(lock) { requireCurrent(owner); owner.device = device }
         val ownership = FactoryOwnership(token)
-        owner.ownership = ownership
+        // Publish the ownership under the same lock closeGeneration takes: either teardown already ended this
+        // generation (requireCurrent throws before the factory allocates anything) or it sees and closes it.
+        synchronized(lock) { requireCurrent(owner); owner.device = device; owner.ownership = ownership }
         val services = serviceFactory.create(RuntimeServiceInputs(
             SessionInputs(token, session, this, owner.scope), device,
             RuntimeServiceCallbacks(
@@ -501,16 +532,21 @@ class ConnectionManager(
         devices.saveDevice(device)
         requireCurrent(owner)
         if (byKey != null && byKey.id != deviceId) {
-            devices.deleteDevice(byKey.id)
+            // Swift: `try? deleteDevice` for the orphaned backup-import row.
+            bestEffort({ "deleteOrphanDevice" }, Unit) { devices.deleteDevice(byKey.id) }
             requireCurrent(owner)
         }
-        maintenance.warmUp()
+        // Swift logs and continues: warmUp's hygiene purges are best-effort.
+        bestEffort({ "maintenance.warmUp" }, Unit) { maintenance.warmUp() }
         requireCurrent(owner)
         maintenance.initializeDevicePreferences(device)
         requireCurrent(owner)
         services.hydrate()
         requireCurrent(owner)
-        val ranges = if (capabilities.clientRepeat) session.getRepeatFreq().snapshot() else SnapshotList.empty()
+        // Swift: `(try? session.getRepeatFreq()) ?? []`.
+        val ranges = if (capabilities.clientRepeat) {
+            bestEffort({ "getRepeatFreq" }, SnapshotList.empty()) { session.getRepeatFreq().snapshot() }
+        } else SnapshotList.empty()
         requireCurrent(owner)
         synchronized(lock) {
             requireCurrent(owner)
@@ -627,10 +663,14 @@ class ConnectionManager(
         stopWiFiReconnection()
         stopHeartbeat()
         cleanup.start()
+        // Swift persists the explicit-disconnect intent before teardown. Writing it only after teardown let a
+        // process death mid-teardown auto-reconnect on next launch. The write runs beside teardown in the
+        // cleanup scope, so caller cancellation cannot skip it, and a storage failure still surfaces afterwards.
+        val intentWrite = if (reason.clearsIntent) cleanupScope.async {
+            lastConnection.persistIntent(ConnectionIntent.UserDisconnected) { synchronized(lock) { revision == expectedRevision } }
+        } else null
         val report = withContext(NonCancellable) { cleanup.await() }
-        if (reason.clearsIntent) lastConnection.persistIntent(ConnectionIntent.UserDisconnected) {
-            synchronized(lock) { revision == expectedRevision }
-        }
+        intentWrite?.await()
         lastConnection.persistDisconnectDiagnostic(
             "source=disconnect(reason), reason=${reason.rawValue}, transport=${transportName(before)}, " +
                 "initialState=${before.state.name.lowercase()}, finalState=disconnected, intent=${intentSummary()}",
@@ -639,9 +679,9 @@ class ConnectionManager(
         return report
     }
 
-    override fun setConnectionState(state: DeviceConnectionState) = publish(
-        state, token = if (state == DeviceConnectionState.DISCONNECTED) null else snapshot.value.token,
-    )
+    override fun setConnectionState(state: DeviceConnectionState) {
+        publish { copy(state = state, token = if (state == DeviceConnectionState.DISCONNECTED) null else token) }
+    }
     override fun clearConnectedDevice() { synchronized(lock) { deviceValue = null; repeatRanges = SnapshotList.empty() } }
     override suspend fun notifyAutoReconnectStarted() = observer.onAutoReconnectStarted()
     override suspend fun notifyConnectionLost() {
@@ -779,7 +819,7 @@ class ConnectionManager(
         if (!wantsCurrent(expectedRevision)) return
         val deviceId = last.deviceId ?: return
         if (activeReconnectDeviceId == deviceId) return
-        val target = platform.targetForDevice(deviceId) ?: throw ConnectionError.DeviceNotFound()
+        val target = platform.targetForDevice(deviceId) ?: return reportHealthReconnectFailure(ConnectionError.DeviceNotFound())
         if (!wantsCurrent(expectedRevision)) return
         val state = platform.state(target)
         if (!wantsCurrent(expectedRevision)) return
@@ -811,8 +851,14 @@ class ConnectionManager(
         if (!wantsCurrent(expectedRevision)) return
         if (tryAdoptOrReject(target, false, health = true)) return
         if (!wantsCurrent(expectedRevision)) return
-        connect(target)
+        // Swift attemptOpportunisticReconnect logs and returns; connect already surfaced auth failures.
+        try { connect(target) }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { reportHealthReconnectFailure(failure) }
     }
+
+    private fun reportHealthReconnectFailure(failure: Exception) =
+        reporter.report(RuntimeDiagnostic.Failure("health.reconnect", failure))
 
     suspend fun checkWiFiConnectionHealth() {
         if (synchronized(lock) { wifiReconnect?.isActive == true } || currentTransportType() == TransportType.BLUETOOTH) return
@@ -826,12 +872,20 @@ class ConnectionManager(
         if (connectionState == DeviceConnectionState.DISCONNECTED && connectionIntent.wantsConnection) {
             val id = lastConnection.read().deviceId ?: return
             if (!wantsCurrent(expectedRevision)) return
-            val device = devices.fetchDevice(id) ?: return
+            // Swift: `try? fetchDevice`, then a do/catch that logs a failed foreground reconnect and returns.
+            val device = try { devices.fetchDevice(id) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: Exception) { reportWiFiHealthReconnectFailure(failure); return } ?: return
             if (!wantsCurrent(expectedRevision)) return
             val wifi = device.connectionMethods.filterIsInstance<ConnectionMethod.WiFi>().firstOrNull() ?: return
-            connect(ConnectionTarget.WiFi(wifi.host, wifi.port))
+            try { connect(ConnectionTarget.WiFi(wifi.host, wifi.port)) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: Exception) { reportWiFiHealthReconnectFailure(failure) }
         }
     }
+
+    private fun reportWiFiHealthReconnectFailure(failure: Exception) =
+        reporter.report(RuntimeDiagnostic.Failure("health.wifiReconnect", failure))
 
     suspend fun appDidEnterBackground() {
         synchronized(lock) { foreground = false }
@@ -862,7 +916,8 @@ class ConnectionManager(
 
     suspend fun switchDevice(target: ConnectionTarget) {
         synchronized(lock) { cleanSync = null; attemptedSync = null }
-        connect(target, forceFullSync = true, forceReconnect = false)
+        // The owned submission reports connection loss once, after its captured generation is torn down.
+        connectAttempt(target, forceFullSync = true, forceReconnect = false)
         if (connectionState.isOperational) resetPreserveBudgetAfterDeviceSwitch()
     }
 
@@ -920,7 +975,7 @@ class ConnectionManager(
             val precedingReport = preceding?.await()
             val currentReport = stopCurrent(true)
             val report = TeardownReport(((precedingReport?.issues ?: emptyList()) + currentReport.issues).snapshot())
-            publish(DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null)
+            publish { copy(state = DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null) }
             transitions.finish(cause)
             processJob.cancel()
             reporter.report(RuntimeDiagnostic.Teardown(report))
@@ -946,6 +1001,7 @@ class ConnectionManager(
 
     private suspend fun closeGeneration(
         owner: RadioGeneration, disconnectPhysical: Boolean, primary: Throwable? = null,
+        publishDisconnected: Boolean = true,
     ): TeardownReport {
         synchronized(lock) {
             if (primary != null && provenForeignAdmission(primary, owner)) {
@@ -958,7 +1014,9 @@ class ConnectionManager(
                 active = null
                 deviceValue = null
                 repeatRanges = SnapshotList.empty()
-                if (revision == owner.revision) publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                if (publishDisconnected && revision == owner.revision) {
+                    publishLocked(DeviceConnectionState.DISCONNECTED, ConnectionState.Disconnected, null, values.value.issue)
+                }
             }
         }
         val serviceWork = synchronized(owner.lock) {
@@ -1089,13 +1147,25 @@ class ConnectionManager(
         lastConnection.persistDisconnectDiagnostic("source=bleStateMachine.autoReconnectingHandler, error=$details, intent=${intentSummary()}")
     }
 
-    private suspend fun tryAdoptOrReject(target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false): Boolean {
+    private suspend fun tryAdoptOrReject(
+        target: ConnectionTarget, forceFullSync: Boolean, health: Boolean = false, breakGlass: Boolean = false,
+    ): Boolean {
         val expectedRevision = synchronized(lock) { revision }
         val deviceId = (target as? ConnectionTarget.Bluetooth)?.deviceId ?: return false
         val state = platform.state(target)
         if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded platform query")
         if (state.autoReconnecting) {
             if (state.connectedDeviceId != deviceId) return false
+            if (breakGlass) {
+                // Swift's second break-glass (connect(to:) → abandonStuckReconnect): the coordinator's cycle is already
+                // gone but the transport is still auto-reconnecting this device, so a user-forced connect from
+                // DISCONNECTED tears the pending connect down and falls through to a fresh attempt that can surface
+                // the real failure (e.g. an invalidated bond) instead of deferring to the same doomed wait again.
+                reconnectionCoordinator.clearReconnectingDevice()
+                closeGeneration(ensureRestorationRoute(target, expectedRevision), disconnectPhysical = true)
+                if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded break-glass")
+                return false
+            }
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
             ensureRestorationRoute(target, expectedRevision)
             reconnectionCoordinator.restartTimeout(deviceId)
@@ -1105,9 +1175,10 @@ class ConnectionManager(
         val ours = lastConnection.read().deviceId == deviceId ||
             synchronized(lock) { pairing } || platform.hasSystemPairingRegistry && platform.isRegistered(deviceId)
         if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded system-link query")
+        var route: RadioGeneration? = null
         if (ours && state.phase == "idle") {
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
-            ensureRestorationRoute(target, expectedRevision)
+            route = ensureRestorationRoute(target, expectedRevision)
             reconnectionCoordinator.handleEnteringAutoReconnect(deviceId)
             if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded adoption preparation")
             val adopted = platform.adoptSystemLink(target)
@@ -1118,7 +1189,15 @@ class ConnectionManager(
             }
 
             reconnectionCoordinator.clearReconnectingDevice()
-            publish(DeviceConnectionState.DISCONNECTED, token = null)
+            publish { copy(state = DeviceConnectionState.DISCONNECTED, token = null) }
+        }
+        // Swift throws deviceConnectedToOtherApp only for a link that is not ours; an owned link
+        // that could not be adopted proceeds to a normal connect. The health check keeps its own rule.
+        if (ours && !health) {
+            // Release the adoption route (link, callbacks, physical claim) before the normal attempt builds its own.
+            route?.let { closeGeneration(it, disconnectPhysical = true) }
+            if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded owned-link fallthrough")
+            return false
         }
         lastConnection.persistDisconnectDiagnostic("source=checkBLEConnectionHealth.otherAppConnected, intent=${intentSummary()}")
         if (health) { if (!isReconnectionWatchdogRunning) startReconnectionWatchdog(); return true }
@@ -1146,6 +1225,9 @@ class ConnectionManager(
                     if (!shouldDeferOpportunisticReconnect && !isTransportAutoReconnecting()) checkBLEConnectionHealth()
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (failure: Exception) { reporter.report(RuntimeDiagnostic.Failure("watchdog", failure)) }
+                // A connect started from this loop stops the watchdog without cancelling its own caller;
+                // once superseded, finish here instead of looping on untracked.
+                if (synchronized(lock) { watchdogGeneration != claimed }) return@launch
                 if (!connectionIntent.wantsConnection || connectionState != DeviceConnectionState.DISCONNECTED) return@launch
                 attempt = minOf(attempt + 1, 3)
             }
@@ -1178,7 +1260,7 @@ class ConnectionManager(
                     catch (failure: Exception) { reporter.report(RuntimeDiagnostic.Failure("wifi.reconnect.$attempt", failure)) }
                     clock.sleep(ConnectionRetryPolicy.wifiDelay(attempt++))
                 }
-                publish(DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null)
+                publish { copy(state = DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null) }
             }.also { wifiReconnect = it }
         }
         task.invokeOnCompletion { synchronized(lock) { if (wifiReconnect === task) wifiReconnect = null } }
@@ -1220,6 +1302,20 @@ class ConnectionManager(
     private fun surfaceAuthenticationFailure(id: UUID) {
         val fire = synchronized(lock) { if (authFailureDevice == id) false else { authFailureDevice = id; true } }
         if (fire) observer.onAuthenticationFailure(id)
+    }
+
+    /** Clears the auth-failure latch so the next failure episode for the same device re-presents recovery. */
+    fun clearSurfacedAuthenticationFailure() { synchronized(lock) { authFailureDevice = null } }
+
+    /** Swift updateDevice(with:) after a device edit, limited to the current generation's radio. */
+    fun replaceConnectedDevice(device: DeviceDTO) {
+        synchronized(lock) {
+            val owner = active ?: return
+            val current = deviceValue ?: return
+            if (!isCurrent(owner) || current.id != device.id || current.radioId != device.radioId) return
+            deviceValue = device
+            owner.device = device
+        }
     }
 
     private fun dispatch(owner: RadioGeneration, operation: String, action: suspend () -> Unit) {
@@ -1267,12 +1363,22 @@ class ConnectionManager(
     }
     private fun transportName(value: ConnectionSnapshot): String =
         value.blePhase?.let { "bluetooth" } ?: currentTransportType()?.name?.lowercase() ?: "none"
+    /**
+     * Publishes [change] applied to the snapshot that is current under [lock], so fields the caller
+     * leaves alone cannot be captured before a racing publication and written back stale.
+     * With [expectedRevision], a superseded attempt publishes nothing and returns false.
+     */
     private fun publish(
-        state: DeviceConnectionState = values.value.state,
-        transport: ConnectionState = values.value.transport,
-        token: SessionToken? = values.value.token,
-        issue: ConnectionIssue? = values.value.issue,
-    ) = synchronized(lock) { publishLocked(state, transport, token, issue) }
+        expectedRevision: Long? = null,
+        change: ConnectionSnapshot.() -> ConnectionSnapshot,
+    ): Boolean = synchronized(lock) {
+        if (expectedRevision != null && (closed || revision != expectedRevision)) return@synchronized false
+        val next = values.value.change()
+        publishLocked(next.state, next.transport, next.token, next.issue)
+        true
+    }
+    private fun ConnectionSnapshot.connectingSnapshot(): ConnectionSnapshot =
+        copy(state = DeviceConnectionState.CONNECTING, transport = ConnectionState.Connecting, token = null, issue = null)
     private fun publishFor(
         owner: RadioGeneration,
         state: DeviceConnectionState,
@@ -1303,6 +1409,14 @@ class ConnectionManager(
         values.value = next
         transitions.yield(next)
     }
+    /** Source `try?` paths: cancellation propagates; any other failure is reported, then [fallback] is used. */
+    private suspend fun <T> bestEffort(operation: (Exception) -> String, fallback: T, block: suspend () -> T): T =
+        try { block() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) {
+            reporter.report(RuntimeDiagnostic.Failure(operation(failure), failure))
+            fallback
+        }
     private fun issueFor(failure: Throwable, stage: LifecycleStage): ConnectionIssue = when (failure) {
         is MeshCoreException -> ConnectionIssue.Protocol(failure)
         is PersistenceStoreException -> ConnectionIssue.Storage(failure)
@@ -1310,7 +1424,7 @@ class ConnectionManager(
     }
     private fun reportIssue(failure: Throwable, stage: LifecycleStage) {
         reporter.report(RuntimeDiagnostic.Failure(stage.name, failure))
-        publish(issue = issueFor(failure, stage))
+        publish { copy(issue = issueFor(failure, stage)) }
     }
     private fun staleIdentity(token: SessionToken): RadioId? {
         reporter.report(RuntimeDiagnostic.StaleCallback("identity", token.generation.value))

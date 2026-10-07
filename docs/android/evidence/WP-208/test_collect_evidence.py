@@ -100,13 +100,14 @@ class EvidenceReaderTest(unittest.TestCase):
 
     def test_actual_data_hook_uses_correct_reader_flags_and_forwarded_invocation_only(self):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
+        messaging = text.split("// AndroidOnly: WP-208", 1)[1].split("val deviceSettingsReader", 1)[0]
         self.assertIn('import java.io.File', text)
         self.assertIn('providers.gradleProperty("meshCliInvocationFile")', text)
         self.assertIn('File(actual.parentFile, "wp208-native")', text)
         self.assertIn('add("--capture-only")', text)
         self.assertIn('"--output"', text)
         self.assertIn('"--invocation"', text)
-        self.assertNotIn('--invocation-file', text)
+        self.assertNotIn('--invocation-file', messaging)
         self.assertNotIn('GITHUB_RUN_ID', text)
         self.assertNotIn('System.getenv', text)
 
@@ -172,7 +173,10 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertIn('dependsOn(verifyBackupTests)', text)
         self.assertEqual(1, text.count('testImplementation(project(":core:services"))'))
         self.assertNotIn('implementation(project(":core:services"))\n', text.replace('testImplementation', 'TEST_EDGE'))
-        self.assertNotIn('verifyDeviceSettingsTests', text)
+        device = READER.git(READER.ROOT, "cat-file", "blob",
+                            "372fbc5866305e045025472ba555e7941873000f:android/core/data/build.gradle.kts")
+        self.assertEqual(device.split("val deviceSettingsReader", 1)[1].strip(),
+                         text.split("val deviceSettingsReader", 1)[1].strip())
 
     def test_two_file_bootstrap_and_local_data_lock_are_exact_frozen_producers(self):
         receipt = READER.load_json(Path(__file__).with_name("services-bootstrap-carry.json"))

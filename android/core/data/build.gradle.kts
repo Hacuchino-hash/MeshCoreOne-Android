@@ -223,3 +223,46 @@ rootProject.project(":core:services").tasks.withType<Test>().configureEach {
 }
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }
 tasks.named("check") { dependsOn(verifyMessagingTests, verifyMessagingEvidenceReaders) }
+
+val deviceSettingsReader = repository.resolve("docs").resolve("android").resolve("evidence")
+    .resolve("WP-211").resolve("collect_evidence.py")
+val deviceSettingsInvocation = providers.gradleProperty("meshCliInvocationFile")
+val deviceSettingsEvidenceRoot = providers.gradleProperty("wp211EvidenceDirectory").orElse(
+    deviceSettingsInvocation.map { File(it).parentFile.resolve("wp211-native").absolutePath },
+).orElse(repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-211")
+    .resolve("retained").absolutePath)
+val deviceSettingsAttempt = System.currentTimeMillis().toString()
+
+val retainDeviceSettingsRoomEvidence by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain verbatim service/Room reports and immutable inputs after either actual runner succeeds or fails."
+    mustRunAfter(":core:services:test", "testDebugUnitTest")
+    workingDir(repository)
+    commandLine(buildList {
+        addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--retain-only", "--output",
+            File(deviceSettingsEvidenceRoot.get()).resolve("room-completion-$deviceSettingsAttempt").absolutePath))
+        deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
+    })
+}
+
+tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest") finalizedBy(retainDeviceSettingsRoomEvidence)
+}
+project(":core:services").tasks.withType<Test>().configureEach {
+    if (name == "test") finalizedBy(retainDeviceSettingsRoomEvidence)
+}
+
+val verifyDeviceSettingsTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require all WP-211 original families, expanded rows and complete real service/Room JUnit."
+    dependsOn(":core:services:test", "testDebugUnitTest", retainDeviceSettingsRoomEvidence)
+    workingDir(repository)
+    commandLine(buildList {
+        addAll(listOf("python", "-B", deviceSettingsReader.absolutePath, "--output",
+            File(deviceSettingsEvidenceRoot.get()).resolve("full-$deviceSettingsAttempt").absolutePath))
+        deviceSettingsInvocation.orNull?.let { addAll(listOf("--invocation-file", it)) }
+    })
+}
+
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyDeviceSettingsTests) }
+tasks.named("check") { dependsOn(verifyDeviceSettingsTests) }

@@ -143,6 +143,25 @@ runner behavior stays unchanged. Its installed copy is refreshed mechanically,
 not bypassed. Forty-five reader/forwarding assertions cover the amendment;
 the complete exact-head official warm cycle must still pass before publishing.
 
+Exact commit `254ad6e3` subsequently passed all seven official warm local stages
+(python/preflight/verify/standalone/assemble/lint/inspect), with210/210 owning JVM,
+397/397 full data/all28 Room and all285 exact inputs independently replayed.
+The enabled visible pre-push hook repeated the complete cycle before its ordinary
+push. That exact-head evidence remains historical to254.
+
+GitHub withheld new PR checks because current main had two build-file merge
+conflicts. Integration of approved main `372fbc5866305e045025472ba555e7941873000f`
+is mechanical: preserve both complete WP-208 and incumbent WP-211 data hooks,
+and retain the **exact unchanged** frozen services build `c4f2ab08`, root
+services lock `60657033`, neutral faults `d6f96917` and data-local lock `af409126`.
+Main's services dependency/resolver block is already the same producer; only
+its absence of the frozen diagnostic block caused the conflict. No producer
+business code, dependency version or another PR branch is changed.
+The reader asserts that the appended WP-211 hook is identical to its exact main
+Git blob, alongside every original messaging/Room/freeze guard.
+The integrated commit requires a new complete local cycle and fresh hosted
+proof; prior254 results cannot unlock its publishing or merge gates.
+
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
 verified before the first edit. The frozen catalog contains 128 original

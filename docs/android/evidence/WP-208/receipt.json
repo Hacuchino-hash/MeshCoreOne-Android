@@ -69,6 +69,15 @@
       "path": "tools/android-port/local/fast.py",
       "producer_baseline": "1cbf556d4d396a61f80c7f0e844af8dc2fed1cb3",
       "scope": "Only WP-208 explicit local evidence-directory and actual snapshot HEAD verify options, plus mechanical installed-copy refresh. Preserve shared invocation for other consumers; no hook bypass, budget, source, hosted or human-gate change."
+    },
+    "current_main_integration": {
+      "main_sha": "372fbc5866305e045025472ba555e7941873000f",
+      "scope": "Mechanical current-main conflict recovery in the existing PR43 branch; no other PR branch or producer business behavior authored.",
+      "data_hook": "Both complete WP208 and already-merged WP211 hook blocks retained; WP211 block compared byte-for-byte after outer text normalization to its exact main Git blob.",
+      "services_build": "Conflict resolved by retaining exact frozen c4f2ab08fb8c2620ffb31f55d7f0519263d2a30c. Main contains the same dependency/scoped-resolver producer without diagnostic logging; no producer behavior or pin is lost.",
+      "root_services_lock": "Exact frozen6065703315850927e5836e9af4845b873735638a is also the merged main producer; no lock generation or edit.",
+      "neutral_faults": "Exact d6f96917b135f12d3fa62c0e5c456aac709257bc retained.",
+      "verification": "New exact integrated commit must pass the official full local cycle and enabled pre-push hook before publishing; prior254 proof remains historical."
     }
   }
 }
