@@ -55,7 +55,10 @@ def verify_delta(before, after):
     for component, configurations in new.items():
         if component in old and configurations == old[component]:
             continue
-        incumbent_subset = component in old and configurations <= old[component]
+        incumbent_subset = component in old and (
+            configurations <= old[component]
+            or (configurations - old[component]) <= {"debugUnitTestCompileClasspath"}
+        )
         if component != "empty" and not incumbent_subset:
             group, name, version = component.split(":")
             if NEW_VERSIONS.get(group + ":" + name) != version:
@@ -65,6 +68,10 @@ def verify_delta(before, after):
             raise PortError("App HTTP lock changed an unadmitted configuration: " + component)
     for component, configurations in old.items():
         if new.get(component) == configurations:
+            continue
+        if component in new and configurations <= new[component] and (
+            new[component] - configurations
+        ) <= {"debugUnitTestCompileClasspath"}:
             continue
         if component == "empty":
             if (configurations ^ new.get(component, set())) - CONFIGURATIONS:

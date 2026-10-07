@@ -100,7 +100,9 @@ class LinkPreviewRoomConsumerTest {
                 HttpFetchAttempt.Failed("fixture has no network")
         })
         val decoded = DecodedPreviewCache<String, String>()
-        val entry = CachedDecodedPreview(LinkPreviewDataDTO("https://example.com"), "hero", null, { _: String -> 4L }, { _: String -> 4L })
+        val entry = CachedDecodedPreview<String, String>(
+            LinkPreviewDataDTO("https://example.com"), "hero", null, { 4L }, { 4L },
+        )
         decoded.store(entry, "https://example.com")
         inline.markServesHtmlPage("https://example.com/landing.jpg")
         ContentMemoryPressure(RuntimeEnvironment.getApplication(), decoded, inline, preview).use {

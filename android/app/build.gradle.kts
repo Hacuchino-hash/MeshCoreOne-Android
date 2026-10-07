@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":platform:shortcuts"))
     implementation(project(":platform:translation"))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.room.runtime)
     implementation("com.squareup.okhttp3:okhttp:5.5.0")
 }
 
