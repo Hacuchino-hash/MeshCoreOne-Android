@@ -30,19 +30,21 @@ class EvidenceReaderTest(unittest.TestCase):
         self.write_suite("data", [("room", READER.ROOM_CLASS)] +
                          [(f"existing-{index}", "com.meshcoreone.android.core.data.ExistingTest") for index in range(368)])
         self.invocation = {
-            "stage": "verify", "host": "linux", "identity": {
+            "schema_version": 1, "stage": "verify", "host": "linux", "identity": {
                 "run_id": 123, "run_attempt": 1,
                 "binding": {"repository": "cbattlegear/MeshCoreOne-Android", "head_sha": "a" * 40,
-                            "base_sha": READER.BASE, "source_sha": READER.SOURCE, "manifest_sha256": READER.MANIFEST,
+                            "base_sha": READER.SPECIFICATION_BASE, "source_sha": READER.SOURCE, "manifest_sha256": READER.MANIFEST,
                             "policy_revision": READER.POLICY, "work_package": "WP-003"},
             },
         }
+        self.expected_identity = copy.deepcopy(self.invocation["identity"])
         self.save_invocation()
         self.snapshot = {
             "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-208", "head_sha": "a" * 40,
             "source_sha": READER.SOURCE, "manifest_sha256": READER.MANIFEST, "policy_revision": READER.POLICY,
             "capture_errors": [], "invocation": READER.record(self.output / "invocation.json", self.output),
-            "execution_expected": {"run_id": 123, "run_attempt": 1, "base_sha": READER.BASE, "head_sha": "a" * 40},
+            "execution_expected": {"run_id": 123, "run_attempt": 1,
+                                   "base_sha": READER.SPECIFICATION_BASE, "head_sha": "a" * 40},
             "input_blobs": [{"path": "synthetic/input.kt", "git_blob": "b" * 40, "expected_blob": "b" * 40, "matches_head": True}],
             "raw_junit": {},
         }
@@ -75,7 +77,7 @@ class EvidenceReaderTest(unittest.TestCase):
         (self.output / "raw-capture.json").write_text(json.dumps(self.snapshot), encoding="utf-8")
 
     def validate(self):
-        return READER.validate_capture(self.output, self.accounting)
+        return READER.validate_capture(self.output, self.accounting, expected_identity=self.expected_identity)
 
     def rejected(self):
         with self.assertRaises((ValueError, ET.ParseError)):
@@ -240,7 +242,7 @@ class EvidenceReaderTest(unittest.TestCase):
         changed = copy.deepcopy(self.accounting)
         changed["native_regressions"]["WP-208::missing"] = {}
         with self.assertRaises(ValueError):
-            READER.validate_capture(self.output, changed)
+            READER.validate_capture(self.output, changed, expected_identity=self.expected_identity)
 
     def test_other_services_owners_are_retained_but_not_source_credit(self):
         self.write_suite("services", [("Example::original()", READER.PACKAGE + "ExampleTest"),
@@ -297,6 +299,45 @@ class EvidenceReaderTest(unittest.TestCase):
     def test_different_valid_base_sha_is_not_the_authorized_base(self):
         self.invocation["identity"]["binding"]["base_sha"] = "d" * 40
         self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_authenticated_parent_and_current_main_bases_are_not_the_specification_baseline(self):
+        for base in ("46ee615b32689ea622c08ff83467fc0b310ebca1", "e3369a97bf3a1e19b801c8d69ca8abf171da432b"):
+            self.assertNotEqual(READER.SPECIFICATION_BASE, base)
+            self.expected_identity["binding"]["base_sha"] = base
+            self.invocation["identity"]["binding"]["base_sha"] = base
+            self.snapshot["execution_expected"]["base_sha"] = base
+            self.save_invocation(); self.save_snapshot()
+            self.assertEqual(base, self.validate()["execution_identity"]["binding"]["base_sha"])
+
+    def test_self_consistent_wrong_base_still_fails_the_independent_provider_expectation(self):
+        self.invocation["identity"]["binding"]["base_sha"] = "d" * 40
+        self.snapshot["execution_expected"]["base_sha"] = "d" * 40
+        self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_missing_independent_provider_expectation_is_not_hosted_acceptance(self):
+        with self.assertRaisesRegex(ValueError, "independently expected"):
+            READER.validate_capture(self.output, self.accounting)
+
+    def test_self_consistent_wrong_run_attempt_or_head_still_fails_provider_expectation(self):
+        original_invocation, original_snapshot = copy.deepcopy(self.invocation), copy.deepcopy(self.snapshot)
+        for field, value in (("run_id", 124), ("run_attempt", 2), ("head_sha", "c" * 40)):
+            self.invocation, self.snapshot = copy.deepcopy(original_invocation), copy.deepcopy(original_snapshot)
+            if field == "head_sha":
+                self.invocation["identity"]["binding"][field] = value
+                self.snapshot[field] = value
+            else:
+                self.invocation["identity"][field] = value
+            self.snapshot["execution_expected"][field] = value
+            self.save_invocation(); self.save_snapshot(); self.rejected()
+
+    def test_wrong_provider_source_policy_repository_or_work_package_is_rejected(self):
+        original = copy.deepcopy(self.expected_identity)
+        for field, value in (("source_sha", "d" * 40), ("manifest_sha256", "d" * 64),
+                             ("policy_revision", "d" * 64), ("repository", "other/repository"),
+                             ("work_package", "WP-208"), ("base_sha", "not-a-sha")):
+            self.expected_identity = copy.deepcopy(original)
+            self.expected_identity["binding"][field] = value
+            self.rejected()
 
     def test_different_positive_run_or_attempt_cannot_replace_the_captured_identity(self):
         for field, value in (("run_id", 124), ("run_attempt", 2)):
@@ -367,7 +408,7 @@ class EvidenceReaderTest(unittest.TestCase):
         self.assertEqual(READER.git(repo, "rev-parse", "HEAD:android/gradle/dependency-locks/core-services.lockfile"), captured_lock["git_blob"])
         self.assertEqual(READER.SOURCE, metadata["source_sha"])
         with self.assertRaises(ValueError):
-            READER.validate_capture(output, self.accounting)
+            READER.validate_capture(output, self.accounting, expected_identity=self.expected_identity)
 
 
 if __name__ == "__main__":

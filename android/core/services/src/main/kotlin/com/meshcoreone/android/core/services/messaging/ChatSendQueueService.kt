@@ -151,22 +151,31 @@ class ChatSendQueueService(
             hydration ?: ownership.scope.async(start = CoroutineStart.LAZY) {
                 val rows = dataStore.fetchPendingSends(token.radioId)
                 checkQueueLifetime("hydrateSendQueue.read")
+                var malformed: PersistenceStoreException? = null
                 for (row in rows) {
                     checkQueueLifetime("hydrateSendQueue.enqueue")
-                    if (row.radioId != token.radioId) throw PersistenceStoreException(PersistenceStoreError.InvalidData)
-                    when (row.kind) {
-                        PendingSendKind.DM -> {
-                            val envelope = row.directMessageEnvelope()
-                                ?: throw PersistenceStoreException(PersistenceStoreError.InvalidData)
-                            signalDMEnqueued(envelope)
+                    try {
+                        if (row.radioId != token.radioId) throw PersistenceStoreException(PersistenceStoreError.InvalidData)
+                        when (row.kind) {
+                            PendingSendKind.DM -> {
+                                val envelope = row.directMessageEnvelope()
+                                    ?: throw PersistenceStoreException(PersistenceStoreError.InvalidData)
+                                signalDMEnqueued(envelope)
+                            }
+                            PendingSendKind.CHANNEL -> {
+                                val envelope = row.channelMessageEnvelope()
+                                    ?: throw PersistenceStoreException(PersistenceStoreError.InvalidData)
+                                if (synchronized(lock) { queued.add(envelope.messageID) }) channelQueue.enqueue(envelope)
+                            }
                         }
-                        PendingSendKind.CHANNEL -> {
-                            val envelope = row.channelMessageEnvelope()
-                                ?: throw PersistenceStoreException(PersistenceStoreError.InvalidData)
-                            if (synchronized(lock) { queued.add(envelope.messageID) }) channelQueue.enqueue(envelope)
-                        }
+                        recovered("hydrate.${row.id}")
+                    } catch (failure: PersistenceStoreException) {
+                        record("hydrate.${row.id}", failure)
+                        val first = malformed
+                        if (first == null) malformed = failure else first.addSuppressed(failure)
                     }
                 }
+                malformed?.let { throw it }
                 synchronized(lock) { hydrated = true }
                 recovered("hydrate")
             }.also { hydration = it; it.start() }
@@ -193,10 +202,16 @@ class ChatSendQueueService(
         ownership.checkLifetime("park.woke")
         throw CancellationException("Parked send envelope")
     }
-    private suspend fun remapPending(id: UUID) {
-        ownership.check("remapPending")
+    private suspend fun remapPending(id: UUID) = withContext(NonCancellable) {
+        ownership.checkPersistenceCompletion("remapPending")
         dataStore.updateMessageStatusUnlessDelivered(key(id), MessageStatus.PENDING)
-        ownership.check("remapPending.saved")
+        ownership.checkPersistenceCompletion("remapPending.saved")
+    }
+    private suspend fun parkBeforeSend(id: UUID, failure: PersistenceStoreException): Nothing {
+        try { remapPending(id) }
+        catch (storage: PersistenceStoreException) { record("remap.$id", storage) }
+        catch (stale: MessageServiceException) { record("remap.$id", stale) }
+        park(id, failure)
     }
 
     private suspend fun sendDM(envelope: DirectMessageEnvelope) {
@@ -215,7 +230,7 @@ class ChatSendQueueService(
         }
         val attempt = try {
             preflightAndBump(dataStore, key(id)).also { ownership.check("dm.bump") }
-        } catch (failure: PersistenceStoreException) { park(id, failure) }
+        } catch (failure: PersistenceStoreException) { parkBeforeSend(id, failure) }
         if (attempt == null) { complete(id); return }
         synchronized(lock) { directClaimIDs[id] = attempt.pendingID }
         try {
@@ -249,7 +264,7 @@ class ChatSendQueueService(
         awaitReady()
         val attempt = try {
             preflightAndBump(dataStore, key(id)).also { ownership.check("channel.bump") }
-        } catch (failure: PersistenceStoreException) { park(id, failure) }
+        } catch (failure: PersistenceStoreException) { parkBeforeSend(id, failure) }
         if (attempt == null) { complete(id); return }
         try {
             val stamp = synchronized(lock) { completedChannels[id] } ?: run {
@@ -367,6 +382,14 @@ class ChatSendQueueService(
             synchronized(lock) { subscription?.close(); subscription = null; connectionTask }?.cancelAndJoin()
             dmQueue.shutdown()?.let { record("dmQueueCallback", it) }
             channelQueue.shutdown()?.let { record("channelQueueCallback", it) }
+            for (id in synchronized(lock) { queued.toList() }) {
+                try {
+                    ownership.checkPersistenceCompletion("shutdownPending")
+                    val row = dataStore.fetchMessage(key(id))
+                    if (row?.status == MessageStatus.RETRYING || row?.status == MessageStatus.FAILED) remapPending(id)
+                } catch (storage: PersistenceStoreException) { record("shutdownPending.$id", storage) }
+                catch (stale: MessageServiceException) { record("shutdownPending.$id", stale) }
+            }
             ownership.job.cancelAndJoin()
             persistenceJob.cancelAndJoin()
             val report = TeardownReport(synchronized(lock) {

@@ -1,9 +1,79 @@
 # WP-208 messaging evidence
 
 **Bounded messaging candidate, not a gate approval or a completion receipt.**
-The exact manual authorization and immutable initial identity are in
-[`receipt.json`](receipt.json). Branch rename is `NoTool`; the app-managed
-branch remains `cbattlegear-supreme-guacamole`.
+The manual authorization, original identity and authoritative recovery lease
+amendment are in [`receipt.json`](receipt.json). The active owner is native
+`4d26a399-73ac-402c-95a9-ae7d0107f38b` / app
+`76825a59-b084-49b6-a09f-9614f3e607c7`, in the materialized
+`pr-43-cbattlegear-supreme-guacamole` worktree. The app-managed local branch
+`pr/43/cbattlegear-supreme-guacamole` is not renamed; only the existing remote
+`cbattlegear-supreme-guacamole` / PR43 may receive non-destructive pushes.
+The original owner is stopped and has no write permission.
+
+## Authorized PR43 recovery
+
+The read-only audit read every current PR43 discussion/review and both repair
+proposals, PR45 at `f2d965f2b88afa6d0086d3d10fee7f19ea1a0c72` and PR47 at
+`78966500542c4f4e5a961b177f2c2d7830f2de5a`. Their red Linux logs stop at the
+owning evidence reader's `Stale/malformed run binding`, not a native PASS.
+No red proposal branch was merged. Bounded source changes and strengthened
+regressions are integrated into this one recovery owner/PR.
+
+Approved main `e3369a97bf3a1e19b801c8d69ca8abf171da432b` is carried by merge
+`d26f848a438408c50624db463cace14811f30ce0`. Its only Swift differences are the
+two already approved test-only amendments; original behavior/oracle pin,
+manifest, policy and all 34 primary WP-208 inputs stay unchanged.
+Services build `c4f2ab08fb8c2620ffb31f55d7f0519263d2a30c`, root services lock
+`6065703315850927e5836e9af4845b873735638a`, data-local lock `af409126` and
+neutral errors `d6f96917b135f12d3fa62c0e5c456aac709257bc` remain frozen.
+
+The specification/repository-dedup baseline remains `7e2835bad2c03dfb5a088063655f9fc4dbafd00f`.
+It is not the executor's base. The actual original controller-forwarded
+invocation supplies the independent expected identity to the CLI reader;
+offline artifact replay must explicitly supply an identity independently
+authenticated from the provider/run. The retained invocation and captured
+run/attempt/base/head must equal that complete expectation, including source,
+manifest, policy and repository. A self-consistent but wrong retained base,
+head, run or attempt is rejected. No worker `--base` override, guessed identity,
+credential allowlist extension or shared controller/workflow write is added.
+The root provider aggregator still independently validates the exact run and
+complete compiled inputs/report bytes.
+
+Current authored accounting is **128 original families / 131 expanded cases,
+79 native cases (all incumbent 53 retained) and 28 Room consumers (all
+incumbent 18 retained)**: 210 expected messaging JVM cases and 397 expected
+full-data cases. These are declarations, not native execution credit.
+The same documented source/reader commands pass all 40 Python assertions;
+missing/malformed/zero/failed/skipped/stale/changed evidence still fails.
+The native and Room retention floors are raised to the already verified
+incumbent 53/18; the existing full-data floor is not reduced.
+
+The existing cancellation-native identity keeps its original PENDING assertion
+and no-further-wire checks for the durable queue, adding a real retained-envelope
+assertion. A separate inline cancellation case asserts the frozen Swift's
+FAILED status when no retry row exists. No original case, parameter, expected
+value or source golden is removed or weakened.
+
+The new real-session and actual Room tests cover terminal deleted-message ACKs,
+surviving monitor/periodic expiry, per-entry storage failure/recovery,
+success/failure polling catch-up, newest pause, successor rejection, overlapping
+drain requests, inline/queued disconnect and committed-save/accepted-bookkeeping
+boundaries, malformed-row isolation, preflight status and retained inbound
+delivery without head-of-line blocking. Format assertions use the pinned Swift
+contract and the reviewer's reported Swift-confirmed U+200B/colon-grapheme
+vectors; this owner has not executed a new Swift oracle.
+
+Historical `46ee615b32689ea622c08ff83467fc0b310ebca1` proof remains exactly
+184 JVM / 18 Room / 387 data at its original base/run. It is not relabeled as
+this combined recovery. Fresh exact-head Linux root and independent compatibility
+evidence are mandatory before a verified handoff. No local native run occurs:
+the declared preflight still fails on missing `ANDROID_CI_STATE`; no Windows
+Gradle, provisioning, installation, self-merge or full-graph acceptance is used.
+
+The review's informational `RepositoryReactionPolicy.isMcoV1` scalar/grapheme
+notes concern a non-dedup repository function outside this lease. They are a
+precise WP-202/216 producer follow-up, not permission to alter that function or
+the frozen non-dedup baseline here.
 
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
@@ -145,7 +215,7 @@ messaging acceptance credit.
 The success command is the same reader without `--capture-only`. It requires
 the Linux verify stage, a real run/attempt, exact base/head/source/manifest/policy,
 all 131 expanded original identities, every declared native messaging regression,
-all declared actual Room consumers (original8 floor retained) and the full
+all declared actual Room consumers (incumbent18 retained) and the full
 data suite's existing369 floor.
 Zero/missing/malformed/skipped/failed/duplicate/stale/changed evidence fails.
 Other services owners' cases are retained and must pass, but are not WP-208 credit.
@@ -280,11 +350,10 @@ candidate carry, source-reference exception or a new shared build/data hook gran
 
 Actual default main has advanced to `7237727fe498e87261cc9b321051567a86279fef`.
 This worker has **not adopted its source-reference exceptions or source tree**.
-The evidence reader still requires the originally authorized exact base
-`7e2835bad2c03dfb5a088063655f9fc4dbafd00f`; if a subsequent real PR execution
-reports a different base, final acceptance fails until the coordinator supplies
-an exact trusted base/ancestry amendment. Native assertions may be executed and
-raw evidence retained without silently relabeling that binding as the old base.
+At the historical candidate, the evidence reader required the originally authorized exact base
+`7e2835bad2c03dfb5a088063655f9fc4dbafd00f`. The recovery amendment above separates
+that immutable baseline from the exact independently expected executor base.
+Historical assertions and raw evidence are never relabeled with a new binding.
 
 Room assertions use real native in-memory/file-backed SQLite on simulated SDK31.
 They cover fresh/recovered counters, cold store reopen, forgotten radios,

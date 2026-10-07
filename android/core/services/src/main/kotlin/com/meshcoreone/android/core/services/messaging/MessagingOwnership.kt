@@ -70,6 +70,14 @@ internal class MessagingOwnership(
         }
     }
 
+    fun checkPersistenceCompletion(operation: String) {
+        val current = signals.snapshot.value.token
+        if (current != null && current != token) {
+            reporter.report(MessagingDiagnostic.StaleResult(token, operation))
+            throw MessageServiceException(MessageServiceError.NotConnected)
+        }
+    }
+
     fun invalidate() { closing = true }
     fun failure(operation: String, cause: Throwable) {
         reporter.report(MessagingDiagnostic.Failure(token, operation, cause))

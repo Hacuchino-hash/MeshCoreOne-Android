@@ -4,10 +4,12 @@
   "work_package": "WP-208",
   "owner": "services-porter",
   "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
-  "native_session": "85e5b646-9f73-48d8-b1e1-9f1491402a49",
-  "app_session": "82439824-b1ff-40f5-a70f-9bbed92ae380",
+  "native_session": "4d26a399-73ac-402c-95a9-ae7d0107f38b",
+  "app_session": "76825a59-b084-49b6-a09f-9614f3e607c7",
+  "original_native_session": "85e5b646-9f73-48d8-b1e1-9f1491402a49",
+  "original_app_session": "82439824-b1ff-40f5-a70f-9bbed92ae380",
   "original_managed_branch": "cbattlegear-supreme-guacamole",
-  "current_managed_branch": "cbattlegear-supreme-guacamole",
+  "current_managed_branch": "pr/43/cbattlegear-supreme-guacamole",
   "rename": "NoTool; no raw branch rename",
   "initial_head": "7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
   "initial_parents": [
@@ -41,5 +43,26 @@
   "services_build_and_root_services_lock_owner": "WP-218",
   "data_build_and_module_lock_owner": "WP-211",
   "local_execution": "BLOCKED: documented preflight exit 2, missing ANDROID_CI_STATE; no JVM executed",
-  "scope": "Manual bounded WP-208 authorship receipt, not fleet activation, formal acceptance or merge authority"
+  "scope": "Manual bounded WP-208 authorship receipt, not fleet activation, formal acceptance or merge authority",
+  "recovery": {
+    "state": "ACTIVE",
+    "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+    "native_session": "4d26a399-73ac-402c-95a9-ae7d0107f38b",
+    "app_session": "76825a59-b084-49b6-a09f-9614f3e607c7",
+    "managed_branch": "pr/43/cbattlegear-supreme-guacamole",
+    "worktree": "C:\\Users\\camer\\source\\repos\\copilot-worktrees\\MeshCoreOne-Android\\pr-43-cbattlegear-supreme-guacamole",
+    "remote_head": "cbattlegear-supreme-guacamole",
+    "pull_request": 43,
+    "initial_head": "46ee615b32689ea622c08ff83467fc0b310ebca1",
+    "approved_main": "e3369a97bf3a1e19b801c8d69ca8abf171da432b",
+    "authority": "Direct coordinator lease transfer on 2026-10-07; original owner permission revoked and original worktree preserved.",
+    "local_execution": "BLOCKED: declared controller preflight returned exit 2 because ANDROID_CI_STATE is absent. No Windows Gradle, native local run, installation or provisioning is performed.",
+    "amendment": "All actual PR43 messaging/comment repairs, original/shared dedup delegation, Room regressions, owned evidence/reader/docs and bounded Data build/local-lock hooks.",
+    "frozen_paths": [
+      "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt",
+      "android/core/services/build.gradle.kts",
+      "android/gradle/dependency-locks/core-services.lockfile"
+    ],
+    "execution_binding": "The original specification/repository-dedup baseline stays 7e2835bad2c03dfb5a088063655f9fc4dbafd00f. Hosted acceptance compares against the complete independently supplied provider/controller identity, including its actual execution base."
+  }
 }

@@ -7,6 +7,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.meshcoreone.android.core.contracts.domain.*
 import com.meshcoreone.android.core.contracts.domain.errors.ChatSendQueueServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.MessagePollingException
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.MessageServiceException
 import com.meshcoreone.android.core.data.backup.backupEnvelope
 import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
 import com.meshcoreone.android.core.database.MeshCoreDatabase
@@ -15,6 +18,7 @@ import com.meshcoreone.android.core.protocol.bytes.ByteWriter
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.config.SessionConfiguration
 import com.meshcoreone.android.core.protocol.event.ConnectionState
+import com.meshcoreone.android.core.protocol.event.ContactMessage
 import com.meshcoreone.android.core.protocol.model.CommandCode
 import com.meshcoreone.android.core.protocol.model.ResponseCode
 import com.meshcoreone.android.core.protocol.session.MeshCoreSession
@@ -471,9 +475,200 @@ class MessagingRoomIntegrationTest {
         g.stop()
     }
 
-    private fun incomingContactPacket(text: String): Bytes =
+    @Test fun deletedAcceptedAckDoesNotPoisonActualRoomExpiryOrTheLiveMonitor() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(20); g.start(); g.signals.set(DeviceConnectionState.READY)
+        g.firmware.acknowledge = false; g.service.startEventMonitoring(); g.service.startAckExpiryChecking()
+        val deleted = g.service.sendDirectMessage("deleted accepted DM", contact)
+        val deletedAck = assertNotNull(g.firmware.lastAck)
+        val later = g.service.sendDirectMessage("later accepted DM", contact)
+        store.deleteMessage(EntityKey(radio, deleted.id)); g.firmware.pushAck(deletedAck); runCurrent()
+        assertNull(store.fetchMessage(EntityKey(radio, deleted.id))); assertEquals(1, g.service.pendingAckCount)
+        advanceTimeBy(35_001); runCurrent()
+        assertEquals(MessageStatus.FAILED, store.fetchMessage(EntityKey(radio, later.id))?.status)
+        assertEquals(0, g.service.pendingAckCount)
+        assertTrue(g.service.isAckExpiryCheckingActive); assertTrue(g.service.isEventMonitoringActive)
+        g.firmware.acknowledge = true
+        val next = g.service.sendDirectMessage("monitor still receives", contact); runCurrent()
+        assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, next.id))?.status)
+        assertEquals(3, g.firmware.sent().size); g.stop()
+    }
+
+    @Test fun actualRoomExpiryIsolatesOneStorageFailureAndCanRecoverItsRetainedEntry() = runTest(scheduler) {
+        seed(); val actual = store
+        var blockedID: UUID? = null
+        val cause = PersistenceStoreException(PersistenceStoreError.SaveFailed("one expiry"), IllegalStateException("deterministic"))
+        val faulty = object : PersistenceStoreProtocol by actual {
+            override suspend fun updateMessageStatusUnlessDelivered(key: EntityKey, status: MessageStatus): Boolean {
+                if (key.id == blockedID && status == MessageStatus.FAILED) throw cause
+                return actual.updateMessageStatusUnlessDelivered(key, status)
+            }
+        }
+        val g = RadioGeneration(21, faulty); g.start(); g.signals.set(DeviceConnectionState.READY); g.firmware.acknowledge = false
+        val first = g.service.sendDirectMessage("first expiry", contact)
+        val later = g.service.sendDirectMessage("later expiry", contact); blockedID = first.id
+        wallOffsetMillis = 60_000; g.service.checkExpiredAcks()
+        assertEquals(MessageStatus.SENT, store.fetchMessage(EntityKey(radio, first.id))?.status)
+        assertEquals(MessageStatus.FAILED, store.fetchMessage(EntityKey(radio, later.id))?.status)
+        assertEquals(1, g.service.pendingAckCount)
+        blockedID = null; g.service.checkExpiredAcks()
+        assertEquals(MessageStatus.FAILED, store.fetchMessage(EntityKey(radio, first.id))?.status)
+        assertEquals(0, g.service.pendingAckCount); assertTrue(g.service.close().isComplete); g.stop()
+    }
+
+    @Test fun realSessionPushAfterManualNoMoreIsDeliveredOnceIntoRoomWithLiveContext() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(22); g.start(); g.signals.set(DeviceConnectionState.READY)
+        val p = g.poller(); val saved = mutableListOf<UUID>()
+        p.setContactMessageHandler { wire, resolved, context ->
+            assertEquals(DeliveryContext.Live, context); saved += saveIncomingContact(wire, resolved).id
+        }
+        p.startAutoFetch(radio); runCurrent()
+        g.firmware.afterNoMore = {
+            g.firmware.incomingMessages += incomingContactPacket("late Room message")
+            g.firmware.pushPacket(Bytes.of(ResponseCode.MESSAGES_WAITING.rawValue.toInt()))
+        }
+        assertEquals(0L, p.pollAllMessages()); advanceUntilIdle()
+        assertEquals(1, saved.size)
+        assertEquals("late Room message", store.fetchMessage(EntityKey(radio, saved.single()))?.text)
+        assertEquals(1, store.fetchMessages(EntityKey(radio, contact.id)).size)
+        assertTrue(g.firmware.incomingMessages.isEmpty()); assertTrue(p.close().isComplete); g.stop()
+    }
+
+    @Test fun disconnectedInlineSendCommitsFailedInRoomButSettledAcceptedSendStaysSent() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(23); g.start(); g.signals.set(DeviceConnectionState.READY); g.firmware.acknowledge = false
+        val settled = g.service.sendDirectMessage("settled before disconnect", contact)
+        g.firmware.acceptanceGate = CompletableDeferred()
+        val sending = backgroundScope.async { g.service.sendDirectMessage("inline at disconnect", contact) }
+        runCurrent()
+        val inline = store.fetchMessages(EntityKey(radio, contact.id)).single { it.text == "inline at disconnect" }
+        g.signals.set(DeviceConnectionState.DISCONNECTED); withTimeout(2000) { g.service.close() }
+        assertFailsWith<CancellationException> { sending.await() }
+        assertEquals(MessageStatus.FAILED, store.fetchMessage(EntityKey(radio, inline.id))?.status)
+        assertEquals(MessageStatus.SENT, store.fetchMessage(EntityKey(radio, settled.id))?.status)
+        assertEquals(contact.id, store.fetchContact(EntityKey(radio, contact.id))?.id)
+        assertEquals(2, g.firmware.sent().size); g.stop()
+    }
+
+    @Test fun disconnectedQueuedRetryKeepsItsActualRoomEnvelopeAndClearsTheRetryingStatus() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(24); g.start(); g.signals.set(DeviceConnectionState.READY); g.firmware.acknowledge = false
+        val message = g.service.createPendingMessage("queued disconnect", contact)
+        val pending = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio).copy(sequence = 1)
+        store.upsertPendingSend(pending); g.queue.hydrate(); runCurrent(); advanceTimeBy(13); runCurrent()
+        assertEquals(MessageStatus.RETRYING, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        val stamp = store.fetchMessage(EntityKey(radio, message.id))?.timestamp
+        g.signals.set(DeviceConnectionState.DISCONNECTED); g.queue.shutdown()
+        assertEquals(MessageStatus.PENDING, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        assertEquals(stamp, store.fetchMessage(EntityKey(radio, message.id))?.timestamp)
+        assertEquals(pending.id, store.fetchPendingSends(radio).single().id)
+        assertEquals(1L, store.fetchPendingSends(radio).single().attemptCount)
+        advanceTimeBy(1000); runCurrent(); assertEquals(2, g.firmware.sent().size); g.stop()
+    }
+
+    @Test fun malformedRoomEnvelopeDoesNotStopValidLaterHydrationOrLoseItsRepairableRow() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(25); g.start(); g.signals.set(DeviceConnectionState.READY)
+        val malformed = g.service.createPendingMessage("malformed pending", contact)
+        val bad = PendingSendDTO.fromEnvelope(DirectMessageEnvelope(malformed.id, contact.id), radio).copy(sequence = 1)
+        store.upsertPendingSend(bad.copy(contactID = null))
+        val valid = g.service.createPendingMessage("valid later pending", contact)
+        store.upsertPendingSend(PendingSendDTO.fromEnvelope(DirectMessageEnvelope(valid.id, contact.id), radio).copy(sequence = 2))
+        assertFailsWith<ChatSendQueueServiceException> { g.queue.hydrate() }; runCurrent(); g.queue.awaitDrainCompletion()
+        assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, valid.id))?.status)
+        assertEquals(listOf(bad.id), store.fetchPendingSends(radio).map { it.id })
+        assertEquals(1, g.firmware.sent().size)
+        store.upsertPendingSend(bad); g.queue.hydrate(); runCurrent(); g.queue.awaitDrainCompletion()
+        assertEquals(MessageStatus.DELIVERED, store.fetchMessage(EntityKey(radio, malformed.id))?.status)
+        assertTrue(store.fetchPendingSends(radio).isEmpty()); assertEquals(2, g.firmware.sent().size)
+        assertTrue(g.queue.shutdown().isComplete); g.stop()
+    }
+
+    @Test fun preflightFaultRestoresActualFailedRoomRowToPendingWithoutAdvancingItsCounter() = runTest(scheduler) {
+        seed(); val actual = store
+        val cause = PersistenceStoreException(PersistenceStoreError.SaveFailed("preflight"), IllegalStateException("deterministic"))
+        val faulty = object : PersistenceStoreProtocol by actual {
+            override suspend fun incrementPendingSendAttemptCount(key: EntityKey): Long? = throw cause
+        }
+        val g = RadioGeneration(26, faulty); g.start(); g.signals.set(DeviceConnectionState.READY)
+        val message = g.service.createPendingMessage("preflight status", contact)
+        store.updateMessageStatus(EntityKey(radio, message.id), MessageStatus.FAILED)
+        store.upsertPendingSend(PendingSendDTO.fromEnvelope(DirectMessageEnvelope(message.id, contact.id), radio).copy(sequence = 1))
+        g.queue.hydrate(); runCurrent()
+        assertEquals(MessageStatus.PENDING, store.fetchMessage(EntityKey(radio, message.id))?.status)
+        assertEquals(0L, store.fetchPendingSends(radio).single().attemptCount)
+        assertTrue(g.firmware.sent().isEmpty())
+        assertTrue(g.queue.shutdown().issues.any { it.cause === cause }); g.stop()
+    }
+
+    @Test fun missingCLIConsumerDoesNotBlockLaterRoomPersistenceAndItsRecordCanBeRetried() = runTest(scheduler) {
+        seed(); val g = RadioGeneration(27); g.start(); g.signals.set(DeviceConnectionState.READY)
+        val p = g.poller(); val saved = mutableListOf<UUID>()
+        p.setContactMessageHandler { wire, resolved, _ -> saved += saveIncomingContact(wire, resolved).id }
+        g.firmware.incomingMessages += incomingContactPacket("unwired CLI", 1u)
+        g.firmware.incomingMessages += incomingContactPacket("plain persisted after CLI")
+        assertFailsWith<MessagePollingException> { p.pollAllMessages() }
+        assertEquals(1, saved.size); assertEquals(1, p.undeliveredCount)
+        assertEquals("plain persisted after CLI", store.fetchMessage(EntityKey(radio, saved.single()))?.text)
+        assertTrue(g.firmware.incomingMessages.isEmpty())
+        p.setCLIMessageHandler { wire, resolved -> saved += saveIncomingContact(wire, resolved).id }
+        assertEquals(0L, p.pollAllMessages()); assertEquals(2, saved.size)
+        assertEquals(2, store.fetchMessages(EntityKey(radio, contact.id)).size)
+        assertEquals(0, p.undeliveredCount); assertTrue(p.close().isComplete); g.stop()
+    }
+
+    @Test fun committedInlineRoomSaveAtDisconnectFailsBeforeTheWireAndPreservesTheProcessStore() = runTest(scheduler) {
+        seed(); val actual = store
+        val committed = CompletableDeferred<UUID>(); val release = CompletableDeferred<Unit>()
+        val blocked = object : PersistenceStoreProtocol by actual {
+            override suspend fun saveMessage(dto: MessageDTO) {
+                actual.saveMessage(dto); committed.complete(dto.id); release.await()
+            }
+        }
+        val g = RadioGeneration(28, blocked); g.start(); g.signals.set(DeviceConnectionState.READY)
+        val send = backgroundScope.async {
+            try { g.service.sendDirectMessage("committed at disconnect", contact); null }
+            catch (failure: MessageServiceException) { failure }
+        }
+        runCurrent(); val id = committed.await()
+        assertEquals(MessageStatus.PENDING, store.fetchMessage(EntityKey(radio, id))?.status)
+        g.signals.set(DeviceConnectionState.DISCONNECTED); release.complete(Unit)
+        assertEquals(MessageServiceError.NotConnected, assertNotNull(send.await()).error)
+        assertEquals(MessageStatus.FAILED, store.fetchMessage(EntityKey(radio, id))?.status)
+        assertTrue(g.firmware.sent().isEmpty())
+        assertEquals(contact.id, store.fetchContact(EntityKey(radio, contact.id))?.id); g.stop()
+    }
+
+    @Test fun acceptedRoomBookkeepingFinishesBeforeDisconnectTeardownWithoutInventingAnAck() = runTest(scheduler) {
+        seed(); val actual = store
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val blocked = object : PersistenceStoreProtocol by actual {
+            override suspend fun updateMessageAck(key: EntityKey, ackCode: UInt, status: MessageStatus, roundTripTime: UInt?) {
+                if (status == MessageStatus.SENT) { entered.complete(Unit); release.await() }
+                actual.updateMessageAck(key, ackCode, status, roundTripTime)
+            }
+        }
+        val g = RadioGeneration(29, blocked); g.start(); g.signals.set(DeviceConnectionState.READY); g.firmware.acknowledge = false
+        val send = backgroundScope.async { g.service.sendDirectMessage("accepted Room bookkeeping", contact) }
+        runCurrent(); assertTrue(entered.isCompleted)
+        val message = store.fetchMessages(EntityKey(radio, contact.id)).single()
+        g.signals.set(DeviceConnectionState.DISCONNECTED)
+        val closing = backgroundScope.async { g.service.close() }; runCurrent(); assertFalse(closing.isCompleted)
+        release.complete(Unit); closing.await()
+        assertFailsWith<CancellationException> { send.await() }
+        val saved = assertNotNull(store.fetchMessage(EntityKey(radio, message.id)))
+        assertEquals(MessageStatus.SENT, saved.status); assertNull(saved.roundTripTime)
+        assertEquals(1, g.firmware.sent().size); g.stop()
+    }
+
+    private suspend fun saveIncomingContact(wire: ContactMessage, resolved: ContactDTO?): MessageDTO {
+        assertEquals(contact.id, resolved?.id)
+        val message = MessageDTO(radioId = radio, contactID = contact.id, text = wire.text,
+            timestamp = wire.senderTimestamp.epochSecond.toUInt(), direction = MessageDirection.INCOMING,
+            status = MessageStatus.DELIVERED)
+        store.saveMessage(message)
+        return message
+    }
+
+    private fun incomingContactPacket(text: String, type: UByte = 0u): Bytes =
         ByteWriter().appendUInt8(ResponseCode.CONTACT_MESSAGE_RECEIVED.rawValue).append(target.prefix(6))
-            .appendUInt8(0u).appendUInt8(0u).appendUInt32LE(42u).append(Bytes.utf8(text)).toBytes()
+            .appendUInt8(0u).appendUInt8(type).appendUInt32LE(42u).append(Bytes.utf8(text)).toBytes()
 
     private class RoomSignals(private val token: SessionToken) : ConnectionSignals {
         private val value = MutableStateFlow(snapshot(token, DeviceConnectionState.CONNECTED))
@@ -494,7 +689,10 @@ class MessagingRoomIntegrationTest {
         }
         companion object {
             fun snapshot(token: SessionToken, state: DeviceConnectionState) =
-                ConnectionSnapshot(state, ConnectionState.Connected, null, ConnectionIntent.WantsConnection(), token, null)
+                ConnectionSnapshot(state,
+                    if (state == DeviceConnectionState.DISCONNECTED) ConnectionState.Disconnected else ConnectionState.Connected,
+                    null, ConnectionIntent.WantsConnection(),
+                    if (state == DeviceConnectionState.DISCONNECTED) null else token, null)
         }
     }
 
@@ -506,6 +704,7 @@ class MessagingRoomIntegrationTest {
         var acceptanceGate: CompletableDeferred<Unit>? = null
         var lastAck: Bytes? = null
         val incomingMessages = ArrayDeque<Bytes>()
+        var afterNoMore: (suspend () -> Unit)? = null
         fun sent(): List<Bytes> = mock.sentData.filter { it[0] == CommandCode.SEND_MESSAGE.rawValue }
         override suspend fun isConnected() = mock.isConnected()
         override suspend fun connect() = mock.connect()
@@ -534,8 +733,11 @@ class MessagingRoomIntegrationTest {
                 }
                 CommandCode.GET_CONTACT_BY_KEY -> mock.simulateError(2u)
                 CommandCode.RESET_PATH -> mock.simulateOK()
-                CommandCode.GET_MESSAGE -> mock.simulateReceive(if (incomingMessages.isEmpty())
-                    Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
+                CommandCode.GET_MESSAGE -> {
+                    val empty = incomingMessages.isEmpty()
+                    mock.simulateReceive(if (empty) Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
+                    if (empty) afterNoMore?.also { afterNoMore = null }?.invoke()
+                }
                 else -> throw AssertionError("Unexpected raw Room-test command")
             }
         }

@@ -17,7 +17,7 @@ SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
-BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
+SPECIFICATION_BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
 PACKAGE = "com.meshcoreone.android.core.services.messaging."
 SERVICES = Path("android") / "core" / "services"
 MESSAGING = Path("src") / "test" / "kotlin" / "com" / "meshcoreone" / "android" / "core" / "services" / "messaging"
@@ -32,6 +32,16 @@ ORIGINAL_ROOM_CASES = {
     "deliveredManualRetryRowDoesNotEmitAnotherPacketOrLoseItsPersistedStatus",
     "twoRadioGenerationsDoNotCloseTheProcessStoreOrDuplicateMonitors",
     "actualClosedRepositoryFailureCannotAdvanceAttemptCountOrSendOnTheWire",
+    "acceptedBlockedInsertFinishesBeforeShutdownAndSuccessorHydration",
+    "acceptedInsertStorageFailureIsIncludedInShutdownInsteadOfBeingLostAfterItReturns",
+    "realAckDuringBlockedRetryStatusPreventsAnotherWireAttempt",
+    "trueAckAndFinalReadFailureRecoverOneResendClaimWithoutRecountingANewClaim",
+    "persistedCallbackUsesRealRoomAndCanCloseWithoutJoiningItsOwnSend",
+    "unacknowledgedResendRetiredByFailAllDoesNotIncrementTheActualRoomCount",
+    "actualRoomExpiryCannotTurnMissingAckTrackingIntoAConfirmedResend",
+    "genuineRoomAckRetiresItsLookupBeforeAcceptanceAndCountsExactlyOneResend",
+    "manualPollingRoomConsumerCanCloseWithAnExplicitUnfinishedRecordReport",
+    "livePollingRoomConsumerCanAwaitItsOwnGenerationCloseWithoutLeakingHandlers",
 }
 SHARED = [
     Path("android/core/model/src/main/kotlin/com/meshcoreone/android/core/model/DeduplicationKey.kt"),
@@ -136,9 +146,9 @@ def source_accounting(repo=ROOT):
         if expected == 4:
             require({int(ROW.search(name).group(1)) for name, row in originals.items() if row["family"] == identity} == {0, 1, 2, 3},
                     "Duplicate/missing original argument row")
-    require(len(natives) >= 32, "Lowered mandatory native regression floor")
+    require(len(natives) >= 53, "Lowered mandatory native regression floor")
     policy_path = SHARED[3]
-    old = git(repo, "show", BASE + ":" + policy_path.as_posix()) + "\n"
+    old = git(repo, "show", SPECIFICATION_BASE + ":" + policy_path.as_posix()) + "\n"
     now = (repo / policy_path).read_text(encoding="utf-8")
     begin, end = "internal object RepositoryDeduplicationKey {", "internal data class InboundHop"
     require(old.split(begin, 1)[0] == now.split(begin, 1)[0] and
@@ -146,7 +156,7 @@ def source_accounting(repo=ROOT):
     room_text = (repo / ROOM).read_text(encoding="utf-8")
     require("@Ignore" not in room_text and "@Disabled" not in room_text, "Disabled mandatory Room consumer")
     room_cases = re.findall(r"@Test\s+fun\s+(\w+)\(", room_text)
-    require(len(room_cases) >= 8 and len(set(room_cases)) == len(room_cases), "Missing/duplicate real Room consumer declarations")
+    require(len(room_cases) >= 18 and len(set(room_cases)) == len(room_cases), "Missing/duplicate real Room consumer declarations")
     require(ORIGINAL_ROOM_CASES.issubset(room_cases), "Removed an original mandatory Room consumer")
     implementation_inputs = [
         path.relative_to(repo).as_posix()
@@ -236,9 +246,10 @@ def capture(output, invocation=None, repo=ROOT):
                                        "matches_head": actual == expected, **record(root_lock, repo)})
     if metadata["invocation"] is not None:
         try:
-            original = load_json(output / "invocation.json")["identity"]
+            original = executor_identity(load_json(output / "invocation.json"))
             metadata["execution_expected"] = {"run_id": original["run_id"], "run_attempt": original["run_attempt"],
-                                               "base_sha": BASE, "head_sha": head}
+                                               "base_sha": original["binding"]["base_sha"],
+                                               "head_sha": original["binding"]["head_sha"]}
         except (ValueError, OSError, KeyError) as failure:
             metadata["capture_errors"].append("Malformed retained executor identity: " + str(failure))
     snapshot = output / "raw-capture.json"
@@ -246,7 +257,25 @@ def capture(output, invocation=None, repo=ROOT):
     return metadata
 
 
-def validate_capture(output, accounting, require_hosted=True):
+def executor_identity(invocation):
+    require(isinstance(invocation, dict) and invocation.get("schema_version") == 1 and invocation.get("stage") == "verify" and
+            invocation.get("host") == "linux", "Wrong execution schema/stage/host")
+    identity = invocation.get("identity")
+    require(isinstance(identity, dict) and set(identity) == {"binding", "run_id", "run_attempt"} and
+            type(identity.get("run_id")) is int and identity["run_id"] > 0 and
+            type(identity.get("run_attempt")) is int and identity["run_attempt"] > 0, "Missing actual run/attempt")
+    binding = identity.get("binding")
+    require(isinstance(binding, dict) and set(binding) == {
+        "repository", "work_package", "base_sha", "head_sha", "source_sha", "manifest_sha256", "policy_revision",
+    } and binding.get("repository") == "cbattlegear/MeshCoreOne-Android" and binding.get("work_package") == "WP-003" and
+            isinstance(binding.get("base_sha"), str) and HEX.fullmatch(binding["base_sha"]) and
+            isinstance(binding.get("head_sha"), str) and HEX.fullmatch(binding["head_sha"]) and
+            binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == MANIFEST and
+            binding.get("policy_revision") == POLICY, "Malformed executor binding")
+    return identity
+
+
+def validate_capture(output, accounting, require_hosted=True, *, expected_identity=None):
     snapshot = load_json(output / "raw-capture.json")
     require(snapshot.get("schema_version") == 1 and snapshot.get("repository") == "cbattlegear/MeshCoreOne-Android" and snapshot.get("work_package") == "WP-208" and
             HEX.fullmatch(snapshot.get("head_sha", "")) and snapshot.get("source_sha") == SOURCE and
@@ -269,18 +298,18 @@ def validate_capture(output, accounting, require_hosted=True):
         require(snapshot["invocation"], "Missing actual Linux invocation; old/local proof is not acceptance")
         require(record(output / snapshot["invocation"]["path"], output) == snapshot["invocation"], "Changed invocation")
         invocation = load_json(output / "invocation.json")
-        require(invocation.get("stage") == "verify" and invocation.get("host") == "linux", "Wrong execution stage/host")
-        identity = invocation.get("identity")
-        require(isinstance(identity, dict) and type(identity.get("run_id")) is int and identity["run_id"] > 0 and
-                type(identity.get("run_attempt")) is int and identity["run_attempt"] > 0, "Missing actual run/attempt")
+        identity = executor_identity(invocation)
+        require(isinstance(expected_identity, dict), "Missing independently expected executor identity")
+        executor_identity({"schema_version": 1, "stage": "verify", "host": "linux", "identity": expected_identity})
+        require(identity == expected_identity, "Different/stale provider execution identity")
+        binding = expected_identity["binding"]
         expected_execution = snapshot.get("execution_expected")
-        require(isinstance(expected_execution, dict) and identity["run_id"] == expected_execution.get("run_id") and
-                identity["run_attempt"] == expected_execution.get("run_attempt") and expected_execution.get("base_sha") == BASE and
-                expected_execution.get("head_sha") == snapshot["head_sha"], "Different/stale captured run or attempt")
-        binding = identity.get("binding", {})
-        require(binding.get("repository") == snapshot["repository"] and binding.get("head_sha") == snapshot["head_sha"] and
-                binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == MANIFEST and
-                binding.get("policy_revision") == POLICY and binding.get("base_sha") == BASE, "Stale/malformed run binding")
+        require(expected_execution == {
+            "run_id": expected_identity["run_id"], "run_attempt": expected_identity["run_attempt"],
+            "base_sha": binding["base_sha"], "head_sha": binding["head_sha"],
+        }, "Different/stale captured run or attempt")
+        require(binding["repository"] == snapshot["repository"] and binding["head_sha"] == snapshot["head_sha"],
+                "Stale/malformed run binding")
     jvm, jvm_counts = read_junit(output / "junit" / "services")
     native, native_counts = read_junit(output / "junit" / "data", minimum=369)
     messaging = {name for (classname, name) in jvm if classname.startswith(PACKAGE)}
@@ -326,7 +355,10 @@ def main(argv=None):
         if args.capture_only:
             print("Raw failure/success inputs retained; no success validation performed")
             return 0
-        result = validate_capture(output, source_accounting())
+        require(args.invocation is not None and args.invocation.is_absolute(),
+                "The actual absolute executor invocation is required")
+        expected_identity = executor_identity(load_json(args.invocation))
+        result = validate_capture(output, source_accounting(), expected_identity=expected_identity)
         (output / "assertions.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result["counts"]))
         return 0

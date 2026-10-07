@@ -236,6 +236,7 @@ internal class FirmwareTransport : MeshTransport {
     var channelError: UByte? = null
     val channelReplies = mutableMapOf<UByte, ChannelInfo>()
     val incomingMessages = ArrayDeque<Bytes>()
+    var afterNoMore: (suspend () -> Unit)? = null
     val sentData: List<Bytes> get() = mock.sentData
     var disconnectCalls = 0
         private set
@@ -280,8 +281,11 @@ internal class FirmwareTransport : MeshTransport {
                 else mock.simulateReceive(ByteWriter().appendUInt8(ResponseCode.CHANNEL_INFO.rawValue).appendUInt8(channel.index)
                     .append(Bytes.utf8(channel.name).paddedOrTruncated(32)).append(channel.secret).toBytes())
             }
-            CommandCode.GET_MESSAGE -> if (!holdGetReplies) mock.simulateReceive(if (incomingMessages.isEmpty())
-                Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
+            CommandCode.GET_MESSAGE -> if (!holdGetReplies) {
+                val empty = incomingMessages.isEmpty()
+                mock.simulateReceive(if (empty) Bytes.of(ResponseCode.NO_MORE_MESSAGES.rawValue.toInt()) else incomingMessages.removeFirst())
+                if (empty) afterNoMore?.also { afterNoMore = null }?.invoke()
+            }
             else -> throw AssertionError("Unexpected deterministic firmware command ${data[0]}")
         }
     }
@@ -416,3 +420,10 @@ internal suspend fun statuses(service: MessageService, subscription: SessionEven
     return subscription.events.toList().map { it.event }
 }
 internal fun storageFailure() = PersistenceStoreException(PersistenceStoreError.SaveFailed("deterministic"), IllegalStateException("test fault"))
+
+internal fun reviewContactPacket(text: String, type: UByte = 0u): Bytes {
+    val packet = ByteWriter().appendUInt8(ResponseCode.CONTACT_MESSAGE_RECEIVED.rawValue).append(TARGET.prefix(6))
+        .appendUInt8(0u).appendUInt8(type).appendUInt32LE(42u)
+    if (type == 2.toUByte()) packet.append(Bytes.of(0x80, 0xFF, 1, 2))
+    return packet.append(Bytes.utf8(text)).toBytes()
+}

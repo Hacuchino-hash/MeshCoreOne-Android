@@ -64,10 +64,12 @@ class NativeMessagingTest {
         },
         native("cancellingSendDuringBackoffStopsWireWorkAndPreservesThePendingRow") {
             val h = Harness(this); h.start(); h.transport.directError = 3u
-            val send = backgroundScope.async { h.service.sendDirectMessage("cancel pool", h.contact) }; runCurrent()
-            assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size); send.cancelAndJoin()
+            val message = h.service.createPendingMessage("cancel pool", h.contact); val queue = h.queue()
+            queue.enqueueDM(DirectMessageEnvelope(message.id, CONTACT)); runCurrent()
+            assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size); queue.shutdown()
             advanceTimeBy(10_000); runCurrent(); assertEquals(1, h.sends(CommandCode.SEND_MESSAGE).size)
-            assertEquals(MessageStatus.PENDING, h.store.messages.values.single().status); h.close()
+            assertEquals(MessageStatus.PENDING, h.store.messages.values.single().status)
+            assertEquals(message.id, h.store.fetchPendingSends(RADIO).single().messageID); h.close()
         },
         native("unicodeGraphemesCJKRTLAndCombiningTextUseUTF8BytesWithoutNormalization") {
             val h = Harness(this)

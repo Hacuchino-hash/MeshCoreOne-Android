@@ -30,12 +30,13 @@ class MessagePollingService(
     private val clock: SessionClock = SystemSessionClock(),
     reporter: MessagingIssueReporter = LoggingMessagingIssueReporter,
 ) : MessagePollingServiceProtocol {
-    private data class Delivery(val event: MeshEvent, val context: DeliveryContext)
+    private data class Delivery(val event: MeshEvent, val context: DeliveryContext, var failure: Exception? = null)
     private val ownership = MessagingOwnership(token, scope, signals, reporter)
     private val lock = Any()
     private val lifecycle = Mutex()
     private val dispatch = Mutex()
     private val pending = ArrayDeque<Delivery>()
+    private val parked = ArrayDeque<Delivery>()
     private val observedDuringPoll = ArrayDeque<MeshEvent>()
     private val expectedEchoes = mutableMapOf<MeshEvent, Long>()
     private var contactHandler: (suspend (ContactMessage, ContactDTO?, DeliveryContext) -> Unit)? = null
@@ -44,6 +45,8 @@ class MessagePollingService(
     private var cliHandler: (suspend (ContactMessage, ContactDTO?) -> Unit)? = null
     private var listener: Deferred<Unit>? = null
     private var polling: Deferred<Long>? = null
+    private var catchUp: Deferred<Unit>? = null
+    private var catchUpRequested = false
     private var pollingActive = false
     private var monitorActive = false
     private var autoFetch = false
@@ -57,7 +60,7 @@ class MessagePollingService(
     private var teardown: CompletableDeferred<TeardownReport>? = null
     val isAutoFetching: Boolean get() = synchronized(lock) { autoFetch }
     val pendingHandlerCount: Long get() = synchronized(lock) { handlerCount }
-    val undeliveredCount: Int get() = synchronized(lock) { pending.size }
+    val undeliveredCount: Int get() = synchronized(lock) { pending.size + parked.size }
     val hasMessageHandlersWired: Boolean get() = synchronized(lock) {
         contactHandler != null || channelHandler != null || signedHandler != null || cliHandler != null
     }
@@ -145,7 +148,8 @@ class MessagePollingService(
     }
     suspend fun stopAutoFetch() = lifecycle.withLock { stopAutoLocked() }
     private suspend fun stopAutoLocked() {
-        synchronized(lock) { autoFetch = false; desiredAutoPaused = false; autoRevision++ }
+        synchronized(lock) { autoFetch = false; desiredAutoPaused = false; autoRevision++; catchUpRequested = false }
+        synchronized(lock) { catchUp.also { catchUp = null } }?.cancelAndJoin()
         reconcileAutoLocked()
     }
     override suspend fun pauseAutoFetch() = lifecycle.withLock {
@@ -196,6 +200,7 @@ class MessagePollingService(
                         if (polling === task) polling = null
                     }
                     if (cause != null && cause !is CancellationException) remember("pollAllMessages", cause)
+                    if (cause !is CancellationException) launchCatchUp()
                 }
                 task.start()
             }
@@ -204,13 +209,47 @@ class MessagePollingService(
         return work.await()
     }
 
+    private fun launchCatchUp() {
+        synchronized(lock) {
+            if (!ownership.isCurrent || !autoFetch || desiredAutoPaused) return
+            catchUpRequested = true
+            if (catchUp != null) return
+            val task = ownership.scope.async(start = CoroutineStart.LAZY) {
+                while (synchronized(lock) {
+                    ownership.isCurrent && autoFetch && !desiredAutoPaused && !pollingActive && catchUpRequested
+                }) {
+                    synchronized(lock) { catchUpRequested = false }
+                    while (synchronized(lock) { ownership.isCurrent && autoFetch && !desiredAutoPaused && !pollingActive }) {
+                        if (pollMessage() == MessageResult.NoMoreMessages) break
+                    }
+                }
+            }
+            catchUp = task
+            task.invokeOnCompletion { cause ->
+                val repeat = synchronized(lock) {
+                    if (catchUp === task) catchUp = null
+                    catchUpRequested && ownership.isCurrent && autoFetch && !desiredAutoPaused && !pollingActive
+                }
+                if (cause != null && cause !is CancellationException) remember("pollAllMessages.catchUp", cause)
+                if (repeat) launchCatchUp()
+            }
+            task.start()
+        }
+    }
+
     private suspend fun drainRadio(): Long {
         val anchor = clock.wallClock.instant()
         var count = 0L
         var released = false
+        var deliveryFailure: Exception? = null
+        suspend fun dispatchPending() {
+            val failure = attemptPendingDelivery()
+            if (deliveryFailure == null) deliveryFailure = failure
+        }
         try {
             lifecycle.withLock { reconcileAutoLocked() }
-            deliverPending()
+            synchronized(lock) { while (parked.isNotEmpty()) pending.addLast(parked.removeFirst()) }
+            dispatchPending()
             while (true) {
                 checkPolling("pollDrain")
                 val result = pollMessage()
@@ -219,8 +258,9 @@ class MessagePollingService(
                     is MessageResult.ChannelMessage -> MeshEvent.ChannelMessageReceived(result.message)
                     is MessageResult.ChannelDatagram -> continue
                     MessageResult.NoMoreMessages -> {
-                        finishResidualDeliveries()
+                        val residualFailure = finishResidualDeliveries()
                         released = true
+                        (deliveryFailure ?: residualFailure)?.let { throw it }
                         return count
                     }
                 }
@@ -236,7 +276,7 @@ class MessagePollingService(
                     pending.addLast(Delivery(event, DeliveryContext.InitialSync(anchor)))
                 }
                 count = Math.incrementExact(count)
-                deliverPending()
+                dispatchPending()
             }
         } finally {
             if (!released) {
@@ -253,15 +293,25 @@ class MessagePollingService(
         while (observedDuringPoll.isNotEmpty()) pending.addLast(Delivery(observedDuringPoll.removeFirst(), DeliveryContext.Live))
     }
 
-    private suspend fun finishResidualDeliveries() {
+    private suspend fun finishResidualDeliveries(): Exception? {
+        var failure: Exception? = null
         while (true) {
             synchronized(lock) { transferObserved() }
-            deliverPending()
+            val current = attemptPendingDelivery()
+            if (failure == null) failure = current
             if (synchronized(lock) {
                 if (observedDuringPoll.isEmpty() && pending.isEmpty()) { pollingActive = false; true } else false
-            }) return
+            }) return failure
         }
     }
+
+    private suspend fun attemptPendingDelivery(): Exception? =
+        try { deliverPending(); null }
+        catch (failure: PersistenceStoreException) { failure }
+        catch (failure: MessagePollingException) {
+            if (failure.error == MessagePollingError.NotConnected) throw failure
+            failure
+        }
 
     private fun takeEcho(event: MeshEvent): Boolean {
         val count = expectedEchoes[event] ?: return false
@@ -270,9 +320,14 @@ class MessagePollingService(
     }
 
     private suspend fun deliverPending() = dispatch.withLock {
+        var firstFailure: Exception? = null
         while (true) {
             checkPolling("dispatchMessage")
-            val delivery = synchronized(lock) { pending.firstOrNull() } ?: return@withLock
+            val delivery = synchronized(lock) { pending.firstOrNull() }
+            if (delivery == null) {
+                firstFailure?.let { throw it }
+                return@withLock
+            }
             synchronized(lock) { handlerCount++ }
             try {
                 when (val event = delivery.event) {
@@ -306,13 +361,22 @@ class MessagePollingService(
                     handlerFailure = null
                     failures.remove("messageHandler")
                     failures.remove("messageLookup")
+                    if (parked.isEmpty()) failures.remove("messageDelivery")
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (failure: Exception) {
-                // Preserve the consumed wire message and the exact callback/store cause for retry and teardown.
-                synchronized(lock) { handlerFailure = failure }
-                if (failure is PersistenceStoreException || failure is MessagePollingException) throw failure
-                throw MessagePollingException(MessagePollingError.PollingFailed, failure)
+                val typed = if (failure is PersistenceStoreException || failure is MessagePollingException) failure
+                    else MessagePollingException(MessagePollingError.PollingFailed, failure)
+                if (typed is MessagePollingException && typed.error == MessagePollingError.NotConnected) throw typed
+                synchronized(lock) {
+                    check(pending.firstOrNull() === delivery)
+                    pending.removeFirst()
+                    delivery.failure = typed
+                    parked.addLast(delivery)
+                    handlerFailure = typed
+                }
+                remember("messageDelivery", typed)
+                if (firstFailure == null) firstFailure = typed
             } finally { synchronized(lock) { handlerCount-- } }
         }
     }
@@ -322,7 +386,7 @@ class MessagePollingService(
         val interval = timeout.seconds.seconds + timeout.nano.nanoseconds
         require(interval.isFinite())
         val end = clock.now + interval
-        while (synchronized(lock) { handlerCount > 0 || pending.isNotEmpty() }) {
+        while (synchronized(lock) { handlerCount > 0 || pending.isNotEmpty() || parked.isNotEmpty() }) {
             currentCoroutineContext().ensureActive()
             if (clock.now >= end) return false
             clock.sleepFor(10.milliseconds)
@@ -354,9 +418,9 @@ class MessagePollingService(
 
     private fun closeReport(): TeardownReport = synchronized(lock) {
         val result = failures.values.map { TeardownIssue(LifecycleStage.STOP_SERVICES, it) }.toMutableList()
-        if (pending.isNotEmpty()) result += TeardownIssue(LifecycleStage.STOP_SERVICES,
-            MessagePollingException(MessagePollingError.PollingFailed,
-                handlerFailure ?: CancellationException("Generation ended with an unfinished message handler")))
+        for (delivery in pending + parked) result += TeardownIssue(LifecycleStage.STOP_SERVICES,
+            MessagePollingException(MessagePollingError.PollingFailed, delivery.failure
+                ?: handlerFailure ?: CancellationException("Generation ended with an unfinished message handler")))
         TeardownReport(result.snapshot())
     }
 
@@ -375,7 +439,7 @@ class MessagePollingService(
         }
         return withContext(NonCancellable) {
             val work = synchronized(lock) {
-                listOfNotNull(polling, listener).distinct().map { it to consumerInvocations[it] }
+                listOfNotNull(polling, listener, catchUp).distinct().map { it to consumerInvocations[it] }
             }
             work.forEach { it.first.cancel() }
             lifecycle.withLock { stopAutoLocked() }

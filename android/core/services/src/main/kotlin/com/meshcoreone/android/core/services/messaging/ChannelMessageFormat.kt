@@ -1,15 +1,29 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Utilities/ChannelMessageFormat.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.services.messaging
 
+import java.util.regex.Pattern
+
 object ChannelMessageFormat {
     data class Parsed(val senderName: String, val messageText: String)
+    private val characters = Pattern.compile("\\X")
 
     fun parse(text: String): Parsed? {
-        val colon = text.indexOf(':')
-        if (colon <= 0) return null
-        return Parsed(trimSpaces(text.substring(0, colon)), trimSpaces(text.substring(colon + 1)))
+        val matcher = characters.matcher(text)
+        while (matcher.find()) {
+            if (matcher.group() == ":") {
+                if (matcher.start() == 0) return null
+                return Parsed(trimSpaces(text.substring(0, matcher.start())), trimSpaces(text.substring(matcher.end())))
+            }
+        }
+        return null
     }
 
     private fun trimSpaces(value: String): String =
-        value.trim { it == '\t' || Character.getType(it) == Character.SPACE_SEPARATOR.toInt() }
+        value.trim {
+            // Foundation.whitespaces includes U+200B, unlike Unicode's Zs category.
+            when (it) {
+                '\t', ' ', '\u00A0', '\u1680', in '\u2000'..'\u200B', '\u202F', '\u205F', '\u3000' -> true
+                else -> false
+            }
+        }
 }
