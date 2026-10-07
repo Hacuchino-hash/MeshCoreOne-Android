@@ -145,21 +145,49 @@ class BackupTransactionTest : BackupRoomTest() {
     }
 
     @Test fun postCommitStorageFailureIsExplicitAndNeverClaimsDatabaseRollback() = runBlocking {
+        db.pendingSends().insert(com.meshcoreone.android.core.data.repository.pending(radio = RADIO).toEntity())
+        val debug = DebugLogEntryDTO.create(DebugLogLevel.INFO, "controlled", "backup", "prior", id(80), AT)
+        db.debugLogs().insert(debug.toEntity())
         storage.close()
         val failure = try {
-            service.importBackup(envelope(devices = listOf(device()), preferences = BackupUserDefaults(selectedThemeID = "ember")), store)
+            service.importBackup(envelope(devices = listOf(device()), channels = listOf(channel()),
+                preferences = BackupUserDefaults(selectedThemeID = "ember")), store)
             fail("Expected explicit post-commit storage failure")
             throw AssertionError()
         } catch (cause: CommittedBackupPreferenceException) { cause }
         assertEquals(StorageProblem.OwnerClosed, failure.storageFailure.problem)
         assertEquals(1L, failure.result.count(BackupModelKind.DEVICES).inserted)
         assertEquals(1, db.devices().all().size)
+        val marker: CommittedBackupPreferenceFailure = failure
+        assertSame(failure.storageFailure, marker.preferenceFailure)
+        assertSame(marker.preferenceFailure, failure.cause)
+        assertEquals(BackupContract.modelArrayKeys.toSet(), marker.committedReceipt.counts.keys)
+        for (kind in BackupModelKind.entries) {
+            val actual = failure.result.count(kind)
+            assertEquals(CommittedBackupCounts(actual.inserted, actual.merged, actual.skipped, actual.dropped),
+                marker.committedReceipt.counts[kind.arrayKey])
+        }
+        assertEquals(failure.result.channelSlotsAffectedByImport, marker.committedReceipt.channelSlotsAffectedByImport)
+        assertFalse(marker.committedReceipt.userDefaultsRestored)
+        assertFalse(marker.committedReceipt.channelSlotsAffectedByImport.isEmpty())
+        val slotsBefore = db.channels().backupAll().map { it.radioId to it.index }
+        assertEquals(1, db.pendingSends().forRadio(RADIO.value).size)
+        assertEquals(1L, db.debugLogs().count())
         assertFalse(failure.message.orEmpty().lowercase().contains("rollback"))
         storage = MeshCoreStorage.get(context)
         val recovered = newService().completePreferences(failure)
         assertTrue(recovered.userDefaultsRestored)
         assertEquals("ember", storage.preferences.get(AppearanceStorageKey.selectedThemeID))
         assertEquals(1, db.devices().all().size)
+        assertEquals(slotsBefore, db.channels().backupAll().map { it.radioId to it.index })
+        assertEquals(failure.result.counts, recovered.counts)
+        assertEquals(1, db.pendingSends().forRadio(RADIO.value).size)
+        assertEquals(1L, db.debugLogs().count())
+        val repeated = newService().completePreferences(failure)
+        assertEquals(recovered.counts, repeated.counts)
+        assertEquals(1, db.devices().all().size)
+        assertEquals(slotsBefore, db.channels().backupAll().map { it.radioId to it.index })
+        assertEquals("ember", storage.preferences.get(AppearanceStorageKey.selectedThemeID))
     }
 
     @Test fun envelopeVersionCountsAndAmbiguousRelationshipsFailBeforeAnyWrite() = runBlocking {

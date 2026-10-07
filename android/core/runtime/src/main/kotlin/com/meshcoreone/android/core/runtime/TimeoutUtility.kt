@@ -1,6 +1,8 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Utilities/TimeoutUtility.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.runtime
 
+import com.meshcoreone.android.core.contracts.domain.errors.RuntimeTimeoutFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import kotlin.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -12,7 +14,10 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
 class TimeoutError(val operationName: String, val timeout: Duration) :
-    Exception("Operation '$operationName' timed out after $timeout")
+    Exception("Operation '$operationName' timed out after $timeout"), SourceServiceFaultCarrier {
+    override val sourceServiceFault: RuntimeTimeoutFault
+        get() = RuntimeTimeoutFault(operationName, timeout)
+}
 
 suspend fun <T> withRuntimeTimeout(
     timeout: Duration,

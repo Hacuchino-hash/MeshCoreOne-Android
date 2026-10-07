@@ -2,6 +2,8 @@
 package com.meshcoreone.android.core.services.sync
 
 import com.meshcoreone.android.core.model.SnapshotList
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
+import com.meshcoreone.android.core.contracts.domain.errors.SyncFault
 
 /** Current state of the sync coordinator. */
 sealed interface SyncState {
@@ -52,7 +54,14 @@ data class FullSyncResult(
 }
 
 /** Errors from SyncCoordinator operations; messages are the Swift `LocalizedError` descriptions. */
-sealed class SyncCoordinatorError(message: String) : Exception(message) {
+sealed class SyncCoordinatorError(message: String) : Exception(message), SourceServiceFaultCarrier {
+    override val sourceServiceFault: SyncFault
+        get() = when (this) {
+            is NotConnected -> SyncFault.NotConnected
+            is SyncFailed -> SyncFault.SyncFailed(reason)
+            is AlreadySyncing -> SyncFault.AlreadySyncing
+        }
+
     class NotConnected : SyncCoordinatorError("Not connected to device.")
     class SyncFailed(val reason: String) : SyncCoordinatorError("Sync failed: $reason")
     class AlreadySyncing : SyncCoordinatorError("A sync is already in progress.")
