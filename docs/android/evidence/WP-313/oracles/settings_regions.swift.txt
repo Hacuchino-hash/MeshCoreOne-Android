@@ -1,0 +1,41 @@
+import Foundation
+// Verbatim copy of RepeaterSettingsViewModel.parseRegionTree / parseDefaultScopeReply (db14559b) for edge-case oracles.
+struct Entry { let name: String; let parentName: String?; let depth: Int; let flood: Bool; let home: Bool }
+func parseRegionTree(_ response: String) -> [Entry] {
+  guard response.utf8.count < 159 else { return [] }
+  guard response.unicodeScalars.last == "\n" else { return [] }
+  var entries: [Entry] = []; var stack: [String] = []
+  let lines = response.split(omittingEmptySubsequences: true, whereSeparator: { $0 == "\n" || $0 == "\r\n" })
+  for line in lines {
+    let depth = line.prefix(while: { $0 == " " }).count
+    var text = String(line.dropFirst(depth))
+    guard !text.isEmpty else { return [] }
+    let flood: Bool
+    if text.hasSuffix(" F") { flood = true; text = String(text.dropLast(2)) } else { flood = false }
+    let home: Bool
+    if text.hasSuffix("^") { home = true; text = String(text.dropLast(1)) } else { home = false }
+    guard !text.isEmpty, !text.contains(" ") else { return [] }
+    guard depth <= stack.count else { return [] }
+    stack.removeSubrange(depth...); stack.append(text)
+    entries.append(Entry(name: text, parentName: depth == 0 ? nil : stack[depth - 1], depth: depth, flood: flood, home: home))
+  }
+  return entries
+}
+func parseDefault(_ response: String) -> String {
+  let lines = response.split(separator: "\n", omittingEmptySubsequences: true)
+  guard let last = lines.last else { return "nil" }
+  var line = last.trimmingCharacters(in: .whitespaces)
+  if line.hasPrefix(">") { line = String(line.dropFirst()).trimmingCharacters(in: .whitespaces) }
+  guard line.localizedCaseInsensitiveContains("default scope is") else { return "nil" }
+  let tokens = line.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+  guard let lastToken = tokens.last else { return "nil" }
+  if lastToken == "<null>" || lastToken == "*" { return "cleared" }
+  return "named(\(lastToken.unicodeScalars.map { String($0.value, radix: 16) }))"
+}
+func show(_ e: [Entry]) -> String { e.map { "\($0.name.unicodeScalars.map { String($0.value, radix: 16) })/\($0.parentName ?? "nil")/\($0.depth)/\($0.flood)/\($0.home)" }.joined(separator: ";") }
+for d in ["* F\n a\rb F\n", "* F\u{301}\n", "* F\n\n on F\n", "* F\n   \n", "*\t F\n", "* F\r\n on F\r\n", "*^\n"] {
+  print("T|\(d.unicodeScalars.map { String($0.value, radix: 16) })|\(show(parseRegionTree(d)))")
+}
+for r in [" default scope is x\r\n", "DEFAULT SCOPE IS Y", "> default scope is now z\n", "default scope is   \n", " default scope is a\n other line"] {
+  print("D|\(r.unicodeScalars.map { String($0.value, radix: 16) })|\(parseDefault(r))")
+}

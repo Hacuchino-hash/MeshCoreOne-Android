@@ -1,0 +1,7 @@
+import Foundation
+let words = ["a10", "a2", "A1", "b", "Á", "a", "A", "á", "Repeater 10", "Repeater 9", "repeater 9", "Zeta", "alpha", "Alpha", "MCU temperature", "Temperature", "Humidity", "Voltage", "x01", "x1", "x001", "ä", "z", "Ab", "aB", "", " a"]
+let sorted = words.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+print(sorted.map { "[\($0)]" }.joined(separator: " "))
+for (l, r) in [("a","A"),("a","á"),("x01","x1"),("x1","x001"),("A1","a1"),("Ab","aB")] {
+  print("\(l) vs \(r): \(l.localizedStandardCompare(r).rawValue)")
+}

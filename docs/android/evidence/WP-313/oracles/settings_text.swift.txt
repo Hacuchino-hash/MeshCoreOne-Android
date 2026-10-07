@@ -1,0 +1,16 @@
+import Foundation
+// Double/Int string interpolation used to build CLI commands.
+let doubles: [Double] = [915.0, 250.0, 62.5, 869.525, 37.7749, -122.4194, 45, 0.0001, 0.00001, 0.000123, -0.00005, 1e15, 1e16, 1.5e16, 123456789.0, -0.0, 1.0/3.0, 90, -180, 999, 0.1+0.2, 5e-324, 1.7976931348623157e308]
+for d in doubles { print("D|\(d.debugDescription)|\(d)") }
+// Device time conversion used by NodeSettingsViewModel.convertUTCToLocal
+var utc = Calendar(identifier: .gregorian); utc.timeZone = TimeZone(identifier: "UTC")!
+let date = utc.date(from: DateComponents(year: 2026, month: 8, day: 14, hour: 15, minute: 35))!
+for id in ["en_US", "en_GB", "de_DE", "fr_FR", "ja_JP"] {
+  let loc = Locale(identifier: id)
+  var t = Date.FormatStyle(date: .omitted, time: .shortened); t.locale = loc; t.timeZone = TimeZone(identifier: "UTC")!
+  var d = Date.FormatStyle().year(.twoDigits).month(.twoDigits).day(.twoDigits); d.locale = loc; d.timeZone = TimeZone(identifier: "UTC")!
+  print("T|\(id)|\(date.formatted(t)) - \(date.formatted(d))")
+}
+// String.count (grapheme) for owner info counter and trimmingCharacters(.whitespaces)
+for s in ["KD7ABC", "a\u{301}", "👍🏽", "e\r\nf", "\u{1F1FA}\u{1F1F8}"] { print("C|\(s.unicodeScalars.map{String($0.value, radix:16)})|\(s.count)") }
+for s in ["  gta  ", "\tgta\u{00A0}", "\u{2003}x\u{3000}", "\nx\n"] { print("W|\(s.unicodeScalars.map{String($0.value, radix:16)})|\(s.trimmingCharacters(in: .whitespaces).unicodeScalars.map{String($0.value, radix:16)})") }

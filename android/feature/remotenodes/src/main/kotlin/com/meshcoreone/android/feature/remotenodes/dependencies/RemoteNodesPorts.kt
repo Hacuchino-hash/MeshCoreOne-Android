@@ -87,6 +87,24 @@ fun interface BinaryTelemetryPort {
     suspend fun requestTelemetry(publicKey: Bytes): TelemetryResponse
 }
 
+/**
+ * The login sheet's service calls: `RemoteNodeService` password store and `RepeaterAdminService.connectAsAdmin` /
+ * `RoomServerService.joinRoom` (WP-210), plus `ContactService.resetPath` (WP-209).
+ */
+interface RemoteNodeLoginPort {
+    suspend fun retrievePassword(contact: ContactDTO): String?
+    suspend fun deletePassword(contact: ContactDTO)
+    suspend fun resetPath(radioId: RadioId, publicKey: Bytes)
+    suspend fun connectAsAdmin(
+        radioId: RadioId, contact: ContactDTO, password: String, rememberPassword: Boolean, pathLength: UByte,
+        onTimeoutKnown: suspend (seconds: Long) -> Unit,
+    ): com.meshcoreone.android.core.model.RemoteNodeSessionDTO
+    suspend fun joinRoom(
+        radioId: RadioId, contact: ContactDTO, password: String, rememberPassword: Boolean, pathLength: UByte,
+        onTimeoutKnown: suspend (seconds: Long) -> Unit,
+    ): com.meshcoreone.android.core.model.RemoteNodeSessionDTO
+}
+
 /** `NodeSnapshotService` (WP-210): throttled snapshot capture plus history reads. */
 interface NodeSnapshotPort {
     suspend fun recordSnapshot(
@@ -143,6 +161,10 @@ interface RemoteNodesFeatureDependencies {
     fun nodeSnapshots(): NodeSnapshotPort?
     fun contactOcv(): ContactOcvPort?
     fun historyStore(): RemoteNodeHistoryStore?
+    fun login(): RemoteNodeLoginPort?
+
+    /** The connected companion's radio, or null while disconnected (`appState.connectedDevice?.radioID`). */
+    fun connectedRadioId(): RadioId?
 
     /** The connected companion's `DeviceDTO.hashSize`, or null while disconnected. */
     fun deviceHashSize(): Int?
