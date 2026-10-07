@@ -164,6 +164,40 @@ class CliTests(unittest.TestCase):
                     validate_manifest(original.data, original.exclusions, REPO)
         self.assertEqual(base_manifest().data["reference"]["commit"], REFERENCE_SHA)
 
+    def test_approved_amendment_exempts_only_its_own_blob_from_pin_enforcement(self):
+        original = base_manifest()
+        path = "MeshCore/Tests/MeshCoreTests/Session/MeshCoreSessionCommandCorrelationTests.swift"
+        expected = {e["path"]: e["blob_sha"] for e in original.data["inventory"]}
+        expected[path] = "714887f7ab5dae5c1ef9324502c8dc44b2b736ff"
+        amendments = {
+            "schema_version": 1, "reference_sha": REFERENCE_SHA,
+            "entries": [{
+                "path": path,
+                "original_blob_sha": "714887f7ab5dae5c1ef9324502c8dc44b2b736ff",
+                "approved_blob_sha": "9ff64d684a9ea56cdcfebabe0288c7b8b2141e4f",
+                "adr": "docs/android/adr/003-frozen-swift-pin-exception-flaky-correlation-test.md",
+                "reason": "Fixes a genuine task-ordering race; test-only.",
+            }],
+        }
+        # The dirty-tree check reads the real checkout, so carry every other committed amendment
+        # (at its approved blob) instead of assuming this fixture is the repository's only one.
+        committed = json.loads((REPO / "docs/android/reference-amendments.json").read_text(encoding="utf-8"))
+        others = [entry for entry in committed["entries"] if entry["path"] != path]
+        amendments["entries"] += others
+        for entry in others:
+            expected[entry["path"]] = entry["original_blob_sha"]
+        approved_current = copy.deepcopy(expected)
+        approved_current[path] = "9ff64d684a9ea56cdcfebabe0288c7b8b2141e4f"
+        for entry in others:
+            approved_current[entry["path"]] = entry["approved_blob_sha"]
+        with patch("controller.model.tree", side_effect=[expected, approved_current]):
+            validate_manifest(original.data, original.exclusions, REPO, amendments=amendments)
+        unapproved_current = copy.deepcopy(approved_current)
+        unapproved_current[path] = "1" * 40
+        with patch("controller.model.tree", side_effect=[expected, unapproved_current]):
+            with self.assertRaisesRegex(PortError, "reference advanced/changed"):
+                validate_manifest(original.data, original.exclusions, REPO, amendments=amendments)
+
     def test_all_65_handoffs_fit_with_inherited_models_and_full_pinned_acceptance(self):
         manifest, rules = base_manifest(), policy()
         for wp_id in manifest.work_packages:
