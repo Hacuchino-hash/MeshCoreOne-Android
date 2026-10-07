@@ -12,7 +12,7 @@ from unittest.mock import patch
 from fixtures import BASE, HEAD, REPO, policy, test_manifest
 from controller.apk_alignment import elf_load_alignment
 from controller.ci_environment import write_json
-from controller.ci_evidence import LINT_TARGETS, PYTHON_MINIMUMS, SUITES, aggregate, artifact_record, counts, lint_bundle_path, lint_evidence, suite_counts
+from controller.ci_evidence import EXPECTED_APK_PERMISSIONS, LINT_TARGETS, PYTHON_MINIMUMS, SUITES, aggregate, artifact_record, counts, lint_bundle_path, lint_evidence, suite_counts
 from controller.errors import PortError
 from controller.gates import Binding, policy_revision
 
@@ -85,7 +85,7 @@ class EvidenceTests(unittest.TestCase):
                 "artifact": "android/app/build/outputs/apk/debug/app-debug.apk",
                 "sha256": apk["sha256"], "size_bytes": apk["size"],
                 "package": "com.meshcoreone.android.debug", "min_sdk": 31, "target_sdk": 37,
-                "permissions": ["com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"],
+                "permissions": list(EXPECTED_APK_PERMISSIONS),
                 "pinned_notices": notices, "verification_fixture_packaged": False, "native_libraries": [],
                 "native_16kb_compatibility_verified": False, "static_16kb_alignment_verified": True,
                 "elf_pt_load_alignment": {}, "physical_device_or_native_runtime_verified": False,
