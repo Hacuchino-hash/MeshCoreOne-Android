@@ -56,9 +56,11 @@ interface CompanionSetupServicing {
 
 /** Results of one chooser request, delivered by the platform gateway on any thread. */
 interface CompanionAssociationEvents {
-    /** The chooser must be launched by the foreground UI host (IntentSender). */
-    fun onChooserPending(chooser: Any)
+    /** The chooser must be launched by the foreground UI host; [requestId] comes back with its result. */
+    fun onChooserPending(chooser: Any, requestId: Long)
     fun onAssociationCreated(association: CompanionAssociation)
+    /** The advertised name became known after creation (API 31-33 activity result). */
+    fun onAssociationNamed(deviceId: UUID, name: String)
     fun onDismissed()
     fun onFailure(error: CompanionSetupError, failedAssociation: CompanionAssociation? = null)
 }
@@ -67,7 +69,9 @@ interface CompanionAssociationEvents {
 interface CompanionDeviceGateway {
     val isSupported: Boolean
     fun associations(): List<CompanionAssociation>
+    /** Each request is correlated by id (see [ChooserRequests]); a late result never reaches a newer request. */
     fun associate(events: CompanionAssociationEvents)
+    /** Removes the system bond where the platform allows it (API 36+), then the association. */
     suspend fun disassociate(association: CompanionAssociation)
     /** Presence observation binds `CompanionDeviceService` when the radio is near; it is not a connection. */
     fun observePresence(association: CompanionAssociation, observe: Boolean)
@@ -75,7 +79,26 @@ interface CompanionDeviceGateway {
 
 /** The foreground UI host that can present the system chooser; absent while backgrounded. */
 fun interface CompanionChooserHost {
-    fun launch(chooser: Any)
+    fun launch(chooser: Any, requestId: Long)
+}
+
+/**
+ * Durable record of this app's associations (`deviceId -> advertised name`). CDM only stores a
+ * display name for self-managed associations, and offers no removal callback before API 36, so the
+ * record supplies names and the baseline for detecting Settings removals across process death.
+ */
+interface AssociationRecordStore {
+    fun records(): Map<UUID, String>
+    fun remember(deviceId: UUID, name: String)
+    fun forget(deviceId: UUID)
+}
+
+class InMemoryAssociationRecordStore : AssociationRecordStore {
+    private val lock = Any()
+    private val records = linkedMapOf<UUID, String>()
+    override fun records(): Map<UUID, String> = synchronized(lock) { records.toMap() }
+    override fun remember(deviceId: UUID, name: String) { synchronized(lock) { records[deviceId] = name } }
+    override fun forget(deviceId: UUID) { synchronized(lock) { records.remove(deviceId) } }
 }
 
 /**
@@ -89,6 +112,7 @@ class CompanionSetupService(
     private val clock: ConnectivityClock,
     private val diagnostics: ConnectivityDiagnostics = ConnectivityDiagnostics.NONE,
     chooserHost: CompanionChooserHost? = null,
+    private val records: AssociationRecordStore = InMemoryAssociationRecordStore(),
 ) : CompanionSetupServicing {
     private val lock = Any()
     private var paired: List<CompanionAssociation> = emptyList()
@@ -109,36 +133,47 @@ class CompanionSetupService(
     override suspend fun activateSession() {
         if (synchronized(lock) { active }) return
         if (!gateway.isSupported) throw CompanionSetupError.SessionNotActive()
-        val current = gateway.associations()
-        synchronized(lock) {
-            paired = current
-            active = true
-        }
-        current.forEach { observe(it, true) }
+        synchronized(lock) { active = true }
+        reconcile(gateway.associations(), observeAll = true)
     }
 
     /**
-     * Re-reads associations (foreground/presence). Associations removed outside the app (Settings)
-     * are reported once to the delegate, like ASK `accessoryRemoved`.
+     * Re-reads associations (foreground, presence `AssociationsChanged`). Associations removed outside
+     * the app (Settings) are reported once to the delegate, like ASK `accessoryRemoved`, including
+     * removals that happened while the process was dead (diffed against the durable record).
      */
     fun refreshAssociations() {
         if (!synchronized(lock) { active }) return
-        val current = gateway.associations()
-        val (removed, added) = synchronized(lock) {
-            val gone = paired.filter { old -> current.none { it.deviceId == old.deviceId } }
-            val new = current.filter { now -> paired.none { it.deviceId == now.deviceId } }
-            paired = current
-            gone to new
-        }
-        added.forEach { observe(it, true) }
-        removed.forEach { notify("refresh.removed") { delegate?.companionSetupDidRemoveAccessory(it.deviceId) } }
+        reconcile(gateway.associations(), observeAll = false)
     }
 
+    private fun reconcile(current: List<CompanionAssociation>, observeAll: Boolean) {
+        val known = records.records()
+        val named = current.map { association -> withRecordedName(association, known[association.deviceId]) }
+        val (removed, added) = synchronized(lock) {
+            val previous = paired.map { it.deviceId }.toSet() + known.keys
+            val gone = previous.filter { id -> named.none { it.deviceId == id } }
+            val new = named.filter { it.deviceId !in previous }
+            paired = named
+            gone to new
+        }
+        named.forEach { records.remember(it.deviceId, it.displayName) }
+        (if (observeAll) named else added).forEach { observe(it, true) }
+        removed.forEach { id ->
+            records.forget(id)
+            notify("refresh.removed") { delegate?.companionSetupDidRemoveAccessory(id) }
+        }
+    }
+
+    private fun withRecordedName(association: CompanionAssociation, recorded: String?): CompanionAssociation =
+        if (association.displayName == CompanionDiscoveryCriteria.DEFAULT_ACCESSORY_NAME && recorded != null)
+            association.copy(displayName = recorded) else association
+
     override suspend fun showPicker(): UUID {
-        val chooser = synchronized(lock) {
+        synchronized(lock) {
             if (!active) throw CompanionSetupError.SessionNotActive()
             if (picker != null) throw CompanionSetupError.PickerAlreadyActive()
-            host ?: throw CompanionSetupError.PickerRestricted()
+            if (host == null) throw CompanionSetupError.PickerRestricted()
         }
         return suspendCancellableCoroutine { pending ->
             synchronized(lock) {
@@ -146,7 +181,7 @@ class CompanionSetupService(
                 pickerOutcome = "presented"
                 pickerPresentedAt = clock.elapsed
             }
-            val events = Events(pending, chooser)
+            val events = Events(pending)
             pending.invokeOnCancellation { handlePickerCancellation(pending, events) }
             try {
                 gateway.associate(events)
@@ -161,8 +196,10 @@ class CompanionSetupService(
         if (!synchronized(lock) { active }) throw CompanionSetupError.SessionNotActive()
         observe(accessory, false)
         gateway.disassociate(accessory)
+        records.forget(accessory.deviceId)
         val current = gateway.associations()
-        synchronized(lock) { paired = current }
+        val known = records.records()
+        synchronized(lock) { paired = current.map { withRecordedName(it, known[it.deviceId]) } }
     }
 
     /** CompanionDeviceManager has no system rename surface; callers hide the action. */
@@ -182,15 +219,18 @@ class CompanionSetupService(
         pending?.resumeWith(Result.failure(CompanionSetupError.SessionInvalidated()))
     }
 
-    private inner class Events(
-        private val pending: CancellableContinuation<UUID>,
-        private val host: CompanionChooserHost,
-    ) : CompanionAssociationEvents {
+    private inner class Events(private val pending: CancellableContinuation<UUID>) : CompanionAssociationEvents {
         /** Set when the awaiting coroutine was cancelled while this chooser request was outstanding. */
         @Volatile var abandoned = false
 
-        override fun onChooserPending(chooser: Any) {
-            try { host.launch(chooser) }
+        override fun onChooserPending(chooser: Any, requestId: Long) {
+            // The host is read at launch time: the activity may have changed since showPicker started.
+            val current = synchronized(lock) { if (abandoned) return else host }
+            if (current == null) {
+                resumePicker(pending, Result.failure(CompanionSetupError.PickerRestricted()), "pickerRestricted")
+                return
+            }
+            try { current.launch(chooser, requestId) }
             catch (failure: Exception) {
                 diagnostics.report("companion.chooser", failure)
                 resumePicker(pending, Result.failure(CompanionSetupError.PickerRestricted()), "pickerRestricted")
@@ -212,13 +252,25 @@ class CompanionSetupService(
                 }
                 return
             }
+            records.remember(association.deviceId, association.displayName)
             val current = try { gateway.associations() } catch (failure: Exception) {
                 diagnostics.report("companion.associations", failure); listOf(association)
             }
-            synchronized(lock) { paired = if (current.any { it.deviceId == association.deviceId }) current else current + association }
+            val known = records.records()
+            synchronized(lock) {
+                val named = current.map { withRecordedName(it, known[it.deviceId]) }
+                paired = if (named.any { it.deviceId == association.deviceId }) named else named + association
+            }
             observe(association, true)
             diagnostics.report(CompanionLogFormatter.selectionMessage(association.displayName, association.deviceId, elapsed()), null)
             resumePicker(pending, Result.success(association.deviceId), "selected")
+        }
+
+        override fun onAssociationNamed(deviceId: UUID, name: String) {
+            if (name.isBlank()) return
+            if (synchronized(lock) { abandoned }) return
+            records.remember(deviceId, name)
+            synchronized(lock) { paired = paired.map { if (it.deviceId == deviceId) it.copy(displayName = name) else it } }
         }
 
         override fun onDismissed() {

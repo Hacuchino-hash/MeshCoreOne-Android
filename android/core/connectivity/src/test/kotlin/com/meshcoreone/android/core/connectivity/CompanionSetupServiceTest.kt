@@ -1,7 +1,13 @@
 // AndroidOnly: WP-206 Companion association session behavior (chooser outcomes, orphan cleanup, failures, Settings removal, endpoint identity).
 package com.meshcoreone.android.core.connectivity
 
+import com.meshcoreone.android.core.connectivity.pairing.AssociationRecordStore
+import com.meshcoreone.android.core.connectivity.pairing.ChooserRequests
 import com.meshcoreone.android.core.connectivity.pairing.CompanionAssociation
+import com.meshcoreone.android.core.connectivity.pairing.CompanionFailureMapping
+import com.meshcoreone.android.core.connectivity.pairing.CompanionFailureOutcome
+import com.meshcoreone.android.core.connectivity.pairing.CompanionDiscoveryCriteria
+import com.meshcoreone.android.core.connectivity.pairing.InMemoryAssociationRecordStore
 import com.meshcoreone.android.core.connectivity.pairing.CompanionAssociationEvents
 import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.connectivity.pairing.CompanionDeviceGateway
@@ -56,17 +62,20 @@ class CompanionSetupServiceTest {
         override fun companionSetupDidFailPairing(deviceId: UUID) { failed += deviceId }
     }
 
-    private fun Scenario.service(gateway: FakeGateway, host: CompanionChooserHost? = CompanionChooserHost { }) =
-        CompanionSetupService(gateway, scope, clock, chooserHost = host)
+    private fun Scenario.service(
+        gateway: FakeGateway,
+        host: CompanionChooserHost? = CompanionChooserHost { _, _ -> },
+        records: AssociationRecordStore = InMemoryAssociationRecordStore(),
+    ) = CompanionSetupService(gateway, scope, clock, chooserHost = host, records = records)
 
     @Test fun `association completes the picker and lists the new association without opening GATT`() = scenario {
         val gateway = FakeGateway()
         val launched = mutableListOf<Any>()
-        val service = service(gateway, CompanionChooserHost { launched += it })
+        val service = service(gateway, CompanionChooserHost { chooser, _ -> launched += chooser })
         service.activateSession()
         val picker = scope.async { service.showPicker() }
         settle()
-        gateway.events!!.onChooserPending("intent-sender")
+        gateway.events!!.onChooserPending("intent-sender", 1)
         val created = association(UUID.randomUUID(), "MeshCore-1")
         gateway.associations += created
         gateway.events!!.onAssociationCreated(created)
@@ -232,5 +241,108 @@ class CompanionSetupServiceTest {
         events.onAssociationCreated(orphan)
         settle()
         assertTrue(orphan.deviceId !in gateway.observing)
+    }
+
+    @Test fun `advertised names are recorded and survive a new session where CDM lists no name`() = scenario {
+        val records = InMemoryAssociationRecordStore()
+        val gateway = FakeGateway()
+        val service = service(gateway, records = records)
+        service.activateSession()
+        val picker = scope.async { service.showPicker() }
+        settle()
+        val created = association(UUID.randomUUID(), "MeshCore-A1")
+        gateway.associations += created.copy(displayName = CompanionDiscoveryCriteria.DEFAULT_ACCESSORY_NAME)
+        gateway.events!!.onAssociationCreated(created)
+        picker.await()
+        assertEquals("MeshCore-A1", service.accessory(created.deviceId)?.displayName)
+        val restarted = service(gateway, records = records)
+        restarted.activateSession()
+        assertEquals("MeshCore-A1", restarted.accessory(created.deviceId)?.displayName)
+    }
+
+    @Test fun `a name learned after creation updates the association`() = scenario {
+        val gateway = FakeGateway()
+        val service = service(gateway)
+        service.activateSession()
+        val picker = scope.async { service.showPicker() }
+        settle()
+        val created = association(UUID.randomUUID(), CompanionDiscoveryCriteria.DEFAULT_ACCESSORY_NAME)
+        gateway.associations += created
+        gateway.events!!.onAssociationCreated(created)
+        picker.await()
+        gateway.events!!.onAssociationNamed(created.deviceId, "MeshCore-B2")
+        assertEquals("MeshCore-B2", service.accessory(created.deviceId)?.displayName)
+    }
+
+    @Test fun `a Settings removal made while the process was dead is reported on the next activation`() = scenario {
+        val records = InMemoryAssociationRecordStore()
+        val kept = association(UUID.randomUUID(), "kept")
+        val gone = association(UUID.randomUUID(), "gone")
+        records.remember(kept.deviceId, kept.displayName)
+        records.remember(gone.deviceId, gone.displayName)
+        val gateway = FakeGateway().apply { associations += kept }
+        val service = service(gateway, records = records)
+        val recorder = Recorder()
+        service.delegate = recorder
+        service.activateSession()
+        service.refreshAssociations()
+        assertEquals(listOf(gone.deviceId), recorder.removed)
+        assertEquals(setOf(kept.deviceId), records.records().keys)
+    }
+
+    @Test fun `the chooser host is read at launch time and an abandoned request is never launched`() = scenario {
+        val gateway = FakeGateway()
+        val first = mutableListOf<Any>()
+        val second = mutableListOf<Any>()
+        val service = service(gateway, CompanionChooserHost { chooser, _ -> first += chooser })
+        service.activateSession()
+        val picker = scope.async { runCatching { service.showPicker() } }
+        settle()
+        service.setChooserHost(CompanionChooserHost { chooser, _ -> second += chooser })
+        gateway.events!!.onChooserPending("sender", 1)
+        assertTrue(first.isEmpty())
+        assertEquals(listOf<Any>("sender"), second)
+        gateway.events!!.onDismissed()
+        picker.await()
+
+        val detached = scope.async { runCatching { service.showPicker() } }
+        settle()
+        service.setChooserHost(null)
+        gateway.events!!.onChooserPending("sender-2", 2)
+        assertIs<CompanionSetupError.PickerRestricted>(detached.await().exceptionOrNull())
+
+        service.setChooserHost(CompanionChooserHost { chooser, _ -> second += chooser })
+        val abandoned = scope.async { service.showPicker() }
+        settle()
+        val events = gateway.events!!
+        abandoned.cancel()
+        runCatching { abandoned.await() }
+        events.onChooserPending("late", 3)
+        assertEquals(listOf<Any>("sender"), second, "An abandoned request does not present the chooser")
+    }
+
+    @Test fun `chooser results are correlated by request id so a late result never resolves a newer request`() {
+        val requests = ChooserRequests<String>(capacity = 2)
+        val old = requests.register("old")
+        val new = requests.register("new")
+        assertEquals("old", requests.take(old))
+        assertNull(requests.take(old), "Finished requests are not reused")
+        assertEquals("new", requests.take(new))
+        val a = requests.register("a"); requests.register("b"); requests.register("c")
+        assertNull(requests.take(a), "Bounded: the oldest abandoned request is evicted")
+        requests.finish("b")
+        assertEquals(1, requests.size)
+    }
+
+    @Test fun `CDM failure codes and pre-API-36 reason strings map to dismissal or typed errors`() {
+        assertEquals(CompanionFailureOutcome.Dismissed, CompanionFailureMapping.fromCode(0))
+        assertEquals(CompanionFailureOutcome.Dismissed, CompanionFailureMapping.fromCode(1))
+        assertIs<CompanionSetupError.DiscoveryTimeout>((CompanionFailureMapping.fromCode(2) as CompanionFailureOutcome.Failed).error)
+        assertIs<CompanionSetupError.ConnectionFailed>((CompanionFailureMapping.fromCode(3) as CompanionFailureOutcome.Failed).error)
+        assertEquals(CompanionFailureOutcome.Dismissed, CompanionFailureMapping.fromReason("user_rejected"))
+        assertEquals(CompanionFailureOutcome.Dismissed, CompanionFailureMapping.fromReason("canceled"))
+        assertIs<CompanionSetupError.DiscoveryTimeout>((CompanionFailureMapping.fromReason("discovery_timeout") as CompanionFailureOutcome.Failed).error)
+        assertIs<CompanionSetupError.ConnectionFailed>((CompanionFailureMapping.fromReason("internal_error") as CompanionFailureOutcome.Failed).error)
+        assertIs<CompanionSetupError.ConnectionFailed>((CompanionFailureMapping.fromReason(null) as CompanionFailureOutcome.Failed).error)
     }
 }

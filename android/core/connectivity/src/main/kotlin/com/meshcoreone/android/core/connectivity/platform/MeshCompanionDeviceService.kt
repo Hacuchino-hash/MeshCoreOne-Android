@@ -43,7 +43,15 @@ class MeshCompanionDeviceService : CompanionDeviceService() {
 
     override fun onDevicePresenceEvent(event: DevicePresenceEvent) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) return
-        val id = deviceIdForAssociation(event.associationId) ?: return
+        val id = deviceIdForAssociation(event.associationId)
+        if (id == null) {
+            // A removed association is already gone from getMyAssociations(): ask the host to re-read
+            // and diff against its durable association record instead of dropping the event.
+            if (event.event == DevicePresenceEvent.EVENT_ASSOCIATION_REMOVED) {
+                CompanionPresenceDispatcher.dispatch(PresenceEvent.AssociationsChanged)
+            }
+            return
+        }
         val mapped = when (event.event) {
             DevicePresenceEvent.EVENT_BLE_APPEARED, DevicePresenceEvent.EVENT_BT_CONNECTED -> PresenceEvent.Appeared(id)
             DevicePresenceEvent.EVENT_BLE_DISAPPEARED, DevicePresenceEvent.EVENT_BT_DISCONNECTED -> PresenceEvent.Disappeared(id)
@@ -55,7 +63,7 @@ class MeshCompanionDeviceService : CompanionDeviceService() {
 
     private fun deviceId(address: String): UUID? = runCatching { DeviceEndpointIdentity.deviceId(address) }.getOrNull()
 
-    private fun deviceId(info: AssociationInfo): UUID? = AndroidCompanionDeviceGateway.toAssociation(info)?.deviceId
+    private fun deviceId(info: AssociationInfo): UUID? = AndroidCompanionDeviceGateway.toAssociation(info, advertisedName = null)?.deviceId
 
     private fun deviceIdForAssociation(associationId: Int): UUID? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null

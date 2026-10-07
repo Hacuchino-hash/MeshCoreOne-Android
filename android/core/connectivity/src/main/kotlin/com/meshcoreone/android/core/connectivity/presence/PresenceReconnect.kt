@@ -7,10 +7,11 @@ import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import java.util.UUID
 
 sealed interface PresenceEvent {
-    val deviceId: UUID
-    data class Appeared(override val deviceId: UUID) : PresenceEvent
-    data class Disappeared(override val deviceId: UUID) : PresenceEvent
-    data class AssociationRemoved(override val deviceId: UUID) : PresenceEvent
+    data class Appeared(val deviceId: UUID) : PresenceEvent
+    data class Disappeared(val deviceId: UUID) : PresenceEvent
+    data class AssociationRemoved(val deviceId: UUID) : PresenceEvent
+    /** An association changed (API 36 removal of an id no longer listed): re-read and diff the registry. */
+    data object AssociationsChanged : PresenceEvent
 }
 
 data class PresenceContext(
@@ -30,6 +31,8 @@ sealed interface PresenceAction {
     data class DeferUntilUnlock(val deviceId: UUID) : PresenceAction
     data class PermissionRevoked(val capability: Capability) : PresenceAction
     data class ForgetAssociation(val deviceId: UUID) : PresenceAction
+    /** Call `CompanionSetupService.refreshAssociations()`; removals are reported through the delegate. */
+    data object RefreshAssociations : PresenceAction
     data class Ignore(val reason: IgnoreReason) : PresenceAction
 }
 
@@ -42,6 +45,7 @@ enum class IgnoreReason {
 object PresenceReconnectPolicy {
     fun decide(event: PresenceEvent, context: PresenceContext): PresenceAction = when (event) {
         is PresenceEvent.AssociationRemoved -> PresenceAction.ForgetAssociation(event.deviceId)
+        PresenceEvent.AssociationsChanged -> PresenceAction.RefreshAssociations
         is PresenceEvent.Disappeared -> PresenceAction.Ignore(IgnoreReason.DisappearanceIsNotLinkLoss)
         is PresenceEvent.Appeared -> when {
             event.deviceId != context.lastConnectedDeviceId -> PresenceAction.Ignore(IgnoreReason.NotLastConnected)
@@ -69,7 +73,7 @@ fun interface PresenceEventSink {
 object CompanionPresenceDispatcher {
     private val lock = Any()
     private var sink: PresenceEventSink? = null
-    private val pending = linkedMapOf<UUID, PresenceEvent>()
+    private val pending = linkedMapOf<Any, PresenceEvent>()
     private const val MAX_PENDING = 32
 
     fun attach(value: PresenceEventSink) {
@@ -85,13 +89,21 @@ object CompanionPresenceDispatcher {
     fun dispatch(event: PresenceEvent) {
         val target = synchronized(lock) {
             sink ?: run {
-                pending.remove(event.deviceId)
-                pending[event.deviceId] = event
+                val key = key(event)
+                pending.remove(key)
+                pending[key] = event
                 while (pending.size > MAX_PENDING) pending.remove(pending.keys.first())
                 null
             }
         }
         target?.onPresence(event)
+    }
+
+    private fun key(event: PresenceEvent): Any = when (event) {
+        is PresenceEvent.Appeared -> event.deviceId
+        is PresenceEvent.Disappeared -> event.deviceId
+        is PresenceEvent.AssociationRemoved -> event.deviceId
+        PresenceEvent.AssociationsChanged -> PresenceEvent.AssociationsChanged
     }
 
     internal fun resetForTest() { synchronized(lock) { sink = null; pending.clear() } }

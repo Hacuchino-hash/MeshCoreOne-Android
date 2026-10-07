@@ -4,6 +4,7 @@ package com.meshcoreone.android.core.connectivity.bond
 import com.meshcoreone.android.core.ble.BondState
 import com.meshcoreone.android.core.connectivity.ConnectivityClock
 import com.meshcoreone.android.core.connectivity.pairing.DeviceEndpointIdentity
+import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CompletableDeferred
@@ -82,7 +83,9 @@ class BondingCoordinator(
             coroutineScope {
                 val timer = launch {
                     clock.sleep(timeout)
-                    outcome.completeExceptionally(BondFailure(BondFailure.Reason.TimedOut))
+                    // A missed broadcast must not fail a bond the stack completed: re-read before timing out.
+                    if (gateway.bondState(address) == BondState.Bonded) outcome.complete(Unit)
+                    else outcome.completeExceptionally(BondFailure(BondFailure.Reason.TimedOut))
                 }
                 try { outcome.await() } finally { timer.cancel() }
             }
@@ -105,4 +108,23 @@ class BondingCoordinator(
             else -> BondFailure.Reason.Unknown
         }
     }
+}
+
+/** Whether the platform still holds a bond for an endpoint, and whether the app may remove it. */
+interface BondInspector {
+    /** `CompanionDeviceManager.removeBond` exists from API 36. */
+    val canRemoveBonds: Boolean
+    fun isBonded(deviceId: UUID): Boolean
+}
+
+class PlatformBondInspector(
+    private val sdkInt: Int,
+    private val gateway: BondGateway,
+    private val addressOf: (UUID) -> String?,
+) : BondInspector {
+    override val canRemoveBonds: Boolean get() = sdkInt >= REMOVE_BOND_SDK
+    override fun isBonded(deviceId: UUID): Boolean =
+        addressOf(deviceId)?.let { gateway.bondState(it) == BondState.Bonded } ?: false
+
+    companion object { const val REMOVE_BOND_SDK = 36 }
 }

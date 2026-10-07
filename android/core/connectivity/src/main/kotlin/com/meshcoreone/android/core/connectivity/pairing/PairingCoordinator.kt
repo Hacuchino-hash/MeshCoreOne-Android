@@ -5,6 +5,7 @@ import com.meshcoreone.android.core.connectivity.ConnectivityClock
 import com.meshcoreone.android.core.connectivity.ConnectivityDiagnostics
 import com.meshcoreone.android.core.connectivity.ConnectivityError
 import com.meshcoreone.android.core.connectivity.ble.SystemLinkProbe
+import com.meshcoreone.android.core.connectivity.bond.BondInspector
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
 import com.meshcoreone.android.core.contracts.domain.DevicePersisting
 import com.meshcoreone.android.core.model.DeviceDTO
@@ -63,6 +64,7 @@ class PairingCoordinator(
     private val diagnostics: ConnectivityDiagnostics = ConnectivityDiagnostics.NONE,
     private val ensureBonded: (suspend (UUID) -> Unit)? = null,
     private val endpoints: KnownEndpointStore? = null,
+    private val bonds: BondInspector? = null,
 ) : DevicePairingDelegate {
     private val lock = Any()
     private var pairingInProgress = false
@@ -128,11 +130,32 @@ class PairingCoordinator(
             diagnostics.report("pairing.connect", failure)
             val authentication = connection.isAuthenticationFailure(failure) ||
                 (failure is com.meshcoreone.android.core.connectivity.bond.BondFailure && failure.authentication)
-            throw PairingError.ConnectionFailed(deviceId, failure, authentication)
+            throw PairingError.ConnectionFailed(deviceId, failure, authentication, recoveryFor(deviceId, authentication))
         }
     }
 
-    /** Removes a cancelled, partially-paired association so no phantom bond outlives the flow. */
+    /**
+     * An auth failure while Android still holds a bond means the radio dropped its keys. API 36+
+     * removes the bond with the association; older releases cannot, so the user must forget the
+     * radio in Bluetooth settings before pairing again.
+     */
+    private fun recoveryFor(deviceId: UUID, authentication: Boolean): PairingRecovery {
+        if (!authentication) return PairingRecovery.None
+        val inspector = bonds ?: return PairingRecovery.RemoveAndRetry
+        return try {
+            if (!inspector.canRemoveBonds && inspector.isBonded(deviceId)) PairingRecovery.ForgetInBluetoothSettings
+            else PairingRecovery.RemoveAndRetry
+        } catch (failure: Exception) {
+            diagnostics.report("pairing.bondInspection", failure)
+            PairingRecovery.RemoveAndRetry
+        }
+    }
+
+    /**
+     * Removes a cancelled, partially-paired association. The association removal also removes the
+     * system bond on API 36+ (`CompanionDeviceManager.removeBond`); on older releases any bond the
+     * flow created stays in Bluetooth settings.
+     */
     private suspend fun cleanupPartialPairing(deviceId: UUID) {
         try { pairing.removeDevice(deviceId) }
         catch (failure: Exception) { diagnostics.report("pairing.cleanupPartial.remove", failure) }

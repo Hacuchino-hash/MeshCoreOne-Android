@@ -12,6 +12,7 @@ import com.meshcoreone.android.core.connectivity.bond.BondFailure
 import com.meshcoreone.android.core.connectivity.bond.BondGateway
 import com.meshcoreone.android.core.connectivity.bond.BondProgress
 import com.meshcoreone.android.core.connectivity.bond.BondingCoordinator
+import com.meshcoreone.android.core.connectivity.bond.PlatformBondInspector
 import com.meshcoreone.android.core.connectivity.permissions.Advisory
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityFeature
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityPermission
@@ -32,7 +33,6 @@ import com.meshcoreone.android.core.connectivity.service.DeferReason
 import com.meshcoreone.android.core.connectivity.service.ForegroundServiceStarter
 import com.meshcoreone.android.core.connectivity.service.HostingDecision
 import com.meshcoreone.android.core.connectivity.service.HostingInput
-import com.meshcoreone.android.core.connectivity.service.StartExemption
 import com.meshcoreone.android.core.connectivity.service.StartOutcome
 import com.meshcoreone.android.core.connectivity.support.scenario
 import com.meshcoreone.android.core.connectivity.support.settle
@@ -132,6 +132,25 @@ class PlatformBoundaryTest {
         cancelled.cancel()
         assertIs<CancellationException>(runCatching { cancelled.await() }.exceptionOrNull())
         assertTrue(gateway.listeners.isEmpty())
+    }
+
+    @Test fun `a missed bonded broadcast is recovered by re-reading the bond state at timeout`() = scenario {
+        val gateway = FakeBondGateway()
+        val task = scope.async { runCatching { BondingCoordinator(gateway, clock, timeout = 30.seconds).ensureBonded(address) } }
+        settle()
+        gateway.state = BondState.Bonded // The stack bonded, but its broadcast never reached the receiver.
+        clock.advanceBy(30.seconds)
+        assertTrue(task.await().isSuccess)
+    }
+
+    @Test fun `stale bonds route to Bluetooth settings only where the app cannot remove them`() {
+        val bonded = FakeBondGateway(BondState.Bonded)
+        val id = UUID.randomUUID()
+        val old = PlatformBondInspector(35, bonded) { address }
+        assertFalse(old.canRemoveBonds)
+        assertTrue(old.isBonded(id))
+        assertTrue(PlatformBondInspector(36, bonded) { address }.canRemoveBonds)
+        assertFalse(PlatformBondInspector(35, bonded) { null }.isBonded(id), "Unknown endpoint is not bonded")
     }
 
     @Test fun `an in-progress system bond is awaited rather than restarted`() = scenario {
@@ -239,17 +258,21 @@ class PlatformBoundaryTest {
     private fun input(
         intent: ConnectionIntent = ConnectionIntent.WantsConnection(),
         state: DeviceConnectionState = DeviceConnectionState.READY,
-        exemption: StartExemption? = StartExemption.Foreground,
+        foreground: Boolean = true,
         granted: Boolean = true,
         reconnecting: Boolean = false,
-    ) = HostingInput(intent, state, reconnecting, exemption, granted)
+    ) = HostingInput(intent, state, reconnecting, foreground, granted)
+
+    private fun startedController(starter: FakeStarter = FakeStarter()) =
+        ConnectedDeviceHostingController(starter).also { it.update(input()); it.onServiceStarted() }
 
     @Test fun `exactly one service is held while a wanted link is live and released on user disconnect`() {
         val starter = FakeStarter()
         val controller = ConnectedDeviceHostingController(starter)
         assertEquals(HostingDecision.Hold, controller.update(input(state = DeviceConnectionState.CONNECTING)))
+        controller.onServiceStarted()
         assertEquals(HostingDecision.Hold, controller.update(input()))
-        assertEquals(HostingDecision.Hold, controller.update(input(exemption = null)))
+        assertEquals(HostingDecision.Hold, controller.update(input(foreground = false)))
         assertEquals(1, starter.starts, "Never a second start while held")
         assertEquals(HostingDecision.Release, controller.update(input(intent = ConnectionIntent.UserDisconnected)))
         assertEquals(1, starter.stops)
@@ -263,30 +286,63 @@ class PlatformBoundaryTest {
             input(state = DeviceConnectionState.DISCONNECTED, reconnecting = true), true))
     }
 
-    @Test fun `a companion association is not a background-start exemption`() {
+    @Test fun `a companion association or presence callback is not a background-start exemption`() {
         val starter = FakeStarter()
-        val decision = ConnectedDeviceHostingController(starter).update(input(exemption = null))
+        val decision = ConnectedDeviceHostingController(starter).update(input(foreground = false))
         assertEquals(HostingDecision.Defer(DeferReason.BackgroundStartRestricted), decision)
         assertEquals(0, starter.starts)
     }
 
     @Test fun `background start refusal and missing type prerequisite are typed deferrals`() {
         val refused = ConnectedDeviceHostingController(FakeStarter(StartOutcome.BackgroundStartNotAllowed))
-        assertEquals(HostingDecision.Defer(DeferReason.BackgroundStartRestricted),
-            refused.update(input(exemption = StartExemption.CompanionPresenceCallback)))
+        assertEquals(HostingDecision.Defer(DeferReason.BackgroundStartRestricted), refused.update(input()))
         assertFalse(refused.isHeld)
-        val typed = ConnectedDeviceHostingController(FakeStarter(StartOutcome.TypeNotPermitted(SecurityException("type"))))
-        assertEquals(HostingDecision.Defer(DeferReason.MissingTypePrerequisite), typed.update(input()))
         assertEquals(HostingDecision.Defer(DeferReason.MissingTypePrerequisite),
             ConnectedDeviceHostingPolicy.decide(input(granted = false), false))
         assertEquals(HostingDecision.Hold,
             ConnectedDeviceHostingPolicy.decide(input(granted = false).copy(lanOnly = true), false))
     }
 
-    @Test fun `a system-stopped service is restarted by the next qualifying update`() {
+    @Test fun `a release before the service called startForeground is applied only once it has started`() {
+        val starter = FakeStarter()
+        val controller = ConnectedDeviceHostingController(starter)
+        controller.update(input(state = DeviceConnectionState.CONNECTING))
+        // The connect fails within milliseconds, before onStartCommand ran.
+        assertEquals(HostingDecision.Release, controller.update(input(state = DeviceConnectionState.DISCONNECTED)))
+        assertEquals(0, starter.stops, "Stopping before startForeground would crash the app")
+        assertTrue(controller.isStopPending)
+        controller.onServiceStarted()
+        assertEquals(1, starter.stops)
+        assertFalse(controller.isHeld)
+    }
+
+    @Test fun `a hold arriving while a stop is pending cancels the stop without a second start`() {
+        val starter = FakeStarter()
+        val controller = ConnectedDeviceHostingController(starter)
+        controller.update(input(state = DeviceConnectionState.CONNECTING))
+        controller.update(input(state = DeviceConnectionState.DISCONNECTED))
+        assertEquals(HostingDecision.Hold, controller.update(input()))
+        controller.onServiceStarted()
+        assertEquals(1, starter.starts)
+        assertEquals(0, starter.stops)
+        assertTrue(controller.isHeld)
+    }
+
+    @Test fun `a startForeground type failure inside the service resets the hold and is typed`() {
         val starter = FakeStarter()
         val controller = ConnectedDeviceHostingController(starter)
         controller.update(input())
+        controller.onServiceStartFailed(SecurityException("FOREGROUND_SERVICE_CONNECTED_DEVICE"))
+        assertFalse(controller.isHeld)
+        assertIs<StartOutcome.TypeNotPermitted>(controller.lastOutcome)
+        assertEquals(0, starter.stops, "The service stopped itself")
+        controller.update(input())
+        assertEquals(2, starter.starts, "A later qualifying update retries")
+    }
+
+    @Test fun `a system-stopped service is restarted by the next qualifying update`() {
+        val starter = FakeStarter()
+        val controller = startedController(starter)
         controller.onServiceStopped()
         assertFalse(controller.isHeld)
         controller.update(input())
@@ -324,6 +380,16 @@ class PlatformBoundaryTest {
             PresenceReconnectPolicy.decide(PresenceEvent.Appeared(device), context(connect = false)))
         assertEquals(PresenceAction.Ignore(IgnoreReason.BluetoothOff),
             PresenceReconnectPolicy.decide(PresenceEvent.Appeared(device), context(enabled = false)))
+    }
+
+    @Test fun `an unknown removed association triggers a registry refresh and is buffered across process death`() {
+        assertEquals(PresenceAction.RefreshAssociations,
+            PresenceReconnectPolicy.decide(PresenceEvent.AssociationsChanged, context()))
+        CompanionPresenceDispatcher.dispatch(PresenceEvent.AssociationsChanged)
+        CompanionPresenceDispatcher.dispatch(PresenceEvent.AssociationsChanged)
+        val received = mutableListOf<PresenceEvent>()
+        CompanionPresenceDispatcher.attach(PresenceEventSink { received += it })
+        assertEquals(listOf<PresenceEvent>(PresenceEvent.AssociationsChanged), received)
     }
 
     @Test fun `disappearance is not link loss and association removal forgets`() {

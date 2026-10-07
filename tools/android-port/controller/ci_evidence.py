@@ -191,6 +191,22 @@ def validate_graph_runtime(root: Path):
             raise PortError("Malformed runtime license provenance or invented legal approval")
 
 
+# Exact merged debug-APK permissions (WP-206 core:connectivity plus the scaffold receiver permission).
+EXPECTED_APK_PERMISSIONS = [
+    "android.permission.BLUETOOTH_CONNECT",
+    "android.permission.BLUETOOTH_SCAN",
+    "android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE",
+    "android.permission.FOREGROUND_SERVICE",
+    "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+    "android.permission.POST_NOTIFICATIONS",
+    "android.permission.INTERNET",
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.CHANGE_NETWORK_STATE",
+    "android.permission.ACCESS_LOCAL_NETWORK",
+    "com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+]
+
+
 def validate_apk_inspection(value: dict, root: Path):
     fields(value, APK_FIELDS, label="actual APK inspection")
     if (
@@ -202,7 +218,7 @@ def validate_apk_inspection(value: dict, root: Path):
         or value["static_16kb_alignment_verified"] is not True
         or value["native_16kb_compatibility_verified"] is not False
         or value["physical_device_or_native_runtime_verified"] is not False
-        or value["permissions"] != ["com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"]
+        or value["permissions"] != EXPECTED_APK_PERMISSIONS
         or value["pinned_notices"] != ["assets/licenses/GPL-3.0.txt", "assets/licenses/MeshCore-MIT.txt", "assets/licenses/Apache-2.0.txt"]
         or not isinstance(value["scope"], str) or not value["scope"].strip()
         or type(value["size_bytes"]) is not int or value["size_bytes"] < 1

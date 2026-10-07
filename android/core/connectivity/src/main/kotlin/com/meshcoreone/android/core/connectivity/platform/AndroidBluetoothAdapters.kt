@@ -143,7 +143,9 @@ class AndroidBondGateway(
             addAction(BluetoothDevice.ACTION_PAIRING_REQUEST)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            // Sent by the Bluetooth app (its own uid), not the system uid: a NOT_EXPORTED receiver would
+            // drop them. Both actions are protected broadcasts, so EXPORTED cannot be spoofed by apps.
+            context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             context.registerReceiver(receiver, filter)
         }

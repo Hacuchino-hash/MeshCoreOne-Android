@@ -394,10 +394,11 @@ internal class RuntimeHarness(val scenario: Scenario) {
     val scanGateway = FakeScanGateway()
     val scans = BleScanCoordinator(scanGateway)
 
-    fun coordinator(): PairingCoordinator = PairingCoordinator(
+    fun coordinator(bonds: com.meshcoreone.android.core.connectivity.bond.BondInspector? = null): PairingCoordinator = PairingCoordinator(
         port, pairing, devices, probe, scans::stopBleScanning, clock, scenario.scope,
         ConnectivityDiagnostics { operation, failure -> reports += operation to failure },
         endpoints = endpoints,
+        bonds = bonds,
     )
 
     fun target(id: UUID): ConnectionTarget.Bluetooth =

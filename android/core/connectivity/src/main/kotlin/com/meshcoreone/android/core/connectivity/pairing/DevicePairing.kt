@@ -56,6 +56,9 @@ sealed class PairingError(message: String, cause: Throwable? = null) : Exception
         override val deviceId: UUID,
         val underlying: Throwable,
         private val authenticationFailure: Boolean,
+        /** The guided recovery the UI offers; auth failures default to "remove and retry". */
+        val recovery: PairingRecovery =
+            if (authenticationFailure) PairingRecovery.RemoveAndRetry else PairingRecovery.None,
     ) : PairingError("Connection failed: ${underlying.message}", underlying) {
         override val isAuthenticationFailure: Boolean get() = authenticationFailure
     }
@@ -68,4 +71,13 @@ sealed class PairingError(message: String, cause: Throwable? = null) : Exception
      * performed once at the throw site by the connection port, never by matching message text.
      */
     open val isAuthenticationFailure: Boolean get() = false
+}
+
+/** Recovery routes for a failed pairing connect. */
+enum class PairingRecovery {
+    None,
+    /** Remove the association (and, API 36+, its bond) and pair again. */
+    RemoveAndRetry,
+    /** A stale bond the app cannot remove (before API 36): the user forgets it in Bluetooth settings. */
+    ForgetInBluetoothSettings,
 }

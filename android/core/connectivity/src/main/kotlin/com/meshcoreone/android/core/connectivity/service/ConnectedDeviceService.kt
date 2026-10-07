@@ -19,10 +19,13 @@ fun interface ConnectedDeviceNotificationProvider {
     fun notification(context: Context, channelId: String): Notification
 }
 
+/** Host hooks; WP-303 routes them to `ConnectedDeviceHostingController.onService*`. */
 object ConnectedDeviceServiceHost {
     const val CHANNEL_ID = "connected_device"
     const val NOTIFICATION_ID = 0x4d43
     @Volatile var notificationProvider: ConnectedDeviceNotificationProvider? = null
+    @Volatile var onStarted: (() -> Unit)? = null
+    @Volatile var onStartFailed: ((Throwable) -> Unit)? = null
     @Volatile var onStopped: (() -> Unit)? = null
     @Volatile var onFailure: ((Throwable) -> Unit)? = null
 }
@@ -35,18 +38,33 @@ object ConnectedDeviceServiceHost {
 class ConnectedDeviceService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
+    /**
+     * `startForeground` is always the first platform obligation: nothing before it may abort the
+     * start, because stopping a `startForegroundService` service first crashes the app. Only a
+     * failing `startForeground` itself (API 34 type check) is reported back before stopping.
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val notification = notification()
         try {
-            ensureChannel()
-            val notification = ConnectedDeviceServiceHost.notificationProvider?.notification(this, ConnectedDeviceServiceHost.CHANNEL_ID)
-                ?: fallbackNotification()
             startForeground(ConnectedDeviceServiceHost.NOTIFICATION_ID, notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
         } catch (failure: RuntimeException) {
-            ConnectedDeviceServiceHost.onFailure?.invoke(failure)
+            ConnectedDeviceServiceHost.onStartFailed?.invoke(failure)
             stopSelf(startId)
+            return START_NOT_STICKY
         }
+        ConnectedDeviceServiceHost.onStarted?.invoke()
         return START_NOT_STICKY
+    }
+
+    private fun notification(): Notification {
+        try {
+            ensureChannel()
+            ConnectedDeviceServiceHost.notificationProvider?.notification(this, ConnectedDeviceServiceHost.CHANNEL_ID)?.let { return it }
+        } catch (failure: RuntimeException) {
+            ConnectedDeviceServiceHost.onFailure?.invoke(failure)
+        }
+        return fallbackNotification()
     }
 
     override fun onDestroy() {
@@ -76,13 +94,14 @@ class AndroidForegroundServiceStarter(context: Context) : ForegroundServiceStart
     private val context = context.applicationContext
     private val intent get() = Intent(context, ConnectedDeviceService::class.java)
 
+    /** The API 34 type check happens later, inside `startForeground` (see `onStartFailed`). */
     override fun start(): StartOutcome = try {
         context.startForegroundService(intent)
         StartOutcome.Started
     } catch (refused: ForegroundServiceStartNotAllowedException) {
         StartOutcome.BackgroundStartNotAllowed
-    } catch (denied: SecurityException) {
-        StartOutcome.TypeNotPermitted(denied)
+    } catch (failure: SecurityException) {
+        StartOutcome.Failed(failure)
     } catch (failure: IllegalStateException) {
         StartOutcome.Failed(failure)
     }
