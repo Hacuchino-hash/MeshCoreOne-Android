@@ -167,6 +167,7 @@ internal class TestPlatform : ConnectionPlatform {
     override var hasSystemPairingRegistry = false
     override var registryActive = false
     var registered = true
+    var resolvesTargets = true
     var target = target()
     var state = PlatformLinkState(false, false, false, null, "idle", false)
     var adopts = 0
@@ -180,7 +181,8 @@ internal class TestPlatform : ConnectionPlatform {
     override suspend fun foreground(active: Boolean) { foregroundCalls += active }
     override suspend fun state(target: ConnectionTarget): PlatformLinkState { onState(); return state }
     override suspend fun isRegistered(deviceId: UUID): Boolean = registered
-    override suspend fun targetForDevice(deviceId: UUID): ConnectionTarget? = target.copy(deviceId = deviceId)
+    override suspend fun targetForDevice(deviceId: UUID): ConnectionTarget? =
+        if (resolvesTargets) target.copy(deviceId = deviceId) else null
     override suspend fun adoptSystemLink(target: ConnectionTarget): Boolean { adopts++; return adoptionSucceeds }
     override fun classifyFailure(failure: Throwable): LinkFailure? = failure as? LinkFailure
 }
@@ -283,6 +285,7 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
     var onAvailable: suspend () -> Unit = {}
     var onRegistration: (LinkCallbacks) -> Unit = {}
     var onSubmission: () -> Unit = {}
+    var onLost: suspend () -> Unit = {}
     val manager = ConnectionManager(
         devices,
         object : RoomPersisting by rejectingRole(RoomPersisting::class.java) {
@@ -309,7 +312,7 @@ internal class RuntimeFixture(val test: TestScope, parent: Job? = null, dispatch
         },
         ConnectionObserver(
             onServicesAvailable = { order += "available"; onAvailable() },
-            onConnectionLost = { lossCount++ },
+            onConnectionLost = { lossCount++; onLost() },
             onAutoReconnectStarted = { autoCount++; order += "auto-loss" },
             onDeviceSynced = { syncedCount++ },
             onAuthenticationFailure = authFailures::add,
