@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import struct
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zlib
@@ -33,6 +34,20 @@ def invocation_record():
             "source_sha": retain_raw.PIN, "manifest_sha256": retain_raw.MANIFEST,
             "policy_revision": retain_raw.POLICY,
         }}}
+
+
+def local_invocation_record():
+    return {"schema_version": 1, "stage": "verify", "host": "linux", "identity": None}
+
+
+def local_git(*arguments):
+    values = {
+        ("rev-parse", "HEAD"): b"b" * 40,
+        ("rev-parse", "HEAD^{tree}"): b"c" * 40,
+        ("rev-parse", retain_raw.PIN + "^{tree}"): retain_raw.SOURCE_TREE.encode(),
+        ("status", "--porcelain=v1", "--untracked-files=all"): b"",
+    }
+    return values[arguments]
 
 
 class ReaderTests(unittest.TestCase):
@@ -240,6 +255,143 @@ class NativeTest {
                     changed = copy.deepcopy(record); changed["identity"][key] = value
                     path.write_text(json.dumps(changed))
                     with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
+
+    def test_explicit_local_invocation_binds_actual_clean_head_tree_and_frozen_inputs(self):
+        manifest = SimpleNamespace(sha256=retain_raw.MANIFEST,
+            data={"reference": {"commit": retain_raw.PIN, "tree_sha": retain_raw.SOURCE_TREE}})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wp109-invocation.json"
+            path.write_text(json.dumps(local_invocation_record()))
+            with patch.object(retain_raw.platform, "system", return_value="Linux"), \
+                    patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
+                    patch.object(retain_raw, "git", side_effect=local_git), \
+                    patch.object(retain_raw, "load_manifest", return_value=manifest), \
+                    patch.object(retain_raw, "policy_revision", return_value=retain_raw.POLICY), \
+                    patch.object(retain_raw, "inventory") as inventory:
+                root, invocation, local = retain_raw.local_invocation(path)
+            self.assertEqual(path.parent, root)
+            self.assertEqual(local_invocation_record(), invocation)
+            self.assertEqual("local-committed-inputs-no-hosted-run-authority", local["scope"])
+            self.assertEqual("b" * 40, local["binding"]["head_sha"])
+            self.assertEqual("c" * 40, local["binding"]["tree_sha"])
+            self.assertEqual(retain_raw.PIN, local["binding"]["source_sha"])
+            self.assertEqual(retain_raw.SOURCE_TREE, local["binding"]["source_tree"])
+            self.assertEqual(retain_raw.MANIFEST, local["binding"]["manifest_sha256"])
+            self.assertEqual(retain_raw.POLICY, local["binding"]["policy_revision"])
+            self.assertNotIn("run_id", local)
+            self.assertNotIn("run_attempt", local)
+            inventory.assert_called_once_with()
+
+    def test_local_binding_rejects_wrong_host_dirty_snapshot_or_bad_actual_head_tree(self):
+        with patch.object(retain_raw.platform, "system", return_value="Windows"):
+            with self.assertRaisesRegex(EvidenceError, "Linux x64"):
+                retain_raw.local_execution_binding()
+        with patch.object(retain_raw.platform, "system", return_value="Linux"), \
+                patch.object(retain_raw.platform, "machine", return_value="arm64"):
+            with self.assertRaisesRegex(EvidenceError, "Linux x64"):
+                retain_raw.local_execution_binding()
+        for arguments, invalid, message in (
+            (("rev-parse", "HEAD"), b"b" * 39, "head/tree"),
+            (("rev-parse", "HEAD^{tree}"), b"not-a-tree", "head/tree"),
+            (("status", "--porcelain=v1", "--untracked-files=all"), b" M owned.py", "clean committed"),
+        ):
+            def changed_git(*actual):
+                return invalid if actual == arguments else local_git(*actual)
+            with self.subTest(arguments=arguments), \
+                    patch.object(retain_raw.platform, "system", return_value="Linux"), \
+                    patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
+                    patch.object(retain_raw, "git", side_effect=changed_git):
+                with self.assertRaisesRegex(EvidenceError, message):
+                    retain_raw.local_execution_binding()
+
+    def test_local_binding_rejects_source_manifest_policy_or_original_tree_drift(self):
+        reference = {"commit": retain_raw.PIN, "tree_sha": retain_raw.SOURCE_TREE}
+        variants = (
+            (SimpleNamespace(sha256="a" * 64, data={"reference": reference}), retain_raw.POLICY, local_git),
+            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference | {"commit": "a" * 40}}),
+                retain_raw.POLICY, local_git),
+            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference | {"tree_sha": "a" * 40}}),
+                retain_raw.POLICY, local_git),
+            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference}), "a" * 64, local_git),
+            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference}), retain_raw.POLICY,
+                lambda *args: b"a" * 40 if args == ("rev-parse", retain_raw.PIN + "^{tree}") else local_git(*args)),
+        )
+        for manifest, policy, git in variants:
+            with self.subTest(manifest=manifest, policy=policy), \
+                    patch.object(retain_raw.platform, "system", return_value="Linux"), \
+                    patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
+                    patch.object(retain_raw, "git", side_effect=git), \
+                    patch.object(retain_raw, "load_manifest", return_value=manifest), \
+                    patch.object(retain_raw, "policy_revision", return_value=policy), \
+                    patch.object(retain_raw, "inventory") as inventory:
+                with self.assertRaisesRegex(EvidenceError, "source/manifest/policy drift"):
+                    retain_raw.local_execution_binding()
+                inventory.assert_not_called()
+
+    def test_local_forwarding_cannot_consume_a_hosted_or_malformed_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wp109-invocation.json"
+            for identity in (invocation_record()["identity"], {}, [], False, 0):
+                path.write_text(json.dumps(local_invocation_record() | {"identity": identity}))
+                with self.subTest(identity=identity), self.assertRaisesRegex(EvidenceError, "explicit null"):
+                    retain_raw.local_invocation(path)
+            for change in ({"host": "windows"}, {"stage": "protocol"}, {"schema_version": True}, {"local": True}):
+                path.write_text(json.dumps(local_invocation_record() | change))
+                with self.subTest(change=change), self.assertRaisesRegex(EvidenceError, "stage/host/schema"):
+                    retain_raw.local_invocation(path)
+            path.write_text(json.dumps(local_invocation_record()))
+            with self.assertRaisesRegex(EvidenceError, "Missing actual native pipeline invocation identity"):
+                retain_raw.pipeline_invocation(path)
+
+    def test_local_raw_xml_png_and_binding_export_only_to_the_local_evidence_subtree(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, images, pipeline = root / "source", root / "images", root / "pipeline"
+            source.mkdir(); images.mkdir(); pipeline.mkdir()
+            xml = b'<testsuite tests="1" failures="1"><testcase name="failed"><failure>actual stack</failure></testcase></testsuite>'
+            image = png()
+            (source / "TEST-failure.xml").write_bytes(xml)
+            (images / "dialog.png").write_bytes(image)
+            invocation = pipeline / "wp109-invocation.json"
+            invocation.write_text(json.dumps(local_invocation_record()))
+            local = {"scope": "local-committed-inputs-no-hosted-run-authority",
+                "binding": {"head_sha": "b" * 40, "tree_sha": "c" * 40}}
+            with patch.object(retain_raw, "native_inputs", return_value={"actual-input": {}}), \
+                    patch.object(retain_raw, "git", return_value=b"b" * 40), \
+                    patch.object(retain_raw, "local_execution_binding", return_value=local):
+                result = retain_raw.retain(source, root / "raw", images=images, invocation_path=invocation)
+                with self.assertRaisesRegex(EvidenceError, "must not be overwritten"):
+                    retain_raw.retain(source, root / "raw", images=images, invocation_path=invocation)
+            target = pipeline / "wp304-local"
+            self.assertEqual(xml, (target / "junit" / "TEST-failure.xml").read_bytes())
+            self.assertEqual(image, (target / "ui" / "dialog.png").read_bytes())
+            self.assertEqual("local", result["execution_scope"])
+            self.assertEqual(local, result["local_execution"])
+            self.assertIsNone(result["invocation"]["identity"])
+            self.assertEqual("raw-retained-unvalidated", result["result"])
+            self.assertFalse((pipeline / "wp304-native").exists())
+            self.assertEqual(result, json.loads((target / "raw-retention.json").read_text()))
+
+    def test_invalid_local_binding_preserves_raw_bytes_without_export_or_hosted_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"; source.mkdir()
+            raw = b'<testsuite tests="1"><testcase name="actual"/></testsuite>'
+            (source / "TEST-one.xml").write_bytes(raw)
+            invocation = root / "wp109-invocation.json"
+            invocation.write_text(json.dumps(local_invocation_record()))
+            with patch.object(retain_raw, "native_inputs", return_value={}), \
+                    patch.object(retain_raw, "git", return_value=b"b" * 40), \
+                    patch.object(retain_raw, "local_execution_binding",
+                        side_effect=EvidenceError("Local UI evidence requires a clean committed snapshot")):
+                with self.assertRaisesRegex(EvidenceError, "clean committed"):
+                    retain_raw.retain(source, root / "raw", invocation_path=invocation)
+            self.assertEqual(raw, (root / "raw" / "junit" / "TEST-one.xml").read_bytes())
+            result = json.loads((root / "raw" / "raw-retention.json").read_text())
+            self.assertIsNone(result["local_execution"])
+            self.assertIsNone(result["invocation"])
+            self.assertFalse((root / "wp304-local").exists())
+            self.assertFalse((root / "wp304-native").exists())
 
     def test_pipeline_invocation_rejects_wrong_path_unbounded_or_malformed_json(self):
         with tempfile.TemporaryDirectory() as directory:

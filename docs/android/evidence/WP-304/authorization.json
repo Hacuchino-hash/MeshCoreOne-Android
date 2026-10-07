@@ -40,6 +40,29 @@
     },
     "frozen_inputs": "DeviceSettings b2a6, Messaging d6f9, canonical local UI lock 54192/d453/38 configurations including empty androidApis, ROOT UI seed and the two exact admitted test-context text representations remain unchanged."
   },
+  "automatic_owned_reservation": {
+    "authority": "Coordinator-installed user-approved atomic reservation tool; existing WP-304 recovery assignment remains the scope authority.",
+    "native_session": "b4682f12-ba0c-4fa2-a9f1-a21ccac74b01",
+    "base": "efe528ccf34208d363ad6b67d696594564fa3b7d",
+    "reserved_paths": [
+      "docs/android/evidence/WP-304/retain_raw.py",
+      "docs/android/evidence/WP-304/test_reader.py",
+      "docs/android/evidence/WP-304/README.md",
+      "docs/android/evidence/WP-304/authorization.json",
+      "docs/android/deviations/WP-304.md"
+    ],
+    "result": "Atomic idempotent supervised-write-reservation acquired without overlap.",
+    "scope": "Actual local-null invocation retention bug only; original hosted identity guards, source floors and producer gate unchanged. No additional producer/contracts/build path or behavior authority is inferred."
+  },
+  "local_before_new_push": {
+    "authority": "Direct user/coordinator gate and final clarification: successful declared local cycle before ongoing new-development code pushes; not retrospective testing of current green-PR merges or mechanical resolutions.",
+    "executor": "Installed shared meshcore-local/check.py, default all seven stages, visible pinned WSL Ubuntu22.04 execution.",
+    "initial_actual_head": "efe528ccf34208d363ad6b67d696594564fa3b7d",
+    "initial_actual_tree": "55906f44663710e09cef2468a2868ee1e31cad54",
+    "initial_result": "FAILED in verify at :core:ui:retainSharedUiRaw because the real local invocation identity is null. Python/preflight and197 native UI cases passed with ten PNGs; subsequent standalone/assemble/lint/inspect did not run.",
+    "owned_repair": "Explicit local-only committed-input binding and wp304-local raw retention; hosted pipeline_invocation remains strict. No fabricated hosted run identity, hook/executor/allowlist edit or producer verifier bypass.",
+    "publication": "No new code push is authorized by historical hosted/native/Python proof or a partial local cycle; all21 original producer families still block."
+  },
   "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
   "original_managed_branch": "cbattlegear-refactored-spoon",
   "current_branch": "cbattlegear-refactored-spoon",

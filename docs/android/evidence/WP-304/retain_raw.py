@@ -6,15 +6,22 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+import platform
 import re
 import shutil
 import sys
-from source_inventory import ROOT, PIN, MANIFEST, native_inputs, git, require, unique_json
+from source_inventory import ROOT, PIN, MANIFEST, inventory, native_inputs, git, require, unique_json
+
+sys.path.insert(0, str(ROOT / "tools" / "android-port"))
+from controller.errors import PortError
+from controller.gates import policy_revision
+from controller.model import load_manifest
 
 POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 
 
-def pipeline_invocation(path):
+def invocation_document(path):
     require(path.is_absolute() and path.name == "wp109-invocation.json"
         and path.is_file() and not path.is_symlink()
         and not any(parent.is_symlink() for parent in path.parents)
@@ -25,6 +32,11 @@ def pipeline_invocation(path):
         and type(value["schema_version"]) is int and value["schema_version"] == 1
         and value["stage"] == "verify" and value["host"] == "linux",
         "Wrong native pipeline invocation stage/host/schema")
+    return value
+
+
+def pipeline_invocation(path):
+    value = invocation_document(path)
     identity = value["identity"]
     require(isinstance(identity, dict) and set(identity) == {"binding", "run_id", "run_attempt"},
         "Missing actual native pipeline invocation identity")
@@ -42,6 +54,40 @@ def pipeline_invocation(path):
     return path.parent, value
 
 
+def local_execution_binding():
+    require(platform.system() == "Linux" and platform.machine() == "x86_64",
+        "Local UI evidence requires the admitted Linux x64 host")
+    head = git("rev-parse", "HEAD").decode().strip()
+    tree = git("rev-parse", "HEAD^{tree}").decode().strip()
+    require(re.fullmatch(r"[0-9a-f]{40}", head) and re.fullmatch(r"[0-9a-f]{40}", tree),
+        "Missing actual local committed head/tree")
+    require(not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
+        "Local UI evidence requires a clean committed snapshot")
+    manifest = load_manifest(ROOT)
+    policy = unique_json(ROOT / "docs" / "android" / "automation-policy.json")
+    require(manifest.sha256 == MANIFEST and manifest.data["reference"]["commit"] == PIN
+        and manifest.data["reference"]["tree_sha"] == SOURCE_TREE
+        and policy["repository"] == "cbattlegear/MeshCoreOne-Android"
+        and policy_revision(manifest, policy) == POLICY
+        and git("rev-parse", PIN + "^{tree}").decode().strip() == SOURCE_TREE,
+        "Local UI source/manifest/policy drift")
+    inventory()
+    return {
+        "scope": "local-committed-inputs-no-hosted-run-authority", "host": "linux",
+        "binding": {
+            "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-304",
+            "head_sha": head, "tree_sha": tree, "source_sha": PIN, "source_tree": SOURCE_TREE,
+            "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+        },
+    }
+
+
+def local_invocation(path):
+    value = invocation_document(path)
+    require(value["identity"] is None, "Local UI forwarding requires the explicit null executor identity")
+    return path.parent, value, local_execution_binding()
+
+
 def retain(junit, output, emit=False, images=None, pipeline_output=None, invocation_path=None):
     require(junit.is_absolute() and output.is_absolute(), "Explicit absolute raw input/output paths required")
     require(not junit.is_symlink() and not output.is_symlink(), "Linked raw evidence path")
@@ -53,6 +99,7 @@ def retain(junit, output, emit=False, images=None, pipeline_output=None, invocat
         "scope": "Unvalidated complete produced XML; never a passing suite or parity claim.",
         "result": "raw-retained-unvalidated" if reports else "blocked-no-produced-junit",
         "inputs": native_inputs(), "reports": [], "images": [], "invocation": None,
+        "execution_scope": "unforwarded", "local_execution": None,
     }
     directory = output / "junit"
     directory.mkdir(exist_ok=True)
@@ -81,7 +128,14 @@ def retain(junit, output, emit=False, images=None, pipeline_output=None, invocat
     try:
         if invocation_path is not None:
             require(pipeline_output is None, "Ambiguous pipeline output forwarding")
-            pipeline_output, record["invocation"] = pipeline_invocation(invocation_path)
+            forwarded = invocation_document(invocation_path)
+            if forwarded["identity"] is None:
+                pipeline_output, record["invocation"], record["local_execution"] = local_invocation(invocation_path)
+                record["execution_scope"] = "local"
+                record["scope"] = "Unvalidated local XML/PNG/committed inputs; no hosted run, passing cycle or parity authority."
+            else:
+                pipeline_output, record["invocation"] = pipeline_invocation(invocation_path)
+                record["execution_scope"] = "hosted"
     finally:
         raw_record = (json.dumps(record, indent=2, sort_keys=True) + "\n").encode()
         (output / "raw-retention.json").write_bytes(raw_record)
@@ -92,7 +146,7 @@ def retain(junit, output, emit=False, images=None, pipeline_output=None, invocat
             and not any(parent.is_symlink() for parent in pipeline_output.parents)
             and not pipeline_output.resolve().is_relative_to(ROOT.resolve())
             and not ROOT.resolve().is_relative_to(pipeline_output.resolve()), "Unsafe pipeline evidence root")
-        destination = pipeline_output / "wp304-native"
+        destination = pipeline_output / ("wp304-local" if record["execution_scope"] == "local" else "wp304-native")
         require(not destination.exists(), "Existing pipeline WP-304 evidence must not be overwritten")
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(output, destination)
@@ -109,9 +163,13 @@ def main():
     parser.add_argument("--invocation", type=Path)
     args = parser.parse_args()
     try:
-        retain(args.junit, args.output, args.emit, args.images, invocation_path=args.invocation)
+        result = retain(args.junit, args.output, args.emit, args.images, invocation_path=args.invocation)
+        if result["local_execution"] is not None:
+            binding = result["local_execution"]["binding"]
+            print("WP304_LOCAL_ONLY|" + binding["head_sha"] + "|" + binding["tree_sha"]
+                + "|no-hosted-run-authority")
         return 0
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, PortError) as error:
         print("BLOCKED: " + str(error), file=sys.stderr)
         return 2
 

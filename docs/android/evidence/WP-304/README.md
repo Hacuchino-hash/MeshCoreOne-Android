@@ -1,8 +1,9 @@
 # WP-304 candidate evidence
 
-**Status: actual ad391 native execution passed197/197 methods and all ten required
-standalone PNG states. The overall run remains FAILED because21 producer families
-are policy-only. No macro acceptance.**
+**Status: published efe528cc Linux native execution passed197/197 methods and all
+ten required standalone PNG states. The overall run remains FAILED because21
+producer families are policy-only. The owned local-only retention repair is not
+a complete local-cycle pass or publication receipt. No macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its
@@ -97,6 +98,54 @@ Complete raw bytes and bindings are also emitted into the existing stage log;
 missing reports are a diagnosed blocked artifact, never a passing result.
 Same-head Linux CI run/attempt/base/head and raw bundles must be retained before
 acceptance inspection.
+
+## Explicit local retention
+
+The user requires a successful declared local cycle before new-development code
+pushes. Existing green-PR merges/mechanical resolutions are not retrospectively
+subject to that gate. The installed shared `meshcore-local/check.py` runs the
+actual seven-stage cycle in a serialized pinned WSL Ubuntu22.04 snapshot, with
+visible output. The old missing-local-toolchain blocker is obsolete.
+
+The genuine initial default-all local run at efe528cc passed Python/preflight
+and executed all197 UI methods with zero failures/errors/skips,18 XML reports,
+ten actual PNGs and96 matching input hashes. Its verify stage then failed at
+`retainSharedUiRaw`: the declared executor emits the explicit local
+`identity: null`, while the owned retainer previously required a hosted run.
+Standalone/assemble/lint/inspect did not run. The complete visible log and
+32-member raw XML/PNG/readiness/invocation archive were retained in session
+artifacts; this failure is not a successful local cycle.
+
+The owned repair distinguishes that exact local representation from hosted
+evidence. A local invocation must have the existing bounded Linux/verify/schema
+shape and an explicitly null identity, and execute on actual Linux x64 against
+a clean committed snapshot. The retainer independently binds the actual head/
+tree, original source/tree, manifest/policy and all owned source/input checks.
+It exports only `wp304-local`, labels its raw record `execution_scope: local`
+and emits `WP304_LOCAL_ONLY`; it never invents GitHub run/attempt IDs or writes
+a hosted `wp304-native` bundle. Retained failures remain unvalidated raw bytes.
+
+Hosted `pipeline_invocation` still rejects null identities and requires the same
+positive run/attempt and exact repository/base/head/source/manifest/policy.
+Malformed/stale hosted records cannot fall back to local. Unsafe paths,
+overwrite, dirty snapshots and missing JUnit still fail while preserving
+produced raw evidence. No hook, shared executor, environment allowlist, Gradle
+dependency or behavior verifier is changed.
+
+The declared static/self-test now passes34 reader regressions, including actual
+local-binding/namespace and adversarial hosted/local separation fixtures.
+All197 native declarations,130 original families/158 scenarios, seven parameter
+families/35 rows and21 pending producer families remain unchanged. A fresh
+default-all local run is required to verify the authored repair. The original
+producer-binding gate remains mandatory even when local retention succeeds;
+no complete cycle, push, source-parity or merge permission follows from these
+Python results.
+
+The user-approved installed reservation tool atomically reserves already
+authorized paths rather than requiring another manual receipt. Recovery
+reserved only this retainer, its regressions and the owned evidence/deviation
+documents under its existing WP-304 assignment. No producer/shared support path
+was added to that reservation.
 
 ## Linux resolution/execution proposal, not a command already run
 
