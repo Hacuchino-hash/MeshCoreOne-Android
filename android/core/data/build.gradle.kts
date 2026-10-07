@@ -107,8 +107,8 @@ fun messagingRawCaptureSelected(rawTaskName: String): Boolean = messagingRawCapt
 
 fun messagingEvidenceCommand(captureOnly: Boolean, completion: String): List<String> {
     val invocation = providers.gradleProperty("meshCliInvocationFile").orNull?.let(::File)
+    check(invocation == null || invocation.isAbsolute) { "Messaging invocation must be an absolute controller input" }
     val localDirectory = providers.gradleProperty("wp208LocalEvidenceDirectory").orNull?.let(::File)
-    check(invocation == null || localDirectory == null) { "Local messaging cannot borrow hosted execution identity" }
     val localHead = providers.gradleProperty("wp208LocalExpectedHead").orNull
     val evidence = if (localDirectory != null) {
         check(localDirectory.isAbsolute && localHead?.matches(Regex("[0-9a-f]{40}")) == true) {
@@ -130,9 +130,8 @@ fun messagingEvidenceCommand(captureOnly: Boolean, completion: String): List<Str
         addAll(listOf("--output", File(evidence, completion).absolutePath))
         if (localDirectory != null) {
             addAll(listOf("--local", "--expected-head", checkNotNull(localHead)))
-        } else {
-            addAll(listOf("--invocation", checkNotNull(invocation).absolutePath))
         }
+        invocation?.let { addAll(listOf("--invocation", it.absolutePath)) }
     }
 }
 

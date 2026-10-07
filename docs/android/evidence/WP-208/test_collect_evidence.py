@@ -331,15 +331,29 @@ class EvidenceReaderTest(unittest.TestCase):
         text = (READER.ROOT / "android" / "core" / "data" / "build.gradle.kts").read_text()
         self.assertIn('providers.gradleProperty("wp208LocalEvidenceDirectory")', text)
         self.assertIn('providers.gradleProperty("wp208LocalExpectedHead")', text)
-        self.assertIn('check(invocation == null || localDirectory == null)', text)
         self.assertIn('localDirectory.isAbsolute', text)
         self.assertIn('"--local", "--expected-head"', text)
         self.assertNotIn('GITHUB_RUN_ID', text)
         reader = Path(__file__).with_name("collect_evidence.py").read_text()
-        self.assertIn('args.invocation is None, "Local execution cannot borrow a hosted invocation"', reader)
+        self.assertIn('local_invocation(load_json(args.invocation))', reader)
         self.assertIn('git(ROOT, "rev-parse", "HEAD") == args.expected_head', reader)
         self.assertIn('result["evidence_kind"] = "local-native"', reader)
         self.assertIn('result_name = "local-assertions.json"', reader)
+
+    def test_explicit_local_controller_invocation_has_no_fabricated_hosted_identity(self):
+        READER.local_invocation({"schema_version": 1, "stage": "verify", "host": "linux", "identity": None})
+        with self.assertRaises(ValueError):
+            READER.executor_identity({"schema_version": 1, "stage": "verify", "host": "linux", "identity": None})
+
+    def test_local_mode_rejects_hosted_or_missing_or_wrong_host_invocation_identity(self):
+        for invocation in (
+            self.invocation,
+            {"schema_version": 1, "stage": "verify", "host": "linux"},
+            {"schema_version": 1, "stage": "verify", "host": "windows", "identity": None},
+            {"schema_version": 1, "stage": "protocol", "host": "linux", "identity": None},
+        ):
+            with self.assertRaises(ValueError):
+                READER.local_invocation(invocation)
 
     def test_self_consistent_wrong_run_attempt_or_head_still_fails_provider_expectation(self):
         original_invocation, original_snapshot = copy.deepcopy(self.invocation), copy.deepcopy(self.snapshot)

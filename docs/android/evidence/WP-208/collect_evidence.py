@@ -199,7 +199,7 @@ def read_junit(directory, *, minimum=1):
     return cases, {"discovered": total, "passed": total, "failed": 0, "errors": 0, "skipped": 0}
 
 
-def capture(output, invocation=None, repo=ROOT):
+def capture(output, invocation=None, repo=ROOT, *, local=False):
     require(output.is_absolute(), "Raw evidence output must be an explicit absolute directory")
     output.mkdir(parents=True, exist_ok=True)
     head = git(repo, "rev-parse", "HEAD")
@@ -246,15 +246,26 @@ def capture(output, invocation=None, repo=ROOT):
                                        "matches_head": actual == expected, **record(root_lock, repo)})
     if metadata["invocation"] is not None:
         try:
-            original = executor_identity(load_json(output / "invocation.json"))
-            metadata["execution_expected"] = {"run_id": original["run_id"], "run_attempt": original["run_attempt"],
-                                               "base_sha": original["binding"]["base_sha"],
-                                               "head_sha": original["binding"]["head_sha"]}
+            retained = load_json(output / "invocation.json")
+            if local:
+                local_invocation(retained)
+            else:
+                original = executor_identity(retained)
+                metadata["execution_expected"] = {"run_id": original["run_id"], "run_attempt": original["run_attempt"],
+                                                   "base_sha": original["binding"]["base_sha"],
+                                                   "head_sha": original["binding"]["head_sha"]}
         except (ValueError, OSError, KeyError) as failure:
             metadata["capture_errors"].append("Malformed retained executor identity: " + str(failure))
     snapshot = output / "raw-capture.json"
     snapshot.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     return metadata
+
+
+def local_invocation(invocation):
+    require(isinstance(invocation, dict) and invocation.get("schema_version") == 1 and
+            invocation.get("stage") == "verify" and invocation.get("host") == "linux" and
+            "identity" in invocation and invocation["identity"] is None,
+            "Explicit local execution cannot borrow hosted or malformed invocation identity")
 
 
 def executor_identity(invocation):
@@ -354,12 +365,14 @@ def main(argv=None):
             require(declared, "Explicit raw output/ANDROID_CI_OUTPUT is required")
             output = Path(declared) / "wp208"
         if args.local:
-            require(args.invocation is None, "Local execution cannot borrow a hosted invocation")
+            if args.invocation is not None:
+                require(args.invocation.is_absolute(), "Local controller invocation must be absolute")
+                local_invocation(load_json(args.invocation))
             require(isinstance(args.expected_head, str) and HEX.fullmatch(args.expected_head) and
                     git(ROOT, "rev-parse", "HEAD") == args.expected_head, "Local execution needs its exact committed HEAD")
         else:
             require(args.expected_head is None, "A worker HEAD override cannot replace hosted provider identity")
-        capture(output, args.invocation)
+        capture(output, args.invocation, local=args.local)
         if args.capture_only:
             print("Raw failure/success inputs retained; no success validation performed")
             return 0

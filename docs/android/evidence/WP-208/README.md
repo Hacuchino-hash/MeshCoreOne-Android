@@ -120,6 +120,21 @@ forced noncached assertions, one worker and the documented measured local
 heap/JVM limits. Until its exact-tree complete XML is independently replayed,
 local success and permission for a new code push remain unclaimed.
 
+The subsequently approved official warm runner was executed visibly/nonquietly
+on exact local commit `cb808460`: complete actual XML verifies210/210 services
+and397/397 data (all28 Room), with zero failures/errors/skips.
+Its **complete cycle still failed** at the owning evidence task because the
+producer forwarded its legitimate `identity:null` local invocation without
+selecting WP-208's explicit local properties. The precise unleased
+`tools/android-port/local/fast.py` option handoff is recorded in PR43
+comment6043571904 and [`local-partial-cb808460.json`](local-partial-cb808460.json).
+No producer path is edited or hook bypassed. The owning consumer explicitly
+validates a retained schema1/Linux/verify/null-identity invocation in selected
+local mode, rejects hosted/malformed identities, and preserves mandatory
+current-input/full-suite validation. Forty-four reader assertions pass for this
+consumer update. The successful suites are not a complete cycle, new-head proof
+or permission to push.
+
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
 verified before the first edit. The frozen catalog contains 128 original
