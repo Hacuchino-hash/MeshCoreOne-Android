@@ -1,6 +1,8 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Errors/RemoteNodeError.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.services.remote
 
+import com.meshcoreone.android.core.contracts.domain.errors.RemoteNodeFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import com.meshcoreone.android.core.model.ProtocolLimits
 import com.meshcoreone.android.core.protocol.config.MeshCoreException
 
@@ -8,7 +10,8 @@ import com.meshcoreone.android.core.protocol.config.MeshCoreException
  * Remote-node failures. `message` carries the Swift `errorDescription` text verbatim.
  * Each case is a class (not an object) so every throw gets its own stack trace.
  */
-sealed class RemoteNodeError(message: String, cause: Throwable? = null) : Exception(message, cause) {
+sealed class RemoteNodeError(message: String, cause: Throwable? = null) :
+    Exception(message, cause), SourceServiceFaultCarrier {
     class NotConnected : RemoteNodeError("Not connected to mesh device")
     class LoginFailed(val reason: String) : RemoteNodeError("Login failed: $reason")
     class SendFailed(val reason: String) : RemoteNodeError("Failed to send: $reason")
@@ -34,6 +37,25 @@ sealed class RemoteNodeError(message: String, cause: Throwable? = null) : Except
 
     val isRetryable: Boolean
         get() = this is Timeout || this is NotConnected || this is FloodRouted
+
+    /** Exhaustive projection onto the neutral payload; raw reasons and the session cause are carried as-is. */
+    override val sourceServiceFault: RemoteNodeFault
+        get() = when (this) {
+            is NotConnected -> RemoteNodeFault.NotConnected
+            is LoginFailed -> RemoteNodeFault.LoginFailed(reason)
+            is SendFailed -> RemoteNodeFault.SendFailed(reason)
+            is InvalidResponse -> RemoteNodeFault.InvalidResponse
+            is PermissionDenied -> RemoteNodeFault.PermissionDenied
+            is Timeout -> RemoteNodeFault.Timeout
+            is SessionNotFound -> RemoteNodeFault.SessionNotFound
+            is PasswordNotFound -> RemoteNodeFault.PasswordNotFound
+            is FloodRouted -> RemoteNodeFault.FloodRouted
+            is PathDiscoveryFailed -> RemoteNodeFault.PathDiscoveryFailed
+            is ContactNotFound -> RemoteNodeFault.ContactNotFound
+            is RadioContactsFull -> RemoteNodeFault.RadioContactsFull
+            is Cancelled -> RemoteNodeFault.Cancelled
+            is SessionError -> RemoteNodeFault.SessionError(error)
+        }
 
     override fun toString(): String = when (this) {
         is LoginFailed -> "RemoteNodeError.loginFailed(\"$reason\")"

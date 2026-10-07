@@ -2,6 +2,10 @@
 package com.meshcoreone.android.core.services.remote
 
 import com.meshcoreone.android.core.contracts.domain.ContactPersisting
+import com.meshcoreone.android.core.contracts.domain.errors.NodeConfigCoordinateField
+import com.meshcoreone.android.core.contracts.domain.errors.NodeConfigRadioField
+import com.meshcoreone.android.core.contracts.domain.errors.NodeConfigServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import com.meshcoreone.android.core.model.ContactFrame
 import com.meshcoreone.android.core.model.ProtocolLimits
 import com.meshcoreone.android.core.model.RadioId
@@ -27,7 +31,7 @@ sealed interface CoordinateField {
 }
 
 /** Swift `NodeConfigServiceError`; [message] is the Swift `errorDescription`. */
-sealed class NodeConfigServiceError(message: String) : Exception(message) {
+sealed class NodeConfigServiceError(message: String) : Exception(message), SourceServiceFaultCarrier {
     data class InvalidChannelSecret(val index: Int, val hexLength: Int) :
         NodeConfigServiceError("Channel $index has invalid secret ($hexLength hex chars, expected 32)")
     data class InvalidContactPublicKey(val name: String) :
@@ -46,6 +50,37 @@ sealed class NodeConfigServiceError(message: String) : Exception(message) {
         NodeConfigServiceError("Contact \"$name\" has an invalid routing path")
     data class ContactCapacityExceeded(val needed: Int, val available: Int) :
         NodeConfigServiceError("Import needs $needed free contact slot(s) but only $available remain on the device")
+
+    /** Exhaustive projection onto the neutral payload; every raw value and typed field is carried as-is. */
+    override val sourceServiceFault: NodeConfigServiceFault
+        get() = when (this) {
+            is InvalidChannelSecret -> NodeConfigServiceFault.InvalidChannelSecret(index, hexLength)
+            is InvalidContactPublicKey -> NodeConfigServiceFault.InvalidContactPublicKey(name)
+            is InvalidPathHashMode -> NodeConfigServiceFault.InvalidPathHashMode(name, mode)
+            is InvalidPrivateKey -> NodeConfigServiceFault.InvalidPrivateKey(hexLength)
+            is InvalidRadioSettings -> NodeConfigServiceFault.InvalidRadioSettings(this.field.toFaultField())
+            is NoAvailableChannelSlot -> NodeConfigServiceFault.NoAvailableChannelSlot(name)
+            is InvalidCoordinate -> NodeConfigServiceFault.InvalidCoordinate(this.field.toFaultField())
+            is InvalidOutPath -> NodeConfigServiceFault.InvalidOutPath(name)
+            is ContactCapacityExceeded -> NodeConfigServiceFault.ContactCapacityExceeded(needed, available)
+        }
+}
+
+/** One-for-one projection of [RadioField] onto its neutral payload mirror. */
+private fun RadioField.toFaultField(): NodeConfigRadioField = when (this) {
+    RadioField.FREQUENCY -> NodeConfigRadioField.FREQUENCY
+    RadioField.BANDWIDTH -> NodeConfigRadioField.BANDWIDTH
+    RadioField.SPREADING_FACTOR -> NodeConfigRadioField.SPREADING_FACTOR
+    RadioField.CODING_RATE -> NodeConfigRadioField.CODING_RATE
+    RadioField.TX_POWER -> NodeConfigRadioField.TX_POWER
+}
+
+/** One-for-one projection of [CoordinateField] onto its neutral payload mirror; the contact name is carried as-is. */
+private fun CoordinateField.toFaultField(): NodeConfigCoordinateField = when (this) {
+    CoordinateField.PositionLatitude -> NodeConfigCoordinateField.PositionLatitude
+    CoordinateField.PositionLongitude -> NodeConfigCoordinateField.PositionLongitude
+    is CoordinateField.ContactLatitude -> NodeConfigCoordinateField.ContactLatitude(name)
+    is CoordinateField.ContactLongitude -> NodeConfigCoordinateField.ContactLongitude(name)
 }
 
 // MARK: - Import Progress / Preview
