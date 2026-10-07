@@ -1,0 +1,833 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 103,
+ "bound_case_count": 103,
+ "unbound": [],
+ "deferred": [],
+ "cases": [
+  {
+   "id": "AnalysisStatusEquatableTests::error with different message not equal()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "error with different message not equal",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisStatusEquatableTests::error with same message equals()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "error with same message equals",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisStatusEquatableTests::idle does not equal error()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "idle does not equal error",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisStatusEquatableTests::idle equals idle()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "idle equals idle",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisStatusRelayTests::relayResult case stores RelayPathAnalysisResult()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "relayResult case stores RelayPathAnalysisResult",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisStatusRelayTests::relayResult equals relayResult with same data()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "relayResult equals relayResult with same data",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTaskHygieneTests::Cancelled off-path analysis does not surface an error or strand isAnalyzing()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "Cancelled off-path analysis does not surface an error or strand isAnalyzing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTaskHygieneTests::Re-analysis after an RF change clears isAnalyzing()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "Re-analysis after an RF change clears isAnalyzing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTaskHygieneTests::Re-analysis that supersedes an in-flight analysis does not strand isAnalyzing()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "Re-analysis that supersedes an in-flight analysis does not strand isAnalyzing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTaskHygieneTests::clearRepeater cancels the in-flight off-path elevation fetch()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "clearRepeater cancels the in-flight off-path elevation fetch",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::New analysis cancels previous()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "New analysis cancels previous",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::analyze error sets error status()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyze error sets error status",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::analyze populates elevation profile()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyze populates elevation profile",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::analyze produces result on success()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyze produces result on success",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::analyze sets loading status()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyze sets loading status",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AnalysisTests::analyze without elevations does nothing()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyze without elevations does nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ClearTests::clear removes all state()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "clear removes all state",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ClearTests::clearPointA invalidates analysis()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "clearPointA invalidates analysis",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ClearTests::clearPointA removes only point A()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "clearPointA removes only point A",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ClearTests::clearPointB removes only point B()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "clearPointB removes only point B",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact assigns contact to point A when empty()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact assigns contact to point A when empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact assigns second contact to point B()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact assigns second contact to point B",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact clears point A when tapped again()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact clears point A when tapped again",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact clears point B when tapped again()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact clears point B when tapped again",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact sets point A for first contact()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact sets point A for first contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactToggleTests::toggleContact sets point B for second contact()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "toggleContact sets point B for second contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationFetchingTests::Elevation is fetched asynchronously()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Elevation is fetched asynchronously",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationFetchingTests::Point starts with nil elevation()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Point starts with nil elevation",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationFetchingTests::canAnalyze is true when both elevations loaded()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "canAnalyze is true when both elevations loaded",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationFetchingTests::totalHeight includes additionalHeight()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "totalHeight includes additionalHeight",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationInterpolationTests::coordinateAt interpolates between samples()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "coordinateAt interpolates between samples",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationInterpolationTests::elevationAt clamps pathFraction outside valid range()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "elevationAt clamps pathFraction outside valid range",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationInterpolationTests::elevationAt interpolates between samples()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "elevationAt interpolates between samples",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationInterpolationTests::elevationAt returns nil when profile has single sample()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "elevationAt returns nil when profile has single sample",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ElevationInterpolationTests::elevationAt returns nil when profile is empty()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "elevationAt returns nil when profile is empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Editing format round-trips an integer back through the parser()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Editing format round-trips an integer back through the parser",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Editing format uses a dot decimal separator and round-trips()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Editing format uses a dot decimal separator and round-trips",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Parses a comma-decimal value the same as dot-decimal()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Parses a comma-decimal value the same as dot-decimal",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Parses a plain dot-decimal value()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Parses a plain dot-decimal value",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Parses an integer value()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Parses an integer value",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Rejects empty input()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Rejects empty input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Rejects negative values()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Rejects negative values",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Rejects non-numeric input()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Rejects non-numeric input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FrequencyParsingTests::Rejects zero()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Rejects zero",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "HeightAdjustmentTests::Height adjustment accepts positive values()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Height adjustment accepts positive values",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "HeightAdjustmentTests::Height adjustment clamps to zero()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Height adjustment clamps to zero",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "HeightAdjustmentTests::Height adjustment for point B works()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Height adjustment for point B works",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "HeightAdjustmentTests::Height adjustment on nil point does nothing()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Height adjustment on nil point does nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "HeightAdjustmentTests::Height change invalidates analysis()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Height change invalidates analysis",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::Default frequency is 906 MHz()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Default frequency is 906 MHz",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::Default refraction K is 1.0()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Default refraction K is 1_0",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::Initial elevation profile is empty()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Initial elevation profile is empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::Initial state has nil points()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Initial state has nil points",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::Initial status is idle()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Initial status is idle",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "InitialStateTests::canAnalyze is false initially()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "canAnalyze is false initially",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LoadRepeatersTests::Initial repeatersWithLocation is empty()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "Initial repeatersWithLocation is empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LoadRepeatersTests::loadRepeaters does nothing without configuration()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "loadRepeaters does nothing without configuration",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LoadRepeatersTests::loadRepeaters filters to only repeaters with location()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "loadRepeaters filters to only repeaters with location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LoadRepeatersTests::loadRepeaters only loads repeaters for configured device()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "loadRepeaters only loads repeaters for configured device",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LoadRepeatersTests::loadRepeaters returns empty when no repeaters have location()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "loadRepeaters returns empty when no repeaters have location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::Point without contact shows Dropped pin()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Point without contact shows Dropped pin",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::selectPoint replaces B when both exist()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "selectPoint replaces B when both exist",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::selectPoint sets point A when empty()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "selectPoint sets point A when empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::selectPoint sets point B when A exists()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "selectPoint sets point B when A exists",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::setPointA sets coordinate and contact()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "setPointA sets coordinate and contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PointSelectionTests::setPointB sets coordinate and contact()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "setPointB sets coordinate and contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PreselectedContactTests::Nil preselected contact leaves point A nil()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Nil preselected contact leaves point A nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PreselectedContactTests::Preselected contact sets point A()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Preselected contact sets point A",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PreselectedContactTests::Preselected contact with no location does not set point A()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Preselected contact with no location does not set point A",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RelayAnalysisTests::Off-path height and RF changes reuse cached profiles without network fetch()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "Off-path height and RF changes reuse cached profiles without network fetch",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RelayAnalysisTests::analyzeWithRepeater produces relay result()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyzeWithRepeater produces relay result",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RelayAnalysisTests::analyzeWithRepeater updates when repeater position changes()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "analyzeWithRepeater updates when repeater position changes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::addRepeater places at worst obstruction point()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "addRepeater places at worst obstruction point",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::clearPointA removes repeater()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "clearPointA removes repeater",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::clearPointB removes repeater()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "clearPointB removes repeater",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::clearRepeater removes repeater()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "clearRepeater removes repeater",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::updateRepeaterHeight clamps negative to zero()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "updateRepeaterHeight clamps negative to zero",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::updateRepeaterHeight updates additionalHeight()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "updateRepeaterHeight updates additionalHeight",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::updateRepeaterPosition clamps to valid range()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "updateRepeaterPosition clamps to valid range",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterLifecycleTests::updateRepeaterPosition updates pathFraction()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightAnalysisTest",
+   "method": "updateRepeaterPosition updates pathFraction",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterPointTests::RepeaterPoint clamps pathFraction to valid range()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "RepeaterPoint clamps pathFraction to valid range",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterPointTests::RepeaterPoint has default height of 10m()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "RepeaterPoint has default height of 10m",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterViewModelTests::Initial repeaterPoint is nil()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "Initial repeaterPoint is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SameLocationTests::Can set B to different location after same location rejected()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Can set B to different location after same location rejected",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SameLocationTests::Cannot set B to same location as A()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightSelectionTest",
+   "method": "Cannot set B to same location as A",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SelectedPointTests::isLoadingElevation is false when groundElevation is set()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "isLoadingElevation is false when groundElevation is set",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SelectedPointTests::isLoadingElevation is true when groundElevation is nil()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "isLoadingElevation is true when groundElevation is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SelectedPointTests::totalHeight includes both ground and additional()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "totalHeight includes both ground and additional",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SelectedPointTests::totalHeight is nil when groundElevation is nil()",
+   "class": "com.meshcoreone.android.feature.tools.los.LineOfSightValuesTest",
+   "method": "totalHeight is nil when groundElevation is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/LineOfSightViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::point combines xPixel and yPixel()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "point combines xPixel and yPixel",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::xLabel converts meters to km string()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "xLabel converts meters to km string",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::xPixel returns leading padding at xRange.lowerBound()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "xPixel returns leading padding at xRange lowerBound",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::xPixel returns width minus trailing padding at xRange.upperBound()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "xPixel returns width minus trailing padding at xRange upperBound",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::yPixel returns height minus bottom padding at yRange.lowerBound (inverted)()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "yPixel returns height minus bottom padding at yRange lowerBound inverted",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChartCoordinateSpaceTests::yPixel returns top padding at yRange.upperBound (inverted)()",
+   "class": "com.meshcoreone.android.feature.tools.los.ChartCoordinateSpaceTest",
+   "method": "yPixel returns top padding at yRange upperBound inverted",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/ChartCoordinateSpaceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::ProfileSample computes inner 60% zone bounds()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "ProfileSample computes inner 60 percent zone bounds",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::ProfileSample computes yTop and yBottom correctly()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "ProfileSample computes yTop and yBottom correctly",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::buildProfileSamples creates samples with correct geometry()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "buildProfileSamples creates samples with correct geometry",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::buildProfileSamples handles segment slice correctly (R→B case)()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "buildProfileSamples handles segment slice correctly R to B case",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::isObstructed returns true when terrain above yBottom()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "isObstructed returns true when terrain above yBottom",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::losHeight interpolates linearly between endpoints()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "losHeight interpolates linearly between endpoints",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::yVisibleBottom clamps to prevent path inversion()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "yVisibleBottom clamps to prevent path inversion",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FresnelZoneRendererTests::yVisibleBottom60 clamps terrain to inner zone()",
+   "class": "com.meshcoreone.android.feature.tools.los.FresnelZoneRendererTest",
+   "method": "yVisibleBottom60 clamps terrain to inner zone",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/FresnelZoneRendererTests.swift",
+   "junit": "passed"
+  }
+ ]
+}
