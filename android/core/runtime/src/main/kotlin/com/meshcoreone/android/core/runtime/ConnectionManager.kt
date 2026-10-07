@@ -224,7 +224,8 @@ class ConnectionManager(
         val reentrant = currentCoroutineContext()[RuntimeOperation]?.owner === operationIdentity
         requireOpen()
         val normalized = normalizeTarget(target)
-        if (!shouldAllowConnection(forceReconnect)) {
+        // Swift gates and counts the breaker only on the BLE path; WiFi connects never touch it.
+        if (normalized is ConnectionTarget.Bluetooth && !shouldAllowConnection(forceReconnect)) {
             throw ConnectionError.ConnectionFailed("Connection blocked by circuit breaker (cooling down)")
         }
         val deviceId = (normalized as? ConnectionTarget.Bluetooth)?.deviceId
@@ -269,12 +270,14 @@ class ConnectionManager(
                         if (deviceValue?.id != deviceId) { cleanSync = null; attemptedSync = null }
                     }
                     setIntent(ConnectionIntent.WantsConnection(forceFullSync))
-                    publish(DeviceConnectionState.CONNECTING, transport = ConnectionState.Connecting, token = null, issue = null)
+                    publish(claimedRevision) { connectingSnapshot() }
                     if (deviceId != null && platform.registryActive && !platform.isRegistered(deviceId)) {
                         throw ConnectionError.DeviceNotFound()
                     }
                     requireRevision(claimedRevision)
                     if (deviceId != null && tryAdoptOrReject(normalized, forceFullSync)) return@withOperation
+                    // An owned link whose adoption failed published DISCONNECTED; Swift sets .connecting again.
+                    if (connectionState != DeviceConnectionState.CONNECTING) publish(claimedRevision) { connectingSnapshot() }
                     val attempts = if (deviceId == null) 1 else
                         ConnectionRetryPolicy.connectAttempts(forceReconnect, platform.hasSystemPairingRegistry)
                     var lastFailure: Exception? = null
@@ -309,11 +312,13 @@ class ConnectionManager(
                                 hasCause<SessionCorrelationException.ConcurrentTransportOwner>(failure)
                             ) throw failure
                             reporter.report(RuntimeDiagnostic.Failure("connect.attempt.$attempt", failure))
-                            publish(DeviceConnectionState.CONNECTING, token = null, issue = issueFor(failure, LifecycleStage.CONNECT))
+                            publish(claimedRevision) {
+                                copy(state = DeviceConnectionState.CONNECTING, token = null, issue = issueFor(failure, LifecycleStage.CONNECT))
+                            }
                             if (attempt < attempts) clock.sleep(ConnectionRetryPolicy.connectDelay(attempt, jitter()))
                         }
                     }
-                    recordConnectionFailure()
+                    if (deviceId != null) recordConnectionFailure()
                     throw checkNotNull(lastFailure)
                 }
             }
@@ -639,9 +644,9 @@ class ConnectionManager(
         return report
     }
 
-    override fun setConnectionState(state: DeviceConnectionState) = publish(
-        state, token = if (state == DeviceConnectionState.DISCONNECTED) null else snapshot.value.token,
-    )
+    override fun setConnectionState(state: DeviceConnectionState) {
+        publish { copy(state = state, token = if (state == DeviceConnectionState.DISCONNECTED) null else token) }
+    }
     override fun clearConnectedDevice() { synchronized(lock) { deviceValue = null; repeatRanges = SnapshotList.empty() } }
     override suspend fun notifyAutoReconnectStarted() = observer.onAutoReconnectStarted()
     override suspend fun notifyConnectionLost() {
@@ -920,7 +925,7 @@ class ConnectionManager(
             val precedingReport = preceding?.await()
             val currentReport = stopCurrent(true)
             val report = TeardownReport(((precedingReport?.issues ?: emptyList()) + currentReport.issues).snapshot())
-            publish(DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null)
+            publish { copy(state = DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null) }
             transitions.finish(cause)
             processJob.cancel()
             reporter.report(RuntimeDiagnostic.Teardown(report))
@@ -1105,9 +1110,10 @@ class ConnectionManager(
         val ours = lastConnection.read().deviceId == deviceId ||
             synchronized(lock) { pairing } || platform.hasSystemPairingRegistry && platform.isRegistered(deviceId)
         if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded system-link query")
+        var route: RadioGeneration? = null
         if (ours && state.phase == "idle") {
             setIntent(ConnectionIntent.WantsConnection(forceFullSync))
-            ensureRestorationRoute(target, expectedRevision)
+            route = ensureRestorationRoute(target, expectedRevision)
             reconnectionCoordinator.handleEnteringAutoReconnect(deviceId)
             if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded adoption preparation")
             val adopted = platform.adoptSystemLink(target)
@@ -1118,7 +1124,15 @@ class ConnectionManager(
             }
 
             reconnectionCoordinator.clearReconnectingDevice()
-            publish(DeviceConnectionState.DISCONNECTED, token = null)
+            publish { copy(state = DeviceConnectionState.DISCONNECTED, token = null) }
+        }
+        // Swift throws deviceConnectedToOtherApp only for a link that is not ours; an owned link
+        // that could not be adopted proceeds to a normal connect. The health check keeps its own rule.
+        if (ours && !health) {
+            // Release the adoption route (link, callbacks, physical claim) before the normal attempt builds its own.
+            route?.let { closeGeneration(it, disconnectPhysical = true) }
+            if (!wantsCurrent(expectedRevision)) throw CancellationException("Superseded owned-link fallthrough")
+            return false
         }
         lastConnection.persistDisconnectDiagnostic("source=checkBLEConnectionHealth.otherAppConnected, intent=${intentSummary()}")
         if (health) { if (!isReconnectionWatchdogRunning) startReconnectionWatchdog(); return true }
@@ -1146,6 +1160,9 @@ class ConnectionManager(
                     if (!shouldDeferOpportunisticReconnect && !isTransportAutoReconnecting()) checkBLEConnectionHealth()
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (failure: Exception) { reporter.report(RuntimeDiagnostic.Failure("watchdog", failure)) }
+                // A connect started from this loop stops the watchdog without cancelling its own caller;
+                // once superseded, finish here instead of looping on untracked.
+                if (synchronized(lock) { watchdogGeneration != claimed }) return@launch
                 if (!connectionIntent.wantsConnection || connectionState != DeviceConnectionState.DISCONNECTED) return@launch
                 attempt = minOf(attempt + 1, 3)
             }
@@ -1178,7 +1195,7 @@ class ConnectionManager(
                     catch (failure: Exception) { reporter.report(RuntimeDiagnostic.Failure("wifi.reconnect.$attempt", failure)) }
                     clock.sleep(ConnectionRetryPolicy.wifiDelay(attempt++))
                 }
-                publish(DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null)
+                publish { copy(state = DeviceConnectionState.DISCONNECTED, transport = ConnectionState.Disconnected, token = null) }
             }.also { wifiReconnect = it }
         }
         task.invokeOnCompletion { synchronized(lock) { if (wifiReconnect === task) wifiReconnect = null } }
@@ -1267,12 +1284,22 @@ class ConnectionManager(
     }
     private fun transportName(value: ConnectionSnapshot): String =
         value.blePhase?.let { "bluetooth" } ?: currentTransportType()?.name?.lowercase() ?: "none"
+    /**
+     * Publishes [change] applied to the snapshot that is current under [lock], so fields the caller
+     * leaves alone cannot be captured before a racing publication and written back stale.
+     * With [expectedRevision], a superseded attempt publishes nothing and returns false.
+     */
     private fun publish(
-        state: DeviceConnectionState = values.value.state,
-        transport: ConnectionState = values.value.transport,
-        token: SessionToken? = values.value.token,
-        issue: ConnectionIssue? = values.value.issue,
-    ) = synchronized(lock) { publishLocked(state, transport, token, issue) }
+        expectedRevision: Long? = null,
+        change: ConnectionSnapshot.() -> ConnectionSnapshot,
+    ): Boolean = synchronized(lock) {
+        if (expectedRevision != null && (closed || revision != expectedRevision)) return@synchronized false
+        val next = values.value.change()
+        publishLocked(next.state, next.transport, next.token, next.issue)
+        true
+    }
+    private fun ConnectionSnapshot.connectingSnapshot(): ConnectionSnapshot =
+        copy(state = DeviceConnectionState.CONNECTING, transport = ConnectionState.Connecting, token = null, issue = null)
     private fun publishFor(
         owner: RadioGeneration,
         state: DeviceConnectionState,
@@ -1310,7 +1337,7 @@ class ConnectionManager(
     }
     private fun reportIssue(failure: Throwable, stage: LifecycleStage) {
         reporter.report(RuntimeDiagnostic.Failure(stage.name, failure))
-        publish(issue = issueFor(failure, stage))
+        publish { copy(issue = issueFor(failure, stage)) }
     }
     private fun staleIdentity(token: SessionToken): RadioId? {
         reporter.report(RuntimeDiagnostic.StaleCallback("identity", token.generation.value))
