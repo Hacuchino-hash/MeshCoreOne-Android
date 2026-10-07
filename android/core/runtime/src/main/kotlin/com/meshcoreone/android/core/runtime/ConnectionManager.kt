@@ -841,12 +841,20 @@ class ConnectionManager(
         if (connectionState == DeviceConnectionState.DISCONNECTED && connectionIntent.wantsConnection) {
             val id = lastConnection.read().deviceId ?: return
             if (!wantsCurrent(expectedRevision)) return
-            val device = devices.fetchDevice(id) ?: return
+            // Swift: `try? fetchDevice`, then a do/catch that logs a failed foreground reconnect and returns.
+            val device = try { devices.fetchDevice(id) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: Exception) { reportWiFiHealthReconnectFailure(failure); return } ?: return
             if (!wantsCurrent(expectedRevision)) return
             val wifi = device.connectionMethods.filterIsInstance<ConnectionMethod.WiFi>().firstOrNull() ?: return
-            connect(ConnectionTarget.WiFi(wifi.host, wifi.port))
+            try { connect(ConnectionTarget.WiFi(wifi.host, wifi.port)) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: Exception) { reportWiFiHealthReconnectFailure(failure) }
         }
     }
+
+    private fun reportWiFiHealthReconnectFailure(failure: Exception) =
+        reporter.report(RuntimeDiagnostic.Failure("health.wifiReconnect", failure))
 
     suspend fun appDidEnterBackground() {
         synchronized(lock) { foreground = false }

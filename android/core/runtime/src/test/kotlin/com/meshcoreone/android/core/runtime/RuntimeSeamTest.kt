@@ -99,6 +99,25 @@ class RuntimeSeamTest {
                 assertEquals(1, radios.size)
             }
         },
+        // Swift checkWiFiConnectionHealth: `try? fetchDevice`, and a failed foreground reconnect is logged.
+        nativeCase("a failed WiFi foreground reconnect is reported without throwing out of appDidBecomeActive") {
+            withFixture {
+                manager.connect(ConnectionTarget.WiFi("localhost", 5000u)); runCurrent()
+                assertEquals(DeviceConnectionState.READY, manager.connectionState)
+                manager.disconnect(RuntimeDisconnectReason.WIFI_RECONNECT_PREP); runCurrent()
+                assertTrue(manager.connectionIntent.wantsConnection)
+                // The persisted radio is a WiFi device, so the foreground WiFi check reconnects to it.
+                val id = UUID.randomUUID(); val radio = RadioId(UUID.randomUUID())
+                devices.rows[id] = DeviceDTO(id = id, radioId = radio, publicKey = publicKey, nodeName = "WiFi",
+                    connectionMethods = listOf(ConnectionMethod.WiFi("localhost", 5000u)).snapshot())
+                last.persist(id, radio, "WiFi")
+                createRadio = { TestRadio().also { it.connectFailure = IllegalStateException("access point gone") } }
+                manager.appDidBecomeActive()
+                val wifiFailure = diagnostics.filterIsInstance<RuntimeDiagnostic.Failure>().single { it.operation == "health.wifiReconnect" }
+                assertEquals("access point gone", wifiFailure.cause.message)
+                assertEquals(DeviceConnectionState.DISCONNECTED, manager.connectionState)
+            }
+        },
         nativeCase("cancellation of the foreground health reconnect still propagates") {
             withFixture {
                 connectThenLose()
