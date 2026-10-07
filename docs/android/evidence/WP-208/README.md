@@ -135,6 +135,14 @@ current-input/full-suite validation. Forty-four reader assertions pass for this
 consumer update. The successful suites are not a complete cycle, new-head proof
 or permission to push.
 
+The user directly approved the precise producer amendment on2026-10-07:
+only the `fast.py` verify options select WP-208's local directory and actual
+snapshot HEAD, retaining shared invocation forwarding for all other consumers.
+The exact official producer baseline `1cbf556d` is attributed and all unrelated
+runner behavior stays unchanged. Its installed copy is refreshed mechanically,
+not bypassed. Forty-five reader/forwarding assertions cover the amendment;
+the complete exact-head official warm cycle must still pass before publishing.
+
 Source is `db14559b39d32322b06477c6ae676112f583db50`, tree
 `8918fdc604341e6996a68c88f6bb1c02b9c2f87e`. All 34 primary inputs were read and
 verified before the first edit. The frozen catalog contains 128 original

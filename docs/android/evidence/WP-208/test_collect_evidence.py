@@ -355,6 +355,14 @@ class EvidenceReaderTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 READER.local_invocation(invocation)
 
+    def test_approved_official_runner_selects_local_evidence_with_actual_snapshot_head(self):
+        text = (READER.ROOT / "tools" / "android-port" / "local" / "fast.py").read_text()
+        self.assertIn('"WP-208" / "collect_evidence.py").is_file()', text)
+        self.assertIn('["git", "rev-parse", "HEAD"], cwd=args.repo', text)
+        self.assertIn('"-Pwp208LocalEvidenceDirectory=" + str(args.output / "wp208-native")', text)
+        self.assertIn('"-Pwp208LocalExpectedHead=" + head', text)
+        self.assertIn('*ci.meshcli_evidence_options(stage, state, args.output)', text)
+
     def test_self_consistent_wrong_run_attempt_or_head_still_fails_provider_expectation(self):
         original_invocation, original_snapshot = copy.deepcopy(self.invocation), copy.deepcopy(self.snapshot)
         for field, value in (("run_id", 124), ("run_attempt", 2), ("head_sha", "c" * 40)):
