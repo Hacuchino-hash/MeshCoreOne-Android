@@ -81,6 +81,49 @@ assertions do not establish Android37 predictive gesture progress/cancellation,
 physical keyboard/TalkBack order, OEM/radio behavior or license/signing acceptance.
 Those remain explicit evidence gaps, not skipped successes.
 
+## Actual committed-head assembly iteration
+
+The official command on product head
+`7a5b369bbea43f8bda04907a60873ac3948429dd` was:
+
+```powershell
+python C:\Users\camer\source\repos\MeshCoreOne-Android\.git\hooks\meshcore-local\check.py --distribution Ubuntu-22.04 --commit HEAD --stages preflight,assemble
+```
+
+**Preflight passed; assembly failed**, before App Kotlin compilation, in
+`:core:l10n:verifyL10nConversion`. The traceability validator rejected mixed
+file-level `PortedFrom` and `AndroidOnly` declarations in
+`OriginalNavigationCases.kt`. Mixed declarations in source-derived WP-302
+files are corrected to ordinary native-adaptation comments; their pinned
+source provenance is preserved. Pure native files retain honest `AndroidOnly`
+declarations.
+
+The complete visible output is `assembly-7a5b369b.log`; the installed runner's
+raw directory is
+`/home/cbattagler/meshcoreone-work/local-checks/run-vgDWTHah`.
+It materialized **3856 tracked inputs from immutable HEAD blobs**. This was an
+iteration, not a complete local cycle or publication receipt. No Kotlin build
+or WP-302 native execution is claimed.
+
+After correcting the mixed declarations, the exact documented validator
+`python -B tools\android-port\portmap.py` still **blocks** at
+`android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt`.
+Its manifest-only Android-only ownership check has no consumer for the approved
+canonical additive paths. The root launcher and pure native unit-test helpers
+are genuinely Android-only; relabeling them as Swift ports or another WP would
+be false provenance. Minimal shared support is required in
+`tools/android-port/portmap.py` and its existing
+`tools/android-port/tests/test_cli.py` regression surface to consume a trusted
+bounded additive-scope admission, preserving rejection of unapproved paths.
+These two paths are **not leased here and were not edited**. The exact failed
+validator output is `traceability-after-header-fix.log`. This remains distinct
+from the outstanding D0 App graph/test-wiring handoff.
+
+The earlier receipt equality probe incorrectly compared the retained
+`{ledger,result}` wrapper with the raw receipt. Its corrected comparison
+against `reservation-receipt.json`'s `result` passed, confirming the exact
+eight-path canonical receipt; the failed probe did not indicate a lease change.
+
 ## Historical admission at d6826d81
 
 The remaining sections preserve the initial blocker/preflight facts. Their

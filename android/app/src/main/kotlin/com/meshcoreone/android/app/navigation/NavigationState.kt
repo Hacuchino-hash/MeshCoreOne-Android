@@ -56,7 +56,7 @@ sealed interface NavigationDestination {
     }
 }
 
-// AndroidOnly: WP-302 Opaque entry identity; never a public key, DTO or radio ID in saved-state keys.
+// Native adaptation: Opaque entry identity; never a public key, DTO or radio ID in saved-state keys.
 data class NavigationEntry(val id: Long, val destination: NavigationDestination)
 
 // PortedFrom: MC1/State/MapFocusRequest.swift@db14559b39d32322b06477c6ae676112f583db50
@@ -71,7 +71,7 @@ data class PendingNotificationRoute(
     val id: Long, val generation: Long?, val request: NotificationNavigationRequest,
 )
 
-// AndroidOnly: WP-302 Material rail replaces the 64-point Apple sidebar; actual window width owns layout.
+// Native adaptation: Material rail replaces the 64-point Apple sidebar; actual window width owns layout.
 object NavigationLayout {
     const val RAIL_MIN_WIDTH_DP = 600
     const val RAIL_WIDTH_DP = 80

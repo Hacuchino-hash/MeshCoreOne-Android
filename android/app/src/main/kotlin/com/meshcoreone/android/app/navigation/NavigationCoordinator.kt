@@ -24,7 +24,7 @@ import kotlinx.coroutines.ensureActive
 import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
 
-// AndroidOnly: WP-302 Inject process repositories; this sink never constructs or owns a radio session.
+// Native adaptation: Inject process repositories; this sink never constructs or owns a radio session.
 interface NavigationLookup {
     suspend fun contact(key: EntityKey): ContactDTO?
     suspend fun channel(radioId: RadioId, index: UByte): ChannelDTO?

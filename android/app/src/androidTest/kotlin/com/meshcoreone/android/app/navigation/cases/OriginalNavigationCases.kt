@@ -20,7 +20,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import java.util.UUID
 
-// AndroidOnly: WP-302 Same assertion body is compiled for instrumented and declared local native runners.
+// Native adaptation: Same assertion body is compiled for instrumented and declared local native runners.
 abstract class OriginalNavigationCases {
     protected val radio = RadioId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
     protected val messageId = UUID.fromString("00000000-0000-0000-0000-000000000002")

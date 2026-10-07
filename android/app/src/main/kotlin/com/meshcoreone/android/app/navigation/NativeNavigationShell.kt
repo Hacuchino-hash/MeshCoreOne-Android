@@ -176,26 +176,26 @@ fun NativeNavigationShell(
         }
         val navigationItems: @Composable () -> Unit = {
             AppTab.entries.forEach { tab ->
-                    val label = labels.getValue(tab)
-                    NavigationSuiteItem(
-                        navigationSuiteType = type,
-                        selected = state.selectedTab == tab,
-                        onClick = { coordinator.selectTab(tab) },
-                        modifier = Modifier
-                            .heightIn(min = if (useRail) 72.dp else 80.dp * fontScale)
-                            .testTag("tab:${tab.name}")
-                            .semantics {
-                                if (tab == AppTab.CHATS && unreadDescription.isNotEmpty()) stateDescription = unreadDescription
-                            },
-                        icon = { Icon(tab.symbol().vector, contentDescription = if (useRail) label else null) },
-                        label = if (useRail) null else ({ Text(label, Modifier.testTag("tab-label:${tab.name}")) }),
-                        badge = if (tab == AppTab.CHATS && unreadCount > 0) ({
-                            Badge(Modifier.clearAndSetSemantics {}) {
-                                Text(if (unreadCount > 99) stringResource(Chats.chatsScrollButtonBadgeOverflow) else unreadCount.toString())
+                val label = labels.getValue(tab)
+                NavigationSuiteItem(
+                    navigationSuiteType = type,
+                    selected = state.selectedTab == tab,
+                    onClick = { coordinator.selectTab(tab) },
+                    modifier = Modifier
+                        .heightIn(min = if (useRail) 72.dp else 80.dp * fontScale)
+                        .testTag("tab:${tab.name}")
+                        .semantics {
+                            if (tab == AppTab.CHATS && unreadDescription.isNotEmpty()) stateDescription = unreadDescription
+                        },
+                    icon = { Icon(tab.symbol().vector, contentDescription = if (useRail) label else null) },
+                    label = if (useRail) null else ({ Text(label, Modifier.testTag("tab-label:${tab.name}")) }),
+                    badge = if (tab == AppTab.CHATS && unreadCount > 0) ({
+                        Badge(Modifier.clearAndSetSemantics {}) {
+                            Text(if (unreadCount > 99) stringResource(Chats.chatsScrollButtonBadgeOverflow) else unreadCount.toString())
+                        }
+                    }) else null,
+                )
             }
-                        }) else null,
-                    )
-                }
         }
         NavigationSuiteScaffold(
             modifier = Modifier.fillMaxSize().imePadding().testTag(
@@ -351,7 +351,7 @@ private class ListDetailScene(
     }
 }
 
-// AndroidOnly: WP-302 Stable incumbent feature entries remain explicitly incomplete; no fabricated detail screen.
+// Native adaptation: Stable incumbent feature entries remain explicitly incomplete; no fabricated detail screen.
 @Composable
 private fun ExistingFeatureContent(destination: NavigationDestination, navigate: (FeatureRoute) -> Unit) {
     val feature = when (destination) {

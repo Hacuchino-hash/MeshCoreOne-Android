@@ -1,5 +1,5 @@
 // PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-302 Read-only adapter; the injected process store is never created or closed by navigation.
+// Native adaptation: Read-only adapter; the injected process store is never created or closed by navigation.
 package com.meshcoreone.android.app.navigation
 
 import com.meshcoreone.android.core.contracts.domain.EntityKey

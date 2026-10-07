@@ -1,5 +1,5 @@
 // PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-302 Navigation-only events preserve actual callback fields without fabricating message IDs.
+// Native adaptation: Navigation-only events preserve actual callback fields without fabricating message IDs.
 package com.meshcoreone.android.app.navigation
 
 import com.meshcoreone.android.core.contracts.domain.EntityKey

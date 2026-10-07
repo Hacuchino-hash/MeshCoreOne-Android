@@ -1,5 +1,5 @@
 // PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-302 Caller owns service/connection lifetimes and serializes registration/close; this adapter owns no scope.
+// Native adaptation: Caller owns service/connection lifetimes and serializes registration/close; this adapter owns no scope.
 package com.meshcoreone.android.app.navigation
 
 import com.meshcoreone.android.core.contracts.domain.EntityKey

@@ -1,5 +1,5 @@
 // PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-302 Versioned native restoration retains public stacks, never identity-bearing DTOs or pending links.
+// Native adaptation: Versioned native restoration retains public stacks, never identity-bearing DTOs or pending links.
 package com.meshcoreone.android.app.navigation
 
 import com.meshcoreone.android.core.contracts.AppTab

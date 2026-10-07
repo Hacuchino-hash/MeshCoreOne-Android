@@ -1,5 +1,5 @@
 // PortedFrom: MC1/ContentView.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-302 Edge-to-edge Activity and retained screen navigation; no process/radio graph assembly.
+// Native adaptation: Edge-to-edge Activity and retained screen navigation; no process/radio graph assembly.
 package com.meshcoreone.android.app
 
 import android.os.Bundle
