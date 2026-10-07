@@ -9,11 +9,14 @@ import com.meshcoreone.android.core.protocol.transport.mock.MockTransportExcepti
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportError
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransportException
 import com.meshcoreone.android.core.contracts.domain.ChannelSyncErrorType
+import com.meshcoreone.android.core.contracts.domain.errors.ChannelServiceFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import kotlin.time.Duration
 import kotlinx.coroutines.delay
 
 /** Channel service failures; messages match the source `errorDescription` strings. */
-sealed class ChannelServiceError(message: String, cause: Throwable? = null) : Exception(message, cause) {
+sealed class ChannelServiceError(message: String, cause: Throwable? = null) :
+    Exception(message, cause), SourceServiceFaultCarrier {
     class NotConnected : ChannelServiceError("Not connected to device.")
     class ChannelNotFound : ChannelServiceError("Channel not found.")
     class InvalidChannelIndex : ChannelServiceError("Invalid channel index.")
@@ -24,6 +27,20 @@ sealed class ChannelServiceError(message: String, cause: Throwable? = null) : Ex
     class SyncAlreadyInProgress : ChannelServiceError("Channel sync is already in progress.")
     class CircuitBreakerOpen(val consecutiveFailures: Int) :
         ChannelServiceError("Channel sync suspended after $consecutiveFailures consecutive failures.")
+
+    /** Exhaustive projection onto the neutral payload; raw reasons, counts and the session cause are carried as-is. */
+    override val sourceServiceFault: ChannelServiceFault
+        get() = when (this) {
+            is NotConnected -> ChannelServiceFault.NotConnected
+            is ChannelNotFound -> ChannelServiceFault.ChannelNotFound
+            is InvalidChannelIndex -> ChannelServiceFault.InvalidChannelIndex
+            is SecretHashingFailed -> ChannelServiceFault.SecretHashingFailed
+            is SaveFailed -> ChannelServiceFault.SaveFailed(reason)
+            is SendFailed -> ChannelServiceFault.SendFailed(reason)
+            is SessionError -> ChannelServiceFault.SessionError(error)
+            is SyncAlreadyInProgress -> ChannelServiceFault.SyncAlreadyInProgress
+            is CircuitBreakerOpen -> ChannelServiceFault.CircuitBreakerOpen(consecutiveFailures)
+        }
 }
 
 /**

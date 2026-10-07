@@ -4,6 +4,8 @@ package com.meshcoreone.android.core.services.contacts
 import com.meshcoreone.android.core.contracts.domain.AppStateProvider
 import com.meshcoreone.android.core.contracts.domain.EntityKey
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreProtocol
+import com.meshcoreone.android.core.contracts.domain.errors.AdvertisementFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import com.meshcoreone.android.core.model.ContactDTO
 import com.meshcoreone.android.core.model.ContactFrame
 import com.meshcoreone.android.core.model.DebugLogLevel
@@ -44,11 +46,21 @@ import kotlinx.coroutines.withContext
 
 // MARK: - Errors and outcomes
 
-sealed class AdvertisementError(message: String, cause: Throwable? = null) : Exception(message, cause) {
+sealed class AdvertisementError(message: String, cause: Throwable? = null) :
+    Exception(message, cause), SourceServiceFaultCarrier {
     class NotConnected : AdvertisementError("Not connected to device.")
     class SendFailed : AdvertisementError("Failed to send advertisement.")
     class InvalidResponse : AdvertisementError("Invalid response from device.")
     class SessionError(val error: MeshCoreException) : AdvertisementError(error.message.orEmpty(), error)
+
+    /** Exhaustive projection onto the neutral payload; the session cause is carried as the same instance. */
+    override val sourceServiceFault: AdvertisementFault
+        get() = when (this) {
+            is NotConnected -> AdvertisementFault.NotConnected
+            is SendFailed -> AdvertisementFault.SendFailed
+            is InvalidResponse -> AdvertisementFault.InvalidResponse
+            is SessionError -> AdvertisementFault.SessionError(error)
+        }
 }
 
 /**
