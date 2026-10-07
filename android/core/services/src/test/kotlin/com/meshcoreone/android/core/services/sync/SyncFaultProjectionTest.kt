@@ -1,4 +1,4 @@
-// AndroidOnly: WP-304 Actual sync producer projections preserve reason, diagnostic and simplified state equality.
+// AndroidOnly: WP-214 Actual sync producer projections preserve reason, diagnostic and simplified state equality.
 package com.meshcoreone.android.core.services.sync
 
 import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier

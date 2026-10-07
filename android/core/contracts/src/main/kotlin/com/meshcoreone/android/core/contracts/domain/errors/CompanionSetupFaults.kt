@@ -1,5 +1,5 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Services/AccessorySetupKitService.swift@db14559b39d32322b06477c6ae676112f583db50
-// AndroidOnly: WP-304 Native declined-removal outcome retains its existing distinction.
+// Native declined-removal outcome retains its existing distinction.
 package com.meshcoreone.android.core.contracts.domain.errors
 
 sealed interface CompanionSetupFault : SourceServiceFault {

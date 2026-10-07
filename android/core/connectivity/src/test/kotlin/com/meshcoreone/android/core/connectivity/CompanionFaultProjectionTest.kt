@@ -1,4 +1,4 @@
-// AndroidOnly: WP-304 Actual companion producer projections preserve all cases and control-flow cancellation.
+// AndroidOnly: WP-206 Actual companion producer projections preserve all cases and control-flow cancellation.
 package com.meshcoreone.android.core.connectivity
 
 import com.meshcoreone.android.core.connectivity.pairing.*
