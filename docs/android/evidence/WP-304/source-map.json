@@ -1,0 +1,1562 @@
+{
+  "entries": [
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "0526c366812d4fb6ea8028477bd16be3d6da51c1",
+      "source_path": "MC1/Extensions/BatteryInfo+Display.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "34bebc3a4bb4fe56a377d2919637897eb1d7c44c",
+      "source_path": "MC1/Extensions/ChannelDTO+DisplayName.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "25090b8b1028beb35f30ff6dedae3dbee9cc6876",
+      "source_path": "MC1/Extensions/Collection+Chunked.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "e976c2ecf5e3d85397e2d5f0fbdf40b35b82c781",
+      "source_path": "MC1/Extensions/ContactType+Display.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/TimestampFormatting.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "8464da5bad1f4b485f052f155184f454e1b79717",
+      "source_path": "MC1/Extensions/Date+RelativeFormatting.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d004738c3a1b149ba911388680f54945489b09f2",
+      "source_path": "MC1/Extensions/DecryptStatus+Display.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "8beef5d5954a66e63d6815167d4ab8b5243b0418",
+      "source_path": "MC1/Extensions/DiscoveredNodeDTO+ContactFrame.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d47909d3bddc14e904dec19d19b78daa63e5332a",
+      "source_path": "MC1/Extensions/Errors/AccessorySetupKitError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3618a183f68543c7f80bdcb4ad60e4e248584fa4",
+      "source_path": "MC1/Extensions/Errors/AdvertisementError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "1e7930a6ed5e6f2039e64b2d68a6abf720c66b13",
+      "source_path": "MC1/Extensions/Errors/BLEError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "1aaea2a831cb49ee007816b1736edb7a2ad03a41",
+      "source_path": "MC1/Extensions/Errors/BinaryProtocolError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "894644bc82aef8755883369f2862679cec726792",
+      "source_path": "MC1/Extensions/Errors/ChannelServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d73ba9cd3e27d0c6630a5764407268e567509cab",
+      "source_path": "MC1/Extensions/Errors/ChatSendQueueServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "10749c0d7f656cf692097a4c9bc2589d7d3e6b1c",
+      "source_path": "MC1/Extensions/Errors/ConnectionError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "9e82c0f86be41ab312b2a0678f22767bf3eabcde",
+      "source_path": "MC1/Extensions/Errors/ContactServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "97ee3cc860968e5b3fb97b35a574276ce2f1d81c",
+      "source_path": "MC1/Extensions/Errors/DeviceServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/UiErrorMapper.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "7ea6f6870304223eadff4b76285fb4e48e9ada51",
+      "source_path": "MC1/Extensions/Errors/Error+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c002bf40e6190d84ff1a6cb19df791b1e7777d25",
+      "source_path": "MC1/Extensions/Errors/KeyGenerationError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/StorageErrorPresentation.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "f71c2da660b301092ad71ca26bc915e74e73bbd1",
+      "source_path": "MC1/Extensions/Errors/KeychainError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "03f96ff5ec4a84c75e64456b9b69dd2235b51852",
+      "source_path": "MC1/Extensions/Errors/MeshCoreError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "b84867f25f0e19749171ccaf730652b568e894f0",
+      "source_path": "MC1/Extensions/Errors/MessagePollingError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "2cafb9300b66f2730f91bba227f3d85158898035",
+      "source_path": "MC1/Extensions/Errors/MessageServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "66dc51244a48faf97d7ca9da72b61bc518bfa428",
+      "source_path": "MC1/Extensions/Errors/NodeConfigServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "41e4a88013c702b92e9a66ba9a8a3de104d3e7a7",
+      "source_path": "MC1/Extensions/Errors/PersistenceStoreError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "4574424c6bfb84d7590a83a5235de99426e3bb35",
+      "source_path": "MC1/Extensions/Errors/ProtocolError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "83aa272ca7e07624fdb2bfe62a889e3959da131c",
+      "source_path": "MC1/Extensions/Errors/RemoteNodeError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "f6905467c75e4badb8b066e53feb661e708e63c5",
+      "source_path": "MC1/Extensions/Errors/RoomServerError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "aa112e2e84348046252ac3b66c1cb62da4dcf2f9",
+      "source_path": "MC1/Extensions/Errors/SettingsServiceError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "156aee80300b02fbef2f5b618e71e9ff3e9290d5",
+      "source_path": "MC1/Extensions/Errors/SyncCoordinatorError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceFaultPresentation.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "5edb386823316a632595e386d034859f1e4b2e30",
+      "source_path": "MC1/Extensions/Errors/TimeoutError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ErrorCopy.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "74a72c192a6f850576da9d0760aba9961edeba03",
+      "source_path": "MC1/Extensions/Errors/WiFiTransportError+UserFacingMessage.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3cb1b6db32ced61e82361da443de87842a6bb88a",
+      "source_path": "MC1/Extensions/NotificationLevel+Display.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ScreenshotMode.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "733e5599415fe992ae212e0f0d3dfbb6c3e7dbfe",
+      "source_path": "MC1/Extensions/ProcessInfo+ScreenshotMode.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "bb2d3e1e2c45e4a95bf41d1fa963fc5910a832f6",
+      "source_path": "MC1/Extensions/RoomPermissionLevel+Display.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/DisplayValues.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "843e00ec5a6a5726ee9583c9dc9a18ef375ca192",
+      "source_path": "MC1/Extensions/UInt8+Hex.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "74fb73130c3073dee54dfdea91dce88a9fb3a3ab",
+      "source_path": "MC1/Extensions/View+LiquidGlass.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/MapControlsContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c87485a653e64c8db4fc2a2bf5ee52b829d05b1d",
+      "source_path": "MC1/Extensions/View+MapControlButton.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "af1f741efe7e77fee1d0340e2857a9c5867b4d7a",
+      "source_path": "MC1/Extensions/View+RadioDisabled.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/NavigationHeaderContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "62d49a9f47874b1ab544b42d29fc16509b20df0f",
+      "source_path": "MC1/Extensions/View+ScrollRevealTitle.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ShowOnceTips.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "100f4ee82e6e9653ca2ca2bfc604cc16d70f6fad",
+      "source_path": "MC1/Tips/DeviceMenuTip.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ShowOnceTips.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "4537cf661a987ae49a86473177696a6495118491",
+      "source_path": "MC1/Tips/LiveActivityTip.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d1ee5930530417e957de8b8b05ad1610f3a551b9",
+      "source_path": "MC1/Views/Components/AsyncActionLabel.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/AvatarCropGeometry.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c63d725ea26d0caf9d86d94ae8a50426c6295f93",
+      "source_path": "MC1/Views/Components/AvatarCropGeometry.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/AvatarCropContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "1f59354aa298bb8551a3ad5b0810609b13a82c5a",
+      "source_path": "MC1/Views/Components/AvatarCropView.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ConnectionStatusContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "e4aff2802012869e9f45492d96c5b97c5bdc30cd",
+      "source_path": "MC1/Views/Components/BLEStatusIndicatorView.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ConnectionStatusContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "1d73eb649b8dc4061da94cb44eab4429ca5fa25d",
+      "source_path": "MC1/Views/Components/BLEStatusToolbarItem.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/AvatarContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "4e137b856a94607193f1657f9992502246376c74",
+      "source_path": "MC1/Views/Components/ContactAvatar.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "50af137998912f8be83f5867d5b0f29b97421a11",
+      "source_path": "MC1/Views/Components/ConversationQuickActionsSection.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/TimestampContent.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/TimestampFormatting.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "b3daeef626a478eabdff1741ea250fdd2b7fe1de",
+      "source_path": "MC1/Views/Components/ConversationTimestamp.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "5ea26a3df66d65530d30008aa3e91e50f78189aa",
+      "source_path": "MC1/Views/Components/DeletingRowOverlay.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "aba554d8cb885c2c62d1bdceee5e0b3352d4c3d0",
+      "source_path": "MC1/Views/Components/ErrorAlertModifier.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "69560bcab1bd61be375c97bbf83b279cfc51a4b4",
+      "source_path": "MC1/Views/Components/ErrorBannerModifier.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "f8930e879db4635707d36fd48f3386c5f9a69caf",
+      "source_path": "MC1/Views/Components/ExpandableSettingsSection.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "2271c2ec332b2ec3a26ad531d5aef86731a6e0e1",
+      "source_path": "MC1/Views/Components/GlassFilterBar.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/MapControlsContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c7c74629ee16def08e68f67f4155ccd078a98d1b",
+      "source_path": "MC1/Views/Components/MapControlsToolbar.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/NavigationHeaderContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "ceda512d68f97b1824b0a9fac64b43fc529b5bc4",
+      "source_path": "MC1/Views/Components/NavigationHeaderModifier.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/AvatarContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c617ebf4063bb32e3a1ca0450cd4f90340a4c8f8",
+      "source_path": "MC1/Views/Components/NodeAvatar.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "0012ff4b5e665db93e6d058b27f4202dde3d7012",
+      "source_path": "MC1/Views/Components/NotificationLevelPicker.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RSSIScanTracker.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "37c1c2387bf62f8b91dc19966ffb88becbb6d708",
+      "source_path": "MC1/Views/Components/RSSIScanTracker.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RSSITuning.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "bde67c887ed28314ffad1685bdbbcde2a100bf55",
+      "source_path": "MC1/Views/Components/RSSITuning.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RadioCommandTimeout.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3ca2e3df0ce7d485878cbfc1153bb5af5e4c431c",
+      "source_path": "MC1/Views/Components/RadioCommandTimeout.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RegionContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3e4d62d289944634ad3c489c9ba39f5d2fe1312c",
+      "source_path": "MC1/Views/Components/RegionDiscoveryResultsView.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RegionContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d25ff5710379045f9e8719baa7f9d1d0a57eafb2",
+      "source_path": "MC1/Views/Components/RegionManagementView.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/RegionNameValidator.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3a018403aecf32d7c43ab13cc55e34581ec22d37",
+      "source_path": "MC1/Views/Components/RegionNameValidator.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/TimestampContent.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/TimestampFormatting.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "bc51a2bb267e2c9b67ac579ed6610f30780d5bc8",
+      "source_path": "MC1/Views/Components/RelativeTimestampText.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "689fe3e56c80e1f0b15c9120818889672ce9b3e7",
+      "source_path": "MC1/Views/Components/SectionReloadButton.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedFeedback.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "04d031a326166592f7de77306f785b40a88b774b",
+      "source_path": "MC1/Views/Components/SelectedRowHighlight.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ConnectionStatusContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "29aae5a96bb0dd43decfc14cd0d1162d31b4f940",
+      "source_path": "MC1/Views/Components/SignalBars.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SwipeActionsContainer.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "7a55d3fc75c5adabd2177c241ddc5ab389488218",
+      "source_path": "MC1/Views/Components/SwipeActionsContainer.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ConnectionStatusContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "98ac110b47e6bfeef64ddc8f1a3fb57b6f9d2dba",
+      "source_path": "MC1/Views/Components/SyncingPillOverlay.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/ConnectionStatusContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "c10729eef824706adc0ed3dbb508b209ab55080a",
+      "source_path": "MC1/Views/Components/SyncingPillView.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SharedControls.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "bcc6d6fb595085efb82ac81833efc106cf025e2e",
+      "source_path": "MC1/Views/Components/TintedLabel.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/WiFiAddressValidation.kt",
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/WiFiContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "2f85866db672e515b6f72d1780a6c2702f1b6e97",
+      "source_path": "MC1/Views/Components/WiFiAddressFields.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/WiFiContent.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "9c5013ebddb9477c4fb4ba5758fbfb6465178934",
+      "source_path": "MC1/Views/Components/WiFiSheetToolbarModifier.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/main/kotlin/com/meshcoreone/android/core/ui/SourceErrorDescription.kt"
+      ],
+      "kind": "production",
+      "original_cases": {},
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "90fae061baff0d7f646db520f0b579f662e0c0cf",
+      "source_path": "MC1Services/Sources/MC1Services/Errors/MeshCoreError+LocalizedError.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/ServicesBasicTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "MC1ServicesTests::MeshCore types are re-exported()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/MC1ServicesTests.swift",
+          "scenarios": 1
+        },
+        "MC1ServicesTests::Version is accessible()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/MC1ServicesTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "0370e093131d6d434b08ecfe3d1d955679ef8899",
+      "source_path": "MC1Services/Tests/MC1ServicesTests/MC1ServicesTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/ErrorLocalizationTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "ErrorLocalizationTests::AdvertisementError.notConnected produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::BinaryProtocolError.timeout produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::ChannelServiceError.sessionError passes through MeshCoreError description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError bluetooth errors produce readable descriptions()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.connectionLost includes underlying error when present()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.connectionLost without underlying error()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.deviceError falls back for unknown codes()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.deviceError handles code zero()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.deviceError maps known firmware codes(code : UInt8 , expected : String)": {
+          "parameter_family": "arguments-sha256:993c90f10c9c7eef68e696d320248af493fcd7348cce936e3d3133e234d2a367",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 6
+        },
+        "ErrorLocalizationTests::MeshCoreError.featureDisabled produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.sessionNotStarted produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MeshCoreError.timeout produces human-readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::MessageServiceError.sessionError passes through MeshCoreError description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::PersistenceStoreError.contactNotFound produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::ProtocolError cases produce non-empty, readable descriptions(protocolError : ProtocolError)": {
+          "parameter_family": "arguments-sha256:8a98c05ae25d83e8175ad0d98ad1b5314d5f938080fc6f27ac7a53f342780311",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 6
+        },
+        "ErrorLocalizationTests::RemoteNodeError.sessionError passes through without prefix()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::RoomServerError.permissionDenied produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::SettingsServiceError.deviceGPSVerificationFailed is human-readable()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::SettingsServiceError.sessionError passes through without prefix()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        },
+        "ErrorLocalizationTests::SyncCoordinatorError.alreadySyncing produces readable description()": {
+          "parameter_family": "single",
+          "path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "db57c84d7c4820365623c716141f618ff5798c1b",
+      "source_path": "MC1Services/Tests/MC1ServicesTests/Services/ErrorLocalizationTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/BatteryDisplayTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "BatteryInfoDisplayTests::icon name 25 percent()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::icon name 50 percent()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::icon name 75 percent()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::icon name full battery()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::icon name low battery()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::is battery present minimum valid voltage returns true()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::is battery present normal voltage returns true()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::is battery present zero millivolts returns false()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::level color critical level()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::level color normal level()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::level color warning level()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::percentage clamps above 100()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::percentage clamps below 0()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::percentage empty battery()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::percentage full battery()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::percentage mid range()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::voltage converts millivolts correctly()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        },
+        "BatteryInfoDisplayTests::voltage zero millivolts()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "dae7d13981c2d53f03643bfe5580e37126b5545e",
+      "source_path": "MC1Tests/Extensions/BatteryInfoDisplayTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/BatteryDisplayTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "BatteryPercentageCalculationTests::Voltage above max returns 100()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        },
+        "BatteryPercentageCalculationTests::Voltage at 0% point returns 0()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        },
+        "BatteryPercentageCalculationTests::Voltage at 100% point returns 100()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        },
+        "BatteryPercentageCalculationTests::Voltage at 50% point returns 50()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        },
+        "BatteryPercentageCalculationTests::Voltage below min returns 0()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        },
+        "BatteryPercentageCalculationTests::Voltage interpolates between points()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "7c904fe2b5d382b565832ba5944b8a30966fd422",
+      "source_path": "MC1Tests/Extensions/BatteryPercentageCalculationTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/ErrorDispatchCoverageTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "ErrorDispatchCoverageTests::Every LocalizedError enum in MC1Services and MeshCore has a dispatch arm or is allowlisted()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorDispatchCoverageTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "d498ba964cea06fa542bc72b381e2a9047ac4cba",
+      "source_path": "MC1Tests/Extensions/ErrorDispatchCoverageTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/ErrorUserFacingTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "ErrorUserFacingMessageTests::accessory setup kit error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::advertisement error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::app backup error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::binary protocol error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::ble error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::channel service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::chat send queue service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::connection error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::connection lost recurses into underlying error()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::contact service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::device GPS verification failed picks boolean variant key()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::device error falls back for unknown code()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::device error maps known codes through protocol error()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::device service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::interpolated cases carry associated values()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::key generation error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::keychain error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::mesh core error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::message polling error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::message service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::node config service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::persist failed recurses into underlying error()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::persistence store error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::protocol error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::remote node error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::room server error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::room server send failed drops raw reason()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::session error delegates to central mesh core mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::settings service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::store service error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::sync coordinator error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::timeout error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::unmapped error falls back to localized description()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        },
+        "ErrorUserFacingMessageTests::wifi transport error dispatches to concrete mapping()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "927815ccb3d78dce1387ab43f8f357a56de5b19e",
+      "source_path": "MC1Tests/Extensions/ErrorUserFacingMessageTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/ThemedSurfaceTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "ThemedSurfaceRowFillTests::canvas-only theme (Ember) leaves rows on the system tier regardless of flattening()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/ThemedSurfaceRowFillTests.swift",
+          "scenarios": 1
+        },
+        "ThemedSurfaceRowFillTests::card theme emits no row fill when flattened, so the iPad Settings sidebar keeps native selection()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/ThemedSurfaceRowFillTests.swift",
+          "scenarios": 1
+        },
+        "ThemedSurfaceRowFillTests::card theme paints rows with the card tier in a normal (non-flattened) context()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/ThemedSurfaceRowFillTests.swift",
+          "scenarios": 1
+        },
+        "ThemedSurfaceRowFillTests::default theme has no surfaces, so themed row backgrounds are a no-op()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/ThemedSurfaceRowFillTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "9ddc63191480185431753efd8ea71427fb3759dd",
+      "source_path": "MC1Tests/ThemedSurfaceRowFillTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/AvatarCropGeometryTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "AvatarCropGeometryTests::crop size shrinks on a short landscape canvas()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::crop size uses the regular cap on iPad()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::draw rect at scale 1 offset 0 matches the centered fill()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::fill size covers the crop square for a landscape image()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::fill size covers the crop square for a portrait image()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::live pinch reclamps offset to the live scale()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::offset clamps so the crop square stays covered()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::scale clamps to 1...4()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        },
+        "AvatarCropGeometryTests::zero image size falls back to the crop square()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "db81e7459b3d1cf9f0d676d259a6023ca5ddecc5",
+      "source_path": "MC1Tests/Views/Components/AvatarCropGeometryTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/RSSIScanTrackerTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "RSSIScanTrackerTests::a later packet without a name keeps the previously advertised name and smooths RSSI()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 1
+        },
+        "RSSIScanTrackerTests::an unusable reading is skipped and creates no entry(rssi : Int)": {
+          "parameter_family": "arguments-sha256:a6ce150cd1ba0ddd529f82bbbe82d93dc9f0b204a7a5136ad230eb0edcc35923",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 3
+        },
+        "RSSIScanTrackerTests::consume ingests a usable discovery and exposes its name and tier()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 1
+        },
+        "RSSIScanTrackerTests::expireStale drops a peripheral last seen before the stale window()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 1
+        },
+        "RSSIScanTrackerTests::expireStale keeps a freshly seen peripheral()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 1
+        },
+        "RSSIScanTrackerTests::unknown ids report no tier and are not advertising()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "b09d427e588827da503a9103d9ae827c41527b85",
+      "source_path": "MC1Tests/Views/Components/RSSIScanTrackerTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/RSSITuningTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "RSSITuningTests::a reading clearing the band by the hysteresis margin flips the tier()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::a reading inside the hysteresis band holds the current tier()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::a single strong reading jumps weak straight to strong()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::color maps each tier to its glyph color()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::fillLevel maps each tier to its glyph fill(tier : RSSITuning . SignalTier , expected : Double)": {
+          "parameter_family": "arguments-sha256:d62f0c225320c5774f281b028e3cc5204305253046445b59f4883f0201d920e6",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 3
+        },
+        "RSSITuningTests::first reading maps directly at the tier thresholds(rssi : Int , expected : RSSITuning . SignalTier)": {
+          "parameter_family": "arguments-sha256:f2c7f9eb3db9ff35b2ae599f3802f09aac349121a9346f586c4ecd7c28deccce",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 3
+        },
+        "RSSITuningTests::from medium, a reading moves up, drops, or holds at the band edges()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::isUsable accepts negative dBm readings and rejects the unavailable sentinels(rssi : Int , expected : Bool)": {
+          "parameter_family": "arguments-sha256:75034dc492b341ce0ae46d19736bef6c69be4a28cd44ddb391991889abd5ceaa",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 5
+        },
+        "RSSITuningTests::smooth returns the new sample unchanged when there is no prior reading()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        },
+        "RSSITuningTests::smooth weights the newest sample at 0.2 against the previous smoothed value()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/Components/RSSITuningTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "3114b617c84752623dc7994417546f46d2faf476",
+      "source_path": "MC1Tests/Views/Components/RSSITuningTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/WiFiHostValidationTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "WiFiHostValidationTests::classifies host(_ host : String , _ expected : Bool)": {
+          "parameter_family": "arguments-sha256:5202c3261d7eaf5e5269c7e34b2dbf6e7bb729a350d37a1d5ed5537d19d37b1d",
+          "path": "MC1Tests/Views/Components/WiFiHostValidationTests.swift",
+          "scenarios": 9
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "6b10dadc35f583c66a5d2ad8d3b2f34d80abc262",
+      "source_path": "MC1Tests/Views/Components/WiFiHostValidationTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/RelativeTimestampTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "RelativeTimestampTextTests::Returns 'Now' at 59 seconds ago()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns 'Now' for timestamps under 60 seconds()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns abbreviated date format for 7+ days ago()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns abbreviated date format for old dates()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns non-empty string for days ago()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns non-empty string for hours ago()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns non-empty string for minutes ago()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns non-empty string for yesterday()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Returns relative format at exactly 60 seconds()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Uses date format at exactly week threshold()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        },
+        "RelativeTimestampTextTests::Uses relative format just before week threshold()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/RelativeTimestampTextTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "553b0ea3361c58f3d7a73fb9b9f55c080532eb7d",
+      "source_path": "MC1Tests/Views/RelativeTimestampTextTests.swift"
+    },
+    {
+      "implementation_paths": [
+        "android/core/ui/src/test/kotlin/com/meshcoreone/android/core/ui/SyncingPillTest.kt"
+      ],
+      "kind": "test",
+      "original_cases": {
+        "SyncingPillViewTests::Connecting state shows correct text and icon()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Disconnected state shows orange warning icon and text()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Disconnected with tap handler stores closure()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Failed state preserves custom error message()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Failed state shows red text and failure icon with custom message()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Hidden state shows empty text and no icon()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Ready state shows correct text and icon()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        },
+        "SyncingPillViewTests::Syncing state shows correct text and icon()": {
+          "parameter_family": "single",
+          "path": "MC1Tests/Views/SyncingPillViewTests.swift",
+          "scenarios": 1
+        }
+      },
+      "scope": "Provenance/case accounting only; concrete producer binding, native execution and parity are separate evidence.",
+      "source_blob": "15a45113ef453fba1131c6f388ec5361d744c4cc",
+      "source_path": "MC1Tests/Views/SyncingPillViewTests.swift"
+    }
+  ],
+  "primary_sources": 88,
+  "schema_version": 1,
+  "source_families": 130,
+  "source_scenarios": 158,
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "work_package": "WP-304"
+}
