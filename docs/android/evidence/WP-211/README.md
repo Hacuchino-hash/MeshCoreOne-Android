@@ -3,7 +3,58 @@
 This is implementation evidence for one manually coordinated WP, not a fleet
 activation, completed app graph, hardware result, license approval or merge gate.
 
-## Verified native implementation
+## Authorized current-base reconciliation
+
+The coordinator's user-directed 2026-10-07 reconciliation instruction
+authorizes only the two **already merged test-only** reference exceptions
+and actual current main integration. The original behavior/oracle pin remains
+`db14559b39d32322b06477c6ae676112f583db50`; no further Swift edits, golden
+changes, source ownership or manifest/policy advancement are authorized.
+
+The same clean managed branch was fetched and fast-forwarded from historical
+`8146820e4a8330e3a3e035828b6137379abb2e1b` to the actual remote parent merge
+`5f9a7fec22f81e75b42e220d141c342a3c735954`. That is the genuine ordinary
+PR46 merge of reviewed repair
+`3a0203605aa1bc6801599add6e9bcebdbb6cb1b0`, author Hacuchino-hash
+(original Claude Opus coauthor attribution retained in that commit). Its
+only files are DeviceSettingsContext.kt, DeviceService.kt and the new
+SettingsCloseTest.kt. A context closed beneath a live caller now reports
+typed retryable NotConnected instead of silently cancelling that caller;
+the caller's own cancellation still propagates. Callback registration
+rechecks under its close lock. Both real close regression assertions remain.
+
+The approved current integration base is
+`e3369a97bf3a1e19b801c8d69ca8abf171da432b`, genuine ordinary main PR51
+merge with parents `7237727fe498e87261cc9b321051567a86279fef` and
+`29bd508efb7133dc94e236264646791cd38fee07`. The 7237727 parent contains
+the exact two existing test-only exceptions (correlation request ordering
+and advertisement state waits), their reference-amendment records and
+fail-closed readers. PR51 adds main-source `-Xjdk-release=17` in the existing
+JVM convention. Those existing base commits are integrated as Git history,
+not manually edited or duplicated by this WP.
+
+The actual collector keeps the historical receipt base
+`7e2835bad2c03dfb5a088063655f9fc4dbafd00f` separately from this new
+integration base. All 24 primary WP-211 input blobs, original
+**163 families /220 expanded cases**, OCV15/15/15/16, eight frozen
+catalog/fault/test/helper blobs and carried services build/root lock remain
+unchanged. The two additional reviewed close regressions increase the
+owning service floor to **303 JVM (213 original +90 native)** and the
+combined owning total to **315 (plus12 Room:7 original +5 native)**.
+No native assertion or prior floor is removed; full-module counts remain
+separate from source parity.
+
+Fresh integrated-head Linux `verifyDeviceSettingsTests`/root/protocol/
+reciprocal backup evidence is **pending**. Neither historical814 native
+artifacts nor the isolated PR46 repair proof is rebound to the new base/head.
+Only the necessary existing per-WP collector/tests/evidence/deviation
+adjustments are authored here. Data build/local lock, services build/root
+lock, schemas/contracts/resources/controllers and frozen producer paths
+receive no new worker edits. The exact run/head/source/base/artifact outcomes
+will be recorded in the **existing PR body**, without a further
+evidence-only commit/rerun once the integrated source is frozen.
+
+## Historical verified native implementation
 
 The complete owning implementation **executed successfully** at candidate
 `3dc80c565cdfab72d4b08e5ea28d9834f2df1b88`, base

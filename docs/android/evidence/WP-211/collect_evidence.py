@@ -21,7 +21,8 @@ from controller.schema import load_json
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
-BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
+BASE = "e3369a97bf3a1e19b801c8d69ca8abf171da432b"
+RECEIPT_BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
 LEASE = "autonomous-WP-211-d147865c"
 DEVICE = "com.meshcoreone.android.core.services.device."
 ROOM_CLASS = "com.meshcoreone.android.core.data.repository.DeviceSettingsRoomTest"
@@ -36,7 +37,11 @@ NATIVE = re.compile(rf'\bnative(?:Case|Async)\(\s*({QUOTED})')
 ROOM_BINDING = re.compile(rf'@DeviceSettingsSourceCase\(({QUOTED})\)\s*@Test\s+fun\s+(\w+)\s*\(')
 ROOM_METHOD = re.compile(r'@Test\s+fun\s+(\w+)\s*\(')
 MAX_XML_BYTES = 16 * 1024 * 1024
-MIN_NATIVE_CASES = 88
+MIN_NATIVE_CASES = 90
+REQUIRED_CLOSE_CASES = {
+    "WP-211::closing the context during an in-flight verified write reports NotConnected to the live caller",
+    "WP-211::a call after the context closed reports NotConnected without a transport side effect",
+}
 FROZEN_PRODUCERS = {
     "android/core/services/src/main/kotlin/com/meshcoreone/android/core/services/device/RegionalAreas.kt":
         "090ce5f23a4e36f8580094b7d43ecc8e6c40368f",
@@ -155,6 +160,7 @@ def source_map():
         declarations[identity] = {"native_source": ROOM_PATH.as_posix(), "runner": "room", "method": method}
     require(set(declarations) == set(families), "Missing originals: " + repr(sorted(set(families) - set(declarations))))
     require(len(native) >= MIN_NATIVE_CASES, "Native failure/cancellation/capability assertions must not be lowered")
+    require(REQUIRED_CLOSE_CASES <= native.keys(), "Both reviewed close-lifecycle regressions are mandatory")
     room_methods = set(ROOM_METHOD.findall(room_text))
     require(len(room_methods) == len(ROOM_METHOD.findall(room_text)) and len(room_methods) >= 12,
             "Missing/duplicate original and native Room consumers")
@@ -243,6 +249,7 @@ def invocation(path):
     binding = identity["binding"]
     require(binding["repository"] == "cbattlegear/MeshCoreOne-Android" and binding["head_sha"] == git("rev-parse", "HEAD"),
             "Stale/foreign actual invocation")
+    require(binding["base_sha"] == BASE, "Invocation is not bound to the authorized current integration base")
     require(binding["source_sha"] == SOURCE and binding["manifest_sha256"] == MANIFEST and binding["policy_revision"] == POLICY,
             "Invocation source/policy drift")
     require(type(identity["run_id"]) is int and identity["run_id"] > 0 and
@@ -260,7 +267,8 @@ def retain(output, invocation_file=None):
     head = git("rev-parse", "HEAD")
     metadata = {"schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
                 "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
-                "lease": LEASE, "receipt_base_sha": BASE, "invocation_file": str(invocation_file) if invocation_file else None,
+                "lease": LEASE, "receipt_base_sha": RECEIPT_BASE, "integration_base_sha": BASE,
+                "invocation_file": str(invocation_file) if invocation_file else None,
                 "raw_junit": [], "missing_directories": []}
     def persist():
         (output / "retention.json").write_text(
@@ -307,6 +315,8 @@ def validate_retained(output, invocation_file=None):
     require(metadata["repository"] == "cbattlegear/MeshCoreOne-Android" and metadata["work_package"] == "WP-211" and
             metadata["source_sha"] == SOURCE and metadata["manifest_sha256"] == MANIFEST and
             metadata["policy_revision"] == POLICY and metadata["lease"] == LEASE, "Retained immutable binding drift")
+    require(metadata["receipt_base_sha"] == RECEIPT_BASE and metadata["integration_base_sha"] == BASE,
+            "Retained receipt/integration base drift")
     actual_invocation = invocation_file or (output / "actual-invocation.json" if (output / "actual-invocation.json").is_file() else None)
     require(metadata["execution"] == invocation(actual_invocation), "Retained execution identity drift")
     require(metadata["head_sha"] == git("rev-parse", "HEAD"), "Retained source HEAD is stale")

@@ -152,7 +152,7 @@ class IdentityReaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="wp211-invocation-") as directory:
             path = Path(directory) / "invocation.json"
             binding = {"repository": "cbattlegear/MeshCoreOne-Android", "head_sha": "a" * 40,
-                       "base_sha": "b" * 40, "source_sha": reader.SOURCE,
+                       "base_sha": reader.BASE, "source_sha": reader.SOURCE,
                        "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY}
             value = {"schema_version": 1, "host": "linux", "stage": "verify",
                      "identity": {"binding": binding, "run_id": 1, "run_attempt": 1}}
@@ -164,6 +164,11 @@ class IdentityReaderTests(unittest.TestCase):
                     path.write_text(json.dumps(bad))
                     with self.assertRaises(ValueError):
                         reader.invocation(path)
+                value["identity"]["binding"]["base_sha"] = reader.RECEIPT_BASE
+                path.write_text(json.dumps(value))
+                with self.assertRaisesRegex(ValueError, "authorized current integration base"):
+                    reader.invocation(path)
+                value["identity"]["binding"]["base_sha"] = reader.BASE
                 value["identity"]["binding"]["head_sha"] = "c" * 40
                 path.write_text(json.dumps(value))
                 with self.assertRaisesRegex(ValueError, "Stale/foreign"):
@@ -180,13 +185,13 @@ class IdentityReaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Reviewed producer blob drift"):
                 reader.frozen_producers()
 
-    def test_owned_partitions_derive_301_jvm_and_12_room_without_baseline_module_count_credit(self):
+    def test_owned_partitions_derive_303_jvm_and_12_room_without_baseline_module_count_credit(self):
         _, families, native, room = reader.source_map()
         self.assertEqual(
             {
                 "original_jvm_expanded": 213, "original_room_expanded": 7,
-                "native_device_regressions": 88, "native_room_regressions": 5,
-                "declared_device_jvm": 301, "declared_room": 12, "declared_owned_total": 313,
+                "native_device_regressions": 90, "native_room_regressions": 5,
+                "declared_device_jvm": 303, "declared_room": 12, "declared_owned_total": 315,
             },
             reader.partition_counts(families, native, room),
         )
@@ -196,6 +201,16 @@ class IdentityReaderTests(unittest.TestCase):
         dropped = {identity: case for identity, case in families.items() if case["runner"] != "room"}
         with self.assertRaisesRegex(ValueError, "Frozen original JVM/Room partition"):
             reader.partition_counts(dropped, native, room)
+
+    def test_reviewed_close_regressions_are_required_without_changing_the_original_source_pin(self):
+        _, families, native, _ = reader.source_map()
+        self.assertTrue(reader.REQUIRED_CLOSE_CASES <= native.keys())
+        self.assertEqual(2, len(reader.REQUIRED_CLOSE_CASES))
+        self.assertEqual(90, reader.MIN_NATIVE_CASES)
+        self.assertEqual(163, len(families))
+        self.assertEqual("db14559b39d32322b06477c6ae676112f583db50", reader.SOURCE)
+        self.assertEqual("7e2835bad2c03dfb5a088063655f9fc4dbafd00f", reader.RECEIPT_BASE)
+        self.assertEqual("e3369a97bf3a1e19b801c8d69ca8abf171da432b", reader.BASE)
 
 
 class NativeHookTests(unittest.TestCase):
