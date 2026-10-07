@@ -1,0 +1,119 @@
+=== export fixture (NodeConfigTest iosExportFixture)
+{
+  "channels" : [
+    {
+      "name" : "#bravo",
+      "secret" : "ffeeddccbbaa99887766554433221100"
+    }
+  ],
+  "contacts" : [
+    {
+      "custom_name" : null,
+      "flags" : 0,
+      "last_advert" : 1767392516,
+      "last_modified" : 1767392535,
+      "latitude" : "40.7128",
+      "longitude" : "-74.006",
+      "name" : "Base-W (Room)",
+      "out_path" : null,
+      "public_key" : "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+      "type" : 3
+    },
+    {
+      "custom_name" : "Nick",
+      "flags" : 2,
+      "last_advert" : 0,
+      "last_modified" : 4294967295,
+      "latitude" : "1e-05",
+      "longitude" : "0.0001",
+      "name" : "Relay\/1 \"é\"",
+      "out_path" : "aabbccdd",
+      "path_hash_mode" : 1,
+      "public_key" : "0102030405060708091011121314151617181920212223242526272829303132",
+      "type" : 2
+    }
+  ],
+  "name" : "TestNode-2",
+  "other_settings" : {
+    "advert_location_policy" : 0,
+    "manual_add_contacts" : 1
+  },
+  "position_settings" : {
+    "latitude" : "47.6062",
+    "longitude" : "-122.3321"
+  },
+  "private_key" : "1a2b",
+  "public_key" : "d4f5",
+  "radio_settings" : {
+    "bandwidth" : 62500,
+    "coding_rate" : 5,
+    "frequency" : 910525,
+    "spreading_factor" : 7,
+    "tx_power" : -9
+  }
+}
+=== empty config
+{
+
+}
+=== empty channels
+{
+  "channels" : [
+
+  ]
+}
+=== escapes
+{<a>  "name" : "\u0000\b\f\r<7f><2028><1f600>\/"<a>}
+=== Double.description
+0.0
+-0.0
+47.6062
+1e-05
+-1.5e-05
+1e-07
+0.30000000000000004
+1e+16
+1000000000000000.0
+1.2345678901234568e+16
+100000.0
+0.0001
+=== String equality and hasPrefix
+composed == decomposed: true  ligature: false  '#'+U+0301 hasPrefix #: false
+=== decoding
+OK   "{\"name\":\"a\",\"name\":\"b\"}" -> name=Optional("a") acks=- freq=- channels=[]
+OK   "{\"name\":\"a\",\"name\":null}" -> name=Optional("a") acks=- freq=- channels=[]
+OK   "{\"name\":null,\"name\":\"b\"}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"radio_settings\":{\"frequency\":1,\"bandwidth\":2,\"spreading_factor\":7,\"coding_rate\":5,\"tx_power\":1,\"frequency\":9}}" -> name=nil acks=- freq=1 channels=[]
+OK   "{\"channels\":[{\"name\":\"x\",\"secret\":\"s\"}],\"channels\":[{\"name\":\"y\",\"secret\":\"s\"}]}" -> name=nil acks=- freq=- channels=["x"]
+OK   "{\"name\":\"a\",\"name\":\"\\x\"}" -> name=Optional("a") acks=- freq=- channels=[]
+ERR  "{\"name\":\"\\x\",\"name\":\"a\"}" -> dataCorrupted
+OK   "{\"name\":\"a\",}" -> name=Optional("a") acks=- freq=- channels=[]
+OK   "{\"channels\":[{\"name\":\"a\",\"secret\":\"b\"},]}" -> name=nil acks=- freq=- channels=["a"]
+ERR  "{,}" -> dataCorrupted
+ERR  "{\"channels\":[,]}" -> dataCorrupted
+ERR  "{\"name\":\"a\",,}" -> dataCorrupted
+OK   "{\"u\":\"a\nb\"}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"u\":\"\\x\"}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"u\":01}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"u\":1.}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"u\":-}" -> name=nil acks=- freq=- channels=[]
+OK   "{\"u\":1.2.3}" -> name=nil acks=- freq=- channels=[]
+ERR  "{\"u\":+1}" -> dataCorrupted
+ERR  "{\"u\":1x}" -> dataCorrupted
+ERR  "{\"u\":tru}" -> dataCorrupted
+ERR  "{\"name\":\"a\nb\"}" -> dataCorrupted
+ERR  "{\"name\":\"a\u{01}b\"}" -> dataCorrupted
+ERR  "{\"name\":\"\\uD83Dx\"}" -> dataCorrupted
+ERR  "{\"name\":01}" -> DecodingError.typeMismatch: expected value of type String. P
+ERR  "{\"other_settings\":{\"multi_acks\":01}}" -> dataCorrupted
+ERR  "{\"other_settings\":{\"multi_acks\":1.5}}" -> dataCorrupted
+ERR  "{\"other_settings\":{\"multi_acks\":256}}" -> dataCorrupted
+OK   "{\"other_settings\":{\"multi_acks\":1E2}}" -> name=nil acks=100 freq=- channels=[]
+OK   "{\"other_settings\":{\"multi_acks\":-0.0}}" -> name=nil acks=0 freq=- channels=[]
+OK   "{\"other_settings\":{\"multi_acks\":2.0000000000000001}}" -> name=nil acks=2 freq=- channels=[]
+ERR  "{\"other_settings\":{\"multi_acks\":1.0000000000000002}}" -> dataCorrupted
+ERR  "{\"other_settings\":{\"multi_acks\":1e400}}" -> dataCorrupted
+OK   "﻿{\"name\":\"a\"}" -> name=Optional("a") acks=- freq=- channels=[]
+ERR  "{\"\\x\":1}" -> dataCorrupted
+ERR  "{\"a\nb\":1}" -> dataCorrupted
+OK   "{\"na\\u006de\":\"k\"}" -> name=Optional("k") acks=- freq=- channels=[]
