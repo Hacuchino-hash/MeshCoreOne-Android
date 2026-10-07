@@ -1,15 +1,20 @@
 # WP-304 candidate evidence
 
-**Status: independently admitted generated owned lock and genuine partial
-native execution; latest615e run196/197 passed, one focused-dialog failure remains.
-Twenty-one producer families are uncredited. No macro acceptance.**
+**Status: actual ad391 native execution passed197/197 methods and all ten required
+standalone PNG states. The overall run remains FAILED because21 producer families
+are policy-only. No macro acceptance.**
 
 The active receipt and exact initial/reconciled identities are in
 [`authorization.json`](authorization.json). Original clean HEAD824 and its
 parents are retained; the explicitly authorized own-branch clean fast-forward
 base was `d8f9b842581496baa382be1fe54dc866354b8150`. The dedicated original
-managed branch is retained because the app rename tool is unavailable and the
-coordinator explicitly permits that fallback.
+managed branch is preserved. The coordinator has transferred the existing lease
+to native CLI `b4682f12-ba0c-4fa2-a9f1-a21ccac74b01` / app
+`cc2c1346-fc58-49b2-aae0-fc06fd03f540` on the app-materialized
+`pr-33-cbattlegear-refactored-spoon` worktree and managed local branch
+`pr/33/cbattlegear-refactored-spoon`. Only the existing remote PR33 head
+`cbattlegear-refactored-spoon` may be published. The old native writer's permission
+is revoked; its worktree has not been read or changed by this recovery.
 
 The coherent authored batch is
 `769b38f1008dd2aa493bee56ad9e432a97e83a0d` (parent d8f), with the required
@@ -369,6 +374,63 @@ actual attachment/focus, invalid input, zero add calls, Back and required PNG.
 The timed pill test remains manually clocked and measured. No production UI,
 60s timeout, source requirement, golden or dependency changes. Fresh actual
 native proof and the tenth PNG remain required.
+
+Actual ad391 run37518004306/attempt1 supplies that proof:197 discovered/run/passed,
+zero failures/errors/skips,18 standalone raw XMLs,94 exact committed input
+bindings and all ten required standalone PNGs, including the real focused
+dialog. [`native-ad391637-blocked.json`](native-ad391637-blocked.json) binds the
+official3,026,372-byte artifact11439285197/SHA256
+`dab620638d0747cb4247e988087bb89f86441581f7d38afc5a6cb4053823acd0` and106
+verified ZIP CRC members. Each PNG's bytes match both raw-retention and actual
+XML receipts; chunk CRCs and dimensions were checked independently. The complete
+current Actions API log archive contains both jobs' consolidated logs/system
+logs,20,347 bytes/four members/SHA256
+`5cd81bc6e0c24122718a3907635a1f23c6d99f4a0ba14178a0db40e5b3c479e2`.
+It is distinct from the older47,603-byte/23-member discussion receipt, not a
+replacement for that historical archive.
+
+The actual failed task is `:core:ui:verifySharedUiTests`, whose reader exits2 on
+the21 policy-only original producer families. There are no failed native case
+names at this head. All130 families/158 scenarios are accounted for, including
+seven parameter families/35 rows;109/137 are nonpending and21/21 are still
+uncredited. The passing focus, Back, first-visible-frame and real PNG assertions
+must not be altered to address this separate producer seam.
+
+Recovery initially read all eight discussion comments and confirmed zero reviews,
+inline comments or review threads, then read the new coordinator amendment on
+PR33 and the exact PR49/50 approval comments before further work. The discussion
+requests a neutral
+typed carrier with projections in the real producers, not UI-local duplicate
+exceptions or a production UI-to-services/runtime/BLE dependency. Published
+WP206/PR58 and WP214/PR54 now contain actual companion/sync fault declarations,
+in addition to WP209/PR49 and WP210/PR50. Their presence does not authorize a
+carry or complete those WPs. The exact heads/blobs, minimal extraction/projection
+paths, producer tests and four test-only consumer edges are recorded in
+[`producer-seam-proposal.json`](producer-seam-proposal.json). Shared writes await
+the coordinator's atomic assignment for the remaining205/206/207/214 surfaces.
+PR49 and PR50 are now the sole approved writers of their respective neutral
+declarations and existing producer projections. Recovery must wait for actual
+published/tested/frozen blobs before carrying them, not an obsolete UI-only
+scope hold. Concurrent runtime integration stays with the coordinator; both
+proposed runtime type blobs were independently re-read at its38a0 candidate and
+are unchanged.
+
+The coordinator has confirmed human approval of the two existing main test-only
+Swift amendments and the e3369a97 JDK-release-17 compiler successor. Recovery
+non-destructively reconciled that exact eleven-path successor on the managed
+local branch, with no conflicts or runtime-path changes. The two adopted test
+blobs match the approved registry exactly; no additional Swift edit was made.
+The original behavior/oracle pin,88 primary blobs, semantic manifest/policy,
+frozen B2/D6 faults and canonical ROOT/local UI locks remain unchanged.
+The ad391 proof above binds its actual7e base, not a fresh integrated-head
+execution. Exact current-head Linux evidence is still required.
+
+The declared reader was also replayed against the retained official XML/images,
+not generated expected files:28 Python regressions passed, then the reader
+produced native-evidence with197/197,18 reports,ten PNGs and130/158 accounting
+before returning the exact expected exit2 for21 policy-only families. This
+replay's recovery-checkout input metadata does not replace the original94 Linux
+input bindings. No Windows JVM or native execution occurred.
 
 The independent full41e source review requested six concrete fixes. The coherent
 authored response is in [`source-review-repair.json`](source-review-repair.json):
