@@ -84,8 +84,12 @@ def validate_candidate(value: dict, text: str):
             or build.get("if") != "${{ needs.scope.outputs.full == 'true' }}"):
         raise PortError("The Linux execution host is mandatory and unmatrixed")
     runs = "\n".join(step.get("run", "") for step in build["steps"])
-    if "ci.py " not in runs:
-        raise PortError("Candidate workflow does not execute any declared verification")
+    stage_runs = [
+        step.get("run", "") for step in build["steps"]
+        if "ci.py run --stage" in step.get("run", "")
+    ]
+    if stage_runs != ["python tools/android-port/controller/ci.py run --stage scaffold"]:
+        raise PortError("Candidate workflow must use one consolidated scaffold Gradle invocation")
     if "aggregate --artifacts" not in "\n".join(s.get("run", "") for s in gate["steps"]):
         raise PortError("Aggregator does not validate immutable evidence")
 

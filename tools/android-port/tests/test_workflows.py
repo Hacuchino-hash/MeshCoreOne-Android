@@ -96,6 +96,10 @@ class WorkflowTests(unittest.TestCase):
 
     def test_required_ci_allows_scope_filters_but_preserves_merge_and_gate_contract(self):
         original, text = self.read("android-ci.yml")
+        build_runs = [step["run"] for step in original["jobs"]["build"]["steps"] if "run" in step]
+        gradle_runs = [run for run in build_runs if "ci.py run --stage" in run]
+        self.assertEqual(gradle_runs, ["python tools/android-port/controller/ci.py run --stage scaffold"])
+        self.assertNotIn(":convention:test", text)
         scoped = copy.deepcopy(original)
         scoped["on"]["pull_request"]["paths"] = ["android/**", "tools/android-port/**"]
         validate_candidate(scoped, text)
