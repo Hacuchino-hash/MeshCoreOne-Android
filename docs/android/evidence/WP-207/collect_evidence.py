@@ -6,9 +6,14 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT / "tools" / "android-port"))
+from controller.model import load_manifest
+from controller.schema import load_json
+from controller.verification_config import content_scope_revisions
 MODULE = ROOT / "android" / "core" / "runtime"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
@@ -62,9 +67,9 @@ def read_junit(directory, record_root=ROOT):
 
 
 def collect():
-    manifest = json.loads((ROOT / "docs/android/port-manifest.json").read_text(encoding="utf-8"))
-    semantic = hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
-    require(semantic == MANIFEST, "Frozen semantic manifest drift")
+    canonical = load_manifest(ROOT)
+    revisions = content_scope_revisions(canonical, load_json(ROOT / "docs/android/automation-policy.json"))
+    manifest = canonical.data
     require(manifest["reference"]["commit"] == SOURCE, "Frozen source drift")
     inventory = json.loads((ROOT / "docs/android/test-cases.json").read_text(encoding="utf-8"))
     owned = {entry["path"]: entry for entry in manifest["inventory"] if entry["primary_owner"] == "WP-207"}
@@ -84,7 +89,9 @@ def collect():
         require(actual == entry["blob_sha"], "Frozen source input changed: " + path)
     declarations = {}
     native_declarations = {}
-    input_paths = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile"]
+    input_paths = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile",
+        ROOT / "docs/android/port-manifest.json", ROOT / "docs/android/automation-policy.json",
+        ROOT / "tools/android-port/controller/verification_config.py", Path(__file__)]
     for path in sorted((MODULE / "src").rglob("*.kt")):
         text = path.read_text(encoding="utf-8")
         require("@Disabled" not in text and "@Ignore" not in text, "Disabled runtime assertion")
@@ -120,7 +127,7 @@ def collect():
                        "sha256": hashlib.sha256(raw).hexdigest()})
     return {
         "schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-207",
-        "head_sha": git("rev-parse", "HEAD"), "source_sha": SOURCE, "manifest_sha256": MANIFEST,
+        "head_sha": git("rev-parse", "HEAD"), "source_sha": SOURCE, **revisions,
         "scope": "Full current pure-JVM runtime assertions; not Android hardware, complete graph or formal gate acceptance",
         "counts": {"discovered": len(native), "passed": len(native), "failed": 0, "errors": 0, "skipped": 0},
         "original_families": source_cases, "native_regressions": native_declarations,

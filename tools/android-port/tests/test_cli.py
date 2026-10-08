@@ -19,6 +19,7 @@ from controller.model import REFERENCE_SHA, validate_manifest
 from controller.paths import git_path
 from controller.render import cloud_payload, input_page, issue_payload, local_payload, render
 from controller.test_runner import run_suite
+from controller.verification_config import project_content_scope
 from controller.validate import main as validate_main
 from portmap import port_map, WP_302_SCOPE_APPROVAL, WP_302_SCOPE_PROOF
 
@@ -309,6 +310,52 @@ class ProvenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             self.assertEqual(port_map(self.temporary_manifest(directory)), [])
 
+    def test_wp302_only_exact_launcher_and_navigation_unit_prefix_with_actual_approval(self):
+        paths = (
+            "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
+            "android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/RoutesTest.kt",
+        )
+        for relative in paths:
+            with tempfile.TemporaryDirectory() as directory, self.subTest(relative=relative):
+                root = Path(directory)
+                source = root / relative
+                source.parent.mkdir(parents=True)
+                source.write_text("// AndroidOnly: WP-302 reviewed native shell support\n", encoding="utf-8")
+                with self.assertRaises((PortError, OSError)):
+                    port_map(self.temporary_manifest(directory))
+                proof = root / WP_302_SCOPE_PROOF
+                proof.parent.mkdir(parents=True)
+                proof.write_text(json.dumps(WP_302_SCOPE_APPROVAL), encoding="utf-8")
+                self.assertEqual(["WP-302"], port_map(self.temporary_manifest(directory))[0]["android_only"])
+                for field, value in (("work_package", "WP-218"), ("source_sha", "a" * 40),
+                                     ("receiver_base_sha", "a" * 40), ("manifest_sha256", "a" * 64),
+                                     ("write_paths", ["android/"]), ("schema_version", True)):
+                    wrong = copy.deepcopy(WP_302_SCOPE_APPROVAL)
+                    wrong[field] = value
+                    proof.write_text(json.dumps(wrong), encoding="utf-8")
+                    with self.subTest(field=field), self.assertRaises(PortError):
+                        port_map(self.temporary_manifest(directory))
+
+    def test_wp302_scope_never_grants_wrong_owner_or_sibling_prefix(self):
+        cases = (
+            ("android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt", "WP-218"),
+            ("android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/Test.kt", "WP-218"),
+            ("android/app/src/main/kotlin/com/meshcoreone/android/Other.kt", "WP-302"),
+            ("android/app/src/test/kotlin/com/meshcoreone/android/app/navigationExtra/Test.kt", "WP-302"),
+            ("android/app/src/test/kotlin/com/meshcoreone/android/app/Navigation/Test.kt", "WP-302"),
+        )
+        for relative, owner in cases:
+            with tempfile.TemporaryDirectory() as directory, self.subTest(relative=relative, owner=owner):
+                root = Path(directory)
+                proof = root / WP_302_SCOPE_PROOF
+                proof.parent.mkdir(parents=True)
+                proof.write_text(json.dumps(WP_302_SCOPE_APPROVAL), encoding="utf-8")
+                source = root / relative
+                source.parent.mkdir(parents=True)
+                source.write_text(f"// AndroidOnly: {owner} not this approved scope\n", encoding="utf-8")
+                with self.assertRaises(PortError):
+                    port_map(self.temporary_manifest(directory))
+
     def test_wp302_admits_only_exact_launcher_and_unit_prefix_with_complete_bound_proof(self):
         for relative in (
             "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
@@ -366,7 +413,7 @@ class ProvenanceTests(unittest.TestCase):
                 with self.assertRaises(PortError):
                     port_map(self.temporary_manifest(directory))
 
-    def test_wp302_scope_preserves_historical_manifest_audit_while_current_manifest_evolves(self):
+    def test_wp302_scope_rejects_changed_manifest_or_source_even_with_the_exact_proof(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             proof = root / WP_302_SCOPE_PROOF
@@ -376,15 +423,14 @@ class ProvenanceTests(unittest.TestCase):
             source.parent.mkdir(parents=True)
             source.write_text("// AndroidOnly: WP-302 approved native shell support\n", encoding="utf-8")
             manifest = self.temporary_manifest(directory)
-            changed = copy.deepcopy(manifest.data)
-            changed["work_packages"][0]["title"] += " changed"
-            self.assertEqual(
-                port_map(replace(manifest, data=changed))[0]["android_only"],
-                ["WP-302"],
-            )
-            changed["reference"]["commit"] = "a" * 40
-            with self.assertRaisesRegex(PortError, "source binding"):
-                port_map(replace(manifest, data=changed))
+            for field in ("source", "manifest"):
+                changed = copy.deepcopy(manifest.data)
+                if field == "source":
+                    changed["reference"]["commit"] = "a" * 40
+                else:
+                    changed["work_packages"][0]["title"] += " changed"
+                with self.subTest(field=field), self.assertRaises(PortError):
+                    port_map(replace(manifest, data=changed))
 
     def test_many_to_many_source_headers_are_derived_not_feature_acceptance(self):
         manifest = base_manifest()
@@ -406,6 +452,58 @@ class ProvenanceTests(unittest.TestCase):
                 f"// PortedFrom: unknown.swift@{REFERENCE_SHA}",
                 "// PortedFrom: MC1/MC1App.swift@" + "0" * 40,
                 "// AndroidOnly: WP-999 unknown owner",
+            ):
+                file.write_text(content, encoding="utf-8")
+                with self.subTest(content=content), self.assertRaises(PortError):
+                    port_map(self.temporary_manifest(directory))
+
+    def test_wp218_canonical_content_prefixes_replace_fixed_filename_allowance(self):
+        base = Path("android/app/src/test/kotlin/com/meshcoreone/android/app/content")
+        names = (
+            "AndroidGeocoderAdapterTest.kt",
+            "BitmapImageDecoderTest.kt",
+            "DataStoreLinkPreviewPreferencesSourceTest.kt",
+            "LocationManagerLocationProducingTest.kt",
+            "ElevationServiceAdapterTest.kt",
+        )
+        for relative in [*(base / name for name in names),
+                         Path("android/app/src/main/kotlin/com/meshcoreone/android/app/content/NewConsumer.kt")]:
+            with tempfile.TemporaryDirectory() as directory, self.subTest(relative=relative):
+                file = Path(directory) / relative
+                file.parent.mkdir(parents=True)
+                file.write_text("// AndroidOnly: WP-218 admitted native-adapter test\n", encoding="utf-8")
+                results = port_map(self.temporary_manifest(directory))
+                self.assertEqual(results[0]["android_only"], ["WP-218"])
+                predecessor = replace(self.temporary_manifest(directory),
+                                      data=project_content_scope(base_manifest().data))
+                with self.assertRaises(PortError):
+                    port_map(predecessor)
+
+        invalid_cases = {
+            "wrong_owner_wp": (base / "AndroidGeocoderAdapterTest.kt", "WP-217"),
+            "unrelated_directory": (
+                Path("android/app/src/test/kotlin/com/meshcoreone/android/app/other/AndroidGeocoderAdapterTest.kt"),
+                "WP-218",
+            ),
+            "sibling_prefix": (
+                Path("android/app/src/main/kotlin/com/meshcoreone/android/app/contentExtra/Consumer.kt"),
+                "WP-218",
+            ),
+        }
+        for label, (relative, wp_id) in invalid_cases.items():
+            with tempfile.TemporaryDirectory() as directory, self.subTest(label=label):
+                file = Path(directory) / relative
+                file.parent.mkdir(parents=True)
+                file.write_text(f"// AndroidOnly: {wp_id} not canonical content scope\n", encoding="utf-8")
+                with self.assertRaises(PortError):
+                    port_map(self.temporary_manifest(directory))
+
+        with tempfile.TemporaryDirectory() as directory:
+            file = Path(directory) / base / names[0]
+            file.parent.mkdir(parents=True)
+            for content in (
+                "// AndroidOnly: WP-218 \n",
+                f"// PortedFrom: MC1Services/Utilities/ImageURLClassifier.swift@{REFERENCE_SHA}\n// AndroidOnly: WP-218 conflicting disposition\n",
             ):
                 file.write_text(content, encoding="utf-8")
                 with self.subTest(content=content), self.assertRaises(PortError):

@@ -8,11 +8,16 @@ from controller.model import load_manifest
 from controller.paths import permits
 from controller.paths import git_path
 from controller.schema import digest, load_json
+from controller.verification_config import content_scope_predecessor, VERIFICATION_MANIFEST_SHA256
 
 HEADER = re.compile(r"^// PortedFrom: (.+)@([0-9a-f]{40})$", re.MULTILINE)
 ANDROID_ONLY = re.compile(r"^// AndroidOnly: (WP-\d{3}) (.+)$", re.MULTILINE)
 GENERATED = re.compile(r"^// GeneratedFrom: (.+)$", re.MULTILINE)
 
+WP_302_SCOPE_PATHS = (
+    "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
+    "android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/",
+)
 WP_302_SCOPE_PROOF = "docs/android/evidence/WP-302/navigation-scope-admission.json"
 WP_302_SCOPE_APPROVAL = {
     "schema_version": 1,
@@ -21,24 +26,19 @@ WP_302_SCOPE_APPROVAL = {
     "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
     "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
     "receiver_base_sha": "67857474ef3d3012ab73c19a4943ec1334c20676",
-    "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
-    "write_paths": [
-        "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
-        "android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/",
-    ],
+    "manifest_sha256": VERIFICATION_MANIFEST_SHA256,
+    "write_paths": list(WP_302_SCOPE_PATHS),
     "authority": "User-directed approved necessary WP-302 launcher and unit-navigation support",
     "acceptance": "Ownership/traceability admission only; no source, parity, human or merge acceptance",
 }
 
 
 def navigation_scope_admitted(manifest, relative):
-    launcher, tests = WP_302_SCOPE_APPROVAL["write_paths"]
-    if relative != launcher and not relative.startswith(tests):
+    if not (relative == WP_302_SCOPE_PATHS[0] or relative.startswith(WP_302_SCOPE_PATHS[1])):
         return False
-    if manifest.data["reference"]["commit"] != WP_302_SCOPE_APPROVAL["source_sha"]:
-        raise PortError("Stale WP-302 scope source binding")
+    predecessor = content_scope_predecessor(manifest)
     proof = load_json(manifest.repo / WP_302_SCOPE_PROOF, 16 * 1024)
-    if digest(proof) != digest(WP_302_SCOPE_APPROVAL):
+    if predecessor.sha256 != VERIFICATION_MANIFEST_SHA256 or digest(proof) != digest(WP_302_SCOPE_APPROVAL):
         raise PortError("Missing/stale exact WP-302 launcher/unit-navigation scope approval")
     return True
 

@@ -20,6 +20,12 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools" / "android-port"))
+from controller.errors import PortError
+from controller.model import load_manifest
+from controller.schema import load_json
+from controller.verification_config import content_scope_revisions, project_content_scope
+
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
 TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 BASE = "2cf00464950e1fb9aae0dd913402eb3e12dc0044"
@@ -305,8 +311,13 @@ def existing_l10n_reader():
 def outputs():
     if git("rev-parse", PIN + "^{tree}").decode().strip() != TREE:
         fail("reference", "frozen tree mismatch")
-    manifest = unique_json(host_path("docs/android/port-manifest.json").read_bytes(), "manifest")
-    canonical = json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    try:
+        catalog = load_manifest(ROOT)
+        content_scope_revisions(catalog, load_json(host_path("docs/android/automation-policy.json")))
+    except PortError as error:
+        fail("manifest", str(error))
+    manifest = catalog.data
+    canonical = json.dumps(project_content_scope(manifest), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
     if hashlib.sha256(canonical).hexdigest() != MANIFEST:
         fail("manifest", "canonical ownership changed")
     owned = [entry for entry in manifest["inventory"] if entry["primary_owner"] == "WP-301"]

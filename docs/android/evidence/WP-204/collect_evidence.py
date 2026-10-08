@@ -21,6 +21,9 @@ HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f7557
 PACKAGE = "com.meshcoreone.android.core.datastore."
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
+from controller.model import load_manifest
+from controller.schema import load_json
+from controller.verification_config import content_scope_revisions, inventory_details_predecessor
 
 
 class EvidenceFailure(ValueError):
@@ -41,14 +44,8 @@ def digest(raw):
 
 
 def inventory():
-    sys.path.insert(0, str(ROOT / "tools" / "android-port"))
-    from controller.gates import policy_revision
-    from controller.model import load_manifest
-
     manifest = load_manifest(ROOT)
-    policy = json.loads((ROOT / "docs" / "android" / "automation-policy.json").read_text(encoding="utf8"))
-    require(manifest.sha256 == PINNED_MANIFEST, "Frozen manifest revision changed")
-    require(policy_revision(manifest, policy) == PINNED_POLICY, "Frozen trusted policy revision changed")
+    content_scope_revisions(manifest, load_json(ROOT / "docs" / "android" / "automation-policy.json"))
     owned = [entry for entry in manifest.data["inventory"] if entry["primary_owner"] == "WP-204"]
     require(len(owned) == 8, "Expected exactly five production and three test inputs")
     inputs = []
@@ -75,14 +72,10 @@ def inventory():
     require(len(expected) == 34, "Expected every original declaration, not a generated filename count")
     detail_path = "docs/android/evidence/WP-004/inventory-details.json"
     raw_details = git("show", f"{INITIAL_BASE}:{detail_path}")
-    details = json.loads(raw_details)
-    actual_details = json.loads(ROOT.joinpath(*detail_path.split("/")).read_text(encoding="utf8"))
-    require(details["manifest_sha256"] == HISTORICAL_MANIFEST and
-            actual_details["manifest_sha256"] == PINNED_MANIFEST,
-            "Trusted original family inventory binding drift")
-    require({key: value for key, value in details.items() if key != "manifest_sha256"} ==
-            {key: value for key, value in actual_details.items() if key != "manifest_sha256"},
+    actual_details = load_json(ROOT.joinpath(*detail_path.split("/")))
+    require(json.loads(raw_details) == inventory_details_predecessor(actual_details, manifest),
             "Trusted original family inventory drift")
+    details = json.loads(raw_details)
     for entry in details["files"]:
         if entry["path"] not in tests:
             continue
@@ -214,7 +207,10 @@ def collect(report_directory=None):
         hit = cases.get((binding["native_class"], binding["native_method"]))
         require(hit is not None, "Missing original family execution: " + identity)
         source_cases.append({**specification, **binding, "native_test": hit})
-    input_files = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile"] + sorted(
+    input_files = [MODULE / "build.gradle.kts", MODULE / "gradle.lockfile",
+        ROOT / "docs/android/port-manifest.json", ROOT / "docs/android/automation-policy.json",
+        ROOT / "docs/android/evidence/WP-004/inventory-details.json",
+        ROOT / "tools/android-port/controller/verification_config.py", Path(__file__)] + sorted(
         file for file in (MODULE / "src").rglob("*") if file.is_file()
     )
     native_inputs = [{
@@ -233,7 +229,8 @@ def collect(report_directory=None):
         "project": "663db92c-ed50-4a77-aded-bda85a7c503a",
         "branch": git("branch", "--show-current").decode().strip(),
         "initial_lease_base_sha": INITIAL_BASE, "observed_head_sha": git("rev-parse", "HEAD").decode().strip(),
-        "source_sha": SOURCE, "manifest_sha256": PINNED_MANIFEST, "policy_revision": PINNED_POLICY,
+        "source_sha": SOURCE, **content_scope_revisions(load_manifest(ROOT),
+            load_json(ROOT / "docs/android/automation-policy.json")),
         "inputs": inputs, "source_cases": source_cases, "junit_suites": reports,
         "native_cases": list(cases.values()),
         "native_sdk_profiles": sdk_profiles,
