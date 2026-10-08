@@ -1,0 +1,100 @@
+// WP-217 Swift oracle driver: dumps the frozen simulator seed, in SimulatorConnectionMode
+// seed order, at the instant given as argv[1] (seconds since 1970). Doubles print as IEEE
+// bit patterns, dates as epoch milliseconds, bytes as lowercase hex, UUIDs as uuidString.
+import CryptoKit
+import Foundation
+
+OracleClock.now = Date(timeIntervalSince1970: Double(CommandLine.arguments[1])!)
+
+func hex(_ data: Data?) -> String { data.map { $0.map { String(format: "%02x", $0) }.joined() } ?? "nil" }
+func dbl(_ value: Double?) -> String { value.map { String(format: "%016llx", $0.bitPattern) } ?? "nil" }
+func ms(_ date: Date?) -> String { date.map { String(Int64((($0.timeIntervalSince1970) * 1000).rounded())) } ?? "nil" }
+func str(_ value: String?) -> String { value ?? "nil" }
+func num<T: BinaryInteger>(_ value: T?) -> String { value.map { String($0) } ?? "nil" }
+func uuid(_ value: UUID?) -> String { value?.uuidString ?? "nil" }
+func list(_ values: [String]) -> String { "[" + values.joined(separator: ",") + "]" }
+
+var lines: [String] = []
+func emit(_ fields: [String]) { lines.append(fields.joined(separator: "|")) }
+
+let d = MockDataProvider.simulatorDevice
+emit(["device", uuid(d.id), uuid(d.radioID), hex(d.publicKey), d.nodeName, num(d.firmwareVersion),
+      d.firmwareVersionString, d.manufacturerName, d.buildDate, num(d.maxContacts), num(d.maxChannels),
+      num(d.frequency), num(d.bandwidth), num(d.spreadingFactor), num(d.codingRate), num(d.txPower),
+      num(d.maxTxPower), dbl(d.latitude), dbl(d.longitude), num(d.blePin), "\(d.clientRepeat)", num(d.pathHashMode),
+      "\(d.manualAddContacts)", num(d.autoAddConfig), num(d.autoAddMaxHops), num(d.multiAcks),
+      num(d.telemetryModeBase), num(d.telemetryModeLoc), num(d.telemetryModeEnv), num(d.advertLocationPolicy),
+      ms(d.lastConnected), num(d.lastContactSync), "\(d.isActive)", str(d.ocvPreset), str(d.customOCVArrayString)])
+
+for c in MockDataProvider.contacts {
+  emit(["contact", uuid(c.id), uuid(c.radioID), hex(c.publicKey), c.name, num(c.typeRawValue), num(c.flags),
+        num(c.outPathLength), hex(c.outPath), num(c.lastAdvertTimestamp), dbl(c.latitude), dbl(c.longitude),
+        num(c.lastModified), num(c.lastHeardTimestamp), str(c.nickname), "\(c.isBlocked)", "\(c.isMuted)",
+        "\(c.isFavorite)", ms(c.lastMessageDate), num(c.unreadCount), num(c.unreadMentionCount), str(c.ocvPreset),
+        str(c.customOCVArrayString), hex(c.avatarImageData)])
+}
+
+for c in MockDataProvider.channels {
+  emit(["channel", uuid(c.id), uuid(c.radioID), num(c.index), c.name, hex(c.secret), "\(c.isEnabled)",
+        ms(c.lastMessageDate), num(c.unreadCount), num(c.unreadMentionCount), num(c.notificationLevel.rawValue),
+        "\(c.isFavorite)", c.floodScopeModeRawValue, str(c.regionScope)])
+}
+
+func emitMessage(_ m: MessageDTO) {
+  emit(["message", uuid(m.id), uuid(m.radioID), uuid(m.contactID), num(m.channelIndex), m.text, num(m.timestamp),
+        ms(m.createdAt), ms(m.sortDate), num(m.direction.rawValue), num(m.status.rawValue), num(m.textType.rawValue),
+        num(m.ackCode), num(m.pathLength), dbl(m.snr), hex(m.pathNodes), hex(m.senderKeyPrefix), str(m.senderNodeName),
+        "\(m.isRead)", uuid(m.replyToID), num(m.roundTripTime), num(m.heardRepeats), num(m.sendCount),
+        num(m.retryAttempt), num(m.maxRetryAttempts), str(m.deduplicationKey), str(m.linkPreviewURL),
+        str(m.linkPreviewTitle), hex(m.linkPreviewImageData), hex(m.linkPreviewIconData), "\(m.linkPreviewFetched)",
+        "\(m.containsSelfMention)", "\(m.mentionSeen)", "\(m.failureSeen)", "\(m.timestampCorrected)",
+        num(m.senderTimestamp), str(m.reactionSummary), num(m.routeType?.rawValue), str(m.regionScope),
+        list(m.regionScopeMatches)])
+}
+
+for c in MockDataProvider.contacts { MockDataProvider.messages(for: c.id).forEach(emitMessage) }
+for c in MockDataProvider.channels { MockDataProvider.channelMessages(for: c.index).forEach(emitMessage) }
+
+for s in MockDataProvider.linkPreviewSeeds {
+  let digest = SHA256.hash(data: s.imageData).map { String(format: "%02x", $0) }.joined()
+  emit(["linkPreview", uuid(s.messageID), s.url, s.title, "\(s.imageData.count)", digest])
+}
+
+for reacted in MockDataProvider.reactedMessages {
+  for r in MockDataProvider.reactions(for: reacted.messageID) {
+    emit(["reaction", uuid(r.id), uuid(r.messageID), r.emoji, r.senderName, r.messageHash, r.rawText,
+          ms(r.receivedAt), num(r.channelIndex), uuid(r.contactID), uuid(r.radioID)])
+  }
+  emit(["summary", uuid(reacted.messageID), reacted.summary])
+}
+
+for id in MockDataProvider.messagesWithRepeats {
+  for r in MockDataProvider.messageRepeats(for: id) {
+    emit(["repeat", uuid(r.id), uuid(r.messageID), ms(r.receivedAt), hex(r.pathNodes), num(r.pathLength),
+          dbl(r.snr), num(r.rssi), uuid(r.rxLogEntryID)])
+  }
+}
+
+for e in MockDataProvider.rxLogEntries {
+  let p = e.parsed
+  emit(["rx", uuid(e.id), uuid(e.radioID), ms(e.receivedAt), dbl(p.snr), num(p.rssi), num(p.routeType.rawValue),
+        num(p.payloadType.rawValue), num(p.payloadVersion), hex(p.transportCode), num(p.pathLength),
+        hex(Data(p.pathNodes)), hex(p.packetPayload), hex(p.rawPayload), p.packetHash, num(e.channelIndex),
+        str(e.channelName), num(e.decryptStatus.rawValue), str(e.regionScope), list(e.regionScopeMatches),
+        num(p.payloadTypeBits)])
+}
+
+for s in MockDataProvider.nodeStatusSnapshots {
+  emit(["snapshot", ms(s.timestamp), hex(s.nodePublicKey), num(s.batteryMillivolts), dbl(s.lastSNR),
+        num(s.lastRSSI), num(s.noiseFloor), num(s.uptimeSeconds), dbl(s.latitude), dbl(s.longitude), dbl(s.altitude)])
+}
+
+let image = MockDataProvider.demoImageData
+emit(["demoImage", "\(image.count)", SHA256.hash(data: image).map { String(format: "%02x", $0) }.joined()])
+
+let dump = lines.joined(separator: "\n") + "\n"
+if CommandLine.arguments.count > 2, CommandLine.arguments[2] == "--sha256" {
+  print(SHA256.hash(data: Data(dump.utf8)).map { String(format: "%02x", $0) }.joined())
+} else {
+  print(dump, terminator: "")
+}

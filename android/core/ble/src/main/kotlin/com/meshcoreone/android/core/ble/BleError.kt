@@ -1,6 +1,15 @@
 // PortedFrom: MC1Services/Sources/MC1Services/Errors/BLEError.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.core.ble
 
+import com.meshcoreone.android.core.contracts.domain.errors.BleFault
+import com.meshcoreone.android.core.contracts.domain.errors.BleFaultBondState
+import com.meshcoreone.android.core.contracts.domain.errors.BleFaultOperation
+import com.meshcoreone.android.core.contracts.domain.errors.BleFaultProperty
+import com.meshcoreone.android.core.contracts.domain.errors.BleFaultRecovery
+import com.meshcoreone.android.core.contracts.domain.errors.BleFaultStatusDomain
+import com.meshcoreone.android.core.contracts.domain.errors.BleTransportFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
+
 sealed interface BleError {
     data object BluetoothUnavailable : BleError
     data object BluetoothUnauthorized : BleError
@@ -51,7 +60,7 @@ class BleTransportException(
     val status: Int? = null,
     cause: Throwable? = null,
     val statusDomain: GattStatusDomain? = null,
-) : Exception("ble.${error.javaClass.simpleName}", cause) {
+) : Exception("ble.${error.javaClass.simpleName}", cause), SourceServiceFaultCarrier {
     val recovery: BleRecovery
         get() = when (error) {
             BleError.BluetoothUnavailable, is BleError.PlatformApiUnavailable -> BleRecovery.HostConfiguration
@@ -65,6 +74,84 @@ class BleTransportException(
             BleError.MultipleReceivers -> BleRecovery.UseSingleReceiver
             else -> BleRecovery.RetryWithNewConnection
         }
+
+    override val sourceServiceFault: BleTransportFault
+        get() = BleTransportFault(
+            error = when (val fault = error) {
+                BleError.BluetoothUnavailable -> BleFault.BluetoothUnavailable
+                BleError.BluetoothUnauthorized -> BleFault.BluetoothUnauthorized
+                BleError.BluetoothPoweredOff -> BleFault.BluetoothPoweredOff
+                BleError.DeviceNotFound -> BleFault.DeviceNotFound
+                is BleError.ConnectionFailed -> BleFault.ConnectionFailed(fault.reason)
+                BleError.ConnectionTimeout -> BleFault.ConnectionTimeout
+                BleError.NotConnected -> BleFault.NotConnected
+                BleError.CharacteristicNotFound -> BleFault.CharacteristicNotFound
+                is BleError.WriteError -> BleFault.WriteError(fault.reason)
+                BleError.InvalidResponse -> BleFault.InvalidResponse
+                BleError.OperationTimeout -> BleFault.OperationTimeout
+                BleError.AuthenticationFailed -> BleFault.AuthenticationFailed
+                is BleError.PairingFailed -> BleFault.PairingFailed(fault.reason)
+                BleError.DeviceConnectedToOtherApp -> BleFault.DeviceConnectedToOtherApp
+                BleError.ServiceNotFound -> BleFault.ServiceNotFound
+                BleError.DescriptorNotFound -> BleFault.DescriptorNotFound
+                is BleError.CharacteristicPropertyMissing -> BleFault.CharacteristicPropertyMissing(
+                    when (fault.property) {
+                        GattProperty.Write -> BleFaultProperty.Write
+                        GattProperty.WriteWithoutResponse -> BleFaultProperty.WriteWithoutResponse
+                        GattProperty.Notify -> BleFaultProperty.Notify
+                    },
+                )
+                is BleError.BondRequired -> BleFault.BondRequired(when (fault.state) {
+                    BondState.None -> BleFaultBondState.None
+                    BondState.Bonding -> BleFaultBondState.Bonding
+                    BondState.Bonded -> BleFaultBondState.Bonded
+                })
+                is BleError.GattRejected -> BleFault.GattRejected(fault.operation.toFault(), fault.status)
+                is BleError.GattOperationInProgress -> BleFault.GattOperationInProgress(fault.operation.toFault())
+                is BleError.PlatformApiUnavailable -> BleFault.PlatformApiUnavailable(fault.minimum, fault.actual)
+                is BleError.MtuTooSmall -> BleFault.MtuTooSmall(fault.actual, fault.minimum)
+                is BleError.InvalidMtu -> BleFault.InvalidMtu(fault.actual)
+                is BleError.FrameTooLarge -> BleFault.FrameTooLarge(fault.actual, fault.maximum)
+                is BleError.FirmwareCapabilityUnverified ->
+                    BleFault.FirmwareCapabilityUnverified(fault.actual, fault.bootstrapMaximum)
+                BleError.FirmwareCapabilitiesAlreadyVerified -> BleFault.FirmwareCapabilitiesAlreadyVerified
+                is BleError.StaleGeneration -> BleFault.StaleGeneration(fault.expected, fault.actual)
+                BleError.MultipleReceivers -> BleFault.MultipleReceivers
+                BleError.NotificationDeliveryFailed -> BleFault.NotificationDeliveryFailed
+                is BleError.RssiReadFailed -> BleFault.RssiReadFailed(fault.status)
+                is BleError.CleanupFailed -> BleFault.CleanupFailed(fault.stage)
+                is BleError.AbortedOperation -> BleFault.AbortedOperation(fault.operation.toFault())
+            },
+            operation = operation?.toFault(),
+            status = status,
+            statusDomain = statusDomain?.let { when (it) {
+                GattStatusDomain.Att -> BleFaultStatusDomain.Att
+                GattStatusDomain.ConnectionState -> BleFaultStatusDomain.ConnectionState
+                GattStatusDomain.PlatformStart -> BleFaultStatusDomain.PlatformStart
+                GattStatusDomain.RadioMeasurement -> BleFaultStatusDomain.RadioMeasurement
+            } },
+            recovery = when (recovery) {
+                BleRecovery.EnableBluetooth -> BleFaultRecovery.EnableBluetooth
+                BleRecovery.GrantBluetoothConnect -> BleFaultRecovery.GrantBluetoothConnect
+                BleRecovery.SelectDevice -> BleFaultRecovery.SelectDevice
+                BleRecovery.PairInSystem -> BleFaultRecovery.PairInSystem
+                BleRecovery.RetryWithNewConnection -> BleFaultRecovery.RetryWithNewConnection
+                BleRecovery.VerifyFirmwareCapabilities -> BleFaultRecovery.VerifyFirmwareCapabilities
+                BleRecovery.IncreaseMtu -> BleFaultRecovery.IncreaseMtu
+                BleRecovery.ReduceFrame -> BleFaultRecovery.ReduceFrame
+                BleRecovery.UseSingleReceiver -> BleFaultRecovery.UseSingleReceiver
+                BleRecovery.HostConfiguration -> BleFaultRecovery.HostConfiguration
+            },
+        )
+}
+
+private fun GattOperationKind.toFault(): BleFaultOperation = when (this) {
+    GattOperationKind.Connect -> BleFaultOperation.Connect
+    GattOperationKind.DiscoverServices -> BleFaultOperation.DiscoverServices
+    GattOperationKind.Mtu -> BleFaultOperation.Mtu
+    GattOperationKind.Subscribe -> BleFaultOperation.Subscribe
+    GattOperationKind.Write -> BleFaultOperation.Write
+    GattOperationKind.Rssi -> BleFaultOperation.Rssi
 }
 
 internal fun gattFailure(kind: GattOperationKind, status: Int): BleTransportException {

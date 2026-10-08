@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions; no Apple status codes or source catalog edits. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Could not encode the saved item.</string>
+    <string name="ui_storage_save_failed">Could not save local data.</string>
+    <string name="ui_storage_read_failed">Could not read local data.</string>
+    <string name="ui_storage_delete_failed">Could not delete local data.</string>
+    <string name="ui_storage_first_unlock">Unlock the device once after restart to access saved data.</string>
+    <string name="ui_storage_locked">Unlock the device to access saved data.</string>
+    <string name="ui_storage_inaccessible">Device storage is unavailable.</string>
+    <string name="ui_storage_permission_denied">Access to device storage was denied.</string>
+    <string name="ui_storage_io_failed">The device could not complete the storage operation.</string>
+    <string name="ui_storage_corrupt_preferences">Saved preferences are damaged.</string>
+    <string name="ui_storage_corrupt_state">Saved secure data is damaged.</string>
+    <string name="ui_storage_corrupt_envelope">The saved item cannot be decoded.</string>
+    <string name="ui_storage_authentication_failed">The saved item could not be authenticated.</string>
+    <string name="ui_storage_key_missing">The encryption key for saved data is missing.</string>
+    <string name="ui_storage_key_invalidated">The encryption key is no longer valid.</string>
+    <string name="ui_storage_key_corrupt">The stored encryption key is damaged.</string>
+    <string name="ui_storage_provider_failed">Secure storage is unavailable.</string>
+    <string name="ui_storage_owner_duplicate">Local storage is already in use.</string>
+    <string name="ui_storage_owner_closed">Local storage is closed.</string>
+    <string name="ui_storage_invalid_identity">The saved item identifier is invalid.</string>
+    <string name="ui_storage_invalid_value">The value cannot be saved.</string>
+    <string name="ui_storage_already_exists">The saved item already exists.</string>
+    <string name="ui_storage_not_found">The saved item was not found.</string>
+    <string name="ui_storage_unsupported_version">Saved data format %1$d is not supported.</string>
+    <string name="ui_storage_too_large">Saved data exceeds the limit of %1$d bytes.</string>
+    <string name="ui_storage_preference_type">A saved preference has an incompatible value type.</string>
+    <string name="ui_storage_preference_no_default">A missing preference has no default value.</string>
+    <string name="ui_storage_preference_invalid">A saved preference has an invalid value.</string>
+    <string name="ui_backup_preferences_incomplete">Backup records were imported. Preferences could not be completed. Retry only the remaining preferences; do not import the records again.</string>
+    <string name="ui_backup_complete_preferences">Complete preferences</string>
+    <string name="ui_storage_unlock_device">Unlock device</string>
+</resources>

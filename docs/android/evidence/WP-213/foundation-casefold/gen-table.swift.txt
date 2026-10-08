@@ -1,0 +1,14 @@
+// Generates FoundationCaseFold.kt's table: every Unicode scalar whose
+// String.folding(options: .caseInsensitive, locale: nil) differs from itself, both sides in NFD.
+// Not compiled in the repo (.txt keeps it out of SwiftLint). Run: sh generate.sh
+import Foundation
+func nfd(_ s: String) -> [UInt32] { s.decomposedStringWithCanonicalMapping.unicodeScalars.map(\.value) }
+var lines: [String] = []
+for v in 0..<0x110000 {
+  if (0xD800...0xDFFF).contains(v) { continue }
+  guard let s = Unicode.Scalar(UInt32(v)) else { continue }
+  let str = String(String.UnicodeScalarView([s]))
+  let f = nfd(str.folding(options: [.caseInsensitive], locale: nil))
+  if f != nfd(str) { lines.append(String(v, radix: 16) + ":" + f.map { String($0, radix: 16) }.joined(separator: " ")) }
+}
+print(lines.joined(separator: ";"))

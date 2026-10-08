@@ -1,0 +1,45 @@
+MUTATION backoff: rc=1 compile_error=False failing=1
+   - WP-214::channel-only retry backs off 2 s then 4 s and stops once channels recover
+MUTATION skip-window-esp32: rc=1 compile_error=False failing=3
+   - DevicePlatformChannelSyncConfigTests::ESP32 has 30s channel sync skip window()
+   - DevicePlatformChannelSyncConfigTests::WiFi uses ESP32 channel sync cooldown()
+   - DevicePlatformChannelSyncConfigTests::WiFi connect resolves an unrecognized model to ESP32 (WiFi implies ESP32-class)()
+MUTATION channel-skip-attempted: rc=1 compile_error=False failing=1
+   - SyncCoordinatorChannelSkipTests::Channels skipped when last attempted channel sync is recent()
+MUTATION watermark-overlap: rc=1 compile_error=False failing=7
+   - WP-214::watermark plausibility bound saturates near UInt32 max
+   - SyncCoordinatorTests::performAdvertContactSync writes watermark and uses since filter()
+   - SyncCoordinatorTests::far-future watermark recovers with one full refetch then incremental()
+   - SyncCoordinatorTests::advert invalid watermark recovery full-fetches at most once per coordinator()
+   - SyncCoordinatorTests::watermark a few minutes ahead of phone stays incremental()
+   - SyncCoordinatorTests::Below-capacity connect keeps incremental contact sync and does not prune()
+MUTATION watermark-recovery-latch: rc=1 compile_error=False failing=1
+   - SyncCoordinatorTests::advert invalid watermark recovery full-fetches at most once per coordinator()
+MUTATION timestamp-future-boundary: rc=1 compile_error=False failing=1
+   - SyncCoordinatorTimestampTests::Timestamp exactly 5 minutes in future is not corrected()
+MUTATION resync-max-attempts: rc=1 compile_error=False failing=2
+   - ConnectionManagerResyncLoopTests::Max resync attempts triggers disconnect and onResyncFailed()
+   - ConnectionManagerResyncLoopTests::Each resync attempt opens and closes an inner bracket()
+MUTATION resync-identity-fence: rc=1 compile_error=False failing=2
+   - ConnectionManagerResyncLoopTests::Superseded resync loop cannot disconnect a healthy successor connection()
+   - WP-214::channel-only retry fences on the live service graph
+MUTATION resync-bracket-catchall: rc=1 compile_error=False failing=4
+   - ConnectionManagerResyncLoopTests::Cancelling resync loop closes the activity bracket with succeeded=false()
+   - ConnectionManagerResyncLoopTests::Resync loop exits and closes bracket when connectionIntent changes()
+   - ConnectionManagerResyncLoopTests::Disconnect during .syncing transitions to .disconnected and closes bracket()
+   - WP-214::cancelling the resync loop while its bracket is opening still balances the bracket
+MUTATION message-dedup: rc=1 compile_error=False failing=4
+   - WP-214::direct message saves, bumps unread, notifies and broadcasts once
+   - WP-214::duplicate channel receive with a distinct correlated path records one extra
+   - SyncCoordinatorMessageHandlerTests::duplicate channel receive with unknown path does not save a second message()
+   - SyncCoordinatorMessageHandlerTests::same-path duplicate channel receive inserts nothing()
+MUTATION claim-generation: rc=1 compile_error=False failing=1
+   - WP-214::a claim released after a disconnect cannot clear a newer sync's claim
+MUTATION advert-wait: rc=1 compile_error=False failing=1
+   - WP-214::full sync waits out an advert claim instead of skipping
+MUTATION foreign-cancellation: rc=1 compile_error=False failing=1
+   - WP-214::a collaborator's own CancellationException fails the sync instead of posing as cancellation
+MUTATION disconnect-noncancellable: rc=1 compile_error=False failing=1
+   - WP-214::onDisconnected completes its safety net even when the caller is cancelled
+MUTATION retry-channels-cancel-bracket: rc=1 compile_error=False failing=1
+   - WP-214::cancelling a channel-only retry inside the activity callback still closes the bracket
