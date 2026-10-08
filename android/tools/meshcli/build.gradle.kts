@@ -62,7 +62,7 @@ distributions {
 }
 
 tasks.named("check") { dependsOn(":core:protocol:test", "test") }
-rootProject.tasks.named("verifyScaffoldTests") { dependsOn(":core:protocol:test", "test") }
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(":core:protocol:test", "${project.path}:test") }
 gradle.projectsEvaluated {
     rootProject.project(":core:protocol").tasks.named<Test>("test") {
         observeActualFailures("protocol")
