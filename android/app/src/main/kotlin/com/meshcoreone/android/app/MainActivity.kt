@@ -8,6 +8,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.meshcoreone.android.app.navigation.NativeNavigationShell
@@ -15,6 +19,8 @@ import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
 import com.meshcoreone.android.app.navigation.NavigationSavedState
 import com.meshcoreone.android.app.navigation.NavigationState
+import com.meshcoreone.android.app.onboarding.AppOnboarding
+import com.meshcoreone.android.app.onboarding.OnboardingGate
 import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.designsystem.MeshCoreTheme
 import kotlinx.coroutines.CancellationException
@@ -49,8 +55,24 @@ open class MainActivity : ComponentActivity() {
         }
         setContent {
             MeshCoreTheme {
-                NativeNavigationShell(host.navigation)
+                val onboarding by produceOnboarding()
+                OnboardingGate(host.navigation, onboarding) { bound ->
+                    NativeNavigationShell(host.navigation, onboarding = bound?.forRerun())
+                }
             }
+        }
+    }
+
+    /** Resolves the process container's onboarding bindings; null while it builds or if it failed to build. */
+    @Composable
+    private fun produceOnboarding(): State<AppOnboarding?> = produceState<AppOnboarding?>(null) {
+        val app = application as? MeshCoreApplication ?: return@produceState
+        value = try {
+            app.container.await().onboarding
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            null
         }
     }
 

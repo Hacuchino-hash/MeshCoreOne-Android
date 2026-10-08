@@ -86,6 +86,7 @@ import com.meshcoreone.android.feature.chats.ChatsEntry
 import com.meshcoreone.android.feature.map.MapEntry
 import com.meshcoreone.android.feature.nodes.NodesEntry
 import com.meshcoreone.android.feature.onboarding.OnboardingEntry
+import com.meshcoreone.android.feature.onboarding.OnboardingFeatureDependencies
 import com.meshcoreone.android.feature.remotenodes.RemoteNodesEntry
 import com.meshcoreone.android.feature.settings.SettingsEntry
 import com.meshcoreone.android.feature.tools.ToolsEntry
@@ -120,7 +121,11 @@ fun NativeNavigationShell(
     coordinator: NavigationCoordinator,
     modifier: Modifier = Modifier,
     unreadCount: Long = 0,
-    content: @Composable (NavigationDestination, (FeatureRoute) -> Unit) -> Unit = ::ExistingFeatureContent,
+    /** Bound onboarding dependencies for the Settings "radio setup" route; null keeps the not-yet-ported shell. */
+    onboarding: OnboardingFeatureDependencies? = null,
+    content: @Composable (NavigationDestination, (FeatureRoute) -> Unit) -> Unit = { destination, navigate ->
+        ExistingFeatureContent(destination, navigate, onboarding, coordinator::back)
+    },
 ) {
     require(unreadCount >= 0) { "Unread count must be nonnegative" }
     val state by coordinator.state.collectAsStateWithLifecycle()
@@ -382,7 +387,12 @@ private data class ListDetailScene(
 
 // Native adaptation: Stable incumbent feature entries remain explicitly incomplete; no fabricated detail screen.
 @Composable
-private fun ExistingFeatureContent(destination: NavigationDestination, navigate: (FeatureRoute) -> Unit) {
+private fun ExistingFeatureContent(
+    destination: NavigationDestination,
+    navigate: (FeatureRoute) -> Unit,
+    onboarding: OnboardingFeatureDependencies?,
+    back: () -> Boolean,
+) {
     val feature = when (destination) {
         is NavigationDestination.Root -> FeatureId.forTab(destination.tab)
         is NavigationDestination.Chat -> FeatureId.CHATS
@@ -398,7 +408,12 @@ private fun ExistingFeatureContent(destination: NavigationDestination, navigate:
         FeatureId.MAP -> MapEntry(route, navigate)
         FeatureId.TOOLS -> ToolsEntry(route, navigate)
         FeatureId.SETTINGS -> SettingsEntry(route, navigate)
-        FeatureId.ONBOARDING -> OnboardingEntry(route, navigate)
+        FeatureId.ONBOARDING -> OnboardingEntry(
+            route,
+            // Leaving the auxiliary setup route pops it before moving on (completion targets the Chats root).
+            { target -> back(); navigate(target) },
+            onboarding,
+        )
         FeatureId.REMOTE_NODES -> RemoteNodesEntry(route, navigate)
     }
 }

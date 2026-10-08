@@ -116,6 +116,8 @@ class AppContainerDependencies(
     val companionSetup: com.meshcoreone.android.core.connectivity.pairing.CompanionSetupService? = null,
     /** Forwards an API 31-32 chooser activity result (request id, result code, data) to the companion gateway. */
     val chooserResult: ((Long, Int, android.content.Intent?) -> Unit)? = null,
+    /** Platform pieces for the onboarding flow; null leaves onboarding unbound (the shell shows no fake flow). */
+    val onboardingPlatform: com.meshcoreone.android.app.onboarding.OnboardingPlatform? = null,
     val newBootstrapDebugLog: (CoroutineScope) -> DebugLogBuffer? = { null },
     /** Releases process-owned resources (database, storage) once the runtime has closed. */
     val onClose: suspend () -> Unit = {},
@@ -234,6 +236,13 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
                 ConnectedDeviceHostingController(starter), environment, PresenceRouting(), processScope,
                 onFailure = { failure -> dependencies.connectivityDiagnostics.report("hosting", failure) },
             )
+        }
+    }
+
+    /** Onboarding ports bound to this container's services; null without an [AppContainerDependencies.onboardingPlatform]. */
+    val onboarding: com.meshcoreone.android.app.onboarding.AppOnboarding? by lazy {
+        dependencies.onboardingPlatform?.let {
+            com.meshcoreone.android.app.onboarding.AppOnboardingFactory.create(this, it, dependencies.mainScope)
         }
     }
 
