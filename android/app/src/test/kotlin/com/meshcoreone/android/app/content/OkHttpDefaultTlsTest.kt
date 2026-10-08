@@ -153,7 +153,7 @@ class OkHttpDefaultTlsTest {
     }
 
     @Test
-    fun `unchanged platform trust rejects a real untrusted certificate before HTTP`() = runBlocking {
+    fun `unchanged platform trust rejects a real untrusted certificate before HTTP`() = runBlocking<Unit> {
         markApi()
         CertificateFixture(host).use { certificate ->
             TlsFixture(certificate.serverContext, loopback).use { server ->
