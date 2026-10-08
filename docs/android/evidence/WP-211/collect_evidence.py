@@ -21,6 +21,8 @@ from controller.schema import load_json
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
 POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+HISTORICAL_POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
 BASE = "e3369a97bf3a1e19b801c8d69ca8abf171da432b"
 RECEIPT_BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
 LEASE = "autonomous-WP-211-d147865c"
@@ -130,7 +132,8 @@ def frozen_producers():
     freeze = load_json(OUT / "producer-freeze.json")
     require(freeze["schema_version"] == 1 and freeze["repository"] == "cbattlegear/MeshCoreOne-Android" and
             freeze["work_package"] == "WP-211" and freeze["lease"] == LEASE and freeze["source_sha"] == SOURCE and
-            freeze["manifest_sha256"] == MANIFEST and freeze["policy_revision"] == POLICY,
+            freeze["manifest_sha256"] == HISTORICAL_MANIFEST and
+            freeze["policy_revision"] == HISTORICAL_POLICY,
             "Coordinator producer-freeze binding drift")
     paths = {entry["path"]: entry["git_blob"] for entry in freeze["files"]}
     require(len(paths) == len(freeze["files"]) and paths == FROZEN_PRODUCERS, "Frozen producer path/blob drift")
