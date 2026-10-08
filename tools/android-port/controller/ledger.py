@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .errors import PortError
+from .model import SHA
 from .paths import conflicts
 from .schema import decode_json, digest, nonempty, positive_integer
 
@@ -119,6 +120,15 @@ class Ledger:
                     repository TEXT NOT NULL, resource TEXT NOT NULL,
                     owner TEXT NOT NULL, payload TEXT NOT NULL,
                     acquired REAL NOT NULL, PRIMARY KEY (repository, resource)
+                )
+            """)
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS intent_reconciliations (
+                    repository TEXT NOT NULL, session_id TEXT NOT NULL,
+                    pr_number INTEGER NOT NULL, head_sha TEXT NOT NULL,
+                    merge_sha TEXT NOT NULL, paths TEXT NOT NULL,
+                    reconciled_at REAL NOT NULL,
+                    PRIMARY KEY (repository, session_id, pr_number)
                 )
             """)
 
@@ -304,6 +314,57 @@ class Ledger:
                         "advisory": True,
                     })
         return result
+
+    def reconcile_merged_intent(self, session_id: str, pr_number: int, head_sha: str,
+                                merge_sha: str, paths: list[str], reconciled_at: float):
+        """Retain an immutable terminal merge receipt without deleting advisory intent history."""
+        if (not session_id or type(pr_number) is not int or pr_number < 1
+                or SHA.fullmatch(head_sha) is None or SHA.fullmatch(merge_sha) is None
+                or not isinstance(paths, list) or not paths
+                or not all(isinstance(path, str) and path for path in paths)
+                or type(reconciled_at) not in (int, float) or not math.isfinite(reconciled_at)):
+            raise PortError("Malformed authoritative terminal intent reconciliation")
+        canonical_paths = sorted(set(paths))
+        with self.transaction() as connection:
+            existing = connection.execute("""
+                SELECT * FROM intent_reconciliations
+                WHERE repository=? AND session_id=? AND pr_number=?
+            """, (self.repository, session_id, pr_number)).fetchone()
+            receipt = {
+                "repository": self.repository, "session_id": session_id,
+                "pr_number": pr_number, "head_sha": head_sha, "merge_sha": merge_sha,
+                "paths": canonical_paths, "reconciled_at": reconciled_at,
+                "record_state": "advisory-terminal-merged",
+            }
+            if existing:
+                persisted = dict(existing)
+                persisted["paths"] = decode_json(persisted["paths"])
+                for key in ("repository", "session_id", "pr_number", "head_sha", "merge_sha", "paths"):
+                    if persisted[key] != receipt[key]:
+                        raise PortError("Terminal intent receipt collision; preserved record differs")
+                return receipt, False
+            connection.execute("""
+                INSERT INTO intent_reconciliations
+                (repository,session_id,pr_number,head_sha,merge_sha,paths,reconciled_at)
+                VALUES (?,?,?,?,?,?,?)
+            """, (
+                self.repository, session_id, pr_number, head_sha, merge_sha,
+                json.dumps(canonical_paths), reconciled_at,
+            ))
+            return receipt, True
+
+    def intent_reconciliation_records(self):
+        with self.transaction() as connection:
+            result = []
+            for row in connection.execute("""
+                SELECT * FROM intent_reconciliations WHERE repository=?
+                ORDER BY pr_number,session_id
+            """, (self.repository,)):
+                value = dict(row)
+                value["paths"] = decode_json(value["paths"])
+                value["record_state"] = "advisory-terminal-merged"
+                result.append(value)
+            return result
 
     def migrate_legacy(self, capability_revision: str = "capability-reservation-v1"):
         """Upgrade old supervised receipts in place without release/recreate."""

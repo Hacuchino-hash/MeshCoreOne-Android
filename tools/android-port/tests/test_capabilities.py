@@ -83,6 +83,24 @@ class CapabilityReservationTests(unittest.TestCase):
         with self.assertRaisesRegex(PortError, "Missing or foreign"):
             self.ledger.release_hard_lock("gradle-execution", "foreign")
 
+    def test_terminal_merge_reconciliation_is_retained_and_idempotent(self):
+        paths = [".github/workflows/test.yml", ".github/workflows/lint.yml"]
+        receipt, created = self.ledger.reconcile_merged_intent(
+            "coordinator-session", 65, "a" * 40, "b" * 40, paths, NOW,
+        )
+        self.assertTrue(created)
+        self.assertEqual(receipt["record_state"], "advisory-terminal-merged")
+        repeated, created = self.ledger.reconcile_merged_intent(
+            "coordinator-session", 65, "a" * 40, "b" * 40, list(reversed(paths)), NOW + 1,
+        )
+        self.assertFalse(created)
+        self.assertEqual(repeated["paths"], sorted(paths))
+        with self.assertRaisesRegex(PortError, "receipt collision"):
+            self.ledger.reconcile_merged_intent(
+                "coordinator-session", 65, "c" * 40, "b" * 40, paths, NOW,
+            )
+        self.assertEqual(len(self.ledger.intent_reconciliation_records()), 1)
+
     def test_overlapping_isolated_claims_are_advisory_and_record_complete_bindings(self):
         path = "android/app/build.gradle.kts"
         binding = {

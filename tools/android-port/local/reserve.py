@@ -153,6 +153,15 @@ def build_parser():
     commands.add_parser(
         "overlaps", help="Report deterministic advisory overlap metadata; never approve file edits"
     )
+    terminal = commands.add_parser(
+        "reconcile-merged-intent",
+        help="Record an authoritative terminal PR merge without deleting advisory history",
+    )
+    terminal.add_argument("--session-id", required=True)
+    terminal.add_argument("--pr", required=True, type=int)
+    terminal.add_argument("--head-sha", required=True)
+    terminal.add_argument("--merge-sha", required=True)
+    terminal.add_argument("--path", action="append", required=True)
     commands.add_parser(
         "migrate-reservations",
         help="Transactionally migrate historical supervised receipts without release/recreate",
@@ -211,12 +220,24 @@ def main(argv=None):
         elif args.command == "status":
             result = {
                 "claims": ledger.records(), "hard_locks": ledger.hard_lock_records(),
+                "intent_reconciliations": ledger.intent_reconciliation_records(),
                 "policy_revision": policy_revision(manifest, policy),
             }
         elif args.command == "overlaps":
             result = {"advisory": True, "overlaps": ledger.overlap_report()}
         elif args.command == "migrate-reservations":
             result = {"migrated": ledger.migrate_legacy(), "release_recreate": False}
+        elif args.command == "reconcile-merged-intent":
+            if subprocess.run(
+                ["git", "-C", str(repo), "merge-base", "--is-ancestor",
+                 args.head_sha, args.merge_sha],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            ).returncode != 0:
+                raise PortError("Merged intent head is not an ancestor of the authoritative merge")
+            receipt, created = ledger.reconcile_merged_intent(
+                args.session_id, args.pr, args.head_sha, args.merge_sha, args.path, time.time()
+            )
+            result = {"created": created, "receipt": receipt, "release_recreate": False}
         elif args.command == "claim":
             wp = manifest.wp(args.wp)
             paths = list(dict.fromkeys([*(args.path or wp["write_paths"]), *args.additional_path]))
