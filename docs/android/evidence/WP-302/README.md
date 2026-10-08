@@ -25,6 +25,15 @@ assertions remain unchanged and now report paragraph width/constraints.
 `/home/cbattagler/meshcoreone-work/local-checks/run-44ZqaWr2`.
 The allocated-width correction still requires execution.
 
+At6a22134b, all five font200 tab labels passed their full-density/overflow
+checks on both SDKs. The next assertion exposed the same intrinsic-width
+problem on the RTL heading: native measured width90px but paragraph width296px
+(the actual allocated max width), so it was genuinely not contained. The
+heading now fills its allocated native app-bar width too; no size, text or
+overflow assertion is reduced. Complete148/150 failed suite/input bindings
+are retained in `native-6a22134b/` and its visible log, raw run
+`/home/cbattagler/meshcoreone-work/local-checks/run-ntSb12E1`.
+
 Complete XML/input bindings remain in `native-f586c116/`, visible output
 `native-f586c116.log`, raw run
 `/home/cbattagler/meshcoreone-work/local-checks/run-ygp4xkfP`.

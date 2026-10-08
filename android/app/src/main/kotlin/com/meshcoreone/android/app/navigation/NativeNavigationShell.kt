@@ -234,7 +234,7 @@ fun NativeNavigationShell(
                         title = {
                             Text(
                                 stringResource(state.selectedTab.titleResource()),
-                                modifier = Modifier.testTag("navigation-heading").semantics { heading() },
+                                modifier = Modifier.fillMaxWidth().testTag("navigation-heading").semantics { heading() },
                             )
                         },
                         navigationIcon = {
