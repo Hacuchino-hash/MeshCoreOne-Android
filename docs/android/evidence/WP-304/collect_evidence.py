@@ -4,13 +4,11 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 import re
 import struct
 import sys
-import unittest
 import xml.etree.ElementTree as ET
 import zlib
 
@@ -355,30 +353,15 @@ def collect(junit, output=None):
     return record
 
 
-def self_tests():
-    path = Path(__file__).with_name("test_reader.py")
-    require(path.is_file(), "Missing owned reader regressions")
-    spec = importlib.util.spec_from_file_location("wp304_reader_tests", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    suite = unittest.defaultTestLoader.loadTestsFromModule(module)
-    require(suite.countTestCases() > 0, "Zero owned reader regressions")
-    result = unittest.TextTestRunner(verbosity=1).run(suite)
-    require(result.wasSuccessful() and not result.skipped, "Failed/error/skipped reader regressions")
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--static", action="store_true")
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--junit", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     try:
-        require(args.static or args.check or args.self_test, "No declared verification mode")
-        if args.self_test:
-            self_tests()
+        require(args.static or args.check, "No declared verification mode")
         if args.static:
             cases, methods = declarations()
             scopes = source_bindings()

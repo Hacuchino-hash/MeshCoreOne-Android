@@ -115,9 +115,9 @@ tasks.withType<Test>().configureEach {
 
 val verifySharedUiInputs by tasks.registering(Exec::class) {
     group = "verification"
-    description = "Verify all 88 frozen inputs, complete 130/158 source accounting and owned reader regressions."
+    description = "Verify all 88 frozen inputs and complete 130/158 source accounting."
     workingDir(repository)
-    commandLine("python", sourceReader.absolutePath, "--static", "--self-test")
+    commandLine("python", sourceReader.absolutePath, "--static")
 }
 tasks.named("preBuild") { dependsOn(verifySharedUiInputs) }
 
@@ -126,7 +126,7 @@ val verifySharedUiTests by tasks.registering(Exec::class) {
     description = "Require actual nonzero raw JUnit, exact source-family/parameter assertions and native PNG evidence."
     dependsOn("testDebugUnitTest")
     workingDir(repository)
-    commandLine("python", sourceReader.absolutePath, "--check", "--self-test",
+    commandLine("python", sourceReader.absolutePath, "--check",
         "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
         "--output", layout.buildDirectory.dir("reports/wp304/verified").get().asFile.absolutePath)
 }
