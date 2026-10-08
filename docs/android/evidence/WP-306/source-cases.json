@@ -1,0 +1,624 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 77,
+ "bound_case_count": 76,
+ "native_test_count": 30,
+ "unbound": [
+  {
+   "id": "ConversationListScrollPerfHarnessTests::hosted list programmatic scroll stays under hitch budget()",
+   "source": "MC1Tests/Views/Chats/ConversationListScrollPerfHarnessTests.swift",
+   "reason": "measures a hosted UIKit UIScrollView step time against a 16 ms frame budget; the Android equivalent needs an instrumented device run or a macrobenchmark (no device/compose-ui-test on the locked feature:chats classpath). See WP-306.md D-1"
+  }
+ ],
+ "missing": [],
+ "cases": [
+  {
+   "id": "ConversationFilteringTests::all filter shows all()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "all filter shows all",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::filter by unread()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "filter by unread",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::filter by direct messages()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "filter by direct messages",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::filter by channels excludes rooms()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "filter by channels excludes rooms",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::filter by rooms excludes channels()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "filter by rooms excludes channels",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::search within filter()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "search within filter",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::search only without filter()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "search only without filter",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::empty results when no match()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "empty results when no match",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationFilteringTests::unread filter excludes muted()",
+   "source": "MC1Tests/Models/ConversationFilteringTests.swift",
+   "class": "ConversationFilteringTest",
+   "method": "unread filter excludes muted",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM navigationTitle returns contact displayName()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM navigationTitle returns contact displayName",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM navigationTitle prefers nickname when set()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM navigationTitle prefers nickname when set",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel navigationTitle returns channel name()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel navigationTitle returns channel name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel navigationTitle returns default name when empty()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel navigationTitle returns default name when empty",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM subtitle shows flood routing when flood routed()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM subtitle shows flood routing when flood routed",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM subtitle shows direct path with hop count()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM subtitle shows direct path with hop count",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle empty for public channel with no region()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle empty for public channel with no region",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle empty for hashtag channel with no region()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle empty for hashtag channel with no region",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle empty for private channel with no region()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle empty for private channel with no region",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle shows Region label for explicit region()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle shows Region label for explicit region",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle shows Region label with (default) when inheriting device default()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle shows Region label with default when inheriting device default",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle shows Region label with (default) when explicit region matches device default()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle shows Region label with default when explicit region matches device default",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle empty when inherit and no device default()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle empty when inherit and no device default",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel subtitle empty for allRegions scope()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel subtitle empty for allRegions scope",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM conversationID returns contact ID()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM conversationID returns contact ID",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel conversationID returns channel ID()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel conversationID returns channel ID",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM isPublicStyleChannel is false()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM isPublicStyleChannel is false",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Public channel (index 0) isPublicStyleChannel is true()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Public channel index 0 isPublicStyleChannel is true",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Hash-prefixed channel isPublicStyleChannel is true()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Hash-prefixed channel isPublicStyleChannel is true",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Private channel isPublicStyleChannel is false()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Private channel isPublicStyleChannel is false",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel named wardriving suppresses map previews()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel named wardriving suppresses map previews",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Wardriving match is case-insensitive()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Wardriving match is case-insensitive",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Wardriving match trims surrounding whitespace()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Wardriving match trims surrounding whitespace",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Hash-prefixed wardriving suppresses (tolerates the # channel convention)()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Hash-prefixed wardriving suppresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Wardriving with suffix does not suppress (exact match, not prefix)()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Wardriving with suffix does not suppress",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Ordinary channel does not suppress map previews()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Ordinary channel does not suppress map previews",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM never suppresses map previews()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM never suppresses map previews",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::radioID returns the contact's radioID for a DM conversation()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "radioID returns the contact radioID for a DM conversation",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::radioID returns the channel's radioID for a channel conversation()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "radioID returns the channel radioID for a channel conversation",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::replacingContact returns DM with updated contact()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "replacingContact returns DM with updated contact",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::replacingContact returns self for channel()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "replacingContact returns self for channel",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::DM draftConversationID keys on radioID and contact id()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "DM draftConversationID keys on radioID and contact id",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatConversationTypeTests::Channel draftConversationID keys on the slot index, not the row UUID()",
+   "source": "MC1Tests/Views/Chats/ChatConversationTypeTests.swift",
+   "class": "ChatConversationTypeTest",
+   "method": "Channel draftConversationID keys on the slot index not the row UUID",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Returns false for plain https URLs (caller falls through to systemAction)()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Returns false for plain https URLs",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Returns false for mailto URLs (caller falls through to systemAction)()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Returns false for mailto URLs",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Returns true for meshcoreone hashtag URLs and stages a pending hashtag()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Returns true for meshcoreone hashtag URLs and stages a pending hashtag",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Returns true for meshcore map URLs and stages map focus immediately()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Returns true for meshcore map URLs and stages map focus immediately",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Returns true for malformed hashtag URLs without crashing()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Returns true for malformed hashtag URLs without crashing",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen stages a pending contact and switches to the Chats tab()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen stages a pending contact and switches to the Chats tab",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen stages a pending channel and switches to the Chats tab()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen stages a pending channel and switches to the Chats tab",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::Existing channel match navigates without applying URL region_scope()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "Existing channel match navigates without applying URL region_scope",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen restores the previous tab for meshcoreone status URLs()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen restores the previous tab for meshcoreone status URLs",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen ends on the map tab for meshcore map URLs()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen ends on the map tab for meshcore map URLs",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen restores the previous tab for a malformed meshcore URL()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen restores the previous tab for a malformed meshcore URL",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatLinkRouterTests::routeExternalOpen stages a pending hashtag and switches to the Chats tab()",
+   "source": "MC1Tests/Views/Chats/ChatLinkRouterTests.swift",
+   "class": "ChatLinkRouterTest",
+   "method": "routeExternalOpen stages a pending hashtag and switches to the Chats tab",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::favoriteConversations returns only favorites()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "favoriteConversations returns only favorites",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::favoriteConversations sorts by lastMessageDate descending()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "favoriteConversations sorts by lastMessageDate descending",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::favoriteConversations returns empty when no favorites()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "favoriteConversations returns empty when no favorites",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::nonFavoriteConversations returns only non-favorites()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "nonFavoriteConversations returns only non-favorites",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::nonFavoriteConversations sorts by lastMessageDate descending()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "nonFavoriteConversations sorts by lastMessageDate descending",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::allConversations returns favorites first then non-favorites()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "allConversations returns favorites first then non-favorites",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::snapshot reflects favorite state changes after recompute()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "snapshot reflects favorite state changes after recompute",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::handles empty conversations array()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "handles empty conversations array",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::handles nil lastMessageDate by sorting to end()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "handles nil lastMessageDate by sorting to end",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::toggleMute with stale unmuted snapshot unmutes live row()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "toggleMute with stale unmuted snapshot unmutes live row",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::toggleFavorite with stale unfavorited snapshot unfavorites live channel()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "toggleFavorite with stale unfavorited snapshot unfavorites live channel",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatViewModelConversationTests::errorBannerMessage round-trips through setting and clearing()",
+   "source": "MC1Tests/Views/Chats/ChatViewModelConversationTests.swift",
+   "class": "ChatViewModelConversationTest",
+   "method": "errorBannerMessage round-trips through setting and clearing",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ContactMatchRowTests::recencyTimestamp tracks lastModified not lastAdvertTimestamp()",
+   "source": "MC1Tests/Views/Chats/ContactMatchRowTests.swift",
+   "class": "ContactMatchRowTest",
+   "method": "recencyTimestamp tracks lastModified not lastAdvertTimestamp",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ConversationListScrollPerfHarnessTests::conversation list source has no per-row dwell prewarm task()",
+   "source": "MC1Tests/Views/Chats/ConversationListScrollPerfHarnessTests.swift",
+   "class": "ConversationListScrollPerfHarnessTest",
+   "method": "conversation list source has no per-row dwell prewarm task",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::exact name match returns the contact()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "exact name match returns the contact",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::case-insensitive match returns the contact()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "case-insensitive match returns the contact",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::non-matching name returns empty()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "non-matching name returns empty",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::multiple contacts sharing a name all match()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "multiple contacts sharing a name all match",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::leading or trailing whitespace does not match (no trimming)()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "leading or trailing whitespace does not match",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::excludeBlocked drops blocked contacts()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "excludeBlocked drops blocked contacts",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::excludeBlocked=false keeps blocked contacts()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "excludeBlocked false keeps blocked contacts",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "SenderContactMatcherTests::empty contact list returns empty()",
+   "source": "MC1Tests/Views/Chats/SenderContactMatcherTests.swift",
+   "class": "SenderContactMatcherTest",
+   "method": "empty contact list returns empty",
+   "disposition": "source-behavior",
+   "result": "pass"
+  }
+ ]
+}
