@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
-from controller.ci_evidence import suite_counts, artifact_record
+from controller.ci_evidence import suite_counts
 from controller.errors import PortError
 from controller.model import git
 from controller.module_junit import safe_reports
@@ -38,6 +38,17 @@ EXPECTED = {
         137,
     ),
 }
+
+
+def artifact_record(root, path):
+    if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
+        raise PortError("Runtime evidence artifact escapes its bounded input root")
+    raw = path.read_bytes()
+    return {
+        "path": path.relative_to(root).as_posix(),
+        "size": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }
 
 
 def collect():
