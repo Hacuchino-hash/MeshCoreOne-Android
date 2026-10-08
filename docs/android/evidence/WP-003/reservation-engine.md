@@ -23,10 +23,9 @@ authorization prose into mutable capability state.
 
 The repository-owned runtime installer stages and hashes the complete controller,
 uses the separate installed-runtime hard lock, atomically swaps the Git-common
-runtime directory, verifies installed bytes, and releases the lock. The exact
-configured WP-003 commands and mandatory local seven-stage cycle remain the
-authoritative verification record; this file is not a completion or human-gate
-attestation.
+runtime directory, verifies installed bytes, and releases the lock. Verification
+is selected from the changed surfaces, with broader integration delegated to the
+hosted workflows; this file is not a completion or human-gate attestation.
 
 `tools/android-port/oracle/workflow_scope.py` additionally prevents unrelated
 changes from scheduling auxiliary parity chains. Direct tests prove synthetic
@@ -59,3 +58,11 @@ remain blocking. Bootstrap and setup workflows use narrow real-input trigger set
 and completed one-off dependency proposal workflows have been removed. Controller
 test discovery belongs to the scoped bootstrap workflow; scaffold CI no longer
 runs that suite a second time and retains its own scaffold discovery evidence.
+
+Performance acceptance compares the redesigned hosted workflow against baseline
+head `58b1e10b`: 30.6 minutes on the Android scaffold critical path and
+approximately 78 total runner-minutes. After the redesigned workflow has enough
+comparable hosted runs, it must be rejected or revised unless it materially
+reduces both measurements. Cache warmth alone is not correctness evidence, and
+strict dependency locks, verification metadata, pinned coordinates, and checksum
+validation remain mandatory. No hosted benchmark result is claimed here.

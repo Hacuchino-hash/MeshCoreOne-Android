@@ -99,6 +99,12 @@ class WorkflowTests(unittest.TestCase):
         scoped = copy.deepcopy(original)
         scoped["on"]["pull_request"]["paths"] = ["android/**", "tools/android-port/**"]
         validate_candidate(scoped, text)
+        cached = copy.deepcopy(original)
+        cached["jobs"]["build"]["steps"].append({
+            "uses": "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+            "with": {"path": "~/.gradle/caches", "key": "gradle-read-only-fixture"},
+        })
+        validate_candidate(cached, text)
         for kind in ("merge", "gate", "needs", "host", "strategy"):
             value = copy.deepcopy(original)
             if kind == "merge":
@@ -116,7 +122,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_read_only_checkout_ephemeral_runners_pins_and_secret_absence(self):
         original, text = self.read("android-ci.yml")
-        for kind in ("permissions", "credentials", "action", "cache", "secret", "runner", "ignored-failure"):
+        for kind in ("permissions", "credentials", "action", "secret", "runner", "ignored-failure"):
             value, changed = copy.deepcopy(original), text
             if kind == "permissions":
                 value["permissions"]["checks"] = "write"
@@ -124,8 +130,6 @@ class WorkflowTests(unittest.TestCase):
                 value["jobs"]["build"]["steps"][0]["with"]["persist-credentials"] = "true"
             elif kind == "action":
                 value["jobs"]["build"]["steps"][0]["uses"] = "actions/checkout@v4"
-            elif kind == "cache":
-                value["jobs"]["build"]["steps"].append({"uses": "actions/cache@fixture"})
             elif kind == "runner":
                 changed += "\n# self-hosted\n"
             elif kind == "ignored-failure":
