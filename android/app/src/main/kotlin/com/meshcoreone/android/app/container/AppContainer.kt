@@ -26,6 +26,9 @@ import com.meshcoreone.android.core.connectivity.device.ContactRemovalPort
 import com.meshcoreone.android.core.connectivity.device.RadioPresetMatcher
 import com.meshcoreone.android.core.connectivity.pairing.KnownEndpointStore
 import com.meshcoreone.android.core.connectivity.pairing.PairingCoordinator
+import com.meshcoreone.android.core.connectivity.service.ConnectedDeviceHostingController
+import com.meshcoreone.android.core.connectivity.service.ForegroundServiceStarter
+import com.meshcoreone.android.core.contracts.domain.Capability
 import com.meshcoreone.android.core.contracts.AppTab
 import com.meshcoreone.android.core.contracts.domain.EntityKey
 import com.meshcoreone.android.core.contracts.domain.MessagingIssueReporter
@@ -59,6 +62,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -99,6 +105,15 @@ class AppContainerDependencies(
     val runtimeReporter: RuntimeIssueReporter = RuntimeIssueReporter {},
     val connectivityDiagnostics: ConnectivityDiagnostics = ConnectivityDiagnostics.NONE,
     val sessionLifecycle: SessionLifecycleListener = SessionLifecycleListener.NONE,
+    /** Starts/stops the single connectedDevice foreground service; null leaves hosting unbound (JVM composition). */
+    val hostingStarter: ForegroundServiceStarter? = null,
+    val hostEnvironment: HostEnvironment? = null,
+    /** Re-reads the system association list (presence `AssociationsChanged`). */
+    val refreshAssociations: () -> Unit = {},
+    /** Reads the platform permission facts on each foreground edge; null disables revocation handling. */
+    val permissionSnapshot: (() -> com.meshcoreone.android.core.connectivity.permissions.PermissionSnapshot)? = null,
+    /** The companion setup the resumed activity attaches its chooser host to; null when no companion registry exists. */
+    val companionSetup: com.meshcoreone.android.core.connectivity.pairing.CompanionSetupService? = null,
     val newBootstrapDebugLog: (CoroutineScope) -> DebugLogBuffer? = { null },
     /** Releases process-owned resources (database, storage) once the runtime has closed. */
     val onClose: suspend () -> Unit = {},
@@ -120,6 +135,8 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
     val navigation = NavigationCoordinator()
     val foreground: ProcessForegroundState = dependencies.foreground
     val bootstrapDebugLog: DebugLogBuffer? = dependencies.newBootstrapDebugLog(processScope)
+        // A live process publishes its bootstrap buffer as the process-global one; the inert placeholder never does.
+        ?.also { DebugLogBuffer.shared = it }
 
     private val lastConnection = LastConnectionStore(dependencies.connectionPreferences, dependencies.runtimeClock)
     private val platformAdapter = RuntimePlatformAdapter(dependencies.connectivity)
@@ -204,12 +221,88 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
         ),
     )
 
+    /**
+     * Foreground-service hosting and companion-presence routing, present only when the platform supplies a service
+     * starter and environment. Holds the service while a live connection is wanted and the app is visible.
+     */
+    val hostBinding: ConnectedDeviceHostBinding? = dependencies.hostingStarter?.let { starter ->
+        dependencies.hostEnvironment?.let { environment ->
+            ConnectedDeviceHostBinding(
+                connectionManager.snapshot, foreground.foregroundFlow, { connectionManager.snapshot.value },
+                ConnectedDeviceHostingController(starter), environment, PresenceRouting(), processScope,
+                onFailure = { failure -> dependencies.connectivityDiagnostics.report("hosting", failure) },
+            )
+        }
+    }
+
+    /** The companion setup service (for `setChooserHost` and the chooser result), when a registry exists. */
+    val companionSetup = dependencies.companionSetup
+
+    private val revocationGuard: PermissionRevocationGuard? = dependencies.permissionSnapshot?.let { read ->
+        PermissionRevocationGuard(
+            read,
+            object : TransportTeardown {
+                override val liveTransport: LiveTransport
+                    get() {
+                        val methods = connectionManager.connectedDevice?.connectionMethods ?: return LiveTransport.NONE
+                        if (!connectionManager.connectionState.isConnected) return LiveTransport.NONE
+                        return if (methods.isNotEmpty() && methods.all { it is com.meshcoreone.android.core.model.ConnectionMethod.WiFi }) {
+                            LiveTransport.LAN
+                        } else LiveTransport.BLUETOOTH
+                    }
+
+                override suspend fun disconnectTransport() = connectionManager.disconnectTransport()
+            },
+        ) { revoked -> dependencies.connectivityDiagnostics.report("permissions.revoked.$revoked", null) }
+    }
+
     init {
         observerBridge.bind(appState, connectionPort)
     }
 
-    /** Starts the process: loads persisted state and activates the runtime (restores the last connection). */
-    fun start(): Job = dependencies.mainScope.launch { appState.initialize() }
+    /** Starts the process: binds hosting, loads persisted state and activates the runtime (restores the last connection). */
+    fun start(): Job {
+        hostBinding?.start()
+        watchDisconnects()
+        watchPermissions()
+        return dependencies.mainScope.launch { appState.initialize() }
+    }
+
+    /** Reconciles app state on every disconnected edge, covering failures the runtime reports no loss callback for. */
+    private fun watchDisconnects() {
+        dependencies.mainScope.launch {
+            connectionManager.snapshot.map { it.state }.distinctUntilChanged()
+                .filter { it == com.meshcoreone.android.core.contracts.domain.DeviceConnectionState.DISCONNECTED }
+                .collect { appState.reconcileSessionLoss() }
+        }
+    }
+
+    /** Checks permission revocation on each foreground edge (the first read becomes the baseline). */
+    private fun watchPermissions() {
+        val guard = revocationGuard ?: return
+        dependencies.mainScope.launch {
+            foreground.foregroundFlow.filter { it }.collect {
+                try {
+                    guard.check()
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    dependencies.connectivityDiagnostics.report("permissions.check", failure)
+                }
+            }
+        }
+    }
+
+    private inner class PresenceRouting : PresenceEffects {
+        override suspend fun reconnect(deviceId: java.util.UUID) = connectionPort.connect(deviceId, forceReconnect = false)
+        override fun refreshAssociations() = dependencies.refreshAssociations()
+        override suspend fun forgetAssociation(deviceId: java.util.UUID) =
+            pairing.devicePairingDidRemoveDevice(dependencies.connectivity.pairing, deviceId)
+        override fun permissionRevoked(capability: Capability) =
+            dependencies.connectivityDiagnostics.report("presence.permissionRevoked.$capability", null)
+        override fun deferredUntilUnlock(deviceId: java.util.UUID) =
+            dependencies.connectivityDiagnostics.report("presence.deferredUntilUnlock", null)
+    }
 
     /**
      * `NavigationCoordinator` has no seam that clears only the chats route, so this pops the top chat of the Chats
@@ -226,6 +319,7 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
     /** Process shutdown: closes the runtime (tearing down any live graph), then every process resource. */
     suspend fun close() {
         withContext(NonCancellable) {
+            hostBinding?.close()
             appState.shutdown()
             connectionManager.close()
             processJob.cancelAndJoin()

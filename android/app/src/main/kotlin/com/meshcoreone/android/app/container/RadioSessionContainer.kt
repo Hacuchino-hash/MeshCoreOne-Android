@@ -224,6 +224,14 @@ class RadioSessionContainer private constructor(
 
     private val isClosed: Boolean get() = synchronized(lock) { closed }
 
+    /** Whether teardown has started: a closed container accepts no new monitors or services. */
+    val isTornDown: Boolean get() = isClosed
+
+    /** Live coroutines under this graph's supervisor job (leak accounting: zero after teardown). */
+    val liveJobCount: Int get() = containerJob.descendants()
+
+    private fun Job.descendants(): Int = children.filter { it.isActive }.sumOf { 1 + it.descendants() }
+
     /** Whether service event listeners are active (Swift `isEventMonitoringActive`). */
     val isEventMonitoringActive: Boolean get() = synchronized(lock) { monitoring == Monitoring.ACTIVE }
 
@@ -277,8 +285,8 @@ class RadioSessionContainer private constructor(
         radio: RadioId,
         enableAutoFetch: Boolean = true,
         enableAdvertisementMonitoring: Boolean = true,
-    ) = monitoringLock.withLock {
-        synchronized(lock) { if (closed || monitoring != Monitoring.STOPPED) return }
+    ): Unit = monitoringLock.withLock {
+        if (synchronized(lock) { closed || monitoring != Monitoring.STOPPED }) return@withLock
         heardRepeatsService.configure(radio)
         if (enableAdvertisementMonitoring) advertisementService.startEventMonitoring(radio)
         rxLogService.startEventMonitoring(radio)
@@ -308,8 +316,8 @@ class RadioSessionContainer private constructor(
     }
 
     /** Stops every monitor. In-flight DMs are not failed: the radio re-emits the delivery confirmation on return. */
-    suspend fun stopEventMonitoring() = monitoringLock.withLock {
-        synchronized(lock) { if (monitoring != Monitoring.ACTIVE) return }
+    suspend fun stopEventMonitoring(): Unit = monitoringLock.withLock {
+        if (synchronized(lock) { monitoring != Monitoring.ACTIVE }) return@withLock
         advertisementService.stopEventMonitoring()
         rxLogService.stopEventMonitoring()
         try {
@@ -389,7 +397,7 @@ class RadioSessionContainer private constructor(
         withContext(NonCancellable) {
             step(LifecycleStage.STOP_SERVICES) { resetSyncState() }
             // Stop the monitors before clearing handlers so the event tasks that read them are cancelled first.
-            step(LifecycleStage.STOP_SERVICES) { forceStopMonitoring() }
+            step(LifecycleStage.STOP_SERVICES) { stopEventMonitoring() }
             step(LifecycleStage.STOP_SERVICES) { messagePollingService.clearMessageHandlers() }
             step(LifecycleStage.STOP_SERVICES) { syncCoordinator.cancelDiscoveryEventMonitoring() }
             // Finishing every stream ends each consumer's collection, releasing the service references they hold.
@@ -418,24 +426,6 @@ class RadioSessionContainer private constructor(
         }
         env.onSessionLifecycle.tornDown(this)
         return TeardownReport(issues.snapshot()).also { receipt.complete(it) }
-    }
-
-    /** Teardown stop: runs even when a start is in flight (the monitoring lock serializes it behind that start). */
-    private suspend fun forceStopMonitoring() = monitoringLock.withLock {
-        val active = synchronized(lock) { monitoring == Monitoring.ACTIVE }
-        if (!active) return
-        advertisementService.stopEventMonitoring()
-        rxLogService.stopEventMonitoring()
-        try { dataStore.flushPendingRxLogEntries() } catch (failure: Exception) {
-            if (failure is CancellationException) throw failure
-            logger.log(Level.WARNING, "RX log flush on stop failed: ${failure.message}")
-        }
-        messageService.stopEventMonitoring()
-        messageService.stopAckExpiryChecking()
-        messagePollingService.stopMessageEventMonitoring()
-        remoteNodeService.stopEventMonitoring()
-        debugLogBuffer.shutdown()
-        synchronized(lock) { monitoring = Monitoring.STOPPED }
     }
 
     private fun restoreDebugLog() {

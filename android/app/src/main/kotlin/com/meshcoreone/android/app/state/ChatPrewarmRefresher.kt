@@ -65,6 +65,9 @@ class ChatPrewarmRefresher(
     val inFlight: Set<ChatConversationID> get() = synchronized(lock) { scheduled.keys.toSet() }
     val inFlightCount: Int get() = synchronized(lock) { scheduled.size }
 
+    /** The scheduled refresh for [id], if any (Swift `inFlight[id]`). */
+    fun inFlightJob(id: ChatConversationID): Job? = synchronized(lock) { scheduled[id] }
+
     fun noteDirectMessage(contact: ContactDTO) = schedule(ConversationKind.Dm(contact))
 
     fun noteChannelMessage(radioId: RadioId, channelIndex: UByte) = schedule(ConversationKind.Channel(radioId, channelIndex))

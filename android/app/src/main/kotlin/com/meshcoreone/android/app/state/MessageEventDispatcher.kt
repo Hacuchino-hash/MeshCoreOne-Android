@@ -13,6 +13,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -38,42 +39,38 @@ class MessageEventDispatcher(
 ) {
     private val logger: Logger = Logger.getLogger("com.mc1.MessageEventDispatcher")
     private val lock = Any()
-    private var jobs: List<Job> = emptyList()
     private var statusSubscription: AutoCloseable? = null
 
-    /** Active consumer jobs (test visibility for duplicate-collector checks). */
-    val activeJobCount: Int get() = synchronized(lock) { jobs.count { it.isActive } }
+    // Every consumer is a child of one group job, so the count below sees any collector that outlived a re-wire.
+    private val group = SupervisorJob(scope.coroutineContext[Job])
+    private val consumers = CoroutineScope(scope.coroutineContext + group)
+
+    /** Live consumer jobs, including any that a re-wire failed to cancel (test visibility for duplicate collectors). */
+    val activeJobCount: Int get() = group.children.count { it.isActive }
 
     fun wire(sources: MessageEventSources) {
         cancelAll()
-        val started = listOf(
-            consume("syncData", sources.dataEvents, ::handleDataEvent),
-            consume("heardRepeats", sources.heardRepeats) { event ->
-                stream.send(MessageEvent.HeardRepeatRecorded(event.messageID, event.count))
-            },
-            consume("regionUpdates", sources.regionUpdates) { ids ->
-                if (ids.isNotEmpty()) stream.send(MessageEvent.MessagesRegionUpdated(ids.toList()))
-            },
-            consume("remoteNode", sources.remoteNode) { event ->
-                when (event) {
-                    is RemoteNodeEvent.SessionStateChanged -> host.handleSessionStateChange()
-                }
-            },
-            consume("roomServer", sources.roomServer, ::handleRoomServerEvent),
-            consume("messageStatus", sources.messageStatus.events) { event -> handleStatusEvent(event.event) },
-        )
-        synchronized(lock) {
-            jobs = started
-            statusSubscription = sources.messageStatus
+        consume("syncData", sources.dataEvents, ::handleDataEvent)
+        consume("heardRepeats", sources.heardRepeats) { event ->
+            stream.send(MessageEvent.HeardRepeatRecorded(event.messageID, event.count))
         }
+        consume("regionUpdates", sources.regionUpdates) { ids ->
+            if (ids.isNotEmpty()) stream.send(MessageEvent.MessagesRegionUpdated(ids.toList()))
+        }
+        consume("remoteNode", sources.remoteNode) { event ->
+            when (event) {
+                is RemoteNodeEvent.SessionStateChanged -> host.handleSessionStateChange()
+            }
+        }
+        consume("roomServer", sources.roomServer, ::handleRoomServerEvent)
+        consume("messageStatus", sources.messageStatus.events) { event -> handleStatusEvent(event.event) }
+        synchronized(lock) { statusSubscription = sources.messageStatus }
     }
 
     /** Cancels every stream-consuming job; called before re-wiring and from the disconnect teardown. */
     fun cancelAll() {
-        val (running, subscription) = synchronized(lock) {
-            (jobs to statusSubscription).also { jobs = emptyList(); statusSubscription = null }
-        }
-        running.forEach(Job::cancel)
+        val subscription = synchronized(lock) { statusSubscription.also { statusSubscription = null } }
+        group.children.forEach(Job::cancel)
         try {
             subscription?.close()
         } catch (failure: Exception) {
@@ -81,8 +78,8 @@ class MessageEventDispatcher(
         }
     }
 
-    private fun <T> consume(label: String, source: Flow<T>, handle: suspend (T) -> Unit): Job =
-        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+    private fun <T> consume(label: String, source: Flow<T>, handle: suspend (T) -> Unit) {
+        consumers.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 source.collect { value ->
                     try {
@@ -100,6 +97,7 @@ class MessageEventDispatcher(
                 logger.log(Level.SEVERE, "$label stream ended with failure: ${failure.message}")
             }
         }
+    }
 
     private suspend fun handleDataEvent(event: SyncDataEvent) {
         when (event) {

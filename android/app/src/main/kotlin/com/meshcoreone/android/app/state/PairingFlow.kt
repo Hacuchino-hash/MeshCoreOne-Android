@@ -11,7 +11,6 @@ import com.meshcoreone.android.core.runtime.DeadlineClock
 import com.meshcoreone.android.core.runtime.RuntimeDisconnectReason
 import com.meshcoreone.android.core.runtime.SystemRuntimeClock
 import com.meshcoreone.android.core.ui.UiText
-import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CancellationException
@@ -37,7 +36,6 @@ class PairingFlow(
     private val onFreshPairingCompleted: () -> Unit = {},
     private val freshPairingForegroundRetryDelay: Duration = 400.milliseconds,
 ) {
-    private val lock = Any()
     @Volatile var isConfirmingSystemPairingSetup: Boolean = false
         private set
     @Volatile var isFreshPairingForegroundRetry: Boolean = false

@@ -37,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -145,12 +146,14 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
     private var activeRecoveryFallbackJob: Job? = null
     private var bleTransitionTail: Job? = null
 
+    // Every per-session collector is a child of one group job, so the count below also sees a collector that a
+    // re-wire replaced but failed to cancel.
+    private val sessionGroup = SupervisorJob(scope.coroutineContext[Job])
+    private val sessionScope = CoroutineScope(scope.coroutineContext + sessionGroup)
+
     /** Test visibility for the per-session collectors (Swift `settingsEventsTask`). */
     val hasSettingsEventsJob: Boolean get() = synchronized(lock) { settingsEventsJob != null }
-    val activeSessionJobCount: Int
-        get() = synchronized(lock) {
-            listOfNotNull(settingsEventsJob, syncDataEventsJob, advertisementEventsJob, rxLogEventsJob).count { it.isActive }
-        }
+    val activeSessionJobCount: Int get() = sessionGroup.children.count { it.isActive }
 
     /** Installs a long-running job in the settings slot (Swift tests assign `settingsEventsTask` directly). */
     fun installSettingsEventsJobForTesting(job: Job) = synchronized(lock) { settingsEventsJob = job }
@@ -374,6 +377,16 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
     /** `onConnectionReady`/`onConnectionLost`: reconcile the session wiring with the live graph. */
     suspend fun onSessionStateChanged() = wireServicesIfConnected()
 
+    /**
+     * Resets the per-session UI state when the graph is gone but this state still believes it is wired. The runtime
+     * does not call `onConnectionLost` when a failed connect detaches a live generation (a device switch that fails),
+     * so the container also observes the connection state and calls this on every disconnected edge. Idempotent: a
+     * state that is already torn down does nothing, so a normal loss is not announced twice.
+     */
+    suspend fun reconcileSessionLoss() {
+        if (syncCoordinator != null && services == null) wireServicesIfConnected()
+    }
+
     fun onLastConnectedDeviceCleared() {
         chatCoordinatorRegistry?.clear()
         refreshConversations()
@@ -470,7 +483,7 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
 
     private fun wireSyncDataEvents(session: AppSession) {
         val events = session.syncCoordinator.dataEvents()
-        replaceJob({ syncDataEventsJob }, { syncDataEventsJob = it }, scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        replaceJob({ syncDataEventsJob }, { syncDataEventsJob = it }, sessionScope.launch(start = CoroutineStart.UNDISPATCHED) {
             events.collect { event ->
                 when (event) {
                     com.meshcoreone.android.core.services.sync.SyncDataEvent.ContactsChanged -> bumpContactsVersion()
@@ -483,7 +496,7 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
 
     private fun wireSettingsEventStream(session: AppSession) {
         val subscription = session.settingsService.events()
-        replaceJob({ settingsEventsJob }, { settingsEventsJob = it }, scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        replaceJob({ settingsEventsJob }, { settingsEventsJob = it }, sessionScope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 subscription.events.collect { wrapped ->
                     when (val event = wrapped.event) {
@@ -513,7 +526,7 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
         // ConnectionManager nils the session before teardown yields contactDeletedCleanup; capture the notification service.
         val notifications = session.notificationService
         val events = session.advertisementService.events()
-        replaceJob({ advertisementEventsJob }, { advertisementEventsJob = it }, scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        replaceJob({ advertisementEventsJob }, { advertisementEventsJob = it }, sessionScope.launch(start = CoroutineStart.UNDISPATCHED) {
             events.collect { event ->
                 when (event) {
                     AdvertisementEvent.ContactUpdated -> bumpContactsVersion()
@@ -531,7 +544,7 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
     /** Every received RF packet refreshes platform freshness and may trigger an overdue battery read. */
     private fun wirePacketCallbacks(session: AppSession) {
         val entries = session.rxLogService.entryStream()
-        replaceJob({ rxLogEventsJob }, { rxLogEventsJob = it }, scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        replaceJob({ rxLogEventsJob }, { rxLogEventsJob = it }, sessionScope.launch(start = CoroutineStart.UNDISPATCHED) {
             entries.collect {
                 deps.platform.onPacketReceived()
                 if (deps.platform.hasActiveConnectionActivity()) {

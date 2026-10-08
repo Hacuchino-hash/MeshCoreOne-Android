@@ -2,7 +2,9 @@
 package com.meshcoreone.android.app.state
 
 import com.meshcoreone.android.core.contracts.domain.AppStateProvider
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Whether the app is in the foreground (Swift `applicationState != .background`). Android reports it as "at least
@@ -11,21 +13,27 @@ import java.util.concurrent.atomic.AtomicInteger
  * activity, so the count dips to zero only when the whole task is truly backgrounded.
  */
 class ProcessForegroundState : AppStateProvider {
-    private val startedActivities = AtomicInteger(0)
+    private val lock = Any()
+    private var startedActivities = 0
+    private val foreground = MutableStateFlow(false)
 
-    val isForeground: Boolean get() = startedActivities.get() > 0
+    /** Observable foreground flag (hosting and reconciliation re-evaluate when it changes). */
+    val foregroundFlow: StateFlow<Boolean> = foreground.asStateFlow()
+
+    val isForeground: Boolean get() = foreground.value
 
     override suspend fun isInForeground(): Boolean = isForeground
 
     /** Returns true when this start moved the process from background to foreground. */
-    fun activityStarted(): Boolean = startedActivities.incrementAndGet() == 1
+    fun activityStarted(): Boolean = synchronized(lock) {
+        startedActivities += 1
+        (startedActivities == 1).also { if (it) foreground.value = true }
+    }
 
     /** Returns true when this stop moved the process from foreground to background. */
-    fun activityStopped(): Boolean {
-        while (true) {
-            val current = startedActivities.get()
-            if (current == 0) return false
-            if (startedActivities.compareAndSet(current, current - 1)) return current == 1
-        }
+    fun activityStopped(): Boolean = synchronized(lock) {
+        if (startedActivities == 0) return@synchronized false
+        startedActivities -= 1
+        (startedActivities == 0).also { if (it) foreground.value = false }
     }
 }

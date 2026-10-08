@@ -1,6 +1,16 @@
 // AndroidOnly: WP-303 Test harness: the production AppContainer over a Room store, a fake radio and fake platform roles.
 package com.meshcoreone.android.app.container
 
+import com.meshcoreone.android.core.database.MeshCoreDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.junit.After
+import org.junit.Before
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 import com.meshcoreone.android.core.contracts.domain.BluetoothAddress
 import com.meshcoreone.android.core.contracts.domain.BluetoothPairingHandle
 import com.meshcoreone.android.core.contracts.domain.ConnectionTarget
@@ -20,6 +30,7 @@ import com.meshcoreone.android.core.services.rendering.DraftStore
 import java.util.UUID
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 internal class MemoryConnectionPreferences : ProcessConnectionPreferences {
     val values = linkedMapOf<String, RuntimePreferenceValue>()
@@ -60,26 +71,30 @@ internal class RecordingLifecycle : SessionLifecycleListener {
 }
 
 /** The production [AppContainer] composed over test roles; every connection runs the real service graph. */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ContainerHarness(
     test: TestScope,
     val store: RoomPersistenceStore,
     identity: (ConnectionTarget) -> Bytes = { key(7) },
     deliveryOverride: RecordingDelivery? = null,
+    primerFactory: com.meshcoreone.android.app.state.ChatPrimerFactory = com.meshcoreone.android.app.state.ChatPrimerFactory { null },
 ) {
     val scheduler: TestCoroutineScheduler = test.testScheduler
     val links = HarnessLinks(identity)
     val delivery = deliveryOverride ?: RecordingDelivery()
     val pairing = HarnessPairingService()
+    val foregroundCalls = mutableListOf<Boolean>()
     val preferences = MemoryConnectionPreferences()
     val lifecycle = RecordingLifecycle()
     val diagnostics = mutableListOf<RuntimeDiagnostic>()
+    val messagingDiagnostics = java.util.Collections.synchronizedList(mutableListOf<com.meshcoreone.android.core.contracts.domain.MessagingDiagnostic>())
     val draftStore = DraftStore(MemoryDraftDefaults())
     val container = AppContainer(
         AppContainerDependencies(
             store = store,
             passwords = MemoryVault(),
             connectionPreferences = preferences,
-            connectivity = newConnectivity(pairing),
+            connectivity = newConnectivity(pairing) { foregroundCalls += it },
             linkProbe = NoSystemLinks,
             scans = newScans(),
             linkFactory = links,
@@ -93,7 +108,9 @@ internal class ContainerHarness(
             accessibility = SilentAnnouncements,
             sessionLifecycle = lifecycle,
             runtimeReporter = RuntimeIssueReporter { diagnostics += it },
+            messagingReporter = com.meshcoreone.android.core.contracts.domain.MessagingIssueReporter { messagingDiagnostics += it },
             newBootstrapDebugLog = { DebugLogBuffer(store, it) },
+            primerFactory = primerFactory,
         ),
     )
     val manager get() = container.connectionManager
@@ -108,18 +125,53 @@ internal class ContainerHarness(
         repeat(rounds) { scheduler.runCurrent(); scheduler.advanceUntilIdle(); Thread.sleep(2) }
     }
 
-    /** Polls (running scheduled work between checks) until [condition] holds or five real seconds pass. */
-    fun eventually(message: String = "condition", condition: () -> Boolean) {
+    /**
+     * Polls until [condition] holds or five real seconds pass. Each poll runs scheduled work and advances virtual
+     * time by [virtualStepMillis], up to [virtualBudgetMillis] in total, so short timers fire but a held radio reply
+     * can never be turned into a protocol timeout.
+     */
+    fun eventually(
+        message: String = "condition", virtualBudgetMillis: Long = 1_000, virtualStepMillis: Long = 1, condition: () -> Boolean,
+    ) {
         val deadline = System.nanoTime() + 5_000_000_000L
+        var advanced = 0L
         while (System.nanoTime() < deadline) {
             scheduler.runCurrent()
             if (condition()) return
-            Thread.sleep(5)
+            if (advanced < virtualBudgetMillis) { scheduler.advanceTimeBy(virtualStepMillis); advanced += virtualStepMillis }
+            scheduler.runCurrent()
+            if (condition()) return
+            Thread.sleep(2)
         }
-        throw AssertionError("Timed out waiting for $message")
+        throw AssertionError("Timed out waiting for $message (state=${manager.connectionState})")
     }
 
     fun assertReady() {
         check(manager.connectionState == DeviceConnectionState.READY) { "state=${manager.connectionState}" }
     }
 }
+
+/** Robolectric base: an in-memory Room database and the production [RoomPersistenceStore] over it. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [31])
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
+abstract class RoomProcessTest {
+    internal lateinit var db: MeshCoreDatabase
+    internal lateinit var store: RoomPersistenceStore
+    private lateinit var owner: CoroutineScope
+
+    @Before fun openStore() {
+        db = openMemoryDatabase()
+        owner = CoroutineScope(SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+        store = RoomPersistenceStore(db, owner)
+    }
+
+    @After fun closeStore() {
+        try { kotlinx.coroutines.runBlocking { store.close() } } finally {
+            DebugLogBuffer.shared = null
+            owner.cancel()
+            db.close()
+        }
+    }
+}
+

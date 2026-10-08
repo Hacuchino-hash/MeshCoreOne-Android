@@ -68,6 +68,28 @@ internal fun key(seed: Int): Bytes = Bytes(ByteArray(32) { seed.toByte() })
 internal fun le32(value: Long): Bytes =
     Bytes(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value.toInt()).array())
 
+/**
+ * The firmware's reply to a direct-message send: the expected-ACK code is derived exactly as the service derives it
+ * (timestamp, attempt, text and the sender's public key), so a send is recognized rather than retried.
+ */
+internal fun sentReply(send: Bytes, senderKey: Bytes): Bytes = sentFrames(send, senderKey).first()
+
+/** The sent reply followed by the delivery ACK push the destination's firmware would relay. */
+internal fun sentAndDelivered(send: Bytes, senderKey: Bytes): List<Bytes> = sentFrames(send, senderKey)
+
+private fun sentFrames(send: Bytes, senderKey: Bytes): List<Bytes> {
+    val attempt = send[2]
+    val timestamp = (0..3).fold(0u) { acc, index -> acc or (send[3 + index].toUInt() shl (8 * index)) }
+    val text = String(send.toByteArray().copyOfRange(13, send.size), Charsets.UTF_8)
+    val ack = com.meshcoreone.android.core.services.messaging.AckCodeBuilder.expectedAck(timestamp, attempt, text, senderKey)
+    return listOf(Bytes.of(0x06, 0) + ack + le32(5_000), Bytes.of(0x82) + ack + le32(120))
+}
+
+/** A contact-list entry frame (response code 0x03): a chat contact reached by flood routing. */
+internal fun contactFrame(publicKey: Bytes, name: String, lastModified: Long = 1): Bytes =
+    Bytes.of(3) + publicKey + Bytes.of(1, 0, 0xff) + Bytes(ByteArray(64)) + Bytes.utf8(name).paddedOrTruncated(32) +
+        le32(1) + le32(0) + le32(0) + le32(lastModified)
+
 internal fun syntheticAddress(id: UUID): String {
     val bits = id.mostSignificantBits
     return (0..5).joinToString(":") { "%02X".format((bits ushr (8 * it)) and 0xFF) }
@@ -87,10 +109,17 @@ internal class FirmwareRadio(private val publicKey: Bytes, private val nodeName:
     var readers = 0
     var connectFailure: Exception? = null
 
+    /** When set, [connect] suspends until the gate opens (an in-flight connection attempt). */
+    var connectGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+
     /** Return a frame list to answer a command; null falls through to the default firmware behavior. */
     var respond: (Bytes) -> List<Bytes>? = { null }
 
+    /** Contacts the radio reports on a contact-list request (a full sync deletes local contacts not listed here). */
+    val knownContacts = mutableListOf<Bytes>()
+
     override suspend fun connect() {
+        connectGate?.await()
         connectFailure?.let { throw it }
         if (!connected) { inbound = Channel(Channel.UNLIMITED); connected = true; connects++ }
     }
@@ -125,12 +154,13 @@ internal class FirmwareRadio(private val publicKey: Bytes, private val nodeName:
         0x3b -> listOf(Bytes.of(0x19, 0, 0))
         0x05 -> listOf(Bytes.of(9) + le32(EPOCH.epochSecond))
         0x06 -> listOf(Bytes.of(0))
-        0x04 -> listOf(Bytes.of(2) + le32(0), Bytes.of(4) + le32(0))
+        0x04 -> listOf(Bytes.of(2) + le32(knownContacts.size.toLong())) + knownContacts + listOf(Bytes.of(4) + le32(0))
         0x0a -> listOf(Bytes.of(10))
         0x1f -> listOf(Bytes.of(1, 2))
         0x3c -> listOf(Bytes.of(0))
         0x14 -> listOf(Bytes.of(0x0c, 0x74, 0x0e))
         0x17 -> listOf(Bytes.of(0x0f))
+        0x1e -> listOf(knownContacts.firstOrNull { it.hexString.contains(data.hexString.drop(2)) } ?: Bytes.of(1, 2))
         else -> throw AssertionError("Unexpected command ${data.hexString}")
     }
 
@@ -180,11 +210,20 @@ internal class HarnessPairingService : DevicePairingService {
     override val supportsSystemRename: Boolean = false
     val registered = linkedMapOf<UUID, String>()
     val removed = mutableListOf<UUID>()
+    var removeCalls = 0
+    var removeFailure: Exception? = null
     override suspend fun activate() = Unit
     override suspend fun discoverDevice(): UUID = throw com.meshcoreone.android.core.connectivity.pairing.DevicePairingError.Cancelled()
     override fun isDeviceConnectable(id: UUID): Boolean = true
     override fun registeredDeviceInfos(): List<RegisteredDevice> = registered.map { RegisteredDevice(it.key, it.value) }
-    override suspend fun removeDevice(id: UUID) { removed += id; registered.remove(id) }
+    override suspend fun removeDevice(id: UUID) {
+        // Like the companion registry: an unknown association is a no-op with no platform call.
+        if (id !in registered) return
+        removeCalls += 1
+        removeFailure?.let { throw it }
+        removed += id
+        registered.remove(id)
+    }
     override suspend fun renameDevice(id: UUID) = Unit
     override suspend fun clearStaleRegistrations() = Unit
 }
@@ -231,11 +270,13 @@ internal class FixedNotificationPreferences : NotificationPreferencesPort {
     override suspend fun update(preferences: NotificationPreferences) { state.value = preferences }
 }
 
-internal fun newConnectivity(pairing: HarnessPairingService = HarnessPairingService()): ConnectivityPlatform =
-    ConnectivityPlatform(
-        pairing, BleLinkInspector(NoSystemLinks, { null }) { BluetoothAvailability.Ready }, SyntheticEndpoints(),
-        SystemLinkAdopter { false },
-    )
+internal fun newConnectivity(
+    pairing: HarnessPairingService = HarnessPairingService(),
+    onForeground: (Boolean) -> Unit = {},
+): ConnectivityPlatform = ConnectivityPlatform(
+    pairing, BleLinkInspector(NoSystemLinks, { null }) { BluetoothAvailability.Ready }, SyntheticEndpoints(),
+    SystemLinkAdopter { false }, onForegroundChanged = onForeground,
+)
 
 internal fun newScans(): BleScanCoordinator = BleScanCoordinator(NoScanGateway)
 
