@@ -112,20 +112,31 @@ Transactions (`BEGIN IMMEDIATE`) serialize claims, concurrency/budget reservatio
 creation intent and the repository-wide merge lane. Hosted runners cannot claim durability merely
 by creating a local SQLite file; WP-003 must prove the shared host/service integration.
 
-Leases include **all** literal file/subtree write paths: product code, docs, resources, generated
-outputs, fixtures, schema, catalog, containers and policy. Ancestor/file/directory/case conflicts are
-rejected, including a literal file ancestor of a directory. Traversal, absolute/Windows-invalid/control/
-Git-internal paths are rejected. There are no blanket catalog/manifest/AppContainer/schema exceptions.
-New shared writes require a reviewed amendment, not another worker's convenience.
-An unleased active backend worker with unknown write scope also blocks a new live claim.
+ADR-006 supersedes whole-path leases as edit permission. Assignment authorizes ordinary implementation,
+tests, evidence, generated outputs and directly necessary support edits inside manifest capabilities.
+Before editing, the worker/coordinator automatically records the initial typed reservation or evolves
+the same owner's reservation when a trusted path+operation rule admits a discovered support path.
+Authorization prose is immutable audit context and is not rewritten for checksums, fixtures, annotations,
+generated outputs or validator mappings. Unknown capabilities fail closed with one actionable blocker.
 
-Each attempt persists repository, WP, backend, base/source/manifest/policy binding, all write paths,
-expiry, reservations, bounded repair count and issue/task/session/PR identities. Dispatch intent is
-committed **before** an external mutation. Expiry never frees a possibly running worker's paths.
-Unknown/duplicate/conflicting/missing identities or interrupted mutations retain locks and block
-retry; reconcile authoritative API/host results or have an operator inspect the record.
-An independently reconciled existing worker is reused, not relaunched. Release requires an actual
-terminal worker with the recorded identity and no open implementation PR; pause never kills workers.
+Typed shared capabilities cover dependency catalogs/locks/checksums, App build/launcher support,
+traceability validators, generated resources, schemas and workflows. Their rules define allowed
+operations, invariants and required validation, not future byte tuples. Disjoint semantic edits reconcile
+through an automatic transaction or deterministic merge; real overlap serializes or transfers to the
+current producer. Only an unresolved semantic ownership collision, drift, protected/human gate, missing
+authentication/tool capability or substantive product decision escalates.
+
+Each attempt persists repository, WP, backend, base/source/manifest/policy binding, capability IDs,
+operations, actual normalized paths, expiry/budget reservation, bounded repair count and
+issue/task/session/PR identities. Dispatch intent is committed **before** an external mutation. Expiry
+never forgets a possibly running worker. Unknown/duplicate/conflicting/missing identities or interrupted
+mutations retain state and block duplicate dispatch; reconcile authoritative API/host results or report
+the one actionable blocker. An independently reconciled existing worker is reused, not relaunched.
+Pause never kills workers.
+
+The currently installed helper still models static whole-WP claim/release. WP-003 must add the versioned
+capability state and idempotent compare-and-swap migration defined by ADR-006 while preserving historical
+authorization bytes and all actual identities/bindings without release/recreate or manual SQLite edits.
 
 Repairs target the same actual task/PR or native session, at most three rounds per attempt; requests
 reserve usage before delivery. A pending repair is not ready for another repair. Current-base repair

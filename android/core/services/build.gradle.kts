@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
+import java.io.ByteArrayOutputStream
 
 plugins { id("mesh.jvm.library") }
 dependencies {
@@ -92,6 +93,116 @@ tasks.register("resolveContentDependencies") {
         }
     }
 }
+
+// AndroidOnly: WP-218 diagnostic-only raw-failure printer, mirroring the precedented
+// android/core/runtime/verification/print_failures.py (WP-207) pattern, scoped only to
+// core:services. Hosted CI's --quiet Gradle invocation renders test progress on a single
+// rich-console line via carriage returns; stripped of terminal escape sequences afterwards, only
+// the last redraw of each overwritten line survives, so the TestListener above (whose
+// logger.error(...) calls are routed through that same live console) can silently lose all but
+// the final one or two of several genuine failures -- confirmed in CI run 37403142503, where 8
+// core:services test failures were reported in aggregate but only 2 ever reached the log.
+//
+// A first fix attempt ran this script as a plain Exec task (finalizedBy'd after the Test task
+// completes) relying on its subprocess stdout being a fresh, separate stream -- but CI run
+// 37404888269 showed the SAME loss pattern even there: the script reported 9 raw failed/skipped
+// nodes, yet only 3 full blocks survived in both `gh run view --log` and the official untruncated
+// per-step log file. Root cause: Gradle's `Exec` task redirects child-process stdout through
+// Gradle's OWN logging/console pipeline by default (not a raw, independent terminal stream), so
+// it remains subject to the same rich-console redraw loss as the live TestListener output.
+//
+// The reliable channel, confirmed intact byte-for-byte in every run so far (including this one),
+// is Gradle's own end-of-build "* What went wrong" / "Execution failed for task ..." exception
+// summary -- printed once, after all live rich-console redrawing has stopped, and never observed
+// truncated or clobbered. This task therefore captures the script's stdout/stderr into an
+// in-memory buffer (bypassing Gradle's console during execution) and, if the script discovered
+// any raw failed/skipped nodes, throws a GradleException carrying the FULL captured text as its
+// message, so the complete list reaches that reliable channel. It never changes `:core:services:
+// test`'s own result (finalizedBy does not affect the finalized task's outcome); it only makes
+// this task itself fail loudly, which is purely diagnostic plumbing, not a feature/behavior gate.
+val repository = rootProject.projectDir.parentFile
+val contentCollector = repository.resolve("docs").resolve("android").resolve("evidence")
+    .resolve("WP-218").resolve("collect_evidence.py")
+val contentInvocation = providers.gradleProperty("meshCliInvocationFile")
+val contentEvidenceDirectory = contentInvocation.map {
+    file(it).parentFile.resolve("wp218-native").absolutePath
+}
+val contentPretestBinding = contentEvidenceDirectory.map { file(it).resolve("pretest-binding.json").absolutePath }
+val prepareContentInvocation by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Bind the actual Linux local/hosted candidate and compiled inputs BEFORE native tests."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--prepare-binding",
+        "--invocation", contentInvocation.getOrElse(""), "--output", contentPretestBinding.getOrElse(""))
+}
+tasks.named<Test>("test") {
+    dependsOn(prepareContentInvocation)
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf("Content evidence requires fresh current-head Services execution") { true }
+}
+
+val retainContentServiceReports by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Retain all raw Services reports and input bytes before parsing, including failed runs."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--retain-only", "services",
+        "--output", contentEvidenceDirectory.map { file(it).resolve("services-raw").absolutePath }
+            .getOrElse(layout.buildDirectory.dir("reports/wp218/services-raw").get().asFile.absolutePath))
+    contentInvocation.orNull?.let { args("--invocation", it) }
+    contentPretestBinding.orNull?.let { args("--pretest", it) }
+}
+tasks.named("test") { finalizedBy(retainContentServiceReports) }
+
+val verifyContentEvidenceReader by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Run nonzero content-reader raw-retention, source154 and immutable-binding regressions."
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath, "--self-test")
+}
+
+val verifyContentTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require real Services/App tests and every frozen original content family; missing behavior fails."
+    dependsOn("test", ":app:testDebugUnitTest", verifyContentEvidenceReader)
+    workingDir(repository)
+    commandLine("python", "-B", contentCollector.absolutePath,
+        "--output", contentEvidenceDirectory.map { file(it).resolve("source154").absolutePath }.getOrElse(""))
+    contentInvocation.orNull?.let { args("--invocation", it) }
+    contentPretestBinding.orNull?.let { args("--pretest", it) }
+}
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyContentTests) }
+tasks.named("check") { dependsOn(verifyContentTests) }
+
+val printServicesFailureDiagnostics by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Print bounded actual raw core:services failures after test; never changes test's result."
+    dependsOn(retainContentServiceReports)
+    workingDir(repository)
+    commandLine("python", "-B", repository.resolve("docs").resolve("android").resolve("evidence")
+        .resolve("WP-218").resolve("print_failures.py").absolutePath)
+    providers.gradleProperty("wp218EvidenceDirectory").orNull?.let { args("--output", it) }
+    val captured = ByteArrayOutputStream()
+    standardOutput = captured
+    errorOutput = captured
+    isIgnoreExitValue = true
+    doLast {
+        val text = captured.toString(Charsets.UTF_8)
+        val reportedNodes = Regex("""Actual failed/skipped core:services JUnit nodes printed: (\d+)""")
+            .find(text)?.groupValues?.get(1)?.toIntOrNull()
+        if (reportedNodes == null || executionResult.get().exitValue != 0) {
+            throw GradleException(
+                "WP218 printServicesFailureDiagnostics: diagnostic printer itself failed or " +
+                    "produced an unrecognized summary; raw captured output follows:\n$text")
+        }
+        if (reportedNodes > 0) {
+            throw GradleException(
+                "WP218_SERVICES_RAW_FAILURES ($reportedNodes actual raw failed/skipped " +
+                    "core:services JUnit nodes; diagnostic-only, does not change " +
+                    "core:services:test's own already-reported result):\n$text")
+        }
+    }
+}
+tasks.named("test") { finalizedBy(printServicesFailureDiagnostics) }
 
 // WP-218 diagnostic-only test-failure logging: mirrors the precedented pattern already used by
 // core/designsystem (WP-301) and android/app (WP-218). Hosted CI invokes Gradle with --quiet, so

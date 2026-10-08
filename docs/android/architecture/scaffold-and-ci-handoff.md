@@ -38,7 +38,7 @@ Keep every switch off until separate human authorization after actual proof:
 | --- | --- |
 | Cloud assignment | Personal-repository read-only assignability probe returned **HTTP404**; no trial issue/assignment or inferred capability |
 | Native host | Real authenticated host callbacks, exact repository/base/profile/path isolation and restart/session reconciliation; fixture callbacks prove no activation |
-| Shared ledger | Durable shared all-write-path leases for every backend, uncertainty retention, no runner-local/per-worktree ledger substitute |
+| Shared ledger | Durable typed capability reservations for every backend, same-owner evolution, semantic reconciliation, uncertainty retention, and no runner-local/per-worktree ledger substitute |
 | Usage/limits | Human-selected budgets/concurrency and complete fresh authenticated cloud/native usage; no guessed credits or launch-count meter |
 | Candidate CI | Ephemeral `ubuntu-24.04` Linux runner, read-only tokens, `persist-credentials: false`, no dispatch/merge/signing secrets; actual positive test discovery/debug artifact |
 | Reviewer/publisher | Trusted-base read/search-only profile/skills/policy, staged immutable evidence; separate authenticated check publisher, never candidate-script execution |

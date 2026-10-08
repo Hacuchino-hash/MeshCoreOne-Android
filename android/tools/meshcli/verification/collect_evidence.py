@@ -20,10 +20,14 @@ from controller.model import git, load_manifest, tree
 from controller.module_junit import bounded_directory, linked, safe_reports
 from controller.runtime_inputs import required_inputs as required_runtime_inputs
 from controller.schema import decode_json, fields, load_json
+from controller.verification_config import content_scope_revisions, inventory_details_predecessor
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+INVENTORY_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
+INVENTORY_PATH = "docs/android/evidence/WP-004/inventory-details.json"
 EVIDENCE = ROOT / "docs" / "android" / "evidence" / "WP-109"
 NATIVE_PREFIX = "com.meshcoreone.android.core.protocol."
 SOURCE_PREFIX = "MeshCore/Tests/"
@@ -248,8 +252,9 @@ def original_accounting(repo, catalog, details, manifest, native):
     fields(catalog, {"schema_version", "source_sha", "entries"}, label="frozen original-case catalog")
     if type(catalog["schema_version"]) is not int or catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
         raise PortError("Frozen case catalog pin/version mismatch")
-    if details["source_sha"] != SOURCE or details["manifest_sha256"] != MANIFEST:
-        raise PortError("Original assertion/parameter detail provenance mismatch")
+    historical_details = json.loads(git(repo, "show", f"{INVENTORY_BASE}:{INVENTORY_PATH}"))
+    if inventory_details_predecessor(details, manifest) != historical_details:
+        raise PortError("Original assertion/parameter detail inventory drift")
     declarations = {(f["path"], c["id"]): (f, c) for f in details["files"] for c in f["cases"]}
     owners = {i["path"]: i for i in manifest.data["inventory"]}
     scopes = native_source_scopes(repo)
@@ -315,13 +320,15 @@ def original_accounting(repo, catalog, details, manifest, native):
     return originals
 
 
-def invocation_record(path, head, host):
+def invocation_record(path, head, host, revisions=None):
     if path is None:
         return {"scope": LOCAL_SCOPE, "head_sha": head, "host": host}
-    return validate_invocation(load_json(path), head, host)
+    return validate_invocation(load_json(path), head, host, revisions)
 
 
-def validate_invocation(record, head, host):
+def validate_invocation(record, head, host, revisions=None):
+    if revisions is None:
+        revisions = content_scope_revisions(load_manifest(ROOT), load_json(ROOT / "docs/android/automation-policy.json"))
     fields(record, {"schema_version", "stage", "identity", "host"}, label="explicit CI invocation forwarding")
     if (type(record["schema_version"]) is not int or record["schema_version"] != 1
             or record["stage"] not in ("verify", "protocol") or record["host"] != host):
@@ -331,7 +338,9 @@ def validate_invocation(record, head, host):
         return {"scope": LOCAL_EXECUTOR_SCOPE, "head_sha": head, "host": host}
     fields(identity, {"binding", "run_id", "run_attempt"}, label="actual hosted invocation identity")
     bound = Binding.parse(identity["binding"])
-    if bound.head_sha != head or bound.source_sha != SOURCE or bound.manifest_sha256 != MANIFEST or bound.policy_revision != POLICY:
+    if (bound.head_sha != head or bound.source_sha != SOURCE
+            or bound.manifest_sha256 != revisions["manifest_sha256"]
+            or bound.policy_revision != revisions["policy_revision"]):
         raise PortError("Stale/mismatched actual CI invocation")
     if bound.repository != "cbattlegear/MeshCoreOne-Android" or bound.work_package != "WP-003":
         raise PortError("Unexpected actual executor binding")
@@ -349,6 +358,7 @@ def required_inputs(entries, manifest):
         "docs/android/evidence/WP-004/inventory-details.json", "docs/android/evidence/WP-109/baseline-native.json",
         "android/core/testing/fixtures/protocol-vectors.tsv", "android/core/testing/fixtures/protocol-vectors.json",
         "tools/android-port/tests/test_ci_environment.py", "tools/android-port/tests/test_workflows.py",
+        "tools/android-port/controller/verification_config.py",
         "LICENSE",
         *("android/app/src/main/assets/licenses/" + name
           for name in ("GPL-3.0.txt", "MeshCore-MIT.txt", "BouncyCastle-MIT.txt", "Apache-2.0.txt")),
@@ -381,10 +391,9 @@ def new_destination(repo, output):
 def execution_inputs(repo, invocation):
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     manifest = load_manifest(repo)
-    if manifest.sha256 != MANIFEST or policy_revision(manifest, load_json(repo / "docs/android/automation-policy.json")) != POLICY:
-        raise PortError("Frozen manifest/policy changed")
+    revisions = content_scope_revisions(manifest, load_json(repo / "docs/android/automation-policy.json"))
     host = "windows" if sys.platform == "win32" else "linux"
-    run = invocation_record(invocation, head, host)
+    run = invocation_record(invocation, head, host, revisions)
     entries = tree(repo, head)
     roots = ("android/core/protocol/", "android/core/model/", "android/core/contracts/", "android/tools/meshcli/")
     required = required_inputs(entries, manifest)
@@ -394,7 +403,25 @@ def execution_inputs(repo, invocation):
     if any(git(repo, "ls-files", "--others", "-z", "--", *native_roots).split(b"\0")):
         raise PortError("Uncommitted compiled native source inputs")
     inputs, raw_inputs = checked_checkout(repo, head, required)
+    if retained_scope_revisions(manifest, raw_inputs) != revisions:
+        raise PortError("Retained controls differ from the executed catalog/policy")
     return head, manifest, run, inputs, raw_inputs
+
+
+def retained_scope_revisions(manifest, raw_inputs):
+    if manifest is None:
+        raise PortError("Missing executed catalog for retained current binding")
+    controls = {}
+    for path in ("docs/android/port-manifest.json", "docs/android/automation-policy.json"):
+        if path not in raw_inputs:
+            raise PortError("Missing retained immutable control input: " + path)
+        try:
+            controls[path] = decode_json(raw_inputs[path].decode("utf-8"))
+        except UnicodeError as error:
+            raise PortError("Invalid retained UTF-8 control input: " + path) from error
+    if controls["docs/android/port-manifest.json"] != manifest.data:
+        raise PortError("Retained catalog differs from the actual executed catalog")
+    return content_scope_revisions(manifest, controls["docs/android/automation-policy.json"])
 
 
 def preserve_raw(output, inputs, raw_inputs, reports):
@@ -428,11 +455,23 @@ def retain(repo, output, invocation=None, module="meshcli"):
     if module not in MODULES:
         raise PortError("Unknown mandatory raw-retention module")
     output = new_destination(repo, output)
-    head, _, run, inputs, raw_inputs = execution_inputs(repo, invocation)
+    head, manifest, run, inputs, raw_inputs = execution_inputs(repo, invocation)
     directory = repo.joinpath(*MODULES[module][0].split("/"))
     reports = {module: raw_junit(directory, repo)}
     records = preserve_raw(output, inputs, raw_inputs, reports)
+    result = {
+        "schema_version": 1,
+        "scope": f"complete actual {'CLI' if module == 'meshcli' else 'protocol'} raw retention; not full parity or hardware acceptance",
+        "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE,
+        "manifest_sha256": None, "policy_revision": None,
+        "invocation": run, "inputs": inputs, "raw_reports": records,
+        "validation": {"status": "blocked", "counts": None,
+                       "error": "Retained controls and complete JUnit discovery have not been validated"},
+        "physical_radio_verified": False,
+    }
+    write_json(output / "raw-retention.json", result)
     try:
+        result.update(retained_scope_revisions(manifest, raw_inputs))
         cases, retained, counts = junit(output / "junit" / module, output, MODULES[module][1])
         if retained != reports[module]:
             raise PortError("Retained module raw reports changed")
@@ -442,23 +481,16 @@ def retain(repo, output, invocation=None, module="meshcli"):
             actual = {(case["class"], case["name"]) for case in cases}
             if not required_cli_cases() <= actual:
                 raise PortError("Retained CLI assertion/parameter rows are incomplete")
-        validation = {"status": "passed", "counts": counts, "error": None}
+        for record in records:
+            file = output.joinpath(*record["path"].split("/"))
+            if linked(file) or file.stat().st_size != record["size"] or sha(file.read_bytes()) != record["sha256"]:
+                raise PortError("Retained raw report size/digest changed")
+        result["validation"] = {"status": "passed", "counts": counts, "error": None}
     except PortError as failure:
-        validation = {"status": "blocked", "counts": None, "error": str(failure)}
-    result = {
-        "schema_version": 1,
-        "scope": f"complete actual {'CLI' if module == 'meshcli' else 'protocol'} raw retention; not full parity or hardware acceptance",
-        "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
-        "policy_revision": POLICY, "invocation": run, "inputs": inputs, "raw_reports": records,
-        "validation": validation, "physical_radio_verified": False,
-    }
+        result["validation"] = {"status": "blocked", "counts": None, "error": str(failure)}
     write_json(output / "raw-retention.json", result)
     if load_json(output / "raw-retention.json") != result:
         raise PortError("Retained raw manifest changed")
-    for record in records:
-        file = output.joinpath(*record["path"].split("/"))
-        if linked(file) or file.stat().st_size != record["size"] or sha(file.read_bytes()) != record["sha256"]:
-            raise PortError("Retained raw report size/digest changed")
     return result
 
 
@@ -477,8 +509,9 @@ def collect(repo, output, invocation=None):
         junit(output / "junit" / module, output, MODULES[module][1])
     result = {
         "schema_version": 1, "scope": EVIDENCE_SCOPE,
-        "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST,
-        "policy_revision": POLICY, "invocation": run, "inputs": inputs, "counts": counts,
+        "work_package": "WP-109", "head_sha": head, "source_sha": SOURCE,
+        **retained_scope_revisions(manifest, raw_inputs),
+        "invocation": run, "inputs": inputs, "counts": counts,
         "native_cases": native, "raw_reports": raw_records, "original_cases": originals,
         "original_declarations": len(originals), "unique_original_native_bindings": len(
             {(o["native_test"]["class"], o["native_test"]["name"]) for o in originals}),
@@ -500,16 +533,18 @@ def validate_bundle(output, repo, head):
     if (type(value["schema_version"]) is not int or value["schema_version"] != 1
             or value["scope"] != EVIDENCE_SCOPE or value["work_package"] != "WP-109" or value["head_sha"] != head):
         raise PortError("Stale/malformed CLI evidence binding")
-    if (value["source_sha"], value["manifest_sha256"], value["policy_revision"]) != (SOURCE, MANIFEST, POLICY):
+    manifest = load_manifest(repo)
+    revisions = content_scope_revisions(manifest, load_json(repo / "docs/android/automation-policy.json"))
+    if (value["source_sha"], value["manifest_sha256"], value["policy_revision"]) != (
+            SOURCE, revisions["manifest_sha256"], revisions["policy_revision"]):
         raise PortError("Frozen evidence pin mismatch")
     entries = tree(repo, head)
-    manifest = load_manifest(repo)
     expected_inputs = required_inputs(entries, manifest)
     if set(value["inputs"]) != expected_inputs:
         raise PortError("Missing/extra required immutable candidate/source inputs")
     invocation = value["invocation"]
     if "identity" in invocation:
-        validate_invocation(invocation, head, invocation["host"])
+        validate_invocation(invocation, head, invocation["host"], revisions)
     else:
         fields(invocation, {"scope", "head_sha", "host"}, label="local immutable execution")
         if (invocation["scope"] not in (LOCAL_SCOPE, LOCAL_EXECUTOR_SCOPE)
