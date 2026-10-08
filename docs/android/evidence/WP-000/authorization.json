@@ -52,11 +52,13 @@
     "docs/android/evidence/WP-000/authorization.json",
     "docs/android/evidence/WP-000/bootstrap-verifier.json",
     "docs/android/evidence/WP-000/validation.json",
+    "docs/android/evidence/WP-004/inventory-details.json",
     "docs/android/evidence/WP-201/collect_evidence.py",
     "docs/android/evidence/WP-204/collect_evidence.py",
     "docs/android/evidence/WP-207/collect_evidence.py",
     "docs/android/evidence/WP-208/collect_evidence.py",
     "docs/android/evidence/WP-211/collect_evidence.py",
+    "docs/android/evidence/WP-211/test_collect_evidence.py",
     "docs/android/evidence/WP-301/collect_evidence.py",
     "docs/android/evidence/WP-304/retain_raw.py",
     "docs/android/evidence/WP-304/source_inventory.py",
@@ -69,8 +71,9 @@
   ],
   "boundaries": {
     "android_product_code_changed": false,
-    "android_generated_verification_metadata_changed": [
-      "android/core/designsystem/src/main/assets/theme-source-map.json"
+    "generated_verification_metadata_changed": [
+      "android/core/designsystem/src/main/assets/theme-source-map.json",
+      "docs/android/evidence/WP-004/inventory-details.json"
     ],
     "wp003_controller_code_changed": "minimal protected bootstrap verifier only",
     "fleet_activated": false,
