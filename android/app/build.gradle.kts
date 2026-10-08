@@ -13,6 +13,8 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.CommandLineArgumentProvider
+import java.security.MessageDigest
+import java.util.Properties
 
 plugins {
     id("mesh.android.application")
@@ -145,6 +147,41 @@ tasks.register("resolveWp302NavigationDependencies") {
                 componentFilter { it is org.gradle.api.artifacts.component.ModuleComponentIdentifier }
             }.files.files
         }
+    }
+}
+
+val navigationInputBinding = layout.buildDirectory.file("reports/wp302/input-binding.properties")
+val prepareNavigationTestInputs by tasks.registering {
+    group = "verification"
+    description = "Provide the current source/input identity consumed by navigation tests."
+    inputs.dir(layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation"))
+    outputs.file(navigationInputBinding)
+    doLast {
+        val sourceRoot = layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation").asFile
+        val digest = MessageDigest.getInstance("SHA-256")
+        sourceRoot.walkTopDown().filter { it.isFile }.sortedBy { it.relativeTo(sourceRoot).path }.forEach {
+            digest.update(it.relativeTo(sourceRoot).path.toByteArray())
+            digest.update(it.readBytes())
+        }
+        fun gitRevision(revision: String) = ProcessBuilder("git", "rev-parse", revision)
+            .directory(repository).start().inputStream.bufferedReader().readText().trim()
+        val head = gitRevision("HEAD")
+        val tree = gitRevision("HEAD^{tree}")
+        navigationInputBinding.get().asFile.apply {
+            parentFile.mkdirs()
+            Properties().apply {
+                setProperty("nonce", "navigation-test-inputs-v1")
+                setProperty("head", head)
+                setProperty("tree", tree)
+                setProperty("inputs_sha256", digest.digest().joinToString("") { "%02x".format(it) })
+            }.store(writer(), "Actual navigation test inputs")
+        }
+    }
+}
+tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest") {
+        dependsOn(prepareNavigationTestInputs)
+        systemProperty("navigationInputBinding", navigationInputBinding.get().asFile.absolutePath)
     }
 }
 
