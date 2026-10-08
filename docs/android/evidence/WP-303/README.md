@@ -72,7 +72,7 @@ python3.13 tools/android-port/controller/validate.py
   `localeConfig`, version-catalog and dependency-update notices). An earlier run flagged six
   `UseKtx` warnings in the new stores; they were fixed.
 - `validateModuleGraph` passed. `:app:assembleDebug` succeeded.
-- `portmap.py` and `controller/validate.py` results: see the commit that adds this file.
+- `tools/android-port/portmap.py` exited 0 and `controller/validate.py` returned `"result": "valid"` on the committed tree.
 
 ## Parity oracle
 
