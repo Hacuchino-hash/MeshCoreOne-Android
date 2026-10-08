@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">无法编码已保存的项目。</string>
+    <string name="ui_storage_save_failed">无法保存本地数据。</string>
+    <string name="ui_storage_read_failed">无法读取本地数据。</string>
+    <string name="ui_storage_delete_failed">无法删除本地数据。</string>
+    <string name="ui_storage_first_unlock">重启后请先解锁设备一次，以访问已保存的数据。</string>
+    <string name="ui_storage_locked">请解锁设备以访问已保存的数据。</string>
+    <string name="ui_storage_inaccessible">设备存储不可用。</string>
+    <string name="ui_storage_permission_denied">设备存储访问被拒绝。</string>
+    <string name="ui_storage_io_failed">设备无法完成存储操作。</string>
+    <string name="ui_storage_corrupt_preferences">已保存的偏好设置已损坏。</string>
+    <string name="ui_storage_corrupt_state">已保存的安全数据已损坏。</string>
+    <string name="ui_storage_corrupt_envelope">无法解码已保存的项目。</string>
+    <string name="ui_storage_authentication_failed">无法验证已保存的项目。</string>
+    <string name="ui_storage_key_missing">已保存数据的加密密钥缺失。</string>
+    <string name="ui_storage_key_invalidated">加密密钥不再有效。</string>
+    <string name="ui_storage_key_corrupt">已保存的加密密钥已损坏。</string>
+    <string name="ui_storage_provider_failed">安全存储不可用。</string>
+    <string name="ui_storage_owner_duplicate">本地存储已被使用。</string>
+    <string name="ui_storage_owner_closed">本地存储已关闭。</string>
+    <string name="ui_storage_invalid_identity">已保存项目的标识符无效。</string>
+    <string name="ui_storage_invalid_value">无法保存此值。</string>
+    <string name="ui_storage_already_exists">已保存的项目已存在。</string>
+    <string name="ui_storage_not_found">找不到已保存的项目。</string>
+    <string name="ui_storage_unsupported_version">不支持已保存的数据格式 %1$d。</string>
+    <string name="ui_storage_too_large">已保存的数据超过 %1$d 字节的限制。</string>
+    <string name="ui_storage_preference_type">已保存的偏好设置包含不兼容的值类型。</string>
+    <string name="ui_storage_preference_no_default">缺失的偏好设置没有默认值。</string>
+    <string name="ui_storage_preference_invalid">已保存的偏好设置包含无效值。</string>
+    <string name="ui_backup_preferences_incomplete">备份记录已导入，但偏好设置未能完成。请仅重试剩余的偏好设置，不要再次导入记录。</string>
+    <string name="ui_backup_complete_preferences">完成偏好设置</string>
+    <string name="ui_storage_unlock_device">解锁设备</string>
+</resources>

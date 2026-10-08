@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Het opgeslagen item kon niet worden gecodeerd.</string>
+    <string name="ui_storage_save_failed">Lokale gegevens konden niet worden opgeslagen.</string>
+    <string name="ui_storage_read_failed">Lokale gegevens konden niet worden gelezen.</string>
+    <string name="ui_storage_delete_failed">Lokale gegevens konden niet worden verwijderd.</string>
+    <string name="ui_storage_first_unlock">Ontgrendel het apparaat eenmaal na het opnieuw opstarten om opgeslagen gegevens te openen.</string>
+    <string name="ui_storage_locked">Ontgrendel het apparaat om opgeslagen gegevens te openen.</string>
+    <string name="ui_storage_inaccessible">Apparaatopslag is niet beschikbaar.</string>
+    <string name="ui_storage_permission_denied">Toegang tot apparaatopslag is geweigerd.</string>
+    <string name="ui_storage_io_failed">Het apparaat kon de opslagbewerking niet voltooien.</string>
+    <string name="ui_storage_corrupt_preferences">Opgeslagen voorkeuren zijn beschadigd.</string>
+    <string name="ui_storage_corrupt_state">Opgeslagen beveiligde gegevens zijn beschadigd.</string>
+    <string name="ui_storage_corrupt_envelope">Het opgeslagen item kan niet worden gedecodeerd.</string>
+    <string name="ui_storage_authentication_failed">Het opgeslagen item kon niet worden geverifieerd.</string>
+    <string name="ui_storage_key_missing">De versleutelingssleutel voor opgeslagen gegevens ontbreekt.</string>
+    <string name="ui_storage_key_invalidated">De versleutelingssleutel is niet meer geldig.</string>
+    <string name="ui_storage_key_corrupt">De opgeslagen versleutelingssleutel is beschadigd.</string>
+    <string name="ui_storage_provider_failed">Beveiligde opslag is niet beschikbaar.</string>
+    <string name="ui_storage_owner_duplicate">Lokale opslag is al in gebruik.</string>
+    <string name="ui_storage_owner_closed">Lokale opslag is gesloten.</string>
+    <string name="ui_storage_invalid_identity">De identificatie van het opgeslagen item is ongeldig.</string>
+    <string name="ui_storage_invalid_value">De waarde kan niet worden opgeslagen.</string>
+    <string name="ui_storage_already_exists">Het opgeslagen item bestaat al.</string>
+    <string name="ui_storage_not_found">Het opgeslagen item is niet gevonden.</string>
+    <string name="ui_storage_unsupported_version">Opgeslagen gegevensindeling %1$d wordt niet ondersteund.</string>
+    <string name="ui_storage_too_large">Opgeslagen gegevens overschrijden de limiet van %1$d bytes.</string>
+    <string name="ui_storage_preference_type">Een opgeslagen voorkeur heeft een onverenigbaar waardetype.</string>
+    <string name="ui_storage_preference_no_default">Een ontbrekende voorkeur heeft geen standaardwaarde.</string>
+    <string name="ui_storage_preference_invalid">Een opgeslagen voorkeur heeft een ongeldige waarde.</string>
+    <string name="ui_backup_preferences_incomplete">De back-uprecords zijn geïmporteerd. De voorkeuren konden niet worden voltooid. Probeer alleen de ontbrekende voorkeuren opnieuw; importeer de records niet nogmaals.</string>
+    <string name="ui_backup_complete_preferences">Voorkeuren voltooien</string>
+    <string name="ui_storage_unlock_device">Apparaat ontgrendelen</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Impossibile codificare il dato salvato.</string>
+    <string name="ui_storage_save_failed">Impossibile salvare i dati locali.</string>
+    <string name="ui_storage_read_failed">Impossibile leggere i dati locali.</string>
+    <string name="ui_storage_delete_failed">Impossibile eliminare i dati locali.</string>
+    <string name="ui_storage_first_unlock">Sblocca il dispositivo una volta dopo il riavvio per accedere ai dati salvati.</string>
+    <string name="ui_storage_locked">Sblocca il dispositivo per accedere ai dati salvati.</string>
+    <string name="ui_storage_inaccessible">La memoria del dispositivo non è disponibile.</string>
+    <string name="ui_storage_permission_denied">Accesso alla memoria del dispositivo negato.</string>
+    <string name="ui_storage_io_failed">Il dispositivo non può completare questa operazione sulla memoria.</string>
+    <string name="ui_storage_corrupt_preferences">Le preferenze salvate sono danneggiate.</string>
+    <string name="ui_storage_corrupt_state">I dati protetti salvati sono danneggiati.</string>
+    <string name="ui_storage_corrupt_envelope">Impossibile decodificare il dato salvato.</string>
+    <string name="ui_storage_authentication_failed">Impossibile autenticare il dato salvato.</string>
+    <string name="ui_storage_key_missing">La chiave di cifratura dei dati salvati è assente.</string>
+    <string name="ui_storage_key_invalidated">La chiave di cifratura non è più valida.</string>
+    <string name="ui_storage_key_corrupt">La chiave di cifratura salvata è danneggiata.</string>
+    <string name="ui_storage_provider_failed">La memoria protetta non è disponibile.</string>
+    <string name="ui_storage_owner_duplicate">La memoria locale è già in uso.</string>
+    <string name="ui_storage_owner_closed">La memoria locale è chiusa.</string>
+    <string name="ui_storage_invalid_identity">Il codice identificativo del dato salvato non è valido.</string>
+    <string name="ui_storage_invalid_value">Impossibile salvare il valore.</string>
+    <string name="ui_storage_already_exists">Il dato salvato esiste già.</string>
+    <string name="ui_storage_not_found">Il dato salvato non è stato trovato.</string>
+    <string name="ui_storage_unsupported_version">Il formato dei dati salvati %1$d non è supportato.</string>
+    <string name="ui_storage_too_large">I dati salvati superano il limite di %1$d byte.</string>
+    <string name="ui_storage_preference_type">Una preferenza salvata ha un tipo di valore incompatibile.</string>
+    <string name="ui_storage_preference_no_default">Una preferenza assente non ha un valore predefinito.</string>
+    <string name="ui_storage_preference_invalid">Una preferenza salvata ha un valore non valido.</string>
+    <string name="ui_backup_preferences_incomplete">I record del backup sono stati importati. Le preferenze non sono state completate. Riprova solo le preferenze mancanti, senza importare di nuovo i record.</string>
+    <string name="ui_backup_complete_preferences">Completa preferenze</string>
+    <string name="ui_storage_unlock_device">Sblocca dispositivo</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Impossible de coder cet élément enregistré.</string>
+    <string name="ui_storage_save_failed">Impossible de sauvegarder les données locales.</string>
+    <string name="ui_storage_read_failed">Impossible de lire les données locales.</string>
+    <string name="ui_storage_delete_failed">Impossible de supprimer les données locales.</string>
+    <string name="ui_storage_first_unlock">Déverrouillez une fois le téléphone après le redémarrage pour accéder aux données enregistrées.</string>
+    <string name="ui_storage_locked">Déverrouillez le téléphone pour accéder aux données enregistrées.</string>
+    <string name="ui_storage_inaccessible">Le stockage local est indisponible.</string>
+    <string name="ui_storage_permission_denied">Accès au stockage local refusé.</string>
+    <string name="ui_storage_io_failed">Le périphérique ne peut pas terminer cette opération de stockage.</string>
+    <string name="ui_storage_corrupt_preferences">Les préférences enregistrées sont endommagées.</string>
+    <string name="ui_storage_corrupt_state">Les données sécurisées enregistrées sont endommagées.</string>
+    <string name="ui_storage_corrupt_envelope">Impossible de décoder cet élément enregistré.</string>
+    <string name="ui_storage_authentication_failed">Impossible de vérifier cet élément enregistré.</string>
+    <string name="ui_storage_key_missing">La clé de chiffrement des données enregistrées est absente.</string>
+    <string name="ui_storage_key_invalidated">La clé de chiffrement est devenue invalide.</string>
+    <string name="ui_storage_key_corrupt">La clé de chiffrement enregistrée est endommagée.</string>
+    <string name="ui_storage_provider_failed">Le stockage sécurisé est indisponible.</string>
+    <string name="ui_storage_owner_duplicate">Le stockage local est déjà utilisé.</string>
+    <string name="ui_storage_owner_closed">Le stockage local est fermé.</string>
+    <string name="ui_storage_invalid_identity">Cet identifiant enregistré est invalide.</string>
+    <string name="ui_storage_invalid_value">Impossible de sauvegarder cette valeur.</string>
+    <string name="ui_storage_already_exists">Cet élément enregistré existe déjà.</string>
+    <string name="ui_storage_not_found">Cet élément enregistré est introuvable.</string>
+    <string name="ui_storage_unsupported_version">Le format des données enregistrées %1$d est incompatible.</string>
+    <string name="ui_storage_too_large">Les données enregistrées dépassent la limite de %1$d octets.</string>
+    <string name="ui_storage_preference_type">Une préférence enregistrée contient un type de valeur incompatible.</string>
+    <string name="ui_storage_preference_no_default">Une préférence absente ne possède aucune valeur par défaut.</string>
+    <string name="ui_storage_preference_invalid">Une préférence enregistrée contient une valeur invalide.</string>
+    <string name="ui_backup_preferences_incomplete">Les enregistrements de la sauvegarde ont été importés. Les préférences restent incomplètes. Réessayez uniquement les préférences manquantes, sans réimporter les enregistrements.</string>
+    <string name="ui_backup_complete_preferences">Compléter les préférences</string>
+    <string name="ui_storage_unlock_device">Déverrouiller le téléphone</string>
+</resources>

@@ -1,0 +1,14 @@
+ascii49 count=49 utf16=49 previewCount=49 previewUtf16=49 unchanged=true
+ascii50 count=50 utf16=50 previewCount=50 previewUtf16=50 unchanged=true
+ascii51 count=51 utf16=51 previewCount=50 previewUtf16=50 unchanged=false
+family50 count=50 utf16=400 previewCount=50 previewUtf16=400 unchanged=true
+family51 count=51 utf16=408 previewCount=50 previewUtf16=379 unchanged=false
+flag51 count=51 utf16=204 previewCount=50 previewUtf16=191 unchanged=false
+combining51 count=51 utf16=102 previewCount=50 previewUtf16=97 unchanged=false
+crlf51 count=51 utf16=102 previewCount=50 previewUtf16=97 unchanged=false
+mixed count=51 utf16=62 previewCount=50 previewUtf16=57 unchanged=false
+mixedPreviewScalars=78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 1F468 200D 1F469 200D 1F467 2E 2E 2E
+eq_nfc_nfd=true
+eq_case=false
+eq_angstrom=true
+eq_ligature=false
