@@ -389,7 +389,9 @@ def executor_identity(invocation, revisions=None):
     } and binding.get("repository") == "cbattlegear/MeshCoreOne-Android" and binding.get("work_package") == "WP-003" and
             isinstance(binding.get("base_sha"), str) and HEX.fullmatch(binding["base_sha"]) and
             isinstance(binding.get("head_sha"), str) and HEX.fullmatch(binding["head_sha"]) and
-            binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == revisions["manifest_sha256"] and
+            binding.get("source_sha") == SOURCE and
+            isinstance(binding.get("manifest_sha256"), str) and
+            re.fullmatch(r"[0-9a-f]{64}", binding["manifest_sha256"]) and
             isinstance(binding.get("policy_revision"), str) and
             re.fullmatch(r"[0-9a-f]{64}", binding["policy_revision"]), "Malformed executor binding")
     return identity

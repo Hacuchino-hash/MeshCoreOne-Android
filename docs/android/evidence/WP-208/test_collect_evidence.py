@@ -460,20 +460,27 @@ class EvidenceReaderTest(unittest.TestCase):
             self.snapshot["execution_expected"][field] = value
             self.save_invocation(); self.save_snapshot(); self.rejected()
 
-    def test_wrong_provider_source_manifest_repository_or_work_package_is_rejected(self):
+    def test_wrong_provider_source_repository_or_work_package_is_rejected(self):
         original = copy.deepcopy(self.expected_identity)
-        for field, value in (("source_sha", "d" * 40), ("manifest_sha256", "d" * 64),
-                             ("repository", "other/repository"),
+        for field, value in (("source_sha", "d" * 40), ("repository", "other/repository"),
                              ("work_package", "WP-208"), ("base_sha", "not-a-sha")):
             self.expected_identity = copy.deepcopy(original)
             self.expected_identity["binding"][field] = value
             self.rejected()
 
-    def test_policy_revision_is_compatibility_metadata_not_feature_evidence(self):
+    def test_process_manifest_and_policy_are_compatibility_metadata_not_feature_evidence(self):
+        self.invocation["identity"]["binding"]["manifest_sha256"] = "c" * 64
         self.invocation["identity"]["binding"]["policy_revision"] = "d" * 64
+        self.expected_identity["binding"]["manifest_sha256"] = "c" * 64
         self.expected_identity["binding"]["policy_revision"] = "d" * 64
         self.save_invocation(); self.save_snapshot()
         self.validate()
+        for field in ("manifest_sha256", "policy_revision"):
+            with self.subTest(field=field):
+                malformed = copy.deepcopy(self.invocation)
+                malformed["identity"]["binding"][field] = "not-a-revision"
+                with self.assertRaisesRegex(ValueError, "Malformed executor binding"):
+                    READER.executor_identity(malformed)
 
     def test_different_positive_run_or_attempt_cannot_replace_the_captured_identity(self):
         for field, value in (("run_id", 124), ("run_attempt", 2)):
