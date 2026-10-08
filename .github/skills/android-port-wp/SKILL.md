@@ -21,7 +21,7 @@ Preserve GPLv3 application and MIT protocol notices; do not assume a proprietary
    Planning does not authorize repository/settings/issue/schedule changes or worker launches.
 2. Read the approved plan, ADRs and the trusted `docs/android/port-manifest.json` entry for this WP.
    At WP-000 bootstrap only, the approved plan/drafts substitute for the not-yet-installed manifest.
-3. Verify the owner, merged prerequisites, lease, source/manifest/policy revision and allowed write paths.
+3. Verify the owner, merged prerequisites, source/manifest/policy revision and assigned capabilities.
    A manually closed issue, worker summary or idle session is not a completed dependency.
 4. Read all relevant source/test/resource inputs and nearby consumers. Prefer actual code over stale docs.
    Source paths in provenance are Git identifiers; resolve them to the execution host's path convention.
@@ -30,16 +30,34 @@ Preserve GPLv3 application and MIT protocol notices; do not assume a proprietary
 6. Run the scaffold's documented environment-readiness check. Missing SDK/tool/authentication must be
    reported; a failed cloud setup step does not guarantee the cloud agent stopped.
 
+Assignment authorizes ordinary implementation, tests, evidence, generated outputs and directly necessary
+support edits inside manifest-declared capabilities. The worker/coordinator automatically acquires the
+initial typed reservation and evolves the same owner's scope before a newly discovered edit when a trusted
+path+operation rule maps it to an assigned capability. Never ask the user to restate permission, rewrite
+authorization prose or predict exact checksum, fixture, annotation or generated-output bytes.
+
 ## Ownership and implementation
 
 One WP, one branch, one reviewable PR. A macro WP too large for coherent inspection must be split by
 an approved manifest amendment before dispatch, not implemented from partial context.
 Do not autonomously nest agents or start another fleet.
 
-Only leased `write_paths` may change. There are no automatic shared-file exceptions for AppContainer,
-catalog, AndroidManifest, Room schema, generated resources or controller policy.
+A worktree-local branch may perform capability-admitted work without another permission ceremony. For
+supported shared surfaces, reconcile disjoint semantic edits by an automatic transaction or deterministic
+merge. Serialize or transfer actual semantic overlap to the current producer while retaining originating
+WP evidence. If automatic reconciliation cannot resolve the ownership collision, report that concrete
+collision once.
+
+Unknown paths/operations and work outside assigned capabilities fail closed with one blocker naming the
+WP, path, operation and missing rule. Also stop for source/policy drift, protected human gates, missing
+authentication/tool capability or a substantive product decision. A newly discovered checksum, fixture,
+annotation, generated output or validator mapping is not itself a stop condition.
+
+Authorization prose is immutable audit context, not capability state. Receipts bind actual identities,
+revisions, capability IDs, operations and paths; evidence binds bytes and tests. Never release/recreate a
+reservation or manually edit its ledger to evolve scope. The current worktree remains authoritative.
 If another owner must produce a dependency, record a bounded blocker and request that prerequisite.
-Do not introduce fake implementations just to bypass dependency ordering.
+Do not introduce fake implementations to bypass dependency ordering.
 
 Every in-scope source/test/resource has one primary owner; cross-references and many-to-many Android
 implementations are permitted. Source headers do not replace behavioral acceptance.
@@ -99,7 +117,9 @@ The controller repairs the same task/session with a bounded attempt counter; do 
 
 ## Stop conditions and handoff
 
-Stop on a human gate, absent capability/authentication, conflicting/unowned paths, stale inputs,
-inaccessible relevant source, ambiguous live task identity or unverified acceptance.
+Stop on a protected human gate, unknown capability, absent authentication/tool capability, unresolved
+semantic ownership collision, stale inputs, inaccessible relevant source, ambiguous live task identity
+or unverified acceptance. Do not stop merely because capability-admitted support work discovers another
+path or future byte value.
 Return: WP and head, implemented scope, acceptance evidence, explicit blockers/deviations and PR identity
 if one exists. "Blocked" is a valid outcome; a success-shaped fallback is not.

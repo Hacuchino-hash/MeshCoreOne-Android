@@ -18,7 +18,7 @@ body:
     id: prompt
     attributes:
       label: Controller-rendered prompt and exact scope
-      description: Paste render output including the real android-port-wp marker, pinned inputs, owner, dependencies, all write paths and acceptance.
+      description: Paste render output including the real android-port-wp marker, pinned inputs, owner, dependencies, assigned capability IDs/path rules and acceptance.
       placeholder: python .\tools\android-port\controller\dispatch.py render --wp WP-101
     validations:
       required: true
