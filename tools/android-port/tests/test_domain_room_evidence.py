@@ -7,14 +7,15 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
 
 from fixtures import REPO
 from controller.errors import PortError
+from controller.model import Manifest
 from controller.schema import load_json
+from controller.verification_config import apply_content_scope, project_content_scope
 
 COLLECTOR = REPO / "docs/android/evidence/WP-201/collect_evidence.py"
 SPEC = importlib.util.spec_from_file_location("domain_room_evidence", COLLECTOR)
@@ -90,8 +91,7 @@ class DomainRoomFixture:
         return result
 
     def manifest(self):
-        data = {"inventory": self.owned, "reference": {"commit": collector.SOURCE}}
-        return SimpleNamespace(repo=self.repo, data=data, sha256=collector.MANIFEST, wp=self.work_packages.__getitem__)
+        return Manifest(load_json(self.repo / "docs/android/port-manifest.json"), {}, self.repo)
 
     def successor(self):
         protocol_scope = next(path for path in self.work_packages["WP-101"]["write_paths"]
@@ -114,12 +114,9 @@ class DomainRoomEvidenceTests(unittest.TestCase):
         self.addCleanup(self.environment.stop)
         for name in ("GITHUB_EVENT_PATH", "GITHUB_EVENT_NAME", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT"):
             os.environ.pop(name, None)
-        self.loader = patch.object(collector, "load_manifest", return_value=self.fixture.manifest())
+        self.loader = patch.object(collector, "load_manifest", side_effect=lambda repo: self.fixture.manifest())
         self.loader.start()
         self.addCleanup(self.loader.stop)
-        self.policy = patch.object(collector, "policy_revision", return_value=collector.POLICY)
-        self.policy.start()
-        self.addCleanup(self.policy.stop)
 
     def report(self, **kwargs):
         return collector.report(self.fixture.repo, **kwargs)
@@ -163,6 +160,54 @@ class DomainRoomEvidenceTests(unittest.TestCase):
         self.assertEqual(result["historical_baseline"]["base_sha"], self.fixture.baseline["base_sha"])
         self.fixture.command("checkout", "--quiet", "--detach", self.fixture.head)
         self.assertIsNone(self.report()["execution"]["branch"])
+
+    def test_exact_content_scope_emits_current_binding_without_rewriting_original_room_receipt(self):
+        original = self.report()
+        legacy = project_content_scope(self.fixture.manifest().data)
+        amended = apply_content_scope(legacy)
+        self.fixture.write("docs/android/port-manifest.json", json.dumps(amended))
+        self.fixture.commit()
+        result = self.report()
+        self.assertEqual(result["manifest_sha256"],
+                         "fdbce89204ae5e391a2baac1c1aa4910742242b2007d32ac0efb799720cb4958")
+        self.assertEqual(result["policy_revision"],
+                         "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68")
+        self.assertEqual(result["execution"]["head_sha"], self.fixture.head)
+        self.assertEqual(result["historical_baseline"], original["historical_baseline"])
+        self.assertEqual(result["source_cases"], original["source_cases"])
+        self.assertEqual(result["native_cases"], original["native_cases"])
+        self.assertEqual(len(result["source_cases"]), 114)
+        self.assertEqual(result["discovery"]["total"], 215)
+        self.assertEqual(collector.historical_baseline(
+            (self.fixture.repo / collector.HISTORY).read_bytes()), self.fixture.baseline)
+
+    def test_scope_only_lineage_rejects_policy_and_unrelated_ownership_changes(self):
+        manifest_path = self.fixture.repo / "docs/android/port-manifest.json"
+        policy_path = self.fixture.repo / "docs/android/automation-policy.json"
+        original_policy = policy_path.read_bytes()
+        amended = apply_content_scope(project_content_scope(self.fixture.manifest().data))
+        for mutation in ("foreign-path", "gate", "policy"):
+            with self.subTest(mutation=mutation):
+                changed = copy.deepcopy(amended)
+                policy_path.write_bytes(original_policy)
+                if mutation == "foreign-path":
+                    changed["work_packages"][0]["write_paths"].append("android/app/")
+                elif mutation == "gate":
+                    changed["work_packages"][0]["human_gate"] = False
+                else:
+                    policy = json.loads(original_policy)
+                    policy["trusted_check_app_ids"] = [999999]
+                    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+                manifest_path.write_text(json.dumps(changed), encoding="utf-8")
+                self.fixture.commit()
+                with self.assertRaises(PortError):
+                    self.report()
+
+    def test_scope_projection_code_is_an_immutable_current_evidence_input(self):
+        path = self.fixture.repo / "tools/android-port/controller/verification_config.py"
+        path.write_bytes(path.read_bytes() + b"\n# changed scope projection\n")
+        with self.assertRaisesRegex(PortError, "differs.*immutable Git"):
+            self.report()
 
     def test_hosted_binding_uses_the_actual_event_head_base_run_and_attempt(self):
         from controller import ci

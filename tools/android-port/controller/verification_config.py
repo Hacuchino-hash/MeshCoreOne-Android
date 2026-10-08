@@ -13,6 +13,11 @@ from controller.errors import PortError
 from controller.schema import digest, load_json
 
 BOOTSTRAP_MANIFEST_SHA256 = "f3fd3a0a51841a8fb43d3f2c4b3953e6ef564d4e96e74f4e3035200face5c90e"
+VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+CONTENT_SCOPE_PATHS = (
+    "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
+    "android/app/src/test/kotlin/com/meshcoreone/android/app/content/",
+)
 CI = "tools/android-port/controller/ci.py"
 AMENDMENTS = {
     "WP-002": {
@@ -56,17 +61,54 @@ def apply_overlay(data: dict):
     return result
 
 
+def apply_content_scope(data: dict):
+    if not isinstance(data, dict) or digest(data) != VERIFICATION_MANIFEST_SHA256:
+        raise PortError("Content scope requires the complete frozen verification manifest")
+    result = copy.deepcopy(data)
+    wp = next(item for item in result["work_packages"] if item["id"] == "WP-218")
+    wp["write_paths"][2:2] = CONTENT_SCOPE_PATHS
+    return result
+
+
+def project_content_scope(data: dict):
+    if not isinstance(data, dict):
+        raise PortError("Malformed content-scope manifest lineage")
+    result = copy.deepcopy(data)
+    if digest(result) == VERIFICATION_MANIFEST_SHA256:
+        return result
+    packages = result.get("work_packages")
+    if not isinstance(packages, list) or not all(isinstance(wp, dict) for wp in packages):
+        raise PortError("Malformed content-scope work packages")
+    owned = [wp for wp in packages if wp.get("id") == "WP-218"]
+    if len(owned) != 1:
+        raise PortError("Content scope must preserve exactly one original WP-218")
+    paths = owned[0].get("write_paths")
+    if not isinstance(paths, list) or paths[2:4] != list(CONTENT_SCOPE_PATHS):
+        raise PortError("Content scope must contain only the exact ordered two-prefix addition")
+    del paths[2:4]
+    if digest(result) != VERIFICATION_MANIFEST_SHA256:
+        raise PortError("Content scope changed the frozen manifest outside its exact two-prefix addition")
+    return result
+
+
+def content_scope_predecessor(manifest):
+    from controller.model import Manifest
+
+    return Manifest(project_content_scope(manifest.data), manifest.exclusions, manifest.repo)
+
+
 def check_configuration(repo: Path):
     from bootstrap import build_inventory
 
     generated, exclusions = build_inventory(repo)
     expected = apply_overlay(generated)
     actual = load_json(repo / "docs" / "android" / "port-manifest.json")
-    if actual != expected or load_json(repo / "docs" / "android" / "not-ported.json") != exclusions:
+    if project_content_scope(actual) != expected or load_json(repo / "docs" / "android" / "not-ported.json") != exclusions:
         raise PortError("Protected verification overlay or frozen inventory drift")
     return {
         "schema_version": 1, "result": "valid", "bootstrap_manifest_sha256": digest(generated),
-        "manifest_sha256": digest(expected), "verification_amendments": sorted(AMENDMENTS),
+        "manifest_sha256": digest(actual), "verification_amendments": sorted(AMENDMENTS),
+        "content_scope_amended": actual != expected,
         "feature_verification_configured": False, "human_or_dependency_acceptance": False,
     }
 

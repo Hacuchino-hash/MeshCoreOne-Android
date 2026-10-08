@@ -12,7 +12,11 @@ from controller.model import HUMAN_GATES, REFERENCE_SHA, plan_rows, profile, val
 from controller.paths import conflicts, expand_selectors, git_path, overlaps, permits, validate_writes
 from controller.schema import check_schema, decode_json
 from bootstrap import build_inventory, check_generated
-from controller.verification_config import apply_overlay, check_configuration
+from controller.verification_config import (
+    CONTENT_SCOPE_PATHS, VERIFICATION_MANIFEST_SHA256,
+    apply_content_scope, apply_overlay, check_configuration, project_content_scope,
+)
+from controller.schema import digest
 
 
 class ManifestTests(unittest.TestCase):
@@ -36,6 +40,94 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(apply_overlay(data), base_manifest().data)
         self.assertEqual(exclusions, base_manifest().exclusions)
         self.assertTrue(all("*" not in e["path"] for e in data["inventory"]))
+
+    def test_content_scope_projects_the_complete_frozen_manifest_without_mutation(self):
+        original = project_content_scope(base_manifest().data)
+        before = copy.deepcopy(original)
+        amended = apply_content_scope(original)
+        wp = next(item for item in amended["work_packages"] if item["id"] == "WP-218")
+        previous = next(item for item in original["work_packages"] if item["id"] == "WP-218")
+        self.assertEqual(wp["write_paths"], previous["write_paths"][:2] + list(CONTENT_SCOPE_PATHS) +
+                         previous["write_paths"][2:])
+        self.assertEqual(digest(amended), "fdbce89204ae5e391a2baac1c1aa4910742242b2007d32ac0efb799720cb4958")
+        self.assertEqual(project_content_scope(amended), original)
+        self.assertEqual(original, before)
+        self.assertEqual(project_content_scope(original), original)
+        self.assertIsNot(project_content_scope(original), original)
+        self.assertEqual(digest(original), VERIFICATION_MANIFEST_SHA256)
+        self.assertEqual(amended["inventory"], original["inventory"])
+        self.assertFalse(wp["verification"]["configured"])
+        self.assertEqual(len(amended["work_packages"]), 65)
+        self.assertEqual(sum(len(item["depends_on"]) for item in amended["work_packages"]), 185)
+        with self.assertRaises(PortError):
+            apply_content_scope(amended)
+
+    def test_content_scope_rejects_all_other_manifest_and_ownership_drift(self):
+        original = project_content_scope(base_manifest().data)
+        amended = apply_content_scope(original)
+        mutations = {
+            "source": lambda data: data["reference"].update(commit="0" * 40),
+            "blob": lambda data: data["inventory"][0].update(blob_sha="0" * 40),
+            "ownership": lambda data: data["inventory"][0].update(primary_owner="WP-218"),
+            "owner": lambda data: data["work_packages"][0].update(owner="services-porter"),
+            "dependency": lambda data: data["work_packages"][0].update(depends_on=["WP-218"]),
+            "gate": lambda data: data["work_packages"][0].update(human_gate=False),
+            "acceptance": lambda data: data["work_packages"][0]["acceptance"][0].update(description="changed"),
+            "verification": lambda data: next(wp for wp in data["work_packages"] if wp["id"] == "WP-218")
+                ["verification"].update(configured=True),
+            "extra-field": lambda data: data.update(approved=True),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                changed = copy.deepcopy(amended)
+                mutate(changed)
+                self.assertNotEqual(changed, amended)
+                with self.assertRaises(PortError):
+                    project_content_scope(changed)
+                with self.assertRaises(PortError):
+                    apply_content_scope(changed)
+
+    def test_content_scope_rejects_partial_reordered_broadened_and_wrong_party_paths(self):
+        original = project_content_scope(base_manifest().data)
+        amended = apply_content_scope(original)
+        for mode in ("partial", "reordered", "duplicate", "broadened", "case", "wrong-party", "removed-old"):
+            with self.subTest(mode=mode):
+                changed = copy.deepcopy(amended)
+                wp = next(item for item in changed["work_packages"] if item["id"] == "WP-218")
+                paths = wp["write_paths"]
+                if mode == "partial":
+                    del paths[3]
+                elif mode == "reordered":
+                    paths[2], paths[3] = paths[3], paths[2]
+                elif mode == "duplicate":
+                    paths.insert(4, paths[2])
+                elif mode == "broadened":
+                    paths[2] = "android/app/"
+                elif mode == "case":
+                    paths[2] = paths[2].replace("/content/", "/Content/")
+                elif mode == "wrong-party":
+                    changed["work_packages"][0]["write_paths"].extend(paths[2:4])
+                    del paths[2:4]
+                else:
+                    paths.pop()
+                before = copy.deepcopy(changed)
+                with self.assertRaises(PortError):
+                    project_content_scope(changed)
+                self.assertEqual(changed, before)
+        for malformed in (None, [], {}, {"work_packages": None},
+                          {"work_packages": [None]}, {"work_packages": [{"id": "WP-218", "write_paths": None}]}):
+            with self.subTest(malformed=malformed), self.assertRaises(PortError):
+                project_content_scope(malformed)
+
+    def test_protected_configuration_reports_actual_scope_revision_not_historical_hash(self):
+        generated, exclusions = build_inventory(REPO)
+        amended = apply_content_scope(apply_overlay(generated))
+        with patch("controller.verification_config.load_json", side_effect=[amended, exclusions]):
+            result = check_configuration(REPO)
+        self.assertTrue(result["content_scope_amended"])
+        self.assertEqual(result["manifest_sha256"], digest(amended))
+        self.assertFalse(result["feature_verification_configured"])
+        self.assertFalse(result["human_or_dependency_acceptance"])
 
     def test_bulk_installer_check_mode_rejects_generated_drift_without_overwriting(self):
         data, exclusions = build_inventory(REPO)

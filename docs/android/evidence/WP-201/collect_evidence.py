@@ -20,6 +20,7 @@ from controller.module_junit import bounded_directory, linked, safe_reports
 from controller.paths import permits
 from controller.runtime_inputs import verify_tree_entries
 from controller.schema import decode_json, digest, fields, load_json, nonempty
+from controller.verification_config import content_scope_predecessor
 from portmap import port_map
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
@@ -45,6 +46,7 @@ SCOPES = (
 CONTROL_INPUTS = {
     HISTORY, SCHEMA, "docs/android/test-cases.json", "docs/android/port-manifest.json",
     "docs/android/automation-policy.json", "docs/android/evidence/WP-201/collect_evidence.py",
+    "tools/android-port/controller/verification_config.py",
 }
 TEXT_SUFFIXES = {".swift", ".kt", ".java", ".kts", ".py", ".json", ".xml", ".md", ".txt", ".properties", ".lockfile"}
 
@@ -256,8 +258,10 @@ def report(repo=ROOT, *, audit_base=None):
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     manifest = load_manifest(repo)
     policy = load_json(repo / "docs/android/automation-policy.json")
-    if manifest.sha256 != MANIFEST or policy_revision(manifest, policy) != POLICY:
+    predecessor = content_scope_predecessor(manifest)
+    if predecessor.sha256 != MANIFEST or policy_revision(predecessor, policy) != POLICY:
         raise PortError("Canonical manifest/policy pin changed")
+    current_policy = policy_revision(manifest, policy)
     owned = [item for item in manifest.data["inventory"] if item["primary_owner"] == "WP-201"]
     inputs, raw_inputs = immutable_inputs(repo, head, owned)
     baseline = historical_baseline(raw_inputs[HISTORY])
@@ -283,7 +287,7 @@ def report(repo=ROOT, *, audit_base=None):
     historical_identities = {case_identity(case) for case in baseline["native_cases"]}
     return {
         "schema_version": 2, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-201",
-        "execution": execution, "source_sha": SOURCE, "manifest_sha256": manifest.sha256, "policy_revision": POLICY,
+        "execution": execution, "source_sha": SOURCE, "manifest_sha256": manifest.sha256, "policy_revision": current_policy,
         "historical_baseline": {
             "path": HISTORY, "canonical_lf_sha256": HISTORY_SHA256,
             "session": baseline["session"], "branch": baseline["branch"], "base_sha": baseline["base_sha"],
