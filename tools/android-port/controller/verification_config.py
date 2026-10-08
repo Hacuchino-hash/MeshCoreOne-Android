@@ -30,9 +30,11 @@ BOOTSTRAP_POLICY_AMENDMENT = {
     "human_gates": 8,
 }
 BOOTSTRAP_MANIFEST_SHA256 = BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"]
+WP_003_BOOTSTRAP_MANIFEST_SHA256 = "6854873bbcb05645f8b92869dcfd33680d2cf0920f7f8805db1590155e392c98"
 POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-WP_003_SEMANTIC_POLICY_REVISION = "ad164e326d9a576c9c38d315188f8a21c1f5af8d3e62d96041a615690326eac5"
+WP_003_MANIFEST_REVISION = "1a66fee1b616d4c0dcf51cbb9341c4aff79339f2404715eed94b8c95a313a63c"
+WP_003_SEMANTIC_POLICY_REVISION = "a9982122122eb695c60550e95d29856ffc9bbdfa02161b9679de9201c0d900db"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
     "android/app/src/test/kotlin/com/meshcoreone/android/app/content/",
@@ -43,10 +45,7 @@ AMENDMENTS = {
         "configured": True,
         "commands": [
             ["python", CI, "preflight"],
-            ["python", CI, "run", "--stage", "verify"],
-            ["python", CI, "run", "--stage", "standalone"],
-            ["python", CI, "run", "--stage", "assemble"],
-            ["python", CI, "run", "--stage", "lint"],
+            ["python", CI, "run", "--stage", "scaffold"],
             ["python", CI, "inspect"],
         ],
         "blocker": "",
@@ -59,32 +58,61 @@ AMENDMENTS = {
             ["python", "tools/android-port/controller/test_runner.py"],
             ["python", CI, "python"],
             ["python", CI, "preflight"],
-            ["python", CI, "run", "--stage", "verify"],
-            ["python", CI, "run", "--stage", "standalone"],
-            ["python", CI, "run", "--stage", "assemble"],
-            ["python", CI, "run", "--stage", "lint"],
+            ["python", CI, "run", "--stage", "scaffold"],
             ["python", CI, "inspect"],
         ],
         "blocker": "",
     },
 }
+LEGACY_COMMANDS = {
+    "WP-002": [
+        ["python", CI, "preflight"],
+        ["python", CI, "run", "--stage", "verify"],
+        ["python", CI, "run", "--stage", "standalone"],
+        ["python", CI, "run", "--stage", "assemble"],
+        ["python", CI, "run", "--stage", "lint"],
+        ["python", CI, "inspect"],
+    ],
+    "WP-003": [
+        ["python", "tools/android-port/controller/verification_config.py", "--check"],
+        ["python", "tools/android-port/controller/workflows.py"],
+        ["python", "tools/android-port/controller/test_runner.py"],
+        ["python", CI, "python"],
+        ["python", CI, "preflight"],
+        ["python", CI, "run", "--stage", "verify"],
+        ["python", CI, "run", "--stage", "standalone"],
+        ["python", CI, "run", "--stage", "assemble"],
+        ["python", CI, "run", "--stage", "lint"],
+        ["python", CI, "inspect"],
+    ],
+}
 
 
 def apply_overlay(data: dict):
-    if digest(data) != BOOTSTRAP_MANIFEST_SHA256:
+    source = digest(data)
+    if source not in (BOOTSTRAP_MANIFEST_SHA256, WP_003_BOOTSTRAP_MANIFEST_SHA256):
         raise PortError("Frozen bootstrap generator changed outside the protected WP-003 overlay")
     result = copy.deepcopy(data)
     for wp in result["work_packages"]:
         if wp["id"] in AMENDMENTS:
-            wp["verification"] = copy.deepcopy(AMENDMENTS[wp["id"]])
-    if digest(result) != BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]:
+            wp["verification"] = (
+                copy.deepcopy(AMENDMENTS[wp["id"]])
+                if source == WP_003_BOOTSTRAP_MANIFEST_SHA256
+                else {**copy.deepcopy(AMENDMENTS[wp["id"]]), "commands": copy.deepcopy(LEGACY_COMMANDS[wp["id"]])}
+            )
+    expected = (
+        WP_003_MANIFEST_REVISION if source == WP_003_BOOTSTRAP_MANIFEST_SHA256
+        else BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]
+    )
+    if digest(result) != expected:
         raise PortError("Frozen bootstrap final manifest changed outside the protected WP-003 overlay")
     return result
 
 
 def apply_content_scope(data: dict):
     if not isinstance(data, dict) or digest(data) not in (
-            VERIFICATION_MANIFEST_SHA256, BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]):
+            VERIFICATION_MANIFEST_SHA256, BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"],
+            WP_003_MANIFEST_REVISION):
         raise PortError("Content scope requires the complete frozen verification manifest")
     result = copy.deepcopy(data)
     wp = next(item for item in result["work_packages"] if item["id"] == "WP-218")
@@ -96,7 +124,11 @@ def project_content_scope(data: dict):
     if not isinstance(data, dict):
         raise PortError("Malformed content-scope manifest lineage")
     result = copy.deepcopy(data)
-    baselines = (VERIFICATION_MANIFEST_SHA256, BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+    baselines = (
+        VERIFICATION_MANIFEST_SHA256,
+        BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"],
+        WP_003_MANIFEST_REVISION,
+    )
     if digest(result) in baselines:
         return result
     packages = result.get("work_packages")
@@ -120,6 +152,12 @@ def project_policy_amendment(data: dict):
     result = copy.deepcopy(data)
     if digest(result) == VERIFICATION_MANIFEST_SHA256:
         return result
+    if digest(result) == WP_003_MANIFEST_REVISION:
+        result["reference"]["approved_plan_sha256"] = BOOTSTRAP_POLICY_AMENDMENT["approved_plan_sha256"]
+        result["reference"]["installed_plan_sha256"] = "87de92c5236d5891c358df22d72b51bba68f839113660f6c9d1fe6624e1b5213"
+        for wp in result["work_packages"]:
+            if wp["id"] in LEGACY_COMMANDS:
+                wp["verification"]["commands"] = LEGACY_COMMANDS[wp["id"]]
     if digest(result) != BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]:
         raise PortError("Policy amendment requires the complete frozen WP-000 catalog")
     result["reference"]["approved_plan_sha256"] = BOOTSTRAP_POLICY_AMENDMENT["previous_approved_plan_sha256"]

@@ -19,7 +19,12 @@ from controller.module_junit import report_record
 from controller.schema import load_json
 from oracle.reference import OracleError, REPO, SOURCE_SHA, json_bytes
 
-TASKS = (":core:data:verifyBackupTests", ":core:data:verifyPersistenceRepositoryTests", "validateModuleGraph")
+TASKS = (
+    ":core:data:verifyBackupTests",
+    ":core:data:verifyPersistenceRepositoryTests",
+    ":core:database:testDebugUnitTest",
+    "validateModuleGraph",
+)
 LOCK_TASK = (":core:data:dependencies", "--write-locks")
 DATA_NAMES = {
     "producer": ("kotlin-export.meshcoreone", "kotlin-export.json", "kotlin-room-proof.json"),

@@ -261,10 +261,9 @@ class StageReportTests(unittest.TestCase):
             mocks.enter_context(patch("controller.ci.candidate_environment",
                                      return_value={"GRADLE_USER_HOME": str(repo / "private-gradle")}))
             mocks.enter_context(patch("controller.ci.execute"))
-            if stage == "lint":
+            if stage == "scaffold":
                 mocks.enter_context(patch("controller.ci.collect_lint",
                                          return_value={"app": {"warnings": 0, "sha256": "1" * 64}}))
-            elif stage == "verify":
                 mocks.enter_context(patch("controller.ci.collect_suites", return_value={"fixture": {"passed": 1}}))
                 mocks.enter_context(patch("controller.ci.collect_module_tests", return_value={"core/model": {"fixture": True}}))
             run_stage(stage, {"host": "linux", "private_root": str(repo / "private")}, output)
@@ -283,7 +282,7 @@ class StageReportTests(unittest.TestCase):
             self.assertNotIn("reports", result)
             self.assertEqual(source.read_bytes(), (output / "junit" / "protocol" / source.name).read_bytes())
 
-    def test_lint_report_preserves_raw_artifacts_without_entering_protocol_staging(self):
+    def test_scaffold_report_preserves_lint_and_test_artifacts_in_one_stage(self):
         from controller.ci_evidence import lint_bundle_path
 
         with tempfile.TemporaryDirectory() as temporary:
@@ -292,15 +291,9 @@ class StageReportTests(unittest.TestCase):
             source = repo / "android" / "app" / "build" / "reports" / "lint-results-debug.xml"
             source.parent.mkdir(parents=True)
             source.write_text('<issues format="6" by="lint fixture"/>', encoding="utf-8")
-            result = self.execute_stage(repo, output, "lint")
+            result = self.execute_stage(repo, output, "scaffold")
             self.assertIn("app", result["reports"])
             self.assertNotIn("suite", result)
-            self.assertEqual(source.read_bytes(), (output / lint_bundle_path("app")).read_bytes())
-
-    def test_composite_verify_retains_active_module_reports_without_changing_other_stages(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            result = self.execute_stage(repo, repo / "evidence", "verify")
             self.assertEqual(result["module_unit_tests"], {"core/model": {"fixture": True}})
             self.assertEqual(result["suites"], {"fixture": {"passed": 1}})
-            self.assertNotIn("reports", result)
+            self.assertEqual(source.read_bytes(), (output / lint_bundle_path("app")).read_bytes())

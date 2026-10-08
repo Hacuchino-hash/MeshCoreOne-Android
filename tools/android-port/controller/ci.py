@@ -30,13 +30,11 @@ from controller.schema import decode_json, fields, load_json, positive_integer
 from controller.test_runner import run_suite
 
 TASKS = {
-    "verify": [
+    "scaffold": [
         "verifyScaffoldTests", "verifyRoomSchema", "validateModuleGraph",
         "runtimeDependencyInventory", "resolveScaffoldDependencies",
+        ":app:assembleDebug", "lintScaffold",
     ],
-    "standalone": [":convention:test"],
-    "assemble": [":app:assembleDebug"],
-    "lint": ["lintScaffold"],
     "prepare": ["resolveScaffoldDependencies"],
     "protocol": [":core:protocol:test"],
 }
@@ -93,7 +91,7 @@ def execution_identity():
 
 
 def meshcli_evidence_options(stage: str, state: dict, output: Path):
-    if stage not in ("verify", "protocol"):
+    if stage not in ("scaffold", "protocol"):
         return []
     output = output_directory(str(output))
     identity = execution_identity()
@@ -164,14 +162,13 @@ def preflight(state: dict, output: Path, *, local=False):
 def run_stage(stage: str, state: dict, output: Path, *, local=False):
     if platform.python_version() != toolchain_lock()["python"]:
         raise PortError("Declared CI executor requires Python 3.12.4")
-    standalone = stage == "standalone"
-    environment = candidate_environment(state, standalone=standalone, local=local)
+    environment = candidate_environment(state, local=local)
     verify_wrapper()
     evidence_options = meshcli_evidence_options(stage, state, output)
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
-    project = REPO / "android" / ("build-logic" if standalone else "")
-    cache = Path(state["private_root"]) / ("project-standalone" if standalone else "project-root")
+    project = REPO / "android"
+    cache = Path(state["private_root"]) / "project-root"
     options = [
         "--no-daemon", "--console=plain", "--dependency-verification", "strict",
         "-Pkotlin.compiler.execution.strategy=in-process",
@@ -181,7 +178,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
     if local:
         options.append("-PscaffoldTestJvmArgs=-Xms32m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=256m")
     options.extend(evidence_options)
-    if stage == "verify":
+    if stage == "scaffold":
         options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
         options.append("-Pwp207EvidenceDirectory=" + str(output / "wp207-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
@@ -198,7 +195,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
         ]
     execute(command, environment, output / f"gradle-{stage}.log")
     report = {"stage": stage, "result": "success", "tasks": TASKS[stage], "strict_verification": True}
-    if stage == "verify":
+    if stage == "scaffold":
         report["suites"] = collect_suites(REPO / "android")
         for name, (path, _) in SUITES.items():
             destination = output / "junit" / "composite" / name
@@ -206,13 +203,6 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             for xml in sorted((REPO / "android" / path).glob("TEST-*.xml")):
                 shutil.copyfile(xml, destination / xml.name)
         report["module_unit_tests"] = collect_module_tests(REPO, output)
-    elif standalone:
-        report["suite"] = suite_counts(REPO / "android" / SUITES["build-logic"][0], 31)
-        destination = output / "junit" / "standalone" / "build-logic"
-        destination.mkdir(parents=True, exist_ok=True)
-        for xml in sorted((REPO / "android" / SUITES["build-logic"][0]).glob("TEST-*.xml")):
-            shutil.copyfile(xml, destination / xml.name)
-    elif stage == "lint":
         report["reports"] = collect_lint(REPO / "android")
         for target in report["reports"]:
             destination = output / lint_bundle_path(target)
@@ -276,18 +266,18 @@ def inspect(state: dict, output: Path, *, local=False):
         write_json(output / "local-result.json", {
             "scope": "local scaffold assertions/artifacts; no hosted run or authoritative acceptance",
             "host": state["host"], "suites": collect_suites(REPO / "android"), "apk": value,
-            "module_unit_tests": load_json(output / "stage-verify.json")["module_unit_tests"],
+            "module_unit_tests": load_json(output / "stage-scaffold.json")["module_unit_tests"],
         })
         return
-    stages = {stage: load_json(output / f"stage-{stage}.json") for stage in ("verify", "standalone", "assemble", "lint")}
+    stage = load_json(output / "stage-scaffold.json")
     result = {
         "schema_version": 2, **identity, "host": state["host"],
         "scope": "scaffold assertions only; all feature, human, license, device and release gates remain pending",
-        "stages": {name: item["result"] for name, item in stages.items()},
+        "stages": {"scaffold": stage["result"]},
         "python": load_json(output / "python-evidence.json"),
-        "suites": stages["verify"]["suites"], "standalone": stages["standalone"]["suite"],
-        "module_unit_tests": stages["verify"]["module_unit_tests"],
-        "lint": stages["lint"]["reports"], "apk": value,
+        "suites": stage["suites"],
+        "module_unit_tests": stage["module_unit_tests"],
+        "lint": stage["reports"], "apk": value,
         "artifacts": [
             artifact_record(output, path) for path in sorted(output.rglob("*"))
             if path.is_file() and path.name not in ("ci-result.json", "SHA256SUMS")

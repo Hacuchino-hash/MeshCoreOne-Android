@@ -18,10 +18,10 @@ artifact is not success.
 The always-running `android-ci` job checks the build outcome and downloads only
 this run/attempt's build bundle. It verifies repository, exact base/head,
 source, candidate manifest/policy, run/attempt, the host, actual discovery
-contracts, fresh-cache proofs and every artifact's size/SHA-256. Failure,
+contracts and every artifact's size/SHA-256. Failure,
 cancellation, a skipped required job, a missing bundle or stale/tampered evidence
 fails. Cancellation of an entire obsolete workflow is not evidence for a new head.
-It also reparses complete verbatim composite/standalone JUnit and all lint XML,
+It also reparses complete verbatim composite JUnit and all lint XML,
 compares actual cases/outcomes with claimed counts and the discovery TSV, checks
 typed lint values/hashes, validates graph/runtime TSV contracts, and compares
 the full APK-inspection JSON with the result and uploaded APK bytes/native ELF.
@@ -31,10 +31,7 @@ No artifact code is executed.
 | --- | --- |
 | Python | Frozen overlay/manifest/traceability/notices, controller regressions and all scaffold Python cases; nonzero discovery and no failed/error/skipped case |
 | Preflight | Exact Python/JDK, publisher-pinned wrapper, installed SDK37.2/rev1 and build-tools37.0.0, explicit private caches, unchanged credential allowlist |
-| `verify` | `verifyScaffoldTests verifyRoomSchema validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies`, strict verification, no build cache, forced execution |
-| `standalone` | Independent `:convention:test` with its own initially absent Gradle user/project caches and strict included-build metadata |
-| `assemble` | `:app:assembleDebug`, never release signing |
-| `lint` | `lintScaffold`; all 24 current Android targets must produce readable XML with no errors |
+| `scaffold` | One Gradle invocation runs `verifyScaffoldTests verifyRoomSchema validateModuleGraph runtimeDependencyInventory resolveScaffoldDependencies :app:assembleDebug lintScaffold`; strict dependency verification remains mandatory, build-logic tests are collected once through the composite, and all 24 lint targets must produce readable XML with no errors |
 | Inspect | Actual APK min31/target37/debug package, launcher, notices, permissions and test-fixture absence; `zipalign -P 16` and ELF PT_LOAD alignment |
 
 Four Kotlin suites retain at least conventions31, contracts4, app10 and Room2
@@ -146,10 +143,7 @@ evidence directory:
 python .\tools\android-port\controller\ci.py preflight
 python .\tools\android-port\controller\ci.py run --stage prepare
 python .\tools\android-port\controller\ci.py python
-python .\tools\android-port\controller\ci.py run --stage verify
-python .\tools\android-port\controller\ci.py run --stage standalone
-python .\tools\android-port\controller\ci.py run --stage assemble
-python .\tools\android-port\controller\ci.py run --stage lint
+python .\tools\android-port\controller\ci.py run --stage scaffold
 python .\tools\android-port\controller\ci.py inspect
 ```
 

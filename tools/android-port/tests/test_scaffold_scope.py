@@ -20,6 +20,21 @@ class ScaffoldScopeTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue(classify([path]))
 
+    def test_metadata_and_independently_owned_kotlin_suites_skip_full_scaffold(self):
+        for path in (
+            "docs/android/port-manifest.json",
+            "docs/android/PORTING_PLAN.md",
+            "android/core/protocol/src/test/kotlin/ProtocolTest.kt",
+            "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/BackupInteropTest.kt",
+            "android/core/database/src/test/kotlin/DatabaseTest.kt",
+        ):
+            with self.subTest(path=path):
+                self.assertFalse(classify([path]))
+        self.assertTrue(classify([
+            "android/core/protocol/src/test/kotlin/ProtocolTest.kt",
+            "android/app/src/main/kotlin/App.kt",
+        ]))
+
     def test_endpoints_and_fail_safe(self):
         base, head = "a" * 40, "b" * 40
         self.assertEqual(endpoints("pull_request", {"pull_request": {

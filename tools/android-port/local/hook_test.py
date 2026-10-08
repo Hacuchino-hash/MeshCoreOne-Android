@@ -64,12 +64,12 @@ class LocalCheckTests(unittest.TestCase):
                 check.push_commits(text)
 
     def test_unknown_empty_duplicate_stages_are_blocked(self):
-        for stages in ("typo", "", "verify,verify", "verify,"):
+        for stages in ("typo", "", "scaffold,scaffold", "scaffold,"):
             with self.subTest(stages=stages), contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(check.main(["--stages", stages]), 1)
 
     def test_partial_or_worktree_pre_push_is_blocked(self):
-        for options in (["--stages", "verify"], ["--worktree"], ["--install-hook"]):
+        for options in (["--stages", "scaffold"], ["--worktree"], ["--install-hook"]):
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(check.main(["--pre-push", *options]), 1)
 

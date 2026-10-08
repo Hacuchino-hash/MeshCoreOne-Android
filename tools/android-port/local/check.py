@@ -15,7 +15,7 @@ import tempfile
 
 SHA = re.compile(r"[0-9a-f]{40}")
 ZERO = "0" * 40
-ALL_STAGES = ["python", "preflight", "verify", "standalone", "assemble", "lint", "inspect"]
+ALL_STAGES = ["python", "preflight", "scaffold", "inspect"]
 REQUIRED_TOOLCHAIN = {"python", "jdk", "android_sdk", "gradle"}
 
 
@@ -123,7 +123,7 @@ def validate_result(path, expected_commit, expected_tree):
     if data["commit"] != expected_commit or data["tree"] != expected_tree:
         raise ValueError("Verification result does not bind the exact candidate commit and tree")
     if data["stages"] != ALL_STAGES or not isinstance(data["host"], dict) or not data["host"]:
-        raise ValueError("Reduced or malformed seven-stage verification result")
+        raise ValueError("Reduced or malformed declared verification result")
     toolchain = data["toolchain"]
     if not isinstance(toolchain, dict) or set(toolchain) != REQUIRED_TOOLCHAIN:
         raise ValueError("Missing exact toolchain metadata")
@@ -210,7 +210,7 @@ def main(argv=None):
         if not stages or len(stages) != len(set(stages)) or set(stages) - set(ALL_STAGES):
             raise ValueError("Unknown, empty or duplicate stage")
         if args.pre_push and (args.worktree or args.stages != "all" or args.install_hook):
-            raise ValueError("Pre-push accepts only exact committed seven-stage candidates")
+            raise ValueError("Pre-push accepts only exact committed declared-stage candidates")
         commits = push_commits(sys.stdin.read()) if args.pre_push else [args.commit]
         if args.pre_push and not commits:
             return 0
@@ -227,7 +227,7 @@ def main(argv=None):
             try:
                 if args.toolchain_state:
                     if stages != ALL_STAGES or args.worktree:
-                        raise ValueError("Adapters only produce exact committed seven-stage results")
+                        raise ValueError("Adapters only produce exact committed declared-stage results")
                     run_adapter(repo, commit, args.toolchain_state)
                 else:
                     run_candidate(repo, commit, transport(args.distribution), stages, args.worktree)

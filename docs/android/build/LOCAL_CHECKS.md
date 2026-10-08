@@ -25,7 +25,8 @@ python tools/android-port/local/check.py --commit <sha> --validate-result <resul
 
 The result must identify the host, exact commit/tree, selected declared tasks,
 positive discovery where tests apply, zero failures/errors/skips, and output
-digests. Full results include all seven stages only when full verification is
-required. Verified caches, task reuse, and parallel workers are allowed; cache
+digests. Full results use the declared Python, preflight, consolidated scaffold,
+and inspection stages only when full verification is required. Verified caches,
+task reuse, and parallel workers are allowed; cache
 warmth is never correctness evidence. Dependency/toolchain changes additionally
 require a targeted cold-cache dependency audit with strict locks/checksums.

@@ -65,6 +65,14 @@ The operative contract is:
 
 ADR-006 defines the migration algorithm and measurable WP-003 regression suite, including App3 transfer, validator2 handoff, annotation plus 37-POM evolution, same-path disjoint merge, stale CAS, third-party/controller collision, protected path, wrong capability and unchanged actual identities/bindings. This WP-000 layer changes policy only; dispatch remains paused until separately activated.
 
+Verification is selected from the changed surfaces. Full repository verification
+is reserved for broad or unclassifiable Android changes, dependency/toolchain or
+build-graph changes, release candidates, and explicit maintainer requests.
+Ordinary candidates use targeted jobs plus hosted integration coverage. Verified
+caches, task reuse, and parallel workers are permitted, but cache warmth is not
+correctness evidence; strict dependency locks, checksums, pinned coordinates, and
+verification metadata remain mandatory.
+
 ## 3. Target architecture
 
 ### 3.1 Tech stack

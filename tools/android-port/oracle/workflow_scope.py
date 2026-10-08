@@ -22,9 +22,6 @@ ZERO = "0" * 40
 ALL_SCOPE_INPUTS = {
     ".github/workflows/android-independent-checks.yml",
     "tools/android-port/oracle/workflow_scope.py",
-    "docs/android/port-manifest.json",
-    "docs/android/not-ported.json",
-    "docs/android/PORTING_PLAN.md",
 }
 SHARED_GRADLE_INPUTS = {
     "android/settings.gradle.kts",
@@ -74,13 +71,8 @@ RULES = {
     "codec": {"exact": codec_inputs(), "prefix": ()},
     "protocol": {
         "exact": {
-            "tools/android-port/controller/ci.py",
-            "tools/android-port/controller/ci_environment.py",
-            "tools/android-port/controller/ci_evidence.py",
-            "tools/android-port/controller/module_junit.py",
             "tools/android-port/oracle/test_vectors.py",
             "tools/android-port/extract_vectors.py",
-            *SHARED_GRADLE_INPUTS,
         },
         "prefix": (
             "android/core/protocol/",
@@ -95,13 +87,12 @@ RULES = {
             "tools/android-port/oracle/tests/test_wp203_ci.py",
             "tools/android-port/oracle/tests/test_wp203_interop.py",
             "docs/android/evidence/WP-203/WP203InteropTests.swift",
-            *SHARED_GRADLE_INPUTS,
             *codec_inputs(),
         },
         "prefix": (
-            "android/core/data/",
+            "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/",
+            "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/",
             "android/core/database/",
-            "android/build-logic/",
             "docs/android/evidence/WP-202/",
             "docs/android/evidence/WP-203/",
             "MC1Services/Sources/",

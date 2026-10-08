@@ -57,40 +57,33 @@ def main():
                      "-p", "test_*.py", "-v"], args.repo, environment, args.output / "local-tool-tests.log")
         elif stage == "preflight":
             ci.preflight(state, args.output)
-        elif stage in ("verify", "standalone", "assemble", "lint"):
+        elif stage == "scaffold":
             options = [
                 "--console=plain", "--dependency-verification", "strict", "--build-cache",
                 "--no-parallel", "--max-workers=4", "-PscaffoldTestHeap=512m",
             ]
-            if stage == "verify":
+            options += [
+                "-Pwp301EvidenceDirectory=" + str(args.output / "wp301-native"),
+                "-Pwp207EvidenceDirectory=" + str(args.output / "wp207-native"),
+                *ci.meshcli_evidence_options(stage, state, args.output),
+            ]
+            if (args.repo / "docs" / "android" / "evidence" / "WP-208" / "collect_evidence.py").is_file():
+                head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=args.repo, text=True).strip()
                 options += [
-                    "-Pwp301EvidenceDirectory=" + str(args.output / "wp301-native"),
-                    "-Pwp207EvidenceDirectory=" + str(args.output / "wp207-native"),
-                    *ci.meshcli_evidence_options(stage, state, args.output),
+                    "-Pwp208LocalEvidenceDirectory=" + str(args.output / "wp208-native"),
+                    "-Pwp208LocalExpectedHead=" + head,
                 ]
-                if (args.repo / "docs" / "android" / "evidence" / "WP-208" / "collect_evidence.py").is_file():
-                    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=args.repo, text=True).strip()
-                    options += [
-                        "-Pwp208LocalEvidenceDirectory=" + str(args.output / "wp208-native"),
-                        "-Pwp208LocalExpectedHead=" + head,
-                    ]
             project = args.repo / "android"
-            if stage == "standalone":
-                project /= "build-logic"
             execute([str(args.repo / "android" / "gradlew"), "-p", str(project),
                      *ci.TASKS[stage], *options], args.repo, environment, args.output / f"gradle-{stage}.log")
             report = {"stage": stage, "result": "success", "tasks": ci.TASKS[stage], "warm_cache": True}
-            if stage == "verify":
-                report["suites"] = collect_suites(args.repo / "android")
-                report["module_unit_tests"] = collect_module_tests(args.repo, args.output)
-                execute([sys.executable, str(args.repo / "tools/android-port/l10n_convert.py"), "--check",
-                         "--verify-android-tests", str(args.repo / "android/core/l10n/build/test-results/testDebugUnitTest"),
-                         "--copy-android-junit", str(args.output / "l10n/junit")],
-                        args.repo, environment, args.output / "l10n-junit.log")
-            elif stage == "standalone":
-                report["suite"] = suite_counts(args.repo / "android" / SUITES["build-logic"][0], SUITES["build-logic"][1])
-            elif stage == "lint":
-                report["reports"] = collect_lint(args.repo / "android")
+            report["suites"] = collect_suites(args.repo / "android")
+            report["module_unit_tests"] = collect_module_tests(args.repo, args.output)
+            report["reports"] = collect_lint(args.repo / "android")
+            execute([sys.executable, str(args.repo / "tools/android-port/l10n_convert.py"), "--check",
+                     "--verify-android-tests", str(args.repo / "android/core/l10n/build/test-results/testDebugUnitTest"),
+                     "--copy-android-junit", str(args.output / "l10n/junit")],
+                    args.repo, environment, args.output / "l10n-junit.log")
             write_json(args.output / f"stage-{stage}.json", report)
         elif stage == "inspect":
             ci.inspect(state, args.output)

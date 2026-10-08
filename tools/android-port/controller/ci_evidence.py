@@ -27,7 +27,7 @@ LINT_TARGETS = (
     *("feature/" + name for name in ("onboarding", "chats", "nodes", "remotenodes", "map", "tools", "settings")),
     *("platform/" + name for name in ("notifications", "widgets", "shortcuts", "translation")),
 )
-STAGES = {"verify", "standalone", "assemble", "lint"}
+STAGES = {"scaffold"}
 PYTHON_MINIMUMS = {"scaffold": 15}
 APK_FIELDS = {
     "scope", "artifact", "sha256", "size_bytes", "package", "min_sdk", "target_sdk",
@@ -268,7 +268,7 @@ def artifact_record(root: Path, path: Path):
 def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_attempt: int, host: str):
     fields(value, {
         "schema_version", "binding", "run_id", "run_attempt", "host", "scope",
-        "stages", "python", "suites", "standalone", "lint", "apk", "artifacts",
+        "stages", "python", "suites", "lint", "apk", "artifacts",
         "module_unit_tests",
     }, label="scaffold CI result")
     if (
@@ -288,7 +288,6 @@ def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_
         raise PortError("Missing required Python/Kotlin discovery")
     for name, (_, minimum) in SUITES.items():
         counts(value["suites"][name], minimum=minimum)
-    counts(value["standalone"], minimum=31)
     for name, minimum in PYTHON_MINIMUMS.items():
         counts(value["python"][name], minimum=minimum)
     if not isinstance(value["lint"], dict) or set(value["lint"]) != set(LINT_TARGETS):
@@ -314,8 +313,7 @@ def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_
         raise PortError("Missing mandatory debug/report artifacts")
     actual_suites = {name: suite_counts(root / "junit" / "composite" / name, minimum)
                      for name, (_, minimum) in SUITES.items()}
-    actual_standalone = suite_counts(root / "junit" / "standalone" / "build-logic", 31)
-    if actual_suites != value["suites"] or actual_standalone != value["standalone"]:
+    if actual_suites != value["suites"]:
         raise PortError("Claimed discovery disagrees with complete raw JUnit cases/outcomes")
     compare_discovery_tsv(root / "test-discovery.tsv", actual_suites)
     validate_graph_runtime(root)
@@ -365,7 +363,6 @@ def aggregate(needs: dict, directory: Path, binding: Binding, run_id: int, run_a
         "run_id": run_id, "run_attempt": run_attempt,
         "hosts": {host: {
             "kotlin_assertions": sum(c["passed"] for c in value["suites"].values()),
-            "standalone_assertions": value["standalone"]["passed"],
             "module_unit_assertions": sum(item["counts"]["passed"] for item in value["module_unit_tests"].values()),
             "python_assertions": sum(c["passed"] for c in value["python"].values()),
             "apk_sha256": value["apk"]["sha256"],

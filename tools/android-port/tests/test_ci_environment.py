@@ -86,7 +86,7 @@ class EnvironmentTests(unittest.TestCase):
     def test_meshcli_forwarding_uses_actual_arguments_and_bound_json_on_both_hosts(self):
         identity = self.forwarding_identity()
         for host in ("linux", "windows"):
-            for stage in ("verify", "protocol"):
+            for stage in ("scaffold", "protocol"):
                 with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
                     output, state, arguments, calls = self.captured_stage(Path(temporary), host, stage, identity)
                     self.assertEqual(1, calls)
@@ -110,11 +110,11 @@ class EnvironmentTests(unittest.TestCase):
     def test_runtime_failure_evidence_forwarding_is_exact_verify_only_on_each_executor(self):
         identity = self.forwarding_identity()
         for host in ("linux", "windows"):
-            for stage in ("verify", "protocol", "standalone", "assemble", "lint", "prepare"):
+            for stage in ("scaffold", "protocol", "prepare"):
                 with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
                     output, _, arguments, _ = self.captured_stage(Path(temporary), host, stage, identity)
                     forwarded = [arg for arg in arguments if arg.startswith("-Pwp207")]
-                    expected = ["-Pwp207EvidenceDirectory=" + str(output / "wp207-native")] if stage == "verify" else []
+                    expected = ["-Pwp207EvidenceDirectory=" + str(output / "wp207-native")] if stage == "scaffold" else []
                     self.assertEqual(expected, forwarded)
 
     def test_meshcli_real_executor_identity_preserves_event_head_base_run_attempt_and_host(self):
@@ -135,16 +135,16 @@ class EnvironmentTests(unittest.TestCase):
                 "GITHUB_REPOSITORY": "cbattlegear/MeshCoreOne-Android",
                 "GITHUB_RUN_ID": "123", "GITHUB_RUN_ATTEMPT": "2",
             }):
-                options = meshcli_evidence_options("verify", self.state(directory), directory / "evidence")
+                options = meshcli_evidence_options("scaffold", self.state(directory), directory / "evidence")
             value = load_json(directory / "evidence" / "wp109-invocation.json")
             self.assertEqual(identity, value["identity"])
             self.assertEqual(host_name(), value["host"])
-            self.assertEqual("verify", value["stage"])
+            self.assertEqual("scaffold", value["stage"])
             self.assertEqual(2, len(options))
 
     def test_meshcli_forwarding_does_not_touch_other_declared_stages(self):
         for host in ("linux", "windows"):
-            for stage in ("prepare", "standalone", "assemble", "lint"):
+            for stage in ("prepare",):
                 with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
                     output, _, arguments, calls = self.captured_stage(Path(temporary), host, stage, None)
                     self.assertEqual(0, calls)
@@ -153,11 +153,11 @@ class EnvironmentTests(unittest.TestCase):
 
     def test_wp301_native_evidence_property_uses_actual_verify_arguments_only_on_both_hosts(self):
         for host in ("linux", "windows"):
-            for stage in ("verify", "protocol", "prepare", "standalone", "assemble", "lint"):
+            for stage in ("scaffold", "protocol", "prepare"):
                 with self.subTest(host=host, stage=stage), tempfile.TemporaryDirectory() as temporary:
                     output, _, arguments, _ = self.captured_stage(Path(temporary), host, stage, None)
                     actual = [arg for arg in arguments if arg.startswith("-Pwp301EvidenceDirectory=")]
-                    expected = ["-Pwp301EvidenceDirectory=" + str(output / "wp301-native")] if stage == "verify" else []
+                    expected = ["-Pwp301EvidenceDirectory=" + str(output / "wp301-native")] if stage == "scaffold" else []
                     self.assertEqual(expected, actual)
 
     def test_meshcli_unknown_malformed_or_stale_identity_blocks_before_any_jvm_command(self):

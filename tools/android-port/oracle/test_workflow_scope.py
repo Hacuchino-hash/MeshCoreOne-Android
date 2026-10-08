@@ -53,6 +53,17 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), {scope: True for scope in SCOPES})
 
+    def test_plan_manifest_and_shared_build_changes_do_not_fan_out_feature_suites(self):
+        for path in (
+            "docs/android/PORTING_PLAN.md",
+            "docs/android/port-manifest.json",
+            "android/gradle/libs.versions.toml",
+        ):
+            with self.subTest(path=path):
+                result = classify([path])
+                self.assertFalse(result["protocol"])
+                self.assertFalse(result["backup"])
+
     def test_event_endpoints_are_exact(self):
         self.assertEqual(
             endpoints("pull_request", {"pull_request": {

@@ -58,7 +58,6 @@ class EvidenceTests(unittest.TestCase):
             for name, (_, number) in SUITES.items():
                 junit_report(root / "junit" / "composite" / name / "TEST-fixture.xml", number)
                 rows.append(f"{name}\t{number}\t{number}\t0\t0\t0")
-            junit_report(root / "junit" / "standalone" / "build-logic" / "TEST-fixture.xml", 31)
             module_report = root / "junit" / "modules" / "core--model" / "TEST-model.xml"
             junit_report(module_report, 3)
             (root / "test-discovery.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
@@ -94,9 +93,9 @@ class EvidenceTests(unittest.TestCase):
             value = {
                 "schema_version": 2, "binding": asdict(binding), "run_id": 71, "run_attempt": 2, "host": host,
                 "scope": "fixture shape only",
-                "stages": {name: "success" for name in ("verify", "standalone", "assemble", "lint")},
+                "stages": {"scaffold": "success"},
                 "python": {name: discovery(number) for name, number in PYTHON_MINIMUMS.items()},
-                "suites": suites, "standalone": discovery(31), "lint": lint, "apk": inspection,
+                "suites": suites, "lint": lint, "apk": inspection,
                 "module_unit_tests": {"core/model": {
                     "inputs": self.module_inputs()["core/model"], "counts": discovery(3),
                     "reports": [artifact_record(root, module_report)],
@@ -199,7 +198,7 @@ class EvidenceTests(unittest.TestCase):
                 if kind == "suite":
                     value["suites"].pop("room-verification")
                 elif kind == "stage":
-                    value["stages"]["lint"] = "skipped"
+                    value["stages"]["scaffold"] = "skipped"
                 elif kind == "fixture":
                     value["apk"]["verification_fixture_packaged"] = True
                 else:

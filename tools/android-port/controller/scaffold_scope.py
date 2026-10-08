@@ -17,9 +17,6 @@ SHA = re.compile(r"[0-9a-f]{40}")
 ZERO = "0" * 40
 EXACT = {
     ".github/workflows/android-ci.yml",
-    "docs/android/port-manifest.json",
-    "docs/android/not-ported.json",
-    "docs/android/automation-policy.json",
     "tools/android-port/controller/ci.py",
     "tools/android-port/controller/ci_environment.py",
     "tools/android-port/controller/ci_evidence.py",
@@ -27,6 +24,14 @@ EXACT = {
     "tools/android-port/controller/scaffold_scope.py",
 }
 PREFIXES = ("android/", "tools/android-port/tests/", "docs/android/evidence/")
+INDEPENDENT_ONLY_PREFIXES = (
+    "android/core/protocol/",
+    "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/",
+    "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/",
+    "android/core/database/",
+    "docs/android/evidence/WP-202/",
+    "docs/android/evidence/WP-203/",
+)
 
 
 def endpoints(event_name, event):
@@ -54,7 +59,10 @@ def classify(paths):
     paths = sorted(set(paths))
     if not all(isinstance(path, str) and path and "\\" not in path for path in paths):
         raise PortError("Malformed changed path")
-    return any(path in EXACT or path.startswith(PREFIXES) for path in paths)
+    relevant = [path for path in paths if path in EXACT or path.startswith(PREFIXES)]
+    if relevant and all(path.startswith(INDEPENDENT_ONLY_PREFIXES) for path in relevant):
+        return False
+    return bool(relevant)
 
 
 def evaluate(repo, event_name, event):
