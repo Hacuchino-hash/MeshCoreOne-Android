@@ -32,6 +32,15 @@ separate; the full D0 portmap cannot be copied without its absent Content import
 No source pin, incumbent catalog pin, hardware/license/signing gate or normal
 publication requirement is changed.
 
+The first integrated committed-head official `preflight,assemble` iteration at
+`9edad240` passed readiness and then failed during App Gradle configuration:
+`tasks.named<Test>("testDebugUnitTest")` ran before AGP registered that variant
+task. `assembly-9edad240.log` retains the full output and raw-run path.
+The receiver-owned App wiring now uses the repository's existing
+`tasks.withType<Test>().configureEach` pattern with the exact task-name guard;
+mandatory prebinding/freshness/verifier dependencies are preserved. This
+corrects actual task registration timing, not a missing-test fallback.
+
 ## Current product implementation and producer contract
 
 The coordinator's three-path approval is effective, not pending. Official

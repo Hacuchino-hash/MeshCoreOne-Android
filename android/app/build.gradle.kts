@@ -128,14 +128,16 @@ if (navigationSource.exists()) {
     check(navigationSource.isDirectory && navigationCollector.isFile) {
         "Present Navigation source requires its real package and evidence collector."
     }
-    tasks.named<Test>("testDebugUnitTest") {
-        dependsOn(prepareWp302NavigationInputs)
-        systemProperty("navigationInputBinding",
-            navigationBinding.get().asFile.resolveSibling("input-binding.properties").absolutePath)
-        systemProperty("navigationArtifactDirectory",
-            layout.buildDirectory.dir("reports/wp302/screens").get().asFile.absolutePath)
-        outputs.upToDateWhen { false }
-        outputs.doNotCacheIf("Navigation evidence requires fresh current-head execution markers") { true }
+    tasks.withType<Test>().configureEach {
+        if (name == "testDebugUnitTest") {
+            dependsOn(prepareWp302NavigationInputs)
+            systemProperty("navigationInputBinding",
+                navigationBinding.get().asFile.resolveSibling("input-binding.properties").absolutePath)
+            systemProperty("navigationArtifactDirectory",
+                layout.buildDirectory.dir("reports/wp302/screens").get().asFile.absolutePath)
+            outputs.upToDateWhen { false }
+            outputs.doNotCacheIf("Navigation evidence requires fresh current-head execution markers") { true }
+        }
     }
     rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyWp302NavigationTests) }
     tasks.named("check") { dependsOn(verifyWp302NavigationTests) }
