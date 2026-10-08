@@ -29,7 +29,7 @@ import verify_consumer_locks as locks
 WORKFLOW = ROOT / ".github" / "workflows" / "android-theme-dependency-generation.yml"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+POLICY = "45df0b4e40b210780e072e58fd935cb0d5abf2d29341703b4ac486c9596b56e0"
 TASK = ":core:designsystem:resolveAdmittedThemeConsumerGraphs"
 
 

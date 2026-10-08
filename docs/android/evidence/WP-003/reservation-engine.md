@@ -35,3 +35,10 @@ WP-218 content/location and WP-302 navigation path sets produce `false` for both
 chains where independent, workflow dispatch selects all, PR/merge-group/push
 endpoints are parsed explicitly, and malformed events or Git diff failures select
 all rather than silently skipping.
+
+Because the trusted automation policy revision intentionally covers the complete
+policy document, adding the reservation capability rules changes that revision.
+Active feature collectors and dependency-proposal validators are rebound to the
+new current-policy digest; their manifest, source, artifact, test, and protected
+approval checks are unchanged. Historical bootstrap evidence retains its original
+policy digest as immutable audit data.
