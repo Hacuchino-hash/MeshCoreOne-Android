@@ -17,6 +17,13 @@ SHA = re.compile(r"[0-9a-f]{40}")
 ZERO = "0" * 40
 ALL_STAGES = ["python", "preflight", "scaffold", "inspect"]
 REQUIRED_TOOLCHAIN = {"python", "jdk", "android_sdk", "gradle"}
+def runtime_files():
+    return (
+        ("check.py", "check.py"), ("fast.py", "fast.py"),
+        ("run.sh", "run.sh"), ("hook_test.py", "test_check.py"),
+    )
+
+
 
 
 def capture(command, **kwargs):
@@ -72,10 +79,10 @@ def run_candidate(repo, revision, prefix, stages, worktree):
         directory = Path(temporary)
         control = directory / "control"
         control.mkdir()
-        for name in ("check.py", "fast.py", "run.sh", "test_check.py"):
-            source = tool / name
+        for source_name, installed_name in runtime_files():
+            source = tool / source_name
             if source.is_file():
-                (control / name).write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
+                (control / installed_name).write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
         bundle = directory / "candidate.bundle"
         subprocess.run(["git", "-C", str(repo), "bundle", "create", str(bundle), "--all"], check=True)
         subprocess.run([
