@@ -1,7 +1,36 @@
 # WP-302 execution admission
 
-**Product implementation active; native compilation/execution awaits D0's
-serialized dependency support. Not WP-302 acceptance or feature parity.**
+**Product implementation and exact Nav-only dependency support integrated;
+native compilation/execution not yet verified. Not WP-302 acceptance or feature parity.**
+
+## Actual serialized App support integration
+
+User-directed approval is effective; no additional parent carry approval is
+required. The official installed transfer now assigns exactly the three App
+build/lock/checksum paths to this WP-302 receipt, extending eight paths to eleven
+while preserving the original identity, base/source/manifest/policy and eight
+paths. D0 no longer owns these three paths. The complete actual status is
+`reservation-after-app-transfer.json`; the historical eight-path receipt remains
+unchanged in `reservation-receipt.json`.
+
+The exact receiver535 Nav-only output blobs from D0's frozen434c packet were
+verified against their SHA256/size and applied, not the incompatible full EFD
+Content build. `nav-only-producer-freeze.json` retains the producer's actual
+16-graph/3828-input receipt references and three byte bindings.
+The receiver's original three inputs matched base678 and its actual head535.
+Read-only independent lock/XML review confirms stable Nav3.1.1.0,
+NavigationEvent1.0.2, Compose1.10.6 and all1078 receiver checksum tuples retained
+with75 additions. D0's earlier full Content graph had1097 inherited tuples;
+these are distinct producer contexts, not contradictory receiver counts.
+
+Actual App configuration now declares `verifyWp302NavigationTests`, shared
+original-case sources, SDK31/37 support, mandatory pre-test binding and actual
+native artifacts. It does not reference absent Content invocation/collector
+consumers. Kotlin compilation, native140/108 evidence and a full passing final
+cycle are still required. Minimal base-applicable validator admission remains
+separate; the full D0 portmap cannot be copied without its absent Content imports.
+No source pin, incumbent catalog pin, hardware/license/signing gate or normal
+publication requirement is changed.
 
 ## Current product implementation and producer contract
 
