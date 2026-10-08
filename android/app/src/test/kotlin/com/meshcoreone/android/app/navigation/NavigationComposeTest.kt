@@ -227,6 +227,7 @@ class NavigationComposeTest {
         assertFalse(
             "$tag must honor font scaling without clipping: size=${layout.size}, " +
                 "text=${layout.layoutInput.text}, lines=${layout.lineCount}, " +
+                "paragraphWidth=${layout.multiParagraph.width}, constraints=${layout.layoutInput.constraints}, " +
                 "widthOverflow=${layout.didOverflowWidth}, heightOverflow=${layout.didOverflowHeight}",
             layout.hasVisualOverflow,
         )

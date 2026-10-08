@@ -16,6 +16,15 @@ centered paragraph wrapping/hyphenation while preserving their incumbent
 Material typography, and the assertion additionally checks actual fontScale2.
 The new wrapping still requires execution.
 
+Actual46df6f22 verification still measured horizontal overflow on Chats at
+both SDKs (148/150 passed,104 renders, zero skips). Paragraph wrapping alone
+was insufficient; the labels now occupy the full width their native item
+allocates, rather than a rounded intrinsic-width box. Full-density/overflow
+assertions remain unchanged and now report paragraph width/constraints.
+`native-46df6f22/` and its visible log retain the failed attempt; raw run is
+`/home/cbattagler/meshcoreone-work/local-checks/run-44ZqaWr2`.
+The allocated-width correction still requires execution.
+
 Complete XML/input bindings remain in `native-f586c116/`, visible output
 `native-f586c116.log`, raw run
 `/home/cbattagler/meshcoreone-work/local-checks/run-ygp4xkfP`.

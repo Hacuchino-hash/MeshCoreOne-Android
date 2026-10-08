@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.imePadding
@@ -201,7 +202,7 @@ fun NativeNavigationShell(
                     label = if (useRail) null else ({
                         Text(
                             label,
-                            Modifier.testTag("tab-label:${tab.name}"),
+                            Modifier.fillMaxWidth().testTag("tab-label:${tab.name}"),
                             style = LocalTextStyle.current.copy(lineBreak = LineBreak.Paragraph, hyphens = Hyphens.Auto),
                             textAlign = TextAlign.Center,
                         )
