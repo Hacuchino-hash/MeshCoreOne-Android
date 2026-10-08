@@ -34,7 +34,8 @@ WP_003_BOOTSTRAP_MANIFEST_SHA256 = "c8d7f2baba33c0cf4bfea24c9a7105654adebbcbc392
 POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 WP_003_MANIFEST_REVISION = "1dd7bc4f74f10e566b66fc8bc3822bb2bd66068053e1aa866e520326aab4dde6"
-PRIOR_CONTENT_MANIFEST_REVISION = "58f7ebd7f46bbe0636c71005f20776efe139a287279e4f4708b25ce6bfa3f892"
+PRIOR_CONTENT_MANIFEST_REVISION = "4f8328f7295d2fdecce10489f99d992cd6b2d861c709f32297e21ed9c5b8fdf5"
+PRIOR_CONTENT_POLICY_REVISION = "375c9252499e63787449b907755e7bfa0dfb49281f0a46954527480165734428"
 WP_003_SEMANTIC_POLICY_REVISION = "08ee454858fa350783ba37e02c0c2720d4b36a29b6f135a8e7a6f7e41c73954d"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
@@ -183,12 +184,17 @@ def content_scope_revisions(manifest, policy):
     data = project_content_scope(manifest.data)
     project_policy_amendment(data)
     baseline = Manifest(data, manifest.exclusions, manifest.repo)
+    historical = baseline.sha256 == VERIFICATION_MANIFEST_SHA256
     expected = ("56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
-                if baseline.sha256 == VERIFICATION_MANIFEST_SHA256
-                else WP_003_SEMANTIC_POLICY_REVISION)
+                if historical else WP_003_SEMANTIC_POLICY_REVISION)
     if policy_revision(baseline, policy) != expected:
         raise PortError("Frozen predecessor policy changed outside the approved content scope")
-    return {"manifest_sha256": manifest.sha256, "policy_revision": policy_revision(manifest, policy)}
+    if historical:
+        return {"manifest_sha256": manifest.sha256, "policy_revision": policy_revision(manifest, policy)}
+    return {
+        "manifest_sha256": PRIOR_CONTENT_MANIFEST_REVISION,
+        "policy_revision": PRIOR_CONTENT_POLICY_REVISION,
+    }
 
 
 def inventory_details_predecessor(details, manifest):

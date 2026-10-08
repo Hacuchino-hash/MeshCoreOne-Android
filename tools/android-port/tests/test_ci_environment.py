@@ -151,6 +151,31 @@ class EnvironmentTests(unittest.TestCase):
                     self.assertFalse((output / "wp109-invocation.json").exists())
                     self.assertFalse(any(arg.startswith("-PmeshCli") for arg in arguments))
 
+    def test_prepare_resolves_dependencies_without_demanding_test_reports(self):
+        from controller.ci import run_stage
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            calls = []
+            with (
+                patch("controller.ci.verify_wrapper"),
+                patch("controller.ci.candidate_environment", return_value={}),
+                patch("controller.ci.execute", side_effect=lambda command, environment, log, **kwargs:
+                      calls.append((command, log))),
+                patch("controller.ci.collect_suites", side_effect=AssertionError("prepare read scaffold reports")),
+                patch("controller.ci.check_module_tests", side_effect=AssertionError("prepare read module reports")),
+                patch("controller.ci.collect_lint", side_effect=AssertionError("prepare read lint reports")),
+                patch("controller.ci.suite_counts", side_effect=AssertionError("prepare read suite reports")),
+            ):
+                run_stage("prepare", self.state(directory), directory / "evidence")
+            self.assertEqual(2, len(calls))
+            arguments = (
+                load_json(directory / "evidence/gradle-prepare-invocation.json")["arguments"]
+                if host_name() == "windows" else calls[1][0]
+            )
+            self.assertIn("resolveScaffoldDependencies", arguments)
+            self.assertNotIn("verifyScaffoldTests", arguments)
+
     def test_wp301_native_evidence_property_uses_actual_verify_arguments_only_on_both_hosts(self):
         for host in ("linux", "windows"):
             for stage in ("scaffold", "protocol", "prepare"):

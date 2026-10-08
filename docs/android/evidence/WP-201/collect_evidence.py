@@ -258,7 +258,7 @@ def report(repo=ROOT, *, audit_base=None):
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     manifest = load_manifest(repo)
     policy = load_json(repo / "docs/android/automation-policy.json")
-    current_policy = content_scope_revisions(manifest, policy)["policy_revision"]
+    current_revisions = content_scope_revisions(manifest, policy)
     owned = [item for item in manifest.data["inventory"] if item["primary_owner"] == "WP-201"]
     inputs, raw_inputs = immutable_inputs(repo, head, owned)
     baseline = historical_baseline(raw_inputs[HISTORY])
@@ -284,7 +284,7 @@ def report(repo=ROOT, *, audit_base=None):
     historical_identities = {case_identity(case) for case in baseline["native_cases"]}
     return {
         "schema_version": 2, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-201",
-        "execution": execution, "source_sha": SOURCE, "manifest_sha256": manifest.sha256, "policy_revision": current_policy,
+        "execution": execution, "source_sha": SOURCE, **current_revisions,
         "historical_baseline": {
             "path": HISTORY, "canonical_lf_sha256": HISTORY_SHA256,
             "session": baseline["session"], "branch": baseline["branch"], "base_sha": baseline["base_sha"],
