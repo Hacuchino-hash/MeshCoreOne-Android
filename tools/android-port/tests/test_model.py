@@ -280,7 +280,8 @@ class ManifestTests(unittest.TestCase):
             "git", "-C", str(REPO), "show",
             "7e2835bad2c03dfb5a088063655f9fc4dbafd00f:docs/android/port-manifest.json",
         ]).decode("utf-8"))
-        self.assertEqual(digest(baseline), BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+        from controller.verification_config import WP_003_MANIFEST_REVISION
+        self.assertEqual(digest(baseline), WP_003_MANIFEST_REVISION)
         self.assertEqual(project_policy_amendment(baseline), original)
         self.assertEqual(historical.data, original)
         self.assertEqual(historical.sha256, VERIFICATION_MANIFEST_SHA256)

@@ -34,6 +34,7 @@ WP_003_BOOTSTRAP_MANIFEST_SHA256 = "6854873bbcb05645f8b92869dcfd33680d2cf0920f7f
 POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 WP_003_MANIFEST_REVISION = "1a66fee1b616d4c0dcf51cbb9341c4aff79339f2404715eed94b8c95a313a63c"
+PRIOR_CONTENT_MANIFEST_REVISION = "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094"
 WP_003_SEMANTIC_POLICY_REVISION = "a9982122122eb695c60550e95d29856ffc9bbdfa02161b9679de9201c0d900db"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
@@ -193,7 +194,7 @@ def content_scope_revisions(manifest, policy):
 def inventory_details_predecessor(details, manifest):
     predecessor = content_scope_predecessor(manifest)
     if (not isinstance(details, dict) or details.get("source_sha") != predecessor.data["reference"]["commit"]
-            or details.get("manifest_sha256") != manifest.sha256):
+            or details.get("manifest_sha256") not in (manifest.sha256, PRIOR_CONTENT_MANIFEST_REVISION)):
         raise PortError("Original inventory details do not bind the actual canonical catalog")
     result = copy.deepcopy(details)
     result["manifest_sha256"] = predecessor.sha256

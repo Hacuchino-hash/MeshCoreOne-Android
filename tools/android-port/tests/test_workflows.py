@@ -183,10 +183,10 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(before, after)
         result = check_configuration(REPO)
         self.assertEqual(result["verification_amendments"], ["WP-002", "WP-003"])
-        self.assertEqual(result["bootstrap_manifest_sha256"],
-                         BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"])
+        from controller.verification_config import WP_003_BOOTSTRAP_MANIFEST_SHA256, WP_003_MANIFEST_REVISION
+        self.assertEqual(result["bootstrap_manifest_sha256"], WP_003_BOOTSTRAP_MANIFEST_SHA256)
         self.assertEqual(digest(project_content_scope(base_manifest().data)),
-                         BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+                         WP_003_MANIFEST_REVISION)
         self.assertEqual(result["manifest_sha256"], base_manifest().sha256)
         self.assertEqual(result["policy_amendment"], "WP-000-capability-reservations-v1")
 
@@ -197,7 +197,7 @@ class WorkflowTests(unittest.TestCase):
             "0" * 64,
         ):
             with self.subTest(candidate=candidate), patch(
-                "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256", candidate
+                "controller.verification_config.WP_003_BOOTSTRAP_MANIFEST_SHA256", candidate
             ), self.assertRaisesRegex(PortError, "Frozen bootstrap generator changed"):
                 apply_overlay(original)
 
@@ -217,7 +217,7 @@ class WorkflowTests(unittest.TestCase):
         with patch("bootstrap.build_inventory", return_value=(changed, exclusions)), patch(
             "controller.verification_config.BOOTSTRAP_POLICY_AMENDMENT", candidate
         ), patch(
-            "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256",
+            "controller.verification_config.WP_003_BOOTSTRAP_MANIFEST_SHA256",
             candidate["generated_manifest_sha256"],
         ), self.assertRaisesRegex(PortError, "policy amendment evidence drift"):
             check_configuration(REPO)
