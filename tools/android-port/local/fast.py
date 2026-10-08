@@ -16,6 +16,13 @@ def scaffold_options():
     ]
 
 
+def local_test_command(repo):
+    return [
+        sys.executable, "-m", "unittest", "discover",
+        "-s", str(repo / "tools/android-port/local"), "-p", "*test*.py", "-v",
+    ]
+
+
 def execute(command, repo, environment, log):
     print("Executing: " + " ".join(map(str, command)), flush=True)
     with log.open("w", encoding="utf-8") as stream:
@@ -59,8 +66,7 @@ def main():
         print(f"\n===== FAST LOCAL: {stage} =====", flush=True)
         if stage == "python":
             ci.python_checks(args.output)
-            execute([sys.executable, "-m", "unittest", "discover", "-s", str(Path(__file__).parent),
-                     "-p", "test_*.py", "-v"], args.repo, environment, args.output / "local-tool-tests.log")
+            execute(local_test_command(args.repo), args.repo, environment, args.output / "local-tool-tests.log")
         elif stage == "preflight":
             ci.preflight(state, args.output)
         elif stage == "scaffold":

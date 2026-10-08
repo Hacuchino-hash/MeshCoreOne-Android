@@ -20,7 +20,7 @@ REQUIRED_TOOLCHAIN = {"python", "jdk", "android_sdk", "gradle"}
 def runtime_files():
     return (
         ("check.py", "check.py"), ("fast.py", "fast.py"),
-        ("run.sh", "run.sh"), ("hook_test.py", "test_check.py"),
+        ("run.sh", "run.sh"),
     )
 
 

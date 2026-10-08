@@ -44,8 +44,11 @@ class LocalCheckTests(unittest.TestCase):
     def test_default_all_runner_is_installed_beside_check(self):
         runner = Path(check.__file__).resolve().with_name("run.sh")
         self.assertTrue(runner.is_file(), f"Missing default-all runner: {runner}")
-    def test_default_all_test_source_has_an_installed_discovery_name(self):
-        self.assertEqual(dict(check.runtime_files())["hook_test.py"], "test_check.py")
+    def test_default_all_discovers_exact_candidate_local_tests(self):
+        command = fast.local_test_command(Path("/candidate"))
+        self.assertIn(str(Path("/candidate/tools/android-port/local")), command)
+        self.assertEqual(command[command.index("-p") + 1], "*test*.py")
+        self.assertNotIn(str(Path(fast.__file__).resolve().parent), command)
 
 
     def test_runner_imports_bundle_head_and_namespaced_refs(self):
