@@ -6,6 +6,22 @@ native acceptance incomplete. Not WP-302 acceptance or feature parity.**
 
 ## First real native results and corrections
 
+The actual subsequent75193694 verification stopped on the old strict3.5
+lock, exactly as required (`native-75193694.log`), not on a relaxed resolver.
+The receiver regenerated the existing declared
+`:app:resolveWp302NavigationDependencies --write-locks --write-verification-metadata sha256 --dependency-verification strict`
+command in its official isolated751 snapshot under the shared native lane and
+same credential-stripped pinned toolchain. All3909 literal inputs matched their
+committed blobs before generation. Exactly16 nonempty graphs resolved; the
+only changed tracked files were the owned App lock and checksum XML.
+All1153 inherited checksum tuples remain, with5 new artifacts independently
+downloaded/rehashed from Google Maven/Maven Central. Outputs were byte-verified
+before carrying back. Receipt, exact command, all graph hashes/TSVs and executed
+recipe are retained in `espresso-graph-generation/`; complete visible output
+is `espresso-graph-generation.log`. Raw publications/before/outputs remain at
+`/home/cbattagler/meshcoreone-work/local-checks/wp302-espresso-1c_4lzg8`.
+This changes only App test support, not incumbent pins or native acceptance.
+
 Official `--stages verify` at39e7a763 really compiled and discovered150 App
 nodes (140 WP-302 plus10 incumbent scaffold):134 passed,16 failed, zero
 skipped. All100 original SDK31/37 nodes ran,94 passed. Raw XML contains133
