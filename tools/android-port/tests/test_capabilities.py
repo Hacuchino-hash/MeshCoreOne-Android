@@ -23,6 +23,12 @@ class CapabilityReservationTests(unittest.TestCase):
             self.engine.admit("WP-101", self.manifest.wp("WP-101")["write_paths"],
                               "secrets/key", "export")
 
+    def test_assigned_path_with_unsupported_operation_fails_closed(self):
+        assigned_path = self.manifest.wp("WP-101")["write_paths"][0]
+        with self.assertRaisesRegex(PortError, rf"WP WP-101.*{assigned_path}.*unsupported-operation"):
+            self.engine.admit("WP-101", self.manifest.wp("WP-101")["write_paths"],
+                              assigned_path, "unsupported-operation")
+
     def test_shared_dependency_scope_is_admitted_without_byte_authorization(self):
         admission = self.engine.admit(
             "WP-101", self.manifest.wp("WP-101")["write_paths"],

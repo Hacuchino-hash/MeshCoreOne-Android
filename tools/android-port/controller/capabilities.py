@@ -69,7 +69,7 @@ class CapabilityEngine:
         )
         candidates = [
             rule for rule in candidates
-            if rule is not None and (operation in rule["operations"] or rule["id"] == "wp-owned")
+            if rule is not None and operation in rule["operations"]
         ]
         if not candidates:
             raise PortError(
