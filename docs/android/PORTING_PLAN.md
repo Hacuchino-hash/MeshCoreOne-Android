@@ -31,6 +31,7 @@ authorization to change repository settings or evidence for signing/hardware gat
 | Repo layout | New `android/` Gradle project alongside the Swift code. Swift is the read-only reference. |
 | SDK levels | `minSdk 31` (Android 12), `targetSdk`/`compileSdk 37` (Android 17) |
 | Automation | One agent set in `.github/agents/`, dispatchable to the **cloud** (issue assignment) **or locally** (Copilot app worktree sessions / headless `copilot` CLI) |
+| Reservation model | **Automatic typed capability bookkeeping, not repeated permission.** Assignment authorizes ordinary work inside manifest capabilities; trusted rules admit directly necessary support paths and invariants, while unknown capabilities fail closed. |
 | Merge policy | **Full auto-merge** when CI and the parity review pass, except for human-gated WPs and protected paths |
 | Distribution | Sideloaded APK via **GitHub Releases only**. No Play Store and no billing; **all themes unlocked**. |
 | applicationId | `com.meshcoreone.android` (debug: `com.meshcoreone.android.debug`). Kotlin root package `com.meshcoreone.android` |
@@ -46,6 +47,23 @@ Implementation candidates (recorded as ADRs in WP-001; the human reviews them at
 - A translation SPI whose implementation is selected only after license, privacy, language coverage and
   GMS-less behavior checks. ML Kit is a candidate, not a permitted dependency merely because it runs on-device.
 - No new accounts, backend, telemetry collection, automatic APK installation or billing system.
+
+## 2.1 WP-000 policy amendment: capability reservations are not permissions
+
+This amendment supersedes the model where authorization prose and all-write-path leases became repeated per-file permission. An assigned WP/session authorizes ordinary implementation, tests, evidence, generated outputs and directly necessary support edits inside manifest-declared capabilities. A trusted rule must map each path and operation to a capability and its invariants; unknown or outside-capability work fails closed. Protected-path and maintainer approval remain merge-to-main gates, not repeated permission for already-admitted local work.
+
+The operative contract is:
+
+- Assignment is the authorization; a reservation is automatic concurrency bookkeeping that binds identities, revisions, capability IDs, operations and actual paths.
+- Initial acquisition and same-owner scope evolution are performed by the worker/coordinator before edits. They never require a user to restate permission or supply exact future checksum, fixture, annotation or generated-output bytes.
+- Shared surfaces use typed capabilities for dependency metadata, App support, traceability validators, generated resources, schemas and workflows. Definitions state operations, invariants and required validation.
+- Disjoint semantic edits use automatic transaction/merge reconciliation. Real semantic overlap serializes or transfers to the current producer. Only an unresolved ownership collision, drift, protected/human gate, missing authentication/tool capability or substantive product decision escalates.
+- Authorization prose remains immutable audit context. Implementation evidence, not authorization text, binds changed bytes and test outcomes.
+- A discovered support path is admitted only when a trusted path-and-operation rule maps it to an assigned capability; otherwise one actionable blocker fails closed.
+- Existing WP-218 and WP-302 work continues without pause or path surrender. Protected merge gates, exact-head/current-base validation, one WP/branch/PR, pinned Swift source and real parity evidence remain unchanged.
+- Historical authorization strings and actual identities/bindings are preserved while versioned capability state is added transactionally and idempotently without release/recreate.
+
+ADR-006 defines the migration algorithm and measurable WP-003 regression suite, including App3 transfer, validator2 handoff, annotation plus 37-POM evolution, same-path disjoint merge, stale CAS, third-party/controller collision, protected path, wrong capability and unchanged actual identities/bindings. This WP-000 layer changes policy only; dispatch remains paused until separately activated.
 
 ## 3. Target architecture
 
@@ -271,7 +289,7 @@ required checks and approval rules. Only then may the user configure limits and 
 ### 4.3 Work-package lifecycle
 ```mermaid
 flowchart LR
-  M["Trusted port-manifest.json"] --> D{"Enabled, budget configured, deps verified, lease available?"}
+  M["Trusted port-manifest.json"] --> D{"Enabled, budget configured, deps verified, capability reservation recorded?"}
   D -->|cloud| C["Issue assigned to Copilot (custom_agent = owner)"]
   D -->|local| L["Worktree session: copilot --agent owner"]
   C --> PR["PR [WP-xxx]"]
@@ -293,11 +311,11 @@ flowchart LR
    by the current documentation. Verify account/repo availability and the custom-agent identifier at
    bootstrap; do not use the newer agent-tasks API as though it necessarily accepts custom-agent selection.
    User-to-server authentication is required; a workflow installation token is not a substitute.
-2. **Local, Copilot app.** An app orchestrator obtains a shared lease, then uses native `create_session`
+2. **Local, Copilot app.** An app orchestrator records the automatic typed reservation, then uses native `create_session`
    with a worktree, `kickoff.agent=<owner>`, a complete rendered prompt and `notify_on_idle`.
    A Python script or GitHub workflow cannot call app-native tools directly. The app surface is an
    adapter available only when the coordinating session exposes those tools.
-3. **Local, headless.** With explicit permission, the local adapter obtains the same lease and uses a
+3. **Local, headless.** With explicit permission, the local adapter records the same reservation and uses a
    dedicated `.worktrees/WP-xxx` worktree and `copilot --agent <owner> -p <prompt>`.
    Use bounded tool/path permissions, not blanket `--allow-all` or unrestricted credential inheritance.
    Use native issue/PR tools when the host provides them; otherwise the supported `gh` interface.
@@ -307,11 +325,13 @@ All three modes share the same rendered prompt and limits:
 - **Limits:** the user must set `ANDROID_PORT_MAX_INFLIGHT` and a supported usage/budget policy before
   enabling dispatch. Missing limits block launch; do not invent an AI-credit ceiling or launch 17 roles at once.
   Models inherit the user's defaults unless explicitly selected.
-- **Path conflicts:** overlap is computed on all `write_paths`, including resources, configuration,
-  schemas, fixtures and generated outputs. No blanket exceptions for catalog, manifest or AppContainer edits.
-  A needed shared change becomes a prerequisite WP/approved amendment, not an out-of-scope edit.
-- **Lease/idempotency:** one serialized controller grants leases to both backends. Record WP, base/ref,
-  source/manifest hashes, backend and task/session/PR identity before any repeat dispatch.
+- **Capability admission:** assignment covers ordinary work in manifest capabilities. Trusted path+operation
+  rules automatically admit directly necessary shared support work and its invariants; unmatched work fails
+  closed with one actionable blocker.
+- **Reservation/idempotency:** one serialized controller records typed reservations for both backends.
+  Same-owner evolution is automatic. Disjoint semantic edits reconcile transactionally; real overlap
+  serializes or transfers to the current producer. Record WP, base/ref, source/manifest hashes, capability
+  IDs, actual paths, backend and task/session/PR identity before any repeat dispatch.
   A restart reconciles live work instead of launching duplicates; uncertain state blocks for inspection.
 - **Pause:** blocks new dispatch, repair launches and merges without terminating running workers.
 - **Completion:** only a merged implementation PR plus verified acceptance closes a WP for dependency
@@ -459,7 +479,8 @@ The tables show main sources only; related errors, extensions, helpers and tests
 
 **Parallel lanes after the CI activation gate:** protocol, localization/test tooling, data once protocol
 value types exist, BLE once the transport contract exists, and design-system work once strings/preferences exist.
-Seventeen agents are specialist roles, not seventeen concurrent workers; actual parallelism follows leases and user limits.
+Seventeen agents are specialist roles, not seventeen concurrent workers; actual parallelism follows
+typed capability reservations, semantic reconciliation, and user limits.
 
 ## 6. Verification and parity strategy
 - **Feature acceptance:** derive a checklist from README, user guide, current screens and their tests;
@@ -536,7 +557,7 @@ silently turn required translation into a deferred feature.
 | Background kills or limits (Doze, OEM battery savers) | Declared companion exemptions, one connection-owning FGS, tested presence/reconnect fallbacks, honest force-stop/OEM guidance |
 | Crypto or byte mismatches | Golden vectors plus the Python reference oracle; mandatory vector tests in WP-102–104 |
 | Agents inventing APIs or drifting from the Swift behavior | Small WPs, skills with concrete mappings, compile and test gates, independent parity reviewer, `PortedFrom` traceability |
-| Merge conflicts between parallel agents | All-write-path leases, stable contracts, one current-base merge controller, repairs in the existing session |
+| Merge conflicts between parallel agents | Typed capability reservations, automatic disjoint reconciliation, overlap serialization/transfer, stable contracts, and one current-base merge controller |
 | Full auto-merge lets a bad change through | Trusted SHA-bound gates, no candidate credentials, conditional human approval for protected paths, no bypass, pause/usage limits |
 | Upstream iOS keeps changing | `PortedFrom` SHAs plus weekly `resync` issues routed to the owning agents |
 | Preview APIs (custom-agent assignment, CLI auth in Actions) change | Validated in WP-000; local dispatch as the fallback |

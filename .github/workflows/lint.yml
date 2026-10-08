@@ -5,11 +5,37 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - ".github/workflows/lint.yml"
+      - ".swiftformat"
+      - ".swiftlint.yml"
+      - "AppIcon.icon/**"
+      - "MC1/**"
+      - "MC1Services/**"
+      - "MC1Tests/**"
+      - "MC1Widgets/**"
+      - "MeshCore/**"
+      - "Shared/**"
+      - "project.yml"
+      - "swiftgen.yml"
 
   push:
     branches:
       - main
       - dev
+    paths:
+      - ".github/workflows/lint.yml"
+      - ".swiftformat"
+      - ".swiftlint.yml"
+      - "AppIcon.icon/**"
+      - "MC1/**"
+      - "MC1Services/**"
+      - "MC1Tests/**"
+      - "MC1Widgets/**"
+      - "MeshCore/**"
+      - "Shared/**"
+      - "project.yml"
+      - "swiftgen.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
