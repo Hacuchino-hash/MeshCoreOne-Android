@@ -25,6 +25,10 @@ def runtime_files():
 
 
 
+def bundle_revisions(revision):
+    return ["--all", revision]
+
+
 
 def capture(command, **kwargs):
     return subprocess.check_output(command, **kwargs).decode("utf-8").strip()
@@ -84,7 +88,7 @@ def run_candidate(repo, revision, prefix, stages, worktree):
             if source.is_file():
                 (control / installed_name).write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
         bundle = directory / "candidate.bundle"
-        subprocess.run(["git", "-C", str(repo), "bundle", "create", str(bundle), "--all"], check=True)
+        subprocess.run(["git", "-C", str(repo), "bundle", "create", str(bundle), *bundle_revisions(revision)], check=True)
         subprocess.run([
             *prefix, "bash", linux_path(control / "run.sh", prefix),
             linux_path(bundle, prefix), revision, key, linux_path(control, prefix),

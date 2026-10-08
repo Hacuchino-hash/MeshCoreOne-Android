@@ -48,6 +48,10 @@ class LocalCheckTests(unittest.TestCase):
         self.assertEqual(dict(check.runtime_files())["hook_test.py"], "test_check.py")
 
 
+    def test_candidate_bundle_includes_an_exact_detached_revision(self):
+        self.assertEqual(check.bundle_revisions("a" * 40), ["--all", "a" * 40])
+
+
 
     def test_fast_scaffold_options_execute_without_deleted_evidence_forwarding(self):
         options = fast.scaffold_options()
