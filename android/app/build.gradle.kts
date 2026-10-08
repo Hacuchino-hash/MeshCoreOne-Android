@@ -162,9 +162,11 @@ val retainContentAppReports by tasks.registering(Exec::class) {
     }
 }
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest" &&
-        layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/content").asFile.isDirectory
-    ) {
+    val contentSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/content").asFile
+    if (name == "testDebugUnitTest" && contentSource.exists()) {
+        check(contentSource.isDirectory && contentCollector.isFile) {
+            "Present Content source requires its real package and evidence collector."
+        }
         dependsOn(":core:services:prepareContentInvocation")
         finalizedBy(retainContentAppReports)
     }
@@ -191,7 +193,11 @@ val verifyWp302NavigationTests by tasks.registering(Exec::class) {
 
 // The producer also runs before the separately owned navigation source is carried.
 // Once that real source exists, binding/tests/verdict are mandatory, including missing-reader failures.
-if (layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/navigation").asFile.isDirectory) {
+val navigationSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/navigation").asFile
+if (navigationSource.exists()) {
+    check(navigationSource.isDirectory && navigationCollector.isFile) {
+        "Present Navigation source requires its real package and evidence collector."
+    }
     tasks.named<Test>("testDebugUnitTest") {
         dependsOn(prepareWp302NavigationInputs)
         systemProperty("navigationInputBinding",

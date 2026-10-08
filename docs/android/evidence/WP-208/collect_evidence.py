@@ -55,6 +55,17 @@ ORIGINAL = re.compile(r'original\(\s*' + QUOTED + r'\s*,\s*' + QUOTED + r'(?:\s*
 NATIVE = re.compile(r'native\(\s*' + QUOTED)
 ROW = re.compile(r" \[row=(\d+)\]$")
 HEX = re.compile(r"^[0-9a-f]{40}$")
+BOOTSTRAP_RECEIPT = "docs/android/evidence/WP-208/services-bootstrap-carry.json"
+BOOTSTRAP_RECEIPT_COMMIT = "ba9de4e3c07e1fd142431e6f722123e3ecbb79ea"
+CONTROL_INPUTS = [
+    BOOTSTRAP_RECEIPT, "docs/android/port-manifest.json", "docs/android/automation-policy.json",
+    "docs/android/test-cases.json", "docs/android/evidence/WP-208/collect_evidence.py",
+    "tools/android-port/controller/verification_config.py",
+]
+sys.path.insert(0, str(ROOT / "tools" / "android-port"))
+from controller.errors import PortError
+from controller.model import load_manifest
+from controller.verification_config import content_scope_revisions
 
 
 def require(condition, reason):
@@ -89,6 +100,78 @@ def record(path, root):
     return {"path": path.relative_to(root).as_posix(), "size_bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
 
 
+def current_revisions(repo=ROOT):
+    try:
+        return content_scope_revisions(load_manifest(repo),
+            load_json(repo / "docs" / "android" / "automation-policy.json"))
+    except PortError as failure:
+        raise ValueError("Frozen manifest/policy lineage drift: " + str(failure)) from failure
+
+
+def bootstrap_contract(current, historical):
+    marker = "// WP-218 diagnostic-only test-failure logging:"
+    extension_marker = "// AndroidOnly: WP-218 diagnostic-only raw-failure printer,"
+    require(historical.count(marker) == 1, "Malformed historical Services bootstrap")
+    prefix, suffix = historical.split(marker, 1)
+    if current == historical:
+        return
+    require(current.count("import java.io.ByteArrayOutputStream\n") == 1 and
+            current.count(extension_marker) == 1 and current.count(marker) == 1,
+            "Unowned/malformed Services producer extension")
+    projected = current.replace("import java.io.ByteArrayOutputStream\n", "", 1)
+    actual_prefix, extension = projected.split(extension_marker, 1)
+    extension, actual_suffix = extension.split(marker, 1)
+    require(actual_prefix == prefix and actual_suffix == suffix,
+            "Original Services dependency/resolver/diagnostic consumer contract changed")
+    require(not re.search(r"\b(?:dependencies|configurations|plugins|repositories|resolutionStrategy|"
+                         r"setActions|setDependencies|onlyIf|exclude|ignoreFailures)\b", extension),
+            "Services extension changes original dependency/execution contract")
+    tasks = re.findall(r"val (\w+) by tasks\.registering\(Exec::class\)", extension)
+    require(tasks == ["prepareContentInvocation", "retainContentServiceReports",
+                      "verifyContentEvidenceReader", "verifyContentTests", "printServicesFailureDiagnostics"],
+            "Unapproved Services producer task set")
+    for statement in (
+        '.resolve("WP-218").resolve("collect_evidence.py")',
+        'providers.gradleProperty("meshCliInvocationFile")',
+        'tasks.named<Test>("test") {\n    dependsOn(prepareContentInvocation)',
+        '"--prepare-binding"', '"--retain-only", "services"', '"--self-test"',
+        'dependsOn("test", ":app:testDebugUnitTest", verifyContentEvidenceReader)',
+        'rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyContentTests) }',
+        'tasks.named("check") { dependsOn(verifyContentTests) }',
+        'tasks.named("test") { finalizedBy(retainContentServiceReports) }',
+    ):
+        require(statement in extension, "Missing mandatory Services content producer contract: " + statement)
+
+
+def services_producer(repo=ROOT):
+    receipt = load_json(repo / BOOTSTRAP_RECEIPT)
+    original = subprocess.check_output(["git", "-C", str(repo), "cat-file", "blob",
+                                       BOOTSTRAP_RECEIPT_COMMIT + ":" + BOOTSTRAP_RECEIPT])
+    require(json.loads(original) == receipt, "Historical bootstrap receipt was changed/relabelled")
+    head = git(repo, "rev-parse", "HEAD")
+    require(len(receipt["files"]) == 2 and receipt["producer_work_package"] == "WP-218",
+            "Wrong Services bootstrap producer")
+    for row in receipt["files"]:
+        name = row["path"]
+        raw = subprocess.check_output(["git", "-C", str(repo), "cat-file", "blob",
+                                       receipt["carry_commit"] + ":" + name])
+        require(git(repo, "rev-parse", receipt["carry_commit"] + ":" + name) == row["carried_blob"] and
+                len(raw) == row["lf_bytes"] and hashlib.sha256(raw).hexdigest() == row["lf_sha256"],
+                "Historical bootstrap blob does not match its original receipt")
+        current = repo.joinpath(*name.split("/")).read_bytes()
+        committed = subprocess.check_output(["git", "-C", str(repo), "cat-file", "blob", head + ":" + name])
+        require(current == committed, "Current compiled Services producer bytes differ from actual HEAD")
+        if name == "android/core/services/build.gradle.kts":
+            bootstrap_contract(current.decode("utf-8"), raw.decode("utf-8"))
+        else:
+            require(current == raw, "Frozen Services lock changed")
+    lock = receipt["data_local_lock"]
+    require(git(repo, "hash-object", str(repo.joinpath(*lock["path"].split("/")))) == lock["blob"],
+            "Frozen local Data lock changed")
+    return {"historical_receipt_commit": BOOTSTRAP_RECEIPT_COMMIT,
+            "historical_carry_commit": receipt["carry_commit"], "current_head_sha": head}
+
+
 def declarations(directory):
     originals, natives = {}, {}
     for path in sorted(directory.glob("*.kt"), key=lambda value: value.name):
@@ -110,11 +193,12 @@ def declarations(directory):
 def source_accounting(repo=ROOT):
     manifest = load_json(repo / "docs" / "android" / "port-manifest.json")
     policy = load_json(repo / "docs" / "android" / "automation-policy.json")
-    require(digest(manifest) == MANIFEST, "Frozen manifest drift")
+    revisions = current_revisions(repo)
     semantics = {key: value for key, value in policy.items() if key not in {
         "dispatch_mode", "paused", "activation_approved", "pending_capabilities",
     }}
     require(digest({"manifest": MANIFEST, "policy": semantics, "source": SOURCE}) == POLICY, "Frozen policy drift")
+    producer = services_producer(repo)
     require(manifest["reference"]["commit"] == SOURCE and git(repo, "rev-parse", SOURCE + "^{tree}") == TREE, "Frozen reference drift")
     work = manifest["work_packages"]
     require(len(work) == 65 and sum(len(wp["depends_on"]) for wp in work) == 185 and
@@ -162,9 +246,11 @@ def source_accounting(repo=ROOT):
         path.relative_to(repo).as_posix()
         for path in sorted((repo / SERVICES / "src").rglob("*.kt"), key=lambda value: value.as_posix())
         if PACKAGE.replace(".", "/").rstrip("/") in path.as_posix()
-    ] + [path.as_posix() for path in SHARED]
+    ] + [path.as_posix() for path in SHARED] + CONTROL_INPUTS + [
+        "android/core/services/build.gradle.kts", "android/gradle/dependency-locks/core-services.lockfile",
+    ]
     return {
-        "source_sha": SOURCE, "source_tree": TREE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+        "source_sha": SOURCE, "source_tree": TREE, **revisions, "services_producer": producer,
         "primary_inputs": list(owned.values()), "original_families": families,
         "expanded_originals": originals, "native_regressions": natives, "room_consumers": room_cases,
         "implementation_inputs": implementation_inputs,
@@ -205,7 +291,7 @@ def capture(output, invocation=None, repo=ROOT, *, local=False):
     head = git(repo, "rev-parse", "HEAD")
     require(HEX.fullmatch(head), "Missing exact candidate HEAD")
     metadata = {"schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-208",
-                "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+                "head_sha": head, "source_sha": SOURCE, "manifest_sha256": None, "policy_revision": None,
                 "invocation": None, "execution_expected": None, "raw_junit": {}, "input_blobs": [], "capture_errors": []}
     if invocation is not None:
         if invocation.is_file() and not invocation.is_symlink():
@@ -233,7 +319,7 @@ def capture(output, invocation=None, repo=ROOT, *, local=False):
             if "/src/" not in name and not name.endswith(("build.gradle.kts", "gradle.lockfile")):
                 continue
             path = repo.joinpath(*name.split("/"))
-            actual = git(repo, "hash-object", "--path=" + name, str(path))
+            actual = git(repo, "hash-object", "--no-filters", str(path))
             expected = git(repo, "rev-parse", head + ":" + name)
             metadata["input_blobs"].append({"path": name, "git_blob": actual, "expected_blob": expected,
                                            "matches_head": actual == expected, **record(path, repo)})
@@ -241,9 +327,23 @@ def capture(output, invocation=None, repo=ROOT, *, local=False):
     if root_lock.is_file():
         name = root_lock.relative_to(repo).as_posix()
         expected = git(repo, "rev-parse", head + ":" + name)
-        actual = git(repo, "hash-object", "--path=" + name, str(root_lock))
+        actual = git(repo, "hash-object", "--no-filters", str(root_lock))
         metadata["input_blobs"].append({"path": name, "git_blob": actual, "expected_blob": expected,
                                        "matches_head": actual == expected, **record(root_lock, repo)})
+    for name in CONTROL_INPUTS:
+        try:
+            path = repo.joinpath(*name.split("/"))
+            input_record = record(path, repo)
+            actual = git(repo, "hash-object", "--no-filters", str(path))
+            expected = git(repo, "rev-parse", head + ":" + name)
+            metadata["input_blobs"].append({"path": name, "git_blob": actual, "expected_blob": expected,
+                                           "matches_head": actual == expected, **input_record})
+        except (ValueError, OSError, subprocess.CalledProcessError) as failure:
+            metadata["capture_errors"].append("Missing/unsafe/uncommitted control input " + name + ": " + str(failure))
+    try:
+        metadata.update(current_revisions(repo))
+    except (ValueError, OSError, KeyError) as failure:
+        metadata["capture_errors"].append("Invalid current catalog lineage: " + str(failure))
     if metadata["invocation"] is not None:
         try:
             retained = load_json(output / "invocation.json")
@@ -268,7 +368,8 @@ def local_invocation(invocation):
             "Explicit local execution cannot borrow hosted or malformed invocation identity")
 
 
-def executor_identity(invocation):
+def executor_identity(invocation, revisions=None):
+    revisions = current_revisions() if revisions is None else revisions
     require(isinstance(invocation, dict) and invocation.get("schema_version") == 1 and invocation.get("stage") == "verify" and
             invocation.get("host") == "linux", "Wrong execution schema/stage/host")
     identity = invocation.get("identity")
@@ -281,17 +382,21 @@ def executor_identity(invocation):
     } and binding.get("repository") == "cbattlegear/MeshCoreOne-Android" and binding.get("work_package") == "WP-003" and
             isinstance(binding.get("base_sha"), str) and HEX.fullmatch(binding["base_sha"]) and
             isinstance(binding.get("head_sha"), str) and HEX.fullmatch(binding["head_sha"]) and
-            binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == MANIFEST and
-            binding.get("policy_revision") == POLICY, "Malformed executor binding")
+            binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == revisions["manifest_sha256"] and
+            binding.get("policy_revision") == revisions["policy_revision"], "Malformed executor binding")
     return identity
 
 
 def validate_capture(output, accounting, require_hosted=True, *, expected_identity=None):
+    revisions = {key: accounting[key] for key in ("manifest_sha256", "policy_revision")}
     snapshot = load_json(output / "raw-capture.json")
     require(snapshot.get("schema_version") == 1 and snapshot.get("repository") == "cbattlegear/MeshCoreOne-Android" and snapshot.get("work_package") == "WP-208" and
             HEX.fullmatch(snapshot.get("head_sha", "")) and snapshot.get("source_sha") == SOURCE and
-            snapshot.get("manifest_sha256") == MANIFEST and snapshot.get("policy_revision") == POLICY, "Malformed capture binding")
+            snapshot.get("manifest_sha256") == revisions["manifest_sha256"] and
+            snapshot.get("policy_revision") == revisions["policy_revision"], "Malformed capture binding")
     require(not snapshot.get("capture_errors"), "Raw capture contains unsafe/missing inputs")
+    require(snapshot["head_sha"] == accounting["services_producer"]["current_head_sha"],
+            "Captured reports belong to a stale current Services producer")
     input_names = [row["path"] for row in snapshot["input_blobs"]]
     require(input_names and len(set(input_names)) == len(input_names) and
             set(accounting["implementation_inputs"]).issubset(input_names), "Missing/duplicate committed implementation inputs")
@@ -309,9 +414,9 @@ def validate_capture(output, accounting, require_hosted=True, *, expected_identi
         require(snapshot["invocation"], "Missing actual Linux invocation; old/local proof is not acceptance")
         require(record(output / snapshot["invocation"]["path"], output) == snapshot["invocation"], "Changed invocation")
         invocation = load_json(output / "invocation.json")
-        identity = executor_identity(invocation)
+        identity = executor_identity(invocation, revisions)
         require(isinstance(expected_identity, dict), "Missing independently expected executor identity")
-        executor_identity({"schema_version": 1, "stage": "verify", "host": "linux", "identity": expected_identity})
+        executor_identity({"schema_version": 1, "stage": "verify", "host": "linux", "identity": expected_identity}, revisions)
         require(identity == expected_identity, "Different/stale provider execution identity")
         binding = expected_identity["binding"]
         expected_execution = snapshot.get("execution_expected")
@@ -332,7 +437,7 @@ def validate_capture(output, accounting, require_hosted=True, *, expected_identi
     require(consumers == set(accounting["room_consumers"]), "Missing/extra actual Room consumer execution")
     return {
         "schema_version": 1, "repository": snapshot["repository"], "work_package": "WP-208",
-        "head_sha": snapshot["head_sha"], "source_sha": SOURCE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+        "head_sha": snapshot["head_sha"], "source_sha": SOURCE, **revisions,
         "execution_identity": identity, "counts": {
             "original_families": len(accounting["original_families"]), "expanded_original_cases": len(accounting["expanded_originals"]),
             "messaging": {"discovered": len(expected), "passed": len(expected), "failed": 0, "errors": 0, "skipped": 0},

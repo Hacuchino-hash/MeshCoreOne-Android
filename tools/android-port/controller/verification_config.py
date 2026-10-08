@@ -97,6 +97,15 @@ def content_scope_predecessor(manifest):
     return Manifest(project_content_scope(manifest.data), manifest.exclusions, manifest.repo)
 
 
+def content_scope_revisions(manifest, policy):
+    from controller.gates import policy_revision
+
+    predecessor = content_scope_predecessor(manifest)
+    if policy_revision(predecessor, policy) != "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a":
+        raise PortError("Frozen predecessor policy changed outside the approved content scope")
+    return {"manifest_sha256": manifest.sha256, "policy_revision": policy_revision(manifest, policy)}
+
+
 def check_configuration(repo: Path):
     from bootstrap import build_inventory
 

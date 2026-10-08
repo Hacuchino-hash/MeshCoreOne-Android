@@ -10,7 +10,6 @@ import json
 from pathlib import Path
 import struct
 import tempfile
-from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zlib
@@ -18,6 +17,13 @@ import zlib
 import collect_evidence as reader
 import retain_raw
 from source_inventory import EvidenceError
+from controller.model import Manifest, load_manifest
+from controller.verification_config import apply_content_scope, content_scope_predecessor, content_scope_revisions
+
+
+def manifest_fixture(amended=False):
+    original = content_scope_predecessor(load_manifest(retain_raw.ROOT))
+    return Manifest(apply_content_scope(original.data), original.exclusions, original.repo) if amended else original
 
 
 def png(width=1, height=1):
@@ -257,8 +263,7 @@ class NativeTest {
                     with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
 
     def test_explicit_local_invocation_binds_actual_clean_head_tree_and_frozen_inputs(self):
-        manifest = SimpleNamespace(sha256=retain_raw.MANIFEST,
-            data={"reference": {"commit": retain_raw.PIN, "tree_sha": retain_raw.SOURCE_TREE}})
+        manifest = manifest_fixture()
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "wp109-invocation.json"
             path.write_text(json.dumps(local_invocation_record()))
@@ -266,7 +271,6 @@ class NativeTest {
                     patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
                     patch.object(retain_raw, "git", side_effect=local_git), \
                     patch.object(retain_raw, "load_manifest", return_value=manifest), \
-                    patch.object(retain_raw, "policy_revision", return_value=retain_raw.POLICY), \
                     patch.object(retain_raw, "inventory") as inventory:
                 root, invocation, local = retain_raw.local_invocation(path)
             self.assertEqual(path.parent, root)
@@ -305,28 +309,81 @@ class NativeTest {
                     retain_raw.local_execution_binding()
 
     def test_local_binding_rejects_source_manifest_policy_or_original_tree_drift(self):
-        reference = {"commit": retain_raw.PIN, "tree_sha": retain_raw.SOURCE_TREE}
-        variants = (
-            (SimpleNamespace(sha256="a" * 64, data={"reference": reference}), retain_raw.POLICY, local_git),
-            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference | {"commit": "a" * 40}}),
-                retain_raw.POLICY, local_git),
-            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference | {"tree_sha": "a" * 40}}),
-                retain_raw.POLICY, local_git),
-            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference}), "a" * 64, local_git),
-            (SimpleNamespace(sha256=retain_raw.MANIFEST, data={"reference": reference}), retain_raw.POLICY,
-                lambda *args: b"a" * 40 if args == ("rev-parse", retain_raw.PIN + "^{tree}") else local_git(*args)),
-        )
+        original = manifest_fixture()
+        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
+        variants = []
+        for section, key, value in (("reference", "commit", "a" * 40),
+                                    ("reference", "tree_sha", "a" * 40),
+                                    ("repository", None, "other/repository")):
+            data = copy.deepcopy(original.data)
+            if key is None:
+                data[section] = value
+            else:
+                data[section][key] = value
+            variants.append((Manifest(data, original.exclusions, original.repo), policy, local_git))
+        wrong_policy = copy.deepcopy(policy)
+        wrong_policy["repository"] = "other/repository"
+        variants += [
+            (original, wrong_policy, local_git),
+            (original, policy, lambda *args: b"a" * 40 if args ==
+             ("rev-parse", retain_raw.PIN + "^{tree}") else local_git(*args)),
+        ]
         for manifest, policy, git in variants:
             with self.subTest(manifest=manifest, policy=policy), \
                     patch.object(retain_raw.platform, "system", return_value="Linux"), \
                     patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
                     patch.object(retain_raw, "git", side_effect=git), \
                     patch.object(retain_raw, "load_manifest", return_value=manifest), \
-                    patch.object(retain_raw, "policy_revision", return_value=policy), \
+                    patch.object(retain_raw, "unique_json", return_value=policy), \
                     patch.object(retain_raw, "inventory") as inventory:
                 with self.assertRaisesRegex(EvidenceError, "source/manifest/policy drift"):
                     retain_raw.local_execution_binding()
                 inventory.assert_not_called()
+
+    def test_reversible_content_scope_binds_actual_current_local_and_hosted_revisions(self):
+        manifest = manifest_fixture(amended=True)
+        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
+        revisions = content_scope_revisions(manifest, policy)
+        with patch.object(retain_raw.platform, "system", return_value="Linux"), \
+                patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
+                patch.object(retain_raw, "git", side_effect=local_git), \
+                patch.object(retain_raw, "load_manifest", return_value=manifest), \
+                patch.object(retain_raw, "inventory"):
+            local = retain_raw.local_execution_binding()
+        self.assertEqual(revisions["manifest_sha256"], local["binding"]["manifest_sha256"])
+        self.assertEqual(revisions["policy_revision"], local["binding"]["policy_revision"])
+        self.assertNotEqual(retain_raw.MANIFEST, local["binding"]["manifest_sha256"])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wp109-invocation.json"
+            current = invocation_record()
+            current["identity"]["binding"].update(revisions)
+            with patch.object(retain_raw, "git", return_value=b"b" * 40), \
+                    patch.object(retain_raw, "current_revisions", return_value=revisions):
+                path.write_text(json.dumps(current))
+                self.assertEqual(current, retain_raw.pipeline_invocation(path)[1])
+                for key, value in (("manifest_sha256", retain_raw.MANIFEST),
+                                   ("policy_revision", retain_raw.POLICY), ("head_sha", "c" * 40)):
+                    stale = copy.deepcopy(current)
+                    stale["identity"]["binding"][key] = value
+                    path.write_text(json.dumps(stale))
+                    with self.subTest(key=key), self.assertRaises(EvidenceError):
+                        retain_raw.pipeline_invocation(path)
+                path.write_text(json.dumps(local_invocation_record()))
+                with self.assertRaises(EvidenceError):
+                    retain_raw.pipeline_invocation(path)
+
+    def test_content_scope_does_not_admit_foreign_producers_or_missing_original_families(self):
+        original = manifest_fixture()
+        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
+        for field in ("owner", "acceptance", "write_paths", "depends_on"):
+            data = apply_content_scope(original.data)
+            producer = next(wp for wp in data["work_packages"] if wp["id"] == "WP-304")
+            if field == "owner":
+                producer[field] = "services-porter"
+            else:
+                producer[field] = []
+            with self.subTest(field=field), self.assertRaises(retain_raw.PortError):
+                content_scope_revisions(Manifest(data, original.exclusions, original.repo), policy)
 
     def test_local_forwarding_cannot_consume_a_hosted_or_malformed_identity(self):
         with tempfile.TemporaryDirectory() as directory:
