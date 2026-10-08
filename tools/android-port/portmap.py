@@ -42,21 +42,6 @@ def navigation_scope_admitted(manifest, relative):
         raise PortError("Missing/stale exact WP-302 launcher/unit-navigation scope approval")
     return True
 
-# Coordinator-approved, fixed allowance for exactly the four WP-218 native-adapter
-# test files whose write path is outside the WP-218 manifest entry's `write_paths`
-# (admitted native-adapter app/content tests, not a `write_paths` edit). This is a
-# closed, literal, case-sensitive set for WP-218 only -- never a prefix, glob, or a
-# relaxation of `permits()` for any other write-path check or working party. See
-# docs/android/evidence/WP-218/run-summary.json
-# (native_adapter_write_path_manifest_gap_2026_10_05) for the admitted disclosure.
-WP_218_FIXED_TEST_ALLOWANCE = frozenset({
-    "android/app/src/test/kotlin/com/meshcoreone/android/app/content/AndroidGeocoderAdapterTest.kt",
-    "android/app/src/test/kotlin/com/meshcoreone/android/app/content/BitmapImageDecoderTest.kt",
-    "android/app/src/test/kotlin/com/meshcoreone/android/app/content/DataStoreLinkPreviewPreferencesSourceTest.kt",
-    "android/app/src/test/kotlin/com/meshcoreone/android/app/content/LocationManagerLocationProducingTest.kt",
-})
-
-
 def port_map(manifest):
     directory = manifest.repo / "android"
     if not directory.exists():
@@ -81,10 +66,9 @@ def port_map(manifest):
             if source not in known or sha != manifest.data["reference"]["commit"]:
                 raise PortError(f"Unknown/stale source provenance: {relative}")
         for wp_id, reason in android_only:
-            fixed_allowed = wp_id == "WP-218" and relative in WP_218_FIXED_TEST_ALLOWANCE
             declared = permits(manifest.wp(wp_id)["write_paths"], relative)
             nav_allowed = wp_id == "WP-302" and not declared and navigation_scope_admitted(manifest, relative)
-            if not reason.strip() or not (fixed_allowed or declared or nav_allowed):
+            if not reason.strip() or not (declared or nav_allowed):
                 raise PortError(f"Invalid Android-only owner/write path: {relative}")
         for declaration in generated:
             generator, separator, declared_inputs = declaration.partition("; inputs: ")

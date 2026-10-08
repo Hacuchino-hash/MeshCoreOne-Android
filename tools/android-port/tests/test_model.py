@@ -1,7 +1,10 @@
 import copy
+import importlib.util
 import json
+import subprocess
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 from unittest.mock import patch
@@ -14,9 +17,170 @@ from controller.schema import check_schema, decode_json
 from bootstrap import build_inventory, check_generated
 from controller.verification_config import (
     CONTENT_SCOPE_PATHS, VERIFICATION_MANIFEST_SHA256,
-    apply_content_scope, apply_overlay, check_configuration, project_content_scope,
+    apply_content_scope, apply_overlay, check_configuration, content_scope_revisions,
+    inventory_details_predecessor, project_content_scope,
 )
+from controller.model import Manifest
+from controller.schema import load_json
 from controller.schema import digest
+
+
+def evidence_reader(relative, name):
+    spec = importlib.util.spec_from_file_location(name, REPO / relative)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class CurrentCatalogReaderTests(unittest.TestCase):
+    def cli_reader(self):
+        return evidence_reader("android/tools/meshcli/verification/collect_evidence.py", "cli_catalog_retention")
+
+    def retained_controls(self):
+        return {
+            path: (REPO / path).read_bytes()
+            for path in ("docs/android/port-manifest.json", "docs/android/automation-policy.json")
+        }
+
+    def current_invocation(self):
+        manifest = base_manifest()
+        revisions = content_scope_revisions(manifest, load_json(REPO / "docs/android/automation-policy.json"))
+        head = subprocess.check_output(
+            ["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True,
+        ).strip()
+        record = {
+            "schema_version": 1, "host": "linux", "stage": "verify",
+            "identity": {
+                "binding": {
+                    "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
+                    "head_sha": head, "base_sha": "67857474ef3d3012ab73c19a4943ec1334c20676",
+                    "source_sha": manifest.data["reference"]["commit"], **revisions,
+                },
+                "run_id": 17, "run_attempt": 2,
+            },
+        }
+        return record, head, revisions
+
+    def test_device_current_invocation_accepts_actual_catalog_and_rejects_historical_relabel(self):
+        reader = evidence_reader("docs/android/evidence/WP-211/collect_evidence.py", "device_catalog_lineage")
+        record, _, _ = self.current_invocation()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "invocation.json"
+            path.write_text(json.dumps(record), encoding="utf-8")
+            self.assertEqual(reader.invocation(path)["run_id"], 17)
+            record["identity"]["binding"].update(manifest_sha256=VERIFICATION_MANIFEST_SHA256)
+            path.write_text(json.dumps(record), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "source/policy drift"):
+                reader.invocation(path)
+
+    def test_cli_current_invocation_rejects_stale_catalog_host_head_and_run(self):
+        reader = evidence_reader("android/tools/meshcli/verification/collect_evidence.py", "cli_catalog_lineage")
+        record, head, revisions = self.current_invocation()
+        self.assertEqual(reader.validate_invocation(record, head, "linux", revisions), record)
+        for field, value in (("manifest_sha256", VERIFICATION_MANIFEST_SHA256),
+                             ("policy_revision", "0" * 64), ("head_sha", "0" * 40),
+                             ("source_sha", "0" * 40)):
+            changed = copy.deepcopy(record)
+            changed["identity"]["binding"][field] = value
+            with self.subTest(field=field), self.assertRaises(PortError):
+                reader.validate_invocation(changed, head, "linux", revisions)
+        with self.assertRaises(PortError):
+            reader.validate_invocation(record, head, "windows", revisions)
+        record["identity"]["run_id"] = True
+        with self.assertRaises(PortError):
+            reader.validate_invocation(record, head, "linux", revisions)
+
+    def test_datastore_current_catalog_preserves_full_historical_family_payload(self):
+        reader = evidence_reader("docs/android/evidence/WP-204/collect_evidence.py", "datastore_catalog_lineage")
+        inputs, families = reader.inventory()
+        self.assertEqual(len(inputs), 8)
+        self.assertEqual(len(families), 34)
+        details = load_json(REPO / "docs/android/evidence/WP-004/inventory-details.json")
+        changed = copy.deepcopy(details)
+        changed["files"][0]["blob_sha"] = "0" * 40
+        actual_load = reader.load_json
+        def altered(path):
+            return changed if path.name == "inventory-details.json" else actual_load(path)
+        with patch.object(reader, "load_json", side_effect=altered), self.assertRaisesRegex(
+                reader.EvidenceFailure, "Trusted original family inventory drift"):
+            reader.inventory()
+
+    def test_cli_retained_controls_bind_complete_executed_catalog_not_mutable_files(self):
+        reader = self.cli_reader()
+        manifest, controls = base_manifest(), self.retained_controls()
+        self.assertEqual(reader.retained_scope_revisions(manifest, controls),
+                         content_scope_revisions(manifest, load_json(REPO / "docs/android/automation-policy.json")))
+        for mode in ("missing", "foreign-policy", "changed-catalog", "invalid-json", "invalid-utf8"):
+            changed = dict(controls)
+            policy = "docs/android/automation-policy.json"
+            if mode == "missing":
+                del changed[policy]
+            elif mode == "foreign-policy":
+                value = decode_json(changed[policy].decode("utf-8"))
+                value["repository"] = "foreign/repository"
+                changed[policy] = json.dumps(value).encode()
+            elif mode == "changed-catalog":
+                value = copy.deepcopy(manifest.data)
+                value["inventory"][0]["blob_sha"] = "0" * 40
+                changed["docs/android/port-manifest.json"] = json.dumps(value).encode()
+            elif mode == "invalid-json":
+                changed[policy] = b"{malformed"
+            else:
+                changed[policy] = b"\xff"
+            with self.subTest(mode=mode), self.assertRaises(PortError):
+                reader.retained_scope_revisions(manifest, changed)
+
+    def cli_retention_fixture(self, reader, root, controls):
+        repo = root / "repo"
+        directory = repo.joinpath(*reader.MODULES["meshcli"][0].split("/"))
+        directory.mkdir(parents=True)
+        identities = sorted(reader.required_cli_cases())
+        self.assertEqual(len(identities), 87)
+        suite = ET.Element("testsuite", tests=str(len(identities)), failures="0", errors="0", skipped="0")
+        for scope, name in identities:
+            ET.SubElement(suite, "testcase", classname=scope, name=name)
+        ET.SubElement(suite, "system-out").text = "complete synthetic reader fixture log; not native evidence"
+        raw = ET.tostring(suite)
+        (directory / "TEST-fixture.xml").write_bytes(raw)
+        context = (
+            "a" * 40, base_manifest(),
+            {"scope": reader.LOCAL_SCOPE, "head_sha": "a" * 40, "host": "linux"},
+            {path: reader.blob(data) for path, data in controls.items()}, controls,
+        )
+        return repo, context, raw
+
+    def test_cli_complete_raw_retention_uses_retained_controls_when_live_policy_is_absent(self):
+        reader = self.cli_reader()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, context, raw = self.cli_retention_fixture(reader, root, self.retained_controls())
+            output = root / "retained"
+            self.assertFalse((repo / "docs/android/automation-policy.json").exists())
+            with patch.object(reader, "execution_inputs", return_value=context):
+                result = reader.retain(repo, output)
+            self.assertEqual(result["validation"]["status"], "passed")
+            self.assertEqual(result["validation"]["counts"]["passed"], 87)
+            self.assertEqual(result["manifest_sha256"], base_manifest().sha256)
+            self.assertEqual((output / "junit/meshcli/TEST-fixture.xml").read_bytes(), raw)
+            self.assertEqual(load_json(output / "raw-retention.json"), result)
+
+    def test_cli_missing_retained_controls_preserve_all_raw_bytes_and_explicit_blocked_verdict(self):
+        reader = self.cli_reader()
+        controls = {"fixture.py": b"complete synthetic input bytes\n"}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, context, raw = self.cli_retention_fixture(reader, root, controls)
+            output = root / "retained"
+            with patch.object(reader, "execution_inputs", return_value=context):
+                result = reader.retain(repo, output)
+            self.assertEqual(result["validation"]["status"], "blocked")
+            self.assertIsNone(result["validation"]["counts"])
+            self.assertIn("Missing retained immutable control input", result["validation"]["error"])
+            self.assertIsNone(result["manifest_sha256"])
+            self.assertEqual((output / "junit/meshcli/TEST-fixture.xml").read_bytes(), raw)
+            self.assertEqual((output / "input-blobs" / reader.blob(controls["fixture.py"])).read_bytes(),
+                             controls["fixture.py"])
+            self.assertEqual(load_json(output / "raw-retention.json"), result)
 
 
 class ManifestTests(unittest.TestCase):
@@ -37,7 +201,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_expander_is_reproducible_not_a_runtime_glob(self):
         data, exclusions = build_inventory(REPO)
-        self.assertEqual(apply_overlay(data), base_manifest().data)
+        self.assertEqual(apply_overlay(data), project_content_scope(base_manifest().data))
         self.assertEqual(exclusions, base_manifest().exclusions)
         self.assertTrue(all("*" not in e["path"] for e in data["inventory"]))
 
@@ -62,6 +226,39 @@ class ManifestTests(unittest.TestCase):
         with self.assertRaises(PortError):
             apply_content_scope(amended)
 
+    def test_current_inventory_details_project_only_actual_catalog_provenance(self):
+        original = project_content_scope(base_manifest().data)
+        manifest = Manifest(apply_content_scope(original), {}, REPO)
+        details = load_json(REPO / "docs/android/evidence/WP-004/inventory-details.json")
+        details["manifest_sha256"] = manifest.sha256
+        before = copy.deepcopy(details)
+        historical = inventory_details_predecessor(details, manifest)
+        self.assertEqual(historical["manifest_sha256"], VERIFICATION_MANIFEST_SHA256)
+        self.assertEqual(historical["files"], before["files"])
+        self.assertEqual(historical["counts"], before["counts"])
+        self.assertEqual(details, before)
+        for revision in ("0" * 64, VERIFICATION_MANIFEST_SHA256):
+            with self.subTest(stale=revision), self.assertRaises(PortError):
+                inventory_details_predecessor({**details, "manifest_sha256": revision}, manifest)
+        with self.assertRaises(PortError):
+            inventory_details_predecessor({**details, "source_sha": "0" * 40}, manifest)
+        with self.assertRaises(PortError):
+            inventory_details_predecessor([], manifest)
+
+    def test_current_revision_projection_rejects_changed_policy_or_unowned_catalog(self):
+        manifest = Manifest(apply_content_scope(project_content_scope(base_manifest().data)), {}, REPO)
+        policy = load_json(REPO / "docs/android/automation-policy.json")
+        result = content_scope_revisions(manifest, policy)
+        self.assertEqual(result["manifest_sha256"], manifest.sha256)
+        self.assertEqual(result["policy_revision"], "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68")
+        changed = copy.deepcopy(policy)
+        changed["repository"] = "foreign/repository"
+        with self.assertRaises(PortError):
+            content_scope_revisions(manifest, changed)
+        changed = copy.deepcopy(manifest.data)
+        changed["inventory"][0]["blob_sha"] = "0" * 40
+        with self.assertRaises(PortError):
+            content_scope_revisions(Manifest(changed, {}, REPO), policy)
     def test_content_scope_rejects_all_other_manifest_and_ownership_drift(self):
         original = project_content_scope(base_manifest().data)
         amended = apply_content_scope(original)

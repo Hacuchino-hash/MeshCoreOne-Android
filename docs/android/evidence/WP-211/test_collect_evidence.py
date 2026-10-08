@@ -157,7 +157,7 @@ class IdentityReaderTests(unittest.TestCase):
             binding = {"repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
                        "head_sha": reader.git("rev-parse", "HEAD"),
                        "base_sha": "372fbc5866305e045025472ba555e7941873000f", "source_sha": reader.SOURCE,
-                       "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY}
+                       **reader.current_revisions()}
             value = {"schema_version": 1, "host": "linux", "stage": "verify",
                      "identity": {"binding": binding, "run_id": 1, "run_attempt": 1}}
             path.write_text(json.dumps(value))
@@ -223,8 +223,7 @@ class IdentityReaderTests(unittest.TestCase):
     def test_historical_owner_cannot_be_relabelled_as_current_recovery_evidence(self):
         metadata = {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
-            "source_sha": reader.SOURCE, "manifest_sha256": reader.MANIFEST,
-            "policy_revision": reader.POLICY, "lease": reader.LEASE,
+            "source_sha": reader.SOURCE, **reader.current_revisions(), "lease": reader.LEASE,
             "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
             "recovery_owner_receipt": {
                 **reader.RECOVERY_OWNER, "native_session": "18dd9693-255c-4cb4-8154-86ee8040a8dc",
@@ -243,6 +242,12 @@ class InvocationReaderTests(unittest.TestCase):
         cls.git("init", "--quiet")
         cls.git("config", "user.name", "Reader fixture")
         cls.git("config", "user.email", "reader-fixture@example.invalid")
+        for name in ("port-manifest.json", "automation-policy.json", "not-ported.json", "reference-amendments.json"):
+            source = reader.ROOT / "docs" / "android" / name
+            target = cls.repository / "docs" / "android" / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+        cls.revisions = reader.current_revisions()
         cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "before baseline")
         cls.before = cls.git("rev-parse", "HEAD")
         cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "baseline")
@@ -270,7 +275,7 @@ class InvocationReaderTests(unittest.TestCase):
         self.hosted = {**self.local, "identity": {
             "binding": {"repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
                         "base_sha": self.later, "head_sha": self.head, "source_sha": reader.SOURCE,
-                        "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY},
+                        **self.revisions},
             "run_id": 17, "run_attempt": 2,
         }}
         self.addCleanup(self.temporary.cleanup)
@@ -286,8 +291,7 @@ class InvocationReaderTests(unittest.TestCase):
         (self.root / "actual-invocation.json").write_bytes(self.path.read_bytes())
         metadata = {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
-            "source_sha": reader.SOURCE, "manifest_sha256": reader.MANIFEST,
-            "policy_revision": reader.POLICY, "lease": reader.LEASE,
+            "source_sha": reader.SOURCE, **self.revisions, "lease": reader.LEASE,
             "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
             "recovery_owner_receipt": reader.RECOVERY_OWNER, "head_sha": self.head,
             "invocation_file": str(self.path), "execution": execution,
@@ -303,6 +307,29 @@ class InvocationReaderTests(unittest.TestCase):
         self.assertIsNone(result["run_attempt"])
         self.assertEqual(reader.invocation(None)["authority"], result["authority"])
         self.assertNotIn("actual_root_binding", result)
+
+    def test_historical_catalog_cannot_be_relabelled_as_current_execution(self):
+        value = copy.deepcopy(self.hosted)
+        value["identity"]["binding"].update(
+            manifest_sha256=reader.MANIFEST, policy_revision=reader.POLICY,
+        )
+        with self.assertRaisesRegex(ValueError, "source/policy drift"):
+            self.invoke(value)
+
+    def test_present_control_tamper_and_absent_control_are_not_defaults(self):
+        policy = self.repository / "docs/android/automation-policy.json"
+        original = policy.read_bytes()
+        try:
+            changed = json.loads(original)
+            changed["repository"] = "foreign/repository"
+            policy.write_text(json.dumps(changed), encoding="utf-8")
+            with self.assertRaises(PortError):
+                self.invoke(self.hosted)
+            policy.unlink()
+            with self.assertRaises(PortError):
+                self.invoke(self.hosted)
+        finally:
+            policy.write_bytes(original)
 
     def test_missing_identity_is_not_a_local_fallback(self):
         value = {key: item for key, item in self.local.items() if key != "identity"}

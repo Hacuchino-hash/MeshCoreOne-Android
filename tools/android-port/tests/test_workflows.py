@@ -11,7 +11,7 @@ from unittest.mock import patch
 from fixtures import REPO, base_manifest
 from bootstrap import build_inventory
 from controller.errors import PortError
-from controller.verification_config import AMENDMENTS, apply_overlay, check_configuration
+from controller.verification_config import AMENDMENTS, apply_overlay, check_configuration, project_content_scope
 from controller.workflows import parse_yaml, validate_candidate, validate_setup, validate_trusted, validate_workflows
 
 
@@ -138,7 +138,7 @@ class WorkflowTests(unittest.TestCase):
     def test_verification_overlay_is_reproducible_and_only_changes_two_real_configs(self):
         original, _ = build_inventory(REPO)
         amended = apply_overlay(original)
-        self.assertEqual(amended, base_manifest().data)
+        self.assertEqual(amended, project_content_scope(base_manifest().data))
         for before, after in zip(original["work_packages"], amended["work_packages"], strict=True):
             if before["id"] in AMENDMENTS:
                 self.assertEqual({k: v for k, v in before.items() if k != "verification"},

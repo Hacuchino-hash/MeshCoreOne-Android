@@ -19,6 +19,7 @@ from controller.model import REFERENCE_SHA, validate_manifest
 from controller.paths import git_path
 from controller.render import cloud_payload, input_page, issue_payload, local_payload, render
 from controller.test_runner import run_suite
+from controller.verification_config import project_content_scope
 from controller.validate import main as validate_main
 from portmap import port_map, WP_302_SCOPE_APPROVAL, WP_302_SCOPE_PROOF
 
@@ -380,32 +381,36 @@ class ProvenanceTests(unittest.TestCase):
                 with self.subTest(content=content), self.assertRaises(PortError):
                     port_map(self.temporary_manifest(directory))
 
-    def test_wp218_fixed_native_adapter_test_allowance_is_closed_and_case_sensitive(self):
+    def test_wp218_canonical_content_prefixes_replace_fixed_filename_allowance(self):
         base = Path("android/app/src/test/kotlin/com/meshcoreone/android/app/content")
-        fixed_names = (
+        names = (
             "AndroidGeocoderAdapterTest.kt",
             "BitmapImageDecoderTest.kt",
             "DataStoreLinkPreviewPreferencesSourceTest.kt",
             "LocationManagerLocationProducingTest.kt",
+            "ElevationServiceAdapterTest.kt",
         )
-        for name in fixed_names:
-            with tempfile.TemporaryDirectory() as directory, self.subTest(name=name):
-                file = Path(directory) / base / name
+        for relative in [*(base / name for name in names),
+                         Path("android/app/src/main/kotlin/com/meshcoreone/android/app/content/NewConsumer.kt")]:
+            with tempfile.TemporaryDirectory() as directory, self.subTest(relative=relative):
+                file = Path(directory) / relative
                 file.parent.mkdir(parents=True)
                 file.write_text("// AndroidOnly: WP-218 admitted native-adapter test\n", encoding="utf-8")
                 results = port_map(self.temporary_manifest(directory))
                 self.assertEqual(results[0]["android_only"], ["WP-218"])
+                predecessor = replace(self.temporary_manifest(directory),
+                                      data=project_content_scope(base_manifest().data))
+                with self.assertRaises(PortError):
+                    port_map(predecessor)
 
         invalid_cases = {
-            "fifth_sibling_test_not_in_fixed_set": (base / "ElevationServiceAdapterTest.kt", "WP-218"),
             "wrong_owner_wp": (base / "AndroidGeocoderAdapterTest.kt", "WP-217"),
             "unrelated_directory": (
                 Path("android/app/src/test/kotlin/com/meshcoreone/android/app/other/AndroidGeocoderAdapterTest.kt"),
                 "WP-218",
             ),
-            "exact_case_mismatch": (base / "androidgeocoderadaptertest.kt", "WP-218"),
-            "main_not_test_path": (
-                Path("android/app/src/main/kotlin/com/meshcoreone/android/app/content/AndroidGeocoderAdapterTest.kt"),
+            "sibling_prefix": (
+                Path("android/app/src/main/kotlin/com/meshcoreone/android/app/contentExtra/Consumer.kt"),
                 "WP-218",
             ),
         }
@@ -413,12 +418,12 @@ class ProvenanceTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as directory, self.subTest(label=label):
                 file = Path(directory) / relative
                 file.parent.mkdir(parents=True)
-                file.write_text(f"// AndroidOnly: {wp_id} not an admitted fixed path\n", encoding="utf-8")
+                file.write_text(f"// AndroidOnly: {wp_id} not canonical content scope\n", encoding="utf-8")
                 with self.assertRaises(PortError):
                     port_map(self.temporary_manifest(directory))
 
         with tempfile.TemporaryDirectory() as directory:
-            file = Path(directory) / base / fixed_names[0]
+            file = Path(directory) / base / names[0]
             file.parent.mkdir(parents=True)
             for content in (
                 "// AndroidOnly: WP-218 \n",

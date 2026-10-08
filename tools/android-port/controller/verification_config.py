@@ -106,6 +106,16 @@ def content_scope_revisions(manifest, policy):
     return {"manifest_sha256": manifest.sha256, "policy_revision": policy_revision(manifest, policy)}
 
 
+def inventory_details_predecessor(details, manifest):
+    predecessor = content_scope_predecessor(manifest)
+    if (not isinstance(details, dict) or details.get("source_sha") != predecessor.data["reference"]["commit"]
+            or details.get("manifest_sha256") != manifest.sha256):
+        raise PortError("Original inventory details do not bind the actual canonical catalog")
+    result = copy.deepcopy(details)
+    result["manifest_sha256"] = predecessor.sha256
+    return result
+
+
 def check_configuration(repo: Path):
     from bootstrap import build_inventory
 
