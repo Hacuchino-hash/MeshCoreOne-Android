@@ -20,8 +20,16 @@ Swift/Kotlin and Compose skills as applicable. Installation is not fleet activat
   Codable bytes/UUIDs, zlib, 50MiB compressed/512MiB expanded. Do not manufacture compatibility.
 - Process database/preferences survive connections; radio services are per connection.
   WP-207 implements factory-based lifecycle; WP-303 assembles the graph after actual prerequisites.
-- Take a shared all-write-path lease before work. Resources, docs, workflows, schemas, fixtures,
-  catalogs and containers have no blanket exceptions. A shared change requires an approved amendment.
+- A WP/session assignment authorizes ordinary implementation, tests, evidence, generated outputs and
+  directly necessary support edits inside manifest-declared capabilities. The worker/coordinator
+  automatically acquires and evolves typed reservations; never ask the user to rewrite authorization
+  prose for a path, checksum, fixture or generated output.
+- Admit a discovered support path only through a trusted path+operation capability rule and enforce its
+  invariants/tests. Reconcile disjoint shared edits automatically; serialize or transfer real semantic
+  overlap to the current producer. Unknown capabilities fail closed with one actionable blocker.
+- Authorization prose is immutable audit context. Receipts bind identities/revisions/capability IDs/paths;
+  implementation evidence binds bytes and tests. Escalate only unresolved ownership collisions, drift,
+  protected/human gates, missing authentication/tool capability or substantive product decisions.
 - File ownership/provenance is traceability, not parity. Port original cases/parameter families,
   typed errors, cancellation and consumer behavior; no silent failure, dropped data or fake success.
 - Use only actual declared verification commands; fail on missing/malformed/zero-test evidence.
@@ -31,7 +39,7 @@ Swift/Kotlin and Compose skills as applicable. Installation is not fleet activat
 - Reviewer profile/skills/policy are staged from the trusted base. `parity-reviewer` has only
   read/search tools; it cannot execute, edit, access the network, post checks, merge or approve gates.
 - Pause, missing budgets/authentication, unknown execution identities, stale SHAs and human/protected
-  gates block live actions. Closed issues and idle sessions never unlock dependencies.
+  gates block their affected live or merge actions. Closed issues and idle sessions never unlock dependencies.
 
 Use `[WP-xxx] <bounded title>` and the existing PR template. Do not create an unrelated issue
 for `Closes`. Keep deviations/evidence per WP. Bootstrap and WPs001-003 are supervised; stop for

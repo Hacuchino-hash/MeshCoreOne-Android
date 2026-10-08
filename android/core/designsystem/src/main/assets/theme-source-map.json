@@ -5673,7 +5673,7 @@
   },
   "entitlements": "All ten themes are unlocked. Original product IDs are inert provenance, not permissions.",
   "generator": "tools/android-port/theme_convert.py",
-  "generator_sha256": "97e7a0af484caf11c5bc2a3bd916c419564309e12cb4bb1ba6d82c646e61a20c",
+  "generator_sha256": "6b1fc8dbbb64419176e3362e6030583691f6d931389fb9f1c5d37add44614050",
   "primary_owned_inputs": {
     "AppIcon.icon/Assets/app-icon.png": "415a1a52d1a00ebc87d020507805a93c3e412c6a",
     "AppIcon.icon/Assets/background.png": "32d812bf0cb83f2da77be48dca7c544e1f701a62",

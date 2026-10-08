@@ -59,10 +59,15 @@ class EvidenceTests(unittest.TestCase):
         directory.mkdir(parents=True, exist_ok=True)
         (directory / "TEST-fixture.xml").write_bytes(data)
         source = b"immutable input fixture\n"
+        inputs = {
+            path: (reader.ROOT / path).read_bytes()
+            for path in ("docs/android/port-manifest.json", "docs/android/automation-policy.json")
+        }
+        inputs["fixture.py"] = source
         return (
-            "a" * 40, None,
+            "a" * 40, reader.load_manifest(reader.ROOT),
             {"scope": reader.LOCAL_SCOPE, "head_sha": "a" * 40, "host": "windows"},
-            {"fixture.py": reader.blob(source)}, {"fixture.py": source},
+            {path: reader.blob(raw) for path, raw in inputs.items()}, inputs,
         )
 
     def test_complete_raw_case_and_log_bytes_survive(self):
@@ -286,7 +291,8 @@ class EvidenceTests(unittest.TestCase):
             "identity": {"binding": {
                 "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
                 "base_sha": "b" * 40, "head_sha": head, "source_sha": reader.SOURCE,
-                "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY,
+                **reader.content_scope_revisions(reader.load_manifest(reader.ROOT),
+                    reader.load_json(reader.ROOT / "docs/android/automation-policy.json")),
             }, "run_id": 123, "run_attempt": 1},
         }
         path.write_text(json.dumps(record), encoding="utf-8")
