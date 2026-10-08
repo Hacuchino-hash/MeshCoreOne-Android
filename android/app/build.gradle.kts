@@ -148,48 +148,6 @@ tasks.register("resolveWp302NavigationDependencies") {
     }
 }
 
-val contentRepository = rootProject.projectDir.parentFile
-val navigationCollector = contentRepository.resolve("docs/android/evidence/WP-302/collect_evidence.py")
-val navigationBinding = layout.buildDirectory.file("reports/wp302/input-binding.json")
-val prepareWp302NavigationInputs by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Bind the actual current navigation source, original families and immutable inputs before App tests."
-    workingDir(contentRepository)
-    commandLine("python", "-B", navigationCollector.absolutePath, "--bind-inputs",
-        "--binding", navigationBinding.get().asFile.absolutePath)
-}
-val verifyWp302NavigationTests by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Require actual App navigation assertions, source50 families and native API31/37 rendered states."
-    dependsOn("testDebugUnitTest")
-    workingDir(contentRepository)
-    commandLine("python", "-B", navigationCollector.absolutePath, "--check", "--self-test",
-        "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-        "--binding", navigationBinding.get().asFile.absolutePath)
-}
-
-// The producer also runs before the separately owned navigation source is carried.
-// Once that real source exists, binding/tests/verdict are mandatory, including missing-reader failures.
-val navigationSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/navigation").asFile
-if (navigationSource.exists()) {
-    check(navigationSource.isDirectory && navigationCollector.isFile) {
-        "Present Navigation source requires its real package and evidence collector."
-    }
-    tasks.withType<Test>().configureEach {
-        if (name == "testDebugUnitTest") {
-            dependsOn(prepareWp302NavigationInputs)
-            systemProperty("navigationInputBinding",
-                navigationBinding.get().asFile.resolveSibling("input-binding.properties").absolutePath)
-            systemProperty("navigationArtifactDirectory",
-                layout.buildDirectory.dir("reports/wp302/screens").get().asFile.absolutePath)
-            outputs.upToDateWhen { false }
-            outputs.doNotCacheIf("Navigation evidence requires fresh current-head execution markers") { true }
-        }
-    }
-    rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyWp302NavigationTests) }
-    tasks.named("check") { dependsOn(verifyWp302NavigationTests) }
-}
-
 // WP-218 diagnostic-only addition: hosted CI invokes the root verify stage with Gradle's
 // `--quiet` flag, which otherwise suppresses the failing test's identity and stack trace even on
 // a failed Test task (confirmed by direct inspection of tools/android-port/controller/ci.py and

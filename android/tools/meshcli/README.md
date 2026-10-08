@@ -98,45 +98,15 @@ separate bounded JVMs using a production-only classpath. Loopback peers encode
 the pinned Swift layouts independently; injected clocks/barriers replace
 arbitrary timing sleeps. Loopback is **not** physical-radio evidence.
 
-`verifyProtocolParity` runs the full protocol floor and CLI tests plus
-`verifyMeshCliCollector`. It is connected to normal root `verifyScaffoldTests`
-and the real protocol test finalizer from this owned build script. Its strict
-collector preserves every raw JUnit testcase/log node and immutable input blob,
-requires all486 original MeshCore declarations/parameter families and every
-existing4,708 native identity, all three new TCP consumer identities and all87
-declared CLI identities/parameter rows, not merely a nonzero count or class
-presence. It retains immutable build-logic/catalog/wrapper/locks/runtime and
-notice inputs as well as source/tests, and distinguishes reused assertions from
-new native cases. Missing, reduced, skipped, malformed, changed or stale proof fails.
-The generic root `core|feature|platform` collector does not count `tools`;
-the separate full CLI bundle is mandatory for coordinator replay.
-
-`retainMeshCliEvidence` is an always-run finalizer of the actual CLI `test`
-task, and a dependency of `verifyProtocolParity`. It preserves complete raw
-XML (including failed/skipped/malformed reports and all log nodes) and the same
-immutable input blobs in the explicit evidence directory with the `-raw`
-suffix before validating. Invalid, missing, zero or reduced discovery remains
-nonzero, never a success-shaped snapshot. Produced invalid reports have a
-blocked manifest; missing reports are an explicit BLOCKED error with no
-invented raw cases.
-
-`retainProtocolEvidence` independently finalizes the actual protocol `test`
-task into the `-protocol-raw` sibling. It has no CLI or success-verifier
-dependency, so a protocol failure cannot prevent its own XML/cause/input
-retention. The same per-file and encoded-declaration guards run before any
-XML/count parser. Actual failed cases also log their exact identities and
-exceptions at error level under quiet CI. Neither raw finalizer constitutes
-full parity or hardware acceptance.
-
-An explicit `meshCliEvidenceDirectory`/`meshCliInvocationFile` forwarding seam
-binds normal CI output to the actual executor's repository/base/head/run/attempt.
-Without forwarding, output is local unprivileged evidence in this module's
-ignored build directory, not a fabricated hosted run. Protected CI forwarding
-is provided for normal verify/protocol stages by the separately authorized
-serialized amendment, using the existing actual executor identity and no
-additional environment/credential forwarding. Existing always-upload retains
-the complete `wp109`, `wp109-raw` and `wp109-protocol-raw` directories; no
-workflow change is needed.
+Normal verification runs the actual protocol and CLI JVM tests directly from
+the root `verifyScaffoldTests` graph. Gradle's configured
+`failOnNoDiscoveredTests` behavior is authoritative for zero discovery, and
+the test tasks fail directly on assertion, error, or skipped-test failures.
+The former raw-JUnit retention, executor-binding forwarding, and post-test
+collector layer was retired because exact-commit CI logs are the authoritative
+record for reproducible automated checks. Protocol vectors, source fixtures,
+dependency locks, notices, and genuine hardware or human evidence remain
+independent inputs and are not generated from CI result reports.
 
 The app/tool remains under the repository's GPLv3 terms. Linked MeshCore
 protocol and BouncyCastle retain their MIT notices; Kotlin/coroutine/Gradle

@@ -97,32 +97,6 @@ def execution_identity():
         "run_id": positive_integer(int(os.environ["GITHUB_RUN_ID"]), "Workflow run ID"),
         "run_attempt": positive_integer(int(os.environ["GITHUB_RUN_ATTEMPT"]), "Workflow run attempt"),
     }
-
-
-def meshcli_evidence_options(stage: str, state: dict, output: Path):
-    if stage not in ("scaffold", "protocol"):
-        return []
-    output = output_directory(str(output))
-    identity = execution_identity()
-    if identity is not None:
-        fields(identity, {"binding", "run_id", "run_attempt"}, label="meshcli invocation identity")
-        binding = Binding.parse(identity["binding"])
-        if (binding.repository != "cbattlegear/MeshCoreOne-Android" or binding.work_package != "WP-003"
-                or binding.head_sha != git(REPO, "rev-parse", "HEAD").decode().strip()):
-            raise PortError("Meshcli forwarding requires the exact actual executor binding")
-        positive_integer(identity["run_id"], "Actual meshcli workflow run")
-        positive_integer(identity["run_attempt"], "Actual meshcli workflow attempt")
-    invocation = output / "wp109-invocation.json"
-    invocation_stage = "verify" if stage == "scaffold" else stage
-    write_json(invocation, {
-        "schema_version": 1, "stage": invocation_stage, "identity": identity, "host": state["host"],
-    })
-    return [
-        "-PmeshCliEvidenceDirectory=" + str(output / "wp109"),
-        "-PmeshCliInvocationFile=" + str(invocation),
-    ]
-
-
 def execute(command: list[str], environment: dict | None, log: Path, *, timeout=1800):
     log.parent.mkdir(parents=True, exist_ok=True)
     print("Executing " + " ".join(str(item) for item in command[:5]), flush=True)
@@ -174,7 +148,6 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
         raise PortError("Declared CI executor requires Python 3.12.4")
     environment = candidate_environment(state, local=local)
     verify_wrapper()
-    evidence_options = meshcli_evidence_options(stage, state, output)
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
     project = REPO / "android"
@@ -187,10 +160,6 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
     ]
     if local:
         options.append("-PscaffoldTestJvmArgs=-Xms32m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=256m")
-    options.extend(evidence_options)
-    if stage == "scaffold":
-        options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
-        options.append("-Pwp207EvidenceDirectory=" + str(output / "wp207-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
     default_selection = ("scaffold",) if stage == "scaffold" else ("protocol",) if stage == "protocol" else ()
     selected = list(scopes or default_selection)

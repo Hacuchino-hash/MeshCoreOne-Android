@@ -243,3 +243,7 @@ inspection is not real radio/API/OEM/native-runtime certification. No iOS/macOS,
 backup interoperability, human legal, release-signing/distribution, protected
 source/publisher, activation or downstream-WP completion is claimed. No
 self-merge, formal review or protected approval was performed.
+> **Retired normal-CI machinery:** raw JUnit/input retention, executor-binding
+> forwarding, and post-test collector tasks are no longer part of candidate
+> Gradle verification. The direct protocol and CLI JVM tests remain
+> authoritative; this document preserves historical evidence context only.

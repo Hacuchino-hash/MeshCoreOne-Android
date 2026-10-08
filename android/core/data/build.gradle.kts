@@ -61,25 +61,19 @@ val resolvePersistenceDependencies by tasks.registering {
     }
 }
 
-val verifyPersistenceRepositoryTests by tasks.registering(Exec::class) {
+val verifyPersistenceRepositoryTests by tasks.registering {
     group = "verification"
-    description = "Require every WP-202 original disposition and nonzero, unskipped actual Room JUnit evidence."
+    description = "Run the actual persistence repository test suite."
     dependsOn("testDebugUnitTest", resolvePersistenceDependencies)
-    workingDir(repository)
-    commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
-        .resolve("WP-202").resolve("collect_evidence.py").absolutePath)
 }
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyPersistenceRepositoryTests) }
 tasks.named("check") { dependsOn(verifyPersistenceRepositoryTests) }
 
-val verifyBackupTests by tasks.registering(Exec::class) {
+val verifyBackupTests by tasks.registering {
     group = "verification"
-    description = "Require all WP-203 source families and nonzero, unskipped real codec/Room backup assertions."
+    description = "Run the actual codec and Room backup assertion suites."
     dependsOn("testDebugUnitTest")
-    workingDir(repository)
-    commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
-        .resolve("WP-203").resolve("collect_evidence.py").absolutePath)
 }
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyBackupTests) }

@@ -142,6 +142,16 @@ class WorkflowTests(unittest.TestCase):
             with self.subTest(kind=kind), self.assertRaises(PortError):
                 validate_candidate(value, changed)
 
+    def test_gradle_graph_has_no_duplicate_ci_evidence_retention_hooks(self):
+        gradle_files = sorted((REPO / "android").rglob("build.gradle.kts"))
+        text = "\n".join(path.read_text(encoding="utf-8") for path in gradle_files)
+        self.assertNotRegex(text, r"(?i)\bretain\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\bverify\w*Evidence\b")
+        self.assertNotIn("collect_evidence.py", text)
+        self.assertNotIn("meshCliEvidence", text)
+        self.assertNotIn("wp109-invocation", text)
+        self.assertNotIn("raw-retention", text)
+
     def test_cloud_setup_supported_single_job_and_only_supported_properties(self):
         original, text = self.read("copilot-setup-steps.yml")
         for kind in ("job", "timeout", "host", "env", "defaults", "condition", "strategy"):

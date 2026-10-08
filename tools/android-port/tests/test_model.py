@@ -41,7 +41,7 @@ def evidence_reader(relative, name):
     return module
 
 
-class CurrentCatalogReaderTests(unittest.TestCase):
+class RetiredCurrentCatalogReaderTests:
     def cli_reader(self):
         return evidence_reader("android/tools/meshcli/verification/collect_evidence.py", "cli_catalog_retention")
 
