@@ -9,6 +9,13 @@ import sys
 import time
 
 
+def scaffold_options():
+    return [
+        "--console=plain", "--dependency-verification", "strict", "--build-cache",
+        "--no-parallel", "--max-workers=4", "-PscaffoldTestHeap=512m",
+    ]
+
+
 def execute(command, repo, environment, log):
     print("Executing: " + " ".join(map(str, command)), flush=True)
     with log.open("w", encoding="utf-8") as stream:
@@ -57,21 +64,7 @@ def main():
         elif stage == "preflight":
             ci.preflight(state, args.output)
         elif stage == "scaffold":
-            options = [
-                "--console=plain", "--dependency-verification", "strict", "--build-cache",
-                "--no-parallel", "--max-workers=4", "-PscaffoldTestHeap=512m",
-            ]
-            options += [
-                "-Pwp301EvidenceDirectory=" + str(args.output / "wp301-native"),
-                "-Pwp207EvidenceDirectory=" + str(args.output / "wp207-native"),
-                *ci.meshcli_evidence_options(stage, state, args.output),
-            ]
-            if (args.repo / "docs" / "android" / "evidence" / "WP-208" / "collect_evidence.py").is_file():
-                head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=args.repo, text=True).strip()
-                options += [
-                    "-Pwp208LocalEvidenceDirectory=" + str(args.output / "wp208-native"),
-                    "-Pwp208LocalExpectedHead=" + head,
-                ]
+            options = scaffold_options()
             project = args.repo / "android"
             execute([str(args.repo / "android" / "gradlew"), "-p", str(project),
                      *ci.TASKS[stage], *options], args.repo, environment, args.output / f"gradle-{stage}.log")

@@ -27,10 +27,10 @@ failure remains visible to that caller without invalidating a successfully
 completed shared generation. Cleanup always joins the owned operation and
 retains original and suppressed failures.
 
-With the existing CI's `wp207EvidenceDirectory` property, the hooks retain
-the complete source-family/native assertion maps and raw XML/input bindings
-in the external job artifact. Historical evidence never becomes current-head
-acceptance merely because the file names or test counts are unchanged.
+The consolidated candidate build runs the runtime, data, and datastore tests
+directly. It does not produce a post-test runtime evidence directory or retain
+a second copy of reproducible CI results. Historical evidence never becomes
+current-head acceptance merely because file names or test counts are unchanged.
 
 See [WP-207 evidence](../../../docs/android/evidence/WP-207/README.md) and
 [native adaptations](../../../docs/android/deviations/WP-207.md) for exact

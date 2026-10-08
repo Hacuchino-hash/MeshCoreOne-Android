@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 try:
     import check
+    import fast
 except ImportError:
     repo = Path(__file__).resolve().parents[3]
     common = Path(subprocess.check_output(
@@ -22,6 +23,7 @@ except ImportError:
     ).strip())
     sys.path.insert(0, str(common / "hooks" / "meshcore-local"))
     import check
+    import fast
 
 RESERVATIONS = Path(check.__file__).resolve().parents[2] / "meshcore-reservations"
 if Path(check.__file__).resolve().parent.name == "local":
@@ -39,6 +41,15 @@ from controller.ledger import Ledger
 
 
 class LocalCheckTests(unittest.TestCase):
+    def test_fast_scaffold_options_execute_without_deleted_evidence_forwarding(self):
+        options = fast.scaffold_options()
+
+        self.assertEqual(options.count("--dependency-verification"), 1)
+        self.assertEqual(options[options.index("--dependency-verification") + 1], "strict")
+        self.assertIn("--build-cache", options)
+        self.assertFalse(any("Evidence" in option or "evidence" in option for option in options))
+        self.assertFalse(any("Invocation" in option or "invocation" in option for option in options))
+
     def test_multiple_exact_push_tips_not_head(self):
         first, second = "a" * 40, "b" * 40
         text = (
