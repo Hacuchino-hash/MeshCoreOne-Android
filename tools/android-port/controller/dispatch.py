@@ -60,6 +60,8 @@ def build_parser():
     mode.add_argument("--dry-run", action="store_true", help="Default; no network, ledger mutation, dispatch or merge")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("status")
+    commands.add_parser("overlaps", help="Report advisory path/capability overlaps; never blocks local edits")
+    commands.add_parser("migrate-reservations", help="Migrate legacy receipts in one ledger transaction")
     files = commands.add_parser("files")
     files.add_argument("--wp")
     files.add_argument("--primary-only", action="store_true")
@@ -122,6 +124,18 @@ def main(argv=None, environment=None):
                     } for wp in manifest.work_packages.values()
                 ],
             }
+        elif args.command == "overlaps":
+            result = {"advisory": True, "overlaps": Ledger(settings.ledger_path, policy["repository"]).overlap_report()} \
+                if settings.ledger_path and settings.ledger_path.is_file() else {"advisory": True, "overlaps": []}
+        elif args.command == "migrate-reservations":
+            if dry_run:
+                result = {"dry_run": True, "action": "preview-migrate-reservations",
+                          "side_effects": False, "record_state": "legacy-advisory"}
+            else:
+                if not settings.ledger_path:
+                    raise PortError("Reservation migration requires a durable ledger")
+                result = {"action": "migrated-reservations",
+                          "count": Ledger(settings.ledger_path, policy["repository"]).migrate_legacy()}
         elif args.command == "files":
             if args.page is not None:
                 if not args.wp or not args.expected_manifest_sha or not args.expected_source_sha:
