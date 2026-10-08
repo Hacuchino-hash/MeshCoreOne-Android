@@ -48,6 +48,12 @@ class LocalCheckTests(unittest.TestCase):
         self.assertEqual(dict(check.runtime_files())["hook_test.py"], "test_check.py")
 
 
+    def test_runner_imports_bundle_head_and_namespaced_refs(self):
+        runner = Path(check.__file__).resolve().with_name("run.sh").read_text(encoding="utf-8")
+        self.assertIn('fetch --quiet "$bundle" HEAD', runner)
+        self.assertIn("+refs/*:refs/local-input/*", runner)
+
+
     def test_candidate_bundle_includes_an_exact_detached_revision(self):
         self.assertEqual(check.bundle_revisions("a" * 40), ["--all", "a" * 40])
 
