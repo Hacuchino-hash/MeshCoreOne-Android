@@ -57,7 +57,8 @@ cannot replace the mandatory 108 real rendered states or 140 current executions.
 Earlier 15-case results below remain historical evidence for those commits.
 
 The D0-only build producer must declare the five catalog aliases as actual App
-dependencies, admit App transitive lifecycle2.10/savedstate1.4/navigationevent1.1.1,
+dependencies, resolve the corrected matched Nav3 runtime/UI1.1.0 proposal with
+its published lifecycle2.10/savedstate1.4/navigationevent1.0.2 requirements,
 and preserve existing Content/HTTP hooks. Test dependencies need the existing
 coroutine-test and Room-runtime pins, instrumentation Compose/core/ext-junit/
 runner, and the exact shared `cases` source directory in the unit source set.
@@ -164,7 +165,7 @@ If the channel is absent or not found, the original repository failure is surfac
 Cancellation still propagates instead of starting fallback. Actual callback and
 wrapped-cancellation assertions cover these branches, but remain unexecuted.
 
-Published API review used unchanged coordinates. Navigation-suite Android1.4.0
+The initial published API review used then-proposed coordinates. Navigation-suite Android1.4.0
 sources SHA256 is
 `877bb57e1c5c96c716abeb574454fe8cefe336f8fba015ceebec1b4313380c82`;
 Activity1.13.0 sources SHA256 is
@@ -177,6 +178,42 @@ workaround for duplicate composition.
 The suite's explicit `NavigationRail` still renders the 80dp Material rail;
 its newer bar overload permits scalable labels. Reading licensed public source
 APIs is not binary checksum admission, Kotlin compilation or native execution.
+
+## Actual dependency incompatibility and bounded correction
+
+D0's actual sixteen-graph generator rejected the original Nav3 runtime/UI1.2.0
+proposal at producer head `31609ad77e8d6cecd1fc9d2e744fdb2e56f4bcb9`.
+It selected Compose1.11.0-rc01, not incumbent1.10.6. No rejected generated
+lock/checksum bytes were adopted.
+
+Independent root/Android publication review identifies the concrete RC path:
+Nav3 UI1.2.0 requires navigationevent-compose1.1.1, whose POM **and** Gradle
+module require Compose1.11.0-rc01. Nav3 UI Android1.2.0 separately disagrees
+between its POM runtime minimum1.11.2 and module minimum1.10.0. Reading just
+that module's lower minimum cannot establish compatibility.
+
+Only the owned additive `navigation3` version is corrected to **1.1.0**,
+matching runtime/UI. Its root and Android UI POM/module agree on Compose1.10.0;
+runtime requires1.9.5 and navigationevent-compose1.0.2 requires1.9.2.
+These requirements fit below incumbent Compose1.10.6. All incumbent pins,
+suite1.4.0, adaptive/layout1.3.0 and test coordinates remain unchanged.
+The actual complete selected graph still requires D0's serialized generator;
+there is no force/downgrade rule, RC admission or compatibility-pass claim.
+
+`coordinate-correction.json` records this exact producer request and source API
+review. `coordinate-review/` retains eighteen first-party root/Android raw POMs
+and modules, including both event versions and the rejected UI Android1.2.0
+publications. Corrected Nav3 Android1.1.0 runtime/UI source SHA256s are
+`2959e7f504c93451888c94b9607f19d95bdd0ece352a7d6cc33c3a3211e65c70` and
+`ad364e0b64307169bcdf40a27004d75e5d0799e6c59ee57f4d4e63452aaa8e0b`.
+Typed entries/decorators, scene-strategy lists/scope, scenes and predictive
+transition metadata used by the shell exist in these actual sources; no shell
+API rewrite was necessary. This is publication/API review, not Kotlin
+compilation, binary checksum admission, native execution or license approval.
+`coordinate-review-confirmation.log` retains all eighteen raw-byte SHA256s
+and asserted POM/module requirements; `coordinate-api-review.log` retains
+the matched source-jar hashes and exact used declarations. Earlier inspection
+probes are retained separately and are not passing evidence.
 
 ## Complete official cycle attempt after the correctness fixes
 
