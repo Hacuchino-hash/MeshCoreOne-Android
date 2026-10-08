@@ -150,6 +150,7 @@ tasks.register("resolveWp302NavigationDependencies") {
     }
 }
 
+val repository = rootProject.projectDir.parentFile
 val navigationInputBinding = layout.buildDirectory.file("reports/wp302/input-binding.properties")
 val prepareNavigationTestInputs by tasks.registering {
     group = "verification"
