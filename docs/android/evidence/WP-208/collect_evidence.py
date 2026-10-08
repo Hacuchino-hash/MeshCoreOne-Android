@@ -80,6 +80,17 @@ def git(repo, *args):
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
 
+
+def canonical_text(raw, label):
+    require(b"\0" not in raw, "Binary data cannot replace " + label)
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as failure:
+        raise ValueError("Invalid UTF-8 in " + label) from failure
+    require("\r" not in text.replace("\r\n", ""), "Unsupported line ending in " + label)
+    return text.replace("\r\n", "\n")
+
+
 def load_json(path):
     def unique(pairs):
         result = {}
@@ -159,11 +170,13 @@ def services_producer(repo=ROOT):
                 "Historical bootstrap blob does not match its original receipt")
         current = repo.joinpath(*name.split("/")).read_bytes()
         committed = subprocess.check_output(["git", "-C", str(repo), "cat-file", "blob", head + ":" + name])
-        require(current == committed, "Current compiled Services producer bytes differ from actual HEAD")
+        current_text = canonical_text(current, "current compiled Services producer")
+        committed_text = canonical_text(committed, "committed Services producer")
+        require(current_text == committed_text, "Current compiled Services producer content differs from actual HEAD")
         if name == "android/core/services/build.gradle.kts":
-            bootstrap_contract(current.decode("utf-8"), raw.decode("utf-8"))
+            bootstrap_contract(current_text, canonical_text(raw, "historical Services producer"))
         else:
-            require(current == raw, "Frozen Services lock changed")
+            require(current_text == canonical_text(raw, "historical Services lock"), "Frozen Services lock changed")
     lock = receipt["data_local_lock"]
     require(git(repo, "hash-object", str(repo.joinpath(*lock["path"].split("/")))) == lock["blob"],
             "Frozen local Data lock changed")

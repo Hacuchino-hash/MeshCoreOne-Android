@@ -212,6 +212,12 @@ class EvidenceReaderTest(unittest.TestCase):
             with self.subTest(changed=changed[:80]), self.assertRaises(ValueError):
                 READER.bootstrap_contract(changed, historical)
 
+    def test_current_producer_canonicalizes_only_utf8_crlf(self):
+        self.assertEqual("one\ntwo\n", READER.canonical_text(b"one\r\ntwo\r\n", "fixture"))
+        for raw in (b"one\rtwo\n", b"one\0two\n", b"\xff"):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                READER.canonical_text(raw, "fixture")
+
     def test_exact_content_scope_emits_current_revisions_and_rejects_old_capture(self):
         from controller.model import Manifest, load_manifest
         from controller.verification_config import (
