@@ -4,6 +4,31 @@
 traceability admission integrated; real App compilation/assembly passed,
 native acceptance incomplete. Not WP-302 acceptance or feature parity.**
 
+## Current native milestone
+
+Atf586c116, official verification actually discovered/executed150 App nodes:
+148 passed, two font200 failures, zero skipped. All100 original SDK31/37
+nodes passed; all140 mandatory WP-302 execution bindings are present.
+Actual SDK31/37 rendering produced104 of108 required states (52 per SDK).
+The remaining compact font200 labels measured67/68px wide with real horizontal
+overflow; the assertion was not removed or weakened. Native labels now request
+centered paragraph wrapping/hyphenation while preserving their incumbent
+Material typography, and the assertion additionally checks actual fontScale2.
+The new wrapping still requires execution.
+
+Complete XML/input bindings remain in `native-f586c116/`, visible output
+`native-f586c116.log`, raw run
+`/home/cbattagler/meshcoreone-work/local-checks/run-ygp4xkfP`.
+This is partial passing evidence, not140/108 acceptance or a complete cycle.
+
+Coordinator-prioritized WP-218 missing-POM support is separately frozen in
+`d8ccf1d8a2fb3fc5ca40adf1d511cb6b0425c381`: only three XML lines admitting
+the already-selected annotation-experimental1.5.1 POM. Independently verified
+publisher/cache-equal2257 bytes and full SHA256 are retained in
+`annotation-pom-admission.json` and the raw POM. All1158 previous tuples remain,
+with exactly one addition. The exact delta was delivered through PR25 for
+serialized carry, never a blind copy of this receiver's full Nav metadata.
+
 ## First real native results and corrections
 
 The actual subsequent75193694 verification stopped on the old strict3.5

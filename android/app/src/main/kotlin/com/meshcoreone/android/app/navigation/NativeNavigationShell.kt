@@ -28,6 +28,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -58,6 +59,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -194,7 +198,14 @@ fun NativeNavigationShell(
                             if (tab == AppTab.CHATS && unreadDescription.isNotEmpty()) stateDescription = unreadDescription
                         },
                     icon = { Icon(tab.symbol().vector, contentDescription = if (useRail) label else null) },
-                    label = if (useRail) null else ({ Text(label, Modifier.testTag("tab-label:${tab.name}")) }),
+                    label = if (useRail) null else ({
+                        Text(
+                            label,
+                            Modifier.testTag("tab-label:${tab.name}"),
+                            style = LocalTextStyle.current.copy(lineBreak = LineBreak.Paragraph, hyphens = Hyphens.Auto),
+                            textAlign = TextAlign.Center,
+                        )
+                    }),
                     badge = if (tab == AppTab.CHATS && unreadCount > 0) ({
                         Badge(Modifier.clearAndSetSemantics {}) {
                             Text(if (unreadCount > 99) stringResource(Chats.chatsScrollButtonBadgeOverflow) else unreadCount.toString())

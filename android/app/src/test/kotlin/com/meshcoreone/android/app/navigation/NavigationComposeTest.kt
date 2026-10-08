@@ -223,9 +223,11 @@ class NavigationComposeTest {
         compose.onNodeWithTag(tag, useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
         val layout = layouts.single()
+        assertEquals("The real native text must retain 200-percent scaling", 2f, layout.layoutInput.density.fontScale, 0f)
         assertFalse(
             "$tag must honor font scaling without clipping: size=${layout.size}, " +
-                "lines=${layout.lineCount}, widthOverflow=${layout.didOverflowWidth}, heightOverflow=${layout.didOverflowHeight}",
+                "text=${layout.layoutInput.text}, lines=${layout.lineCount}, " +
+                "widthOverflow=${layout.didOverflowWidth}, heightOverflow=${layout.didOverflowHeight}",
             layout.hasVisualOverflow,
         )
     }
