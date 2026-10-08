@@ -17,10 +17,13 @@ sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.gates import Binding, policy_revision
 from controller.model import Manifest
 from controller.schema import load_json
+from controller.verification_config import content_scope_revisions, inventory_details_predecessor
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+HISTORICAL_POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
 BASE = "e3369a97bf3a1e19b801c8d69ca8abf171da432b"
 RECEIPT_BASE = "7e2835bad2c03dfb5a088063655f9fc4dbafd00f"
 LEASE = "autonomous-WP-211-d147865c"
@@ -92,10 +95,17 @@ def string(literal):
     return json.loads(literal)
 
 
+def current_revisions():
+    from controller.schema import load_json as load_control
+
+    manifest = Manifest(load_control(ROOT / "docs/android/port-manifest.json"), {}, ROOT)
+    return content_scope_revisions(manifest, load_control(ROOT / "docs/android/automation-policy.json"))
+
+
 def frozen_families():
     manifest = Manifest(load_json(ROOT / "docs" / "android" / "port-manifest.json"), {}, ROOT)
     policy = load_json(ROOT / "docs" / "android" / "automation-policy.json")
-    require(manifest.sha256 == MANIFEST and policy_revision(manifest, policy) == POLICY, "Manifest/policy drift")
+    content_scope_revisions(manifest, policy)
     require(manifest.data["reference"]["commit"] == SOURCE, "Frozen source revision drift")
     primary = {entry["path"]: entry for entry in manifest.data["inventory"] if entry["primary_owner"] == "WP-211"}
     require(len(primary) == 24 and sum(e["kind"] == "test" for e in primary.values()) == 13, "Primary input ownership drift")
@@ -103,6 +113,7 @@ def frozen_families():
         require(git("rev-parse", SOURCE + ":" + path) == entry["blob_sha"], "Frozen primary blob drift: " + path)
         require(git("hash-object", str(ROOT.joinpath(*path.split("/")))) == entry["blob_sha"], "Source checkout drift: " + path)
     details = load_json(ROOT / "docs" / "android" / "evidence" / "WP-004" / "inventory-details.json")
+    inventory_details_predecessor(details, manifest)
     require(details["source_sha"] == SOURCE, "Original parameter inventory source drift")
     families = {}
     for file in details["files"]:
@@ -130,7 +141,8 @@ def frozen_producers():
     freeze = load_json(OUT / "producer-freeze.json")
     require(freeze["schema_version"] == 1 and freeze["repository"] == "cbattlegear/MeshCoreOne-Android" and
             freeze["work_package"] == "WP-211" and freeze["lease"] == LEASE and freeze["source_sha"] == SOURCE and
-            freeze["manifest_sha256"] == MANIFEST and freeze["policy_revision"] == POLICY,
+            freeze["manifest_sha256"] == HISTORICAL_MANIFEST and
+            freeze["policy_revision"] == HISTORICAL_POLICY,
             "Coordinator producer-freeze binding drift")
     paths = {entry["path"]: entry["git_blob"] for entry in freeze["files"]}
     require(len(paths) == len(freeze["files"]) and paths == FROZEN_PRODUCERS, "Frozen producer path/blob drift")
@@ -238,7 +250,10 @@ def inputs():
         result[path] = {"git_blob": expected, "checkout_blob": git("hash-object", str(actual_path)),
                         "sha256": sha256(actual_path.read_bytes())}
     require(result, "Zero immutable compiled inputs")
-    readers = sorted(OUT.glob("*.py")) + [OUT / "producer-freeze.json"]
+    readers = sorted(OUT.glob("*.py")) + [OUT / "producer-freeze.json",
+        ROOT / "docs/android/port-manifest.json", ROOT / "docs/android/automation-policy.json",
+        ROOT / "docs/android/evidence/WP-004/inventory-details.json",
+        ROOT / "tools/android-port/controller/verification_config.py"]
     for path in [*MAIN.glob("*.kt"), *TEST.glob("*.kt"), ROOT / ROOM_PATH, *readers]:
         relative = path.relative_to(ROOT).as_posix()
         expected = git("rev-parse", "HEAD:" + relative)
@@ -278,7 +293,9 @@ def invocation(path):
             "Invocation base is outside the inherited integration baseline")
     require(git("merge-base", typed_binding.base_sha, head) == typed_binding.base_sha,
             "Invocation base is not an ancestor of the actual HEAD")
-    require(binding["source_sha"] == SOURCE and binding["manifest_sha256"] == MANIFEST and binding["policy_revision"] == POLICY,
+    revisions = current_revisions()
+    require(binding["source_sha"] == SOURCE and binding["manifest_sha256"] == revisions["manifest_sha256"]
+            and binding["policy_revision"] == revisions["policy_revision"],
             "Invocation source/policy drift")
     require(type(identity["run_id"]) is int and identity["run_id"] > 0 and
             type(identity["run_attempt"]) is int and identity["run_attempt"] > 0, "Missing run/attempt identity")
@@ -295,7 +312,7 @@ def retain(output, invocation_file=None):
     output.mkdir(parents=True)
     head = git("rev-parse", "HEAD")
     metadata = {"schema_version": 1, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
-                "head_sha": head, "source_sha": SOURCE, "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+                "head_sha": head, "source_sha": SOURCE, "manifest_sha256": None, "policy_revision": None,
                 "lease": LEASE, "receipt_base_sha": RECEIPT_BASE, "integration_base_sha": BASE,
                 "recovery_owner_receipt": RECOVERY_OWNER,
                 "invocation_file": str(invocation_file) if invocation_file else None,
@@ -336,15 +353,18 @@ def retain(output, invocation_file=None):
     ]
     persist()
     metadata["execution"] = invocation(invocation_file)
+    metadata.update(current_revisions())
     persist()
     return metadata
 
 
 def validate_retained(output, invocation_file=None):
     metadata = load_json(output / "retention.json")
+    revisions = current_revisions()
     require(metadata["repository"] == "cbattlegear/MeshCoreOne-Android" and metadata["work_package"] == "WP-211" and
-            metadata["source_sha"] == SOURCE and metadata["manifest_sha256"] == MANIFEST and
-            metadata["policy_revision"] == POLICY and metadata["lease"] == LEASE, "Retained immutable binding drift")
+            metadata["source_sha"] == SOURCE and metadata["manifest_sha256"] == revisions["manifest_sha256"] and
+            metadata["policy_revision"] == revisions["policy_revision"] and metadata["lease"] == LEASE,
+            "Retained immutable binding drift")
     require(metadata["receipt_base_sha"] == RECEIPT_BASE and metadata["integration_base_sha"] == BASE,
             "Retained receipt/integration base drift")
     require(metadata["recovery_owner_receipt"] == RECOVERY_OWNER, "Retained recovery owner receipt drift")

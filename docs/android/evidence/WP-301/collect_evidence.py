@@ -19,6 +19,8 @@ sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.ci_evidence import read_xml, suite_counts
 from controller.errors import PortError
 from controller.model import load_manifest
+from controller.schema import load_json
+from controller.verification_config import content_scope_revisions
 
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
 MODULE = ROOT / "android" / "core" / "designsystem"
@@ -79,8 +81,7 @@ def source_parameter_counts():
 
 def static_inventory():
     manifest = load_manifest(ROOT)
-    if manifest.sha256 != "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746":
-        fail("canonical manifest changed")
+    content_scope_revisions(manifest, load_json(ROOT / "docs/android/automation-policy.json"))
     owned = [entry for entry in manifest.data["inventory"] if entry["primary_owner"] == "WP-301"]
     inputs = {entry["path"]: entry["blob_sha"] for entry in owned}
     if len(inputs) != 89:
@@ -102,14 +103,22 @@ def static_inventory():
     if len(originals) != 58:
         fail("original family inventory must contain all 58 cases")
     mapped, production, methods, current_inputs = {}, {}, set(), {}
-    for path in sorted((MODULE / "src").rglob("*")):
+    control_inputs = [
+        ROOT / "docs/android/port-manifest.json", ROOT / "docs/android/automation-policy.json",
+        ROOT / "tools/android-port/controller/verification_config.py",
+        ROOT / "tools/android-port/theme_convert.py", Path(__file__),
+    ]
+    for path in control_inputs:
+        if not path.is_file() or path.is_symlink():
+            fail("missing/linked current reader input: " + str(path))
+    for path in sorted([*(MODULE / "src").rglob("*"), *control_inputs]):
         if not path.is_file():
             continue
         relative = path.relative_to(ROOT).as_posix()
         raw = path.read_bytes()
         current_inputs[relative] = {
             "working_blob": subprocess.check_output(
-                ["git", "-C", str(ROOT), "hash-object", "--path", relative, "--stdin"], input=raw,
+                ["git", "-C", str(ROOT), "hash-object", "--no-filters", "--stdin"], input=raw,
             ).decode().strip(),
             "sha256": digest(raw), "size": len(raw),
         }
@@ -229,6 +238,7 @@ def collect(junit):
         "scope": "Real native unit/Compose/source-family/render execution, not iOS/UIKit/device/hardware/formal gate or whole-app graph acceptance.",
         "original_families": 58, "implemented_families": len(mapped), "approved_removed_families": len(EXCLUSIONS),
         "cases": records, "production_mappings": production, "current_inputs": current_inputs,
+        **content_scope_revisions(load_manifest(ROOT), load_json(ROOT / "docs/android/automation-policy.json")),
         "unit_counts": counts, "raw_junit": reports,
         "renders": {name: {key: value for key, value in render.items() if key != "data"} for name, render in renders.items()},
     }
