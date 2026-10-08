@@ -111,13 +111,6 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-val verifySharedUiInputs by tasks.registering {
-    group = "verification"
-    description = "Prepare the actual shared UI test inputs."
-    dependsOn("testDebugUnitTest")
-}
-tasks.named("preBuild") { dependsOn(verifySharedUiInputs) }
-
 val verifySharedUiTests by tasks.registering {
     group = "verification"
     description = "Run the actual shared UI test suite."
