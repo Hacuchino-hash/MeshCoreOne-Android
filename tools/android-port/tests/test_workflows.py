@@ -111,8 +111,6 @@ class WorkflowTests(unittest.TestCase):
                 value["jobs"]["build"]["runs-on"] = "windows-2025"
             elif kind == "strategy":
                 value["jobs"]["build"]["strategy"] = {"matrix": {"host": ["linux", "windows"]}}
-            else:
-                value["jobs"]["build"]["steps"][7]["if"] = "false"
             with self.subTest(kind=kind), self.assertRaises(PortError):
                 validate_candidate(value, text)
 

@@ -49,3 +49,11 @@ records only an exact-SHA/tree `verification-pending` status. Trusted-base merge
 validation requires the full architecture-neutral result schema and rejects
 reduced stages, missing tool/package metadata, zero tests, failures, skips, stale
 commits/trees, or malformed output digests.
+
+Required `android-ci` still triggers for every pull request and merge group, but
+its fail-safe immutable endpoint classifier skips the expensive scaffold job when
+no Android, controller, manifest/policy, or Android evidence input changed. The
+always-reported aggregator verifies that an unselected build was actually skipped;
+selected build failures, missing artifacts, zero discovery, and stale bindings
+remain blocking. Bootstrap and setup workflows use narrow real-input trigger sets,
+and completed one-off dependency proposal workflows have been removed.

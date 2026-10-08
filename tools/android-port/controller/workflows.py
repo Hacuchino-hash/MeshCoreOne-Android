@@ -71,13 +71,16 @@ def validate_candidate(value: dict, text: str):
     if not {"pull_request", "merge_group", "push", "workflow_dispatch"}.issubset(events):
         raise PortError("Required PR/merge-group/push/manual event is missing")
     jobs = value.get("jobs", {})
-    if set(jobs) != {"build", "android-ci"}:
+    if set(jobs) != {"scope", "build", "android-ci"}:
         raise PortError("Missing/unknown mandatory CI job")
     gate = jobs["android-ci"]
-    if gate.get("name") != "android-ci" or gate.get("if") != "${{ always() }}" or gate.get("needs") != ["build"]:
+    if (gate.get("name") != "android-ci" or gate.get("if") != "${{ always() }}"
+            or gate.get("needs") != ["scope", "build"]):
         raise PortError("android-ci must always aggregate every required build outcome")
     build = jobs["build"]
-    if build.get("runs-on") != "ubuntu-24.04" or "strategy" in build:
+    if (build.get("runs-on") != "ubuntu-24.04" or "strategy" in build
+            or build.get("needs") != ["scope"]
+            or build.get("if") != "${{ needs.scope.outputs.full == 'true' }}"):
         raise PortError("The Linux execution host is mandatory and unmatrixed")
     runs = "\n".join(step.get("run", "") for step in build["steps"])
     if "ci.py " not in runs:

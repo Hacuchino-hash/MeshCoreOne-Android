@@ -3,8 +3,20 @@ name: Android controller bootstrap
 on:
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/android-bootstrap.yml"
+      - "docs/android/automation-policy.json"
+      - "docs/android/port-manifest.json"
+      - "tools/android-port/controller/**"
+      - "tools/android-port/tests/**"
   merge_group:
     types: [checks_requested]
+    paths:
+      - ".github/workflows/android-bootstrap.yml"
+      - "docs/android/automation-policy.json"
+      - "docs/android/port-manifest.json"
+      - "tools/android-port/controller/**"
+      - "tools/android-port/tests/**"
   workflow_dispatch:
 
 permissions:
