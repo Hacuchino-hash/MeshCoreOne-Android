@@ -7,10 +7,41 @@ from controller.errors import PortError
 from controller.model import load_manifest
 from controller.paths import permits
 from controller.paths import git_path
+from controller.schema import digest, load_json
 
 HEADER = re.compile(r"^// PortedFrom: (.+)@([0-9a-f]{40})$", re.MULTILINE)
 ANDROID_ONLY = re.compile(r"^// AndroidOnly: (WP-\d{3}) (.+)$", re.MULTILINE)
 GENERATED = re.compile(r"^// GeneratedFrom: (.+)$", re.MULTILINE)
+
+WP_302_SCOPE_PROOF = "docs/android/evidence/WP-302/navigation-scope-admission.json"
+WP_302_SCOPE_APPROVAL = {
+    "schema_version": 1,
+    "repository": "cbattlegear/MeshCoreOne-Android",
+    "work_package": "WP-302",
+    "coordinator_session": "bcb17a74-5fa6-47d0-a4be-b6b595e20559",
+    "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+    "receiver_base_sha": "67857474ef3d3012ab73c19a4943ec1334c20676",
+    "manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+    "write_paths": [
+        "android/app/src/main/kotlin/com/meshcoreone/android/MainActivity.kt",
+        "android/app/src/test/kotlin/com/meshcoreone/android/app/navigation/",
+    ],
+    "authority": "User-directed approved necessary WP-302 launcher and unit-navigation support",
+    "acceptance": "Ownership/traceability admission only; no source, parity, human or merge acceptance",
+}
+
+
+def navigation_scope_admitted(manifest, relative):
+    launcher, tests = WP_302_SCOPE_APPROVAL["write_paths"]
+    if relative != launcher and not relative.startswith(tests):
+        return False
+    if (manifest.sha256 != WP_302_SCOPE_APPROVAL["manifest_sha256"]
+            or manifest.data["reference"]["commit"] != WP_302_SCOPE_APPROVAL["source_sha"]):
+        raise PortError("Stale WP-302 scope source or original manifest binding")
+    proof = load_json(manifest.repo / WP_302_SCOPE_PROOF, 16 * 1024)
+    if digest(proof) != digest(WP_302_SCOPE_APPROVAL):
+        raise PortError("Missing/stale exact WP-302 launcher/unit-navigation scope approval")
+    return True
 
 
 def port_map(manifest):
@@ -37,7 +68,9 @@ def port_map(manifest):
             if source not in known or sha != manifest.data["reference"]["commit"]:
                 raise PortError(f"Unknown/stale source provenance: {relative}")
         for wp_id, reason in android_only:
-            if not reason.strip() or not permits(manifest.wp(wp_id)["write_paths"], relative):
+            declared = permits(manifest.wp(wp_id)["write_paths"], relative)
+            nav_allowed = wp_id == "WP-302" and not declared and navigation_scope_admitted(manifest, relative)
+            if not reason.strip() or not (declared or nav_allowed):
                 raise PortError(f"Invalid Android-only owner/write path: {relative}")
         for declaration in generated:
             generator, separator, declared_inputs = declaration.partition("; inputs: ")

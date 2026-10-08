@@ -30,7 +30,7 @@ Compose, Room, Bluetooth or concrete runtime/service types in their public API.
 | `core:connectivity` | `core:protocol`, `core:model`, `core:contracts`, `core:ble` |
 | `core:runtime` | `core:protocol`, `core:model`, `core:contracts` |
 | `core:services` | `core:protocol`, `core:model`, `core:contracts` |
-| `core:ui` | `core:model`, `core:contracts`, `core:designsystem`, `core:l10n` |
+| `core:ui` | `core:model`, `core:contracts`, `core:designsystem`, `core:l10n`, `core:datastore` |
 | `core:maps` | `core:model`, `core:contracts`, `core:designsystem`, `core:ui`, `core:l10n` |
 | Each `feature:*` | `core:model`, `core:contracts`, `core:designsystem`, `core:ui`, `core:maps`, `core:l10n` as needed |
 | `platform:notifications` | `core:model`, `core:contracts`, `core:l10n` |
@@ -56,6 +56,13 @@ Its caller supplies a process scope; stopping a screen collector or replacing a
 radio connection must not close preferences or the theme service. This narrow
 edge does not permit a reverse datastore-to-designsystem dependency, concrete
 preference-store dependencies in features, or changes to the WP dependency DAG.
+
+The WP-304 coordinator-approved shared-tip adapter also receives the actual
+process-owned `PreferenceStore`. Eligibility and the durable show-once claim use
+one atomic DataStore update; UI collectors neither create nor close storage.
+This single edge does not permit datastore-to-UI, UI-to-concrete-radio/data
+dependencies, or concrete preference dependencies in features. The frozen
+65-WP/185-edge/eight-gate dependency plan is unchanged.
 
 `core:testing` may depend on production libraries and is consumed only through
 test configurations. An app test factory belongs to the app's test source set,

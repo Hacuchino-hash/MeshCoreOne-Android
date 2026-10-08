@@ -4,6 +4,8 @@ package com.meshcoreone.android.core.connectivity.pairing
 
 import com.meshcoreone.android.core.connectivity.ConnectivityClock
 import com.meshcoreone.android.core.connectivity.ConnectivityDiagnostics
+import com.meshcoreone.android.core.contracts.domain.errors.CompanionSetupFault
+import com.meshcoreone.android.core.contracts.domain.errors.SourceServiceFaultCarrier
 import java.util.UUID
 import kotlin.time.Duration
 import kotlinx.coroutines.CancellableContinuation
@@ -22,7 +24,21 @@ data class CompanionAssociation(
     val endpoint: BluetoothEndpoint get() = BluetoothEndpoint(deviceId, address, associationId.takeIf { it >= 0 })
 }
 
-sealed class CompanionSetupError(message: String) : Exception(message) {
+sealed class CompanionSetupError(message: String) : Exception(message), SourceServiceFaultCarrier {
+    override val sourceServiceFault: CompanionSetupFault
+        get() = when (this) {
+            is SessionNotActive -> CompanionSetupFault.SessionNotActive
+            is SessionInvalidated -> CompanionSetupFault.SessionInvalidated
+            is PickerDismissed -> CompanionSetupFault.PickerDismissed
+            is PickerRestricted -> CompanionSetupFault.PickerRestricted
+            is PickerAlreadyActive -> CompanionSetupFault.PickerAlreadyActive
+            is PairingFailed -> CompanionSetupFault.PairingFailed(reason)
+            is NoBluetoothIdentifier -> CompanionSetupFault.NoBluetoothIdentifier
+            is DiscoveryTimeout -> CompanionSetupFault.DiscoveryTimeout
+            is ConnectionFailed -> CompanionSetupFault.ConnectionFailed
+            is UserCancelled -> CompanionSetupFault.UserCancelled
+        }
+
     class SessionNotActive : CompanionSetupError("Bluetooth is not ready.")
     class SessionInvalidated : CompanionSetupError("Companion session ended unexpectedly.")
     class PickerDismissed : CompanionSetupError("Device selection was cancelled.")
