@@ -1,9 +1,7 @@
 // AndroidOnly: WP-002 Honest launcher/module assembly without a product AppContainer.
 // AndroidOnly: WP-218 Narrow app/content native adapters for core:services content ports.
-// kotlinx-coroutines-core/test are already transitively resolved here (core-jvm via
-// core:protocol's `api(libs.kotlinx.coroutines.core)`; coroutines-test already locked on
-// debugUnitTest* configs via androidx.compose.ui.test.junit4) - no new explicit declaration
-// or app.lockfile delta is needed for the app/content adapters added in this increment.
+// AndroidOnly: WP-218 Exclusive producer support for WP-302's reviewed native navigation graph.
+// Navigation coordinates are the WP-302 owner's reviewed proposal; incumbent catalog pins remain unchanged.
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
@@ -50,6 +48,25 @@ dependencies {
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.androidx.room.runtime)
     implementation("com.squareup.okhttp3:okhttp:5.5.0")
+    implementation("androidx.navigation3:navigation3-runtime:1.1.0")
+    implementation("androidx.navigation3:navigation3-ui:1.1.0")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.4.0")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.3.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.3.0")
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.room.runtime)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+}
+
+android {
+    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    sourceSets.getByName("test").java.srcDir(
+        "src/androidTest/kotlin/com/meshcoreone/android/app/navigation/cases",
+    )
 }
 
 class ContentPlatformSdkArguments(
@@ -97,6 +114,36 @@ tasks.register("resolveContentHttpDependencies") {
     }
 }
 
+tasks.register("resolveWp302NavigationDependencies") {
+    group = "verification"
+    description = "Resolve only App navigation assembly/lint/unit/instrumentation classpaths and retain actual graphs."
+    dependsOn("resolveContentHttpDependencies")
+    val names = listOf(
+        "debugAndroidTestRuntimeClasspath",
+        "kotlinCompilerPluginClasspathDebug",
+        "kotlinCompilerPluginClasspathDebugUnitTest",
+        "kotlinCompilerPluginClasspathDebugAndroidTest",
+        "kotlinCompilerPluginClasspathRelease",
+    )
+    doLast {
+        val directory = layout.buildDirectory.dir("reports/wp302/navigation-dependencies").get().asFile
+        directory.mkdirs()
+        names.forEach { name ->
+            val configuration = configurations.findByName(name)
+                ?: throw GradleException("Missing admitted navigation configuration: $name")
+            check(configuration.isCanBeResolved) { "Unresolvable admitted navigation configuration: $name" }
+            val rows = configuration.incoming.resolutionResult.allComponents.map {
+                "${it.id.displayName}\t${it.moduleVersion?.version.orEmpty()}"
+            }.sorted()
+            check(rows.isNotEmpty()) { "Empty admitted navigation dependency graph: $name" }
+            directory.resolve("$name.tsv").writeText("component\tversion\n" + rows.joinToString("\n") + "\n")
+            configuration.incoming.artifactView {
+                componentFilter { it is org.gradle.api.artifacts.component.ModuleComponentIdentifier }
+            }.files.files
+        }
+    }
+}
+
 val contentRepository = rootProject.projectDir.parentFile
 val contentCollector = contentRepository.resolve("docs").resolve("android").resolve("evidence")
     .resolve("WP-218").resolve("collect_evidence.py")
@@ -119,6 +166,41 @@ tasks.withType<Test>().configureEach {
         dependsOn(":core:services:prepareContentInvocation")
         finalizedBy(retainContentAppReports)
     }
+}
+
+val navigationCollector = contentRepository.resolve("docs/android/evidence/WP-302/collect_evidence.py")
+val navigationBinding = layout.buildDirectory.file("reports/wp302/input-binding.json")
+val prepareWp302NavigationInputs by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Bind the actual current navigation source, original families and immutable inputs before App tests."
+    workingDir(contentRepository)
+    commandLine("python", "-B", navigationCollector.absolutePath, "--bind-inputs",
+        "--binding", navigationBinding.get().asFile.absolutePath)
+}
+val verifyWp302NavigationTests by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Require actual App navigation assertions, source50 families and native API31/37 rendered states."
+    dependsOn("testDebugUnitTest")
+    workingDir(contentRepository)
+    commandLine("python", "-B", navigationCollector.absolutePath, "--check", "--self-test",
+        "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
+        "--binding", navigationBinding.get().asFile.absolutePath)
+}
+
+// The producer also runs before the separately owned navigation source is carried.
+// Once that real source exists, binding/tests/verdict are mandatory, including missing-reader failures.
+if (layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/navigation").asFile.isDirectory) {
+    tasks.named<Test>("testDebugUnitTest") {
+        dependsOn(prepareWp302NavigationInputs)
+        systemProperty("navigationInputBinding",
+            navigationBinding.get().asFile.resolveSibling("input-binding.properties").absolutePath)
+        systemProperty("navigationArtifactDirectory",
+            layout.buildDirectory.dir("reports/wp302/screens").get().asFile.absolutePath)
+        outputs.upToDateWhen { false }
+        outputs.doNotCacheIf("Navigation evidence requires fresh current-head execution markers") { true }
+    }
+    rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyWp302NavigationTests) }
+    tasks.named("check") { dependsOn(verifyWp302NavigationTests) }
 }
 
 // WP-218 diagnostic-only addition: hosted CI invokes the root verify stage with Gradle's
