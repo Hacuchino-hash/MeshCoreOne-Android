@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Der gespeicherte Eintrag konnte nicht kodiert werden.</string>
+    <string name="ui_storage_save_failed">Lokale Daten konnten nicht gespeichert werden.</string>
+    <string name="ui_storage_read_failed">Lokale Daten konnten nicht gelesen werden.</string>
+    <string name="ui_storage_delete_failed">Lokale Daten konnten nicht gelöscht werden.</string>
+    <string name="ui_storage_first_unlock">Entsperre das Gerät nach dem Neustart einmal, um auf gespeicherte Daten zuzugreifen.</string>
+    <string name="ui_storage_locked">Entsperre das Gerät, um auf gespeicherte Daten zuzugreifen.</string>
+    <string name="ui_storage_inaccessible">Der Gerätespeicher ist nicht verfügbar.</string>
+    <string name="ui_storage_permission_denied">Der Zugriff auf den Gerätespeicher wurde verweigert.</string>
+    <string name="ui_storage_io_failed">Das Gerät konnte den Speichervorgang nicht abschließen.</string>
+    <string name="ui_storage_corrupt_preferences">Gespeicherte Einstellungen sind beschädigt.</string>
+    <string name="ui_storage_corrupt_state">Gespeicherte sichere Daten sind beschädigt.</string>
+    <string name="ui_storage_corrupt_envelope">Der gespeicherte Eintrag kann nicht dekodiert werden.</string>
+    <string name="ui_storage_authentication_failed">Der gespeicherte Eintrag konnte nicht authentifiziert werden.</string>
+    <string name="ui_storage_key_missing">Der Verschlüsselungsschlüssel für gespeicherte Daten fehlt.</string>
+    <string name="ui_storage_key_invalidated">Der Verschlüsselungsschlüssel ist nicht mehr gültig.</string>
+    <string name="ui_storage_key_corrupt">Der gespeicherte Verschlüsselungsschlüssel ist beschädigt.</string>
+    <string name="ui_storage_provider_failed">Sicherer Speicher ist nicht verfügbar.</string>
+    <string name="ui_storage_owner_duplicate">Der lokale Speicher wird bereits verwendet.</string>
+    <string name="ui_storage_owner_closed">Der lokale Speicher ist geschlossen.</string>
+    <string name="ui_storage_invalid_identity">Die Kennung des gespeicherten Eintrags ist ungültig.</string>
+    <string name="ui_storage_invalid_value">Der Wert kann nicht gespeichert werden.</string>
+    <string name="ui_storage_already_exists">Der gespeicherte Eintrag ist bereits vorhanden.</string>
+    <string name="ui_storage_not_found">Der gespeicherte Eintrag wurde nicht gefunden.</string>
+    <string name="ui_storage_unsupported_version">Das gespeicherte Datenformat %1$d wird nicht unterstützt.</string>
+    <string name="ui_storage_too_large">Gespeicherte Daten überschreiten das Limit von %1$d Bytes.</string>
+    <string name="ui_storage_preference_type">Eine gespeicherte Einstellung hat einen inkompatiblen Werttyp.</string>
+    <string name="ui_storage_preference_no_default">Eine fehlende Einstellung hat keinen Standardwert.</string>
+    <string name="ui_storage_preference_invalid">Eine gespeicherte Einstellung hat einen ungültigen Wert.</string>
+    <string name="ui_backup_preferences_incomplete">Die Sicherungsdatensätze wurden importiert. Die Einstellungen konnten nicht vervollständigt werden. Wiederhole nur die fehlenden Einstellungen, nicht den Datenimport.</string>
+    <string name="ui_backup_complete_preferences">Einstellungen vervollständigen</string>
+    <string name="ui_storage_unlock_device">Gerät entsperren</string>
+</resources>

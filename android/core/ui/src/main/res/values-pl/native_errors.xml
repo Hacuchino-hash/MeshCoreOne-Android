@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Nie można zakodować zapisanego elementu.</string>
+    <string name="ui_storage_save_failed">Nie można zapisać danych lokalnych.</string>
+    <string name="ui_storage_read_failed">Nie można odczytać danych lokalnych.</string>
+    <string name="ui_storage_delete_failed">Nie można usunąć danych lokalnych.</string>
+    <string name="ui_storage_first_unlock">Po ponownym uruchomieniu odblokuj urządzenie, aby uzyskać dostęp do zapisanych danych.</string>
+    <string name="ui_storage_locked">Odblokuj urządzenie, aby uzyskać dostęp do zapisanych danych.</string>
+    <string name="ui_storage_inaccessible">Pamięć urządzenia jest niedostępna.</string>
+    <string name="ui_storage_permission_denied">Odmówiono dostępu do pamięci urządzenia.</string>
+    <string name="ui_storage_io_failed">Urządzenie nie mogło ukończyć operacji zapisu lub odczytu.</string>
+    <string name="ui_storage_corrupt_preferences">Zapisane ustawienia są uszkodzone.</string>
+    <string name="ui_storage_corrupt_state">Zapisane chronione dane są uszkodzone.</string>
+    <string name="ui_storage_corrupt_envelope">Nie można odkodować zapisanego elementu.</string>
+    <string name="ui_storage_authentication_failed">Nie można uwierzytelnić zapisanego elementu.</string>
+    <string name="ui_storage_key_missing">Brakuje klucza szyfrowania zapisanych danych.</string>
+    <string name="ui_storage_key_invalidated">Klucz szyfrowania nie jest już ważny.</string>
+    <string name="ui_storage_key_corrupt">Zapisany klucz szyfrowania jest uszkodzony.</string>
+    <string name="ui_storage_provider_failed">Chroniona pamięć jest niedostępna.</string>
+    <string name="ui_storage_owner_duplicate">Pamięć lokalna jest już używana.</string>
+    <string name="ui_storage_owner_closed">Pamięć lokalna jest zamknięta.</string>
+    <string name="ui_storage_invalid_identity">Identyfikator zapisanego elementu jest nieprawidłowy.</string>
+    <string name="ui_storage_invalid_value">Nie można zapisać wartości.</string>
+    <string name="ui_storage_already_exists">Zapisany element już istnieje.</string>
+    <string name="ui_storage_not_found">Nie znaleziono zapisanego elementu.</string>
+    <string name="ui_storage_unsupported_version">Format zapisanych danych %1$d nie jest obsługiwany.</string>
+    <string name="ui_storage_too_large">Zapisane dane przekraczają limit %1$d bajtów.</string>
+    <string name="ui_storage_preference_type">Zapisane ustawienie ma niezgodny typ wartości.</string>
+    <string name="ui_storage_preference_no_default">Brakujące ustawienie nie ma wartości domyślnej.</string>
+    <string name="ui_storage_preference_invalid">Zapisane ustawienie ma nieprawidłową wartość.</string>
+    <string name="ui_backup_preferences_incomplete">Rekordy kopii zapasowej zostały zaimportowane. Nie udało się uzupełnić ustawień. Ponów tylko brakujące ustawienia, bez ponownego importowania rekordów.</string>
+    <string name="ui_backup_complete_preferences">Uzupełnij ustawienia</string>
+    <string name="ui_storage_unlock_device">Odblokuj urządzenie</string>
+</resources>

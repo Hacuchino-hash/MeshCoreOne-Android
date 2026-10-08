@@ -75,6 +75,35 @@ class ModuleGraphTest {
     }
 
     @Test
+    fun `shared tips can atomically use the process-owned preference store`() {
+        val modules = fixture(":core:ui", ":core:datastore", ":core:contracts", ":core:model")
+        modules.getValue(":core:ui").edge(":core:datastore")
+        modules.getValue(":core:ui").edge(":core:contracts")
+        modules.getValue(":core:datastore").edge(":core:contracts")
+        modules.getValue(":core:datastore").edge(":core:model")
+        assertEquals(emptyList(), violations(modules))
+    }
+
+    @Test
+    fun `preference store cannot depend back on shared UI or form a cycle`() {
+        val modules = fixture(":core:ui", ":core:datastore")
+        modules.getValue(":core:ui").edge(":core:datastore")
+        modules.getValue(":core:datastore").edge(":core:ui")
+        val result = violations(modules)
+        assertTrue(result.any { it.startsWith("Unlisted production edge") && it.contains(":core:datastore -> :core:ui") })
+        assertTrue(result.any { it.startsWith("Dependency cycle") })
+    }
+
+    @Test
+    fun `shared tips do not authorize UI concrete radio or data dependencies`() {
+        for (producer in listOf(":core:ble", ":core:data", ":core:runtime", ":core:services")) {
+            val modules = fixture(":core:ui", producer)
+            modules.getValue(":core:ui").edge(producer)
+            assertTrue(violations(modules).any { it.startsWith("Unlisted production edge") }, producer)
+        }
+    }
+
+    @Test
     fun `actual feature dependency is rejected`() {
         val modules = fixture(":feature:chats", ":feature:nodes")
         modules.getValue(":feature:chats").edge(":feature:nodes")
