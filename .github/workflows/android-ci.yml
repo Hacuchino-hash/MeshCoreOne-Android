@@ -65,7 +65,7 @@ jobs:
           $root = Join-Path $env:RUNNER_TEMP 'meshcoreone-ci'
           "ANDROID_CI_OUTPUT=$(Join-Path $root 'evidence')" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           "ANDROID_CI_STATE=$(Join-Path (Join-Path $root 'toolchain') 'environment.json')" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-      - name: Frozen inventory, workflow boundaries and positive Python discovery
+      - name: Frozen inventory, workflow boundaries and scaffold Python discovery
         run: python tools/android-port/controller/ci.py python
       - name: Provision exact first-party JDK and actual SDK 37.2 archives
         run: python tools/android-port/controller/ci.py provision --root (Split-Path $env:ANDROID_CI_STATE -Parent) --accept-sdk-license

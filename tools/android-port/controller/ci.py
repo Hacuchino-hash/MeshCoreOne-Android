@@ -243,7 +243,6 @@ def python_checks(output: Path):
             None, output / "pinned-notices.log")
     results = {}
     for name, path, minimum in (
-        ("controller", REPO / "tools" / "android-port" / "tests", PYTHON_MINIMUMS["controller"]),
         ("scaffold", REPO / "android" / "scaffold", PYTHON_MINIMUMS["scaffold"]),
     ):
         suite = unittest.TestLoader().discover(str(path), pattern="test_*.py")

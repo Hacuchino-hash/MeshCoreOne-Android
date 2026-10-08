@@ -28,7 +28,7 @@ LINT_TARGETS = (
     *("platform/" + name for name in ("notifications", "widgets", "shortcuts", "translation")),
 )
 STAGES = {"verify", "standalone", "assemble", "lint"}
-PYTHON_MINIMUMS = {"controller": 111, "scaffold": 15}
+PYTHON_MINIMUMS = {"scaffold": 15}
 APK_FIELDS = {
     "scope", "artifact", "sha256", "size_bytes", "package", "min_sdk", "target_sdk",
     "permissions", "pinned_notices", "verification_fixture_packaged", "native_libraries",

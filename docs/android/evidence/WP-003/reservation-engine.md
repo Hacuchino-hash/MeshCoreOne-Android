@@ -56,4 +56,6 @@ no Android, controller, manifest/policy, or Android evidence input changed. The
 always-reported aggregator verifies that an unselected build was actually skipped;
 selected build failures, missing artifacts, zero discovery, and stale bindings
 remain blocking. Bootstrap and setup workflows use narrow real-input trigger sets,
-and completed one-off dependency proposal workflows have been removed.
+and completed one-off dependency proposal workflows have been removed. Controller
+test discovery belongs to the scoped bootstrap workflow; scaffold CI no longer
+runs that suite a second time and retains its own scaffold discovery evidence.
