@@ -13,11 +13,8 @@ from bootstrap import build_inventory
 from controller.errors import PortError
 from controller.schema import digest
 from controller.verification_config import (
-    AMENDMENTS,
-    BOOTSTRAP_POLICY_AMENDMENT,
-    POLICY_AMENDMENT_EVIDENCE,
-    apply_overlay,
-    check_configuration,
+    AMENDMENTS, BOOTSTRAP_POLICY_AMENDMENT, POLICY_AMENDMENT_EVIDENCE,
+    apply_overlay, check_configuration, project_content_scope,
 )
 from controller.workflows import parse_yaml, validate_candidate, validate_setup, validate_trusted, validate_workflows
 
@@ -145,7 +142,7 @@ class WorkflowTests(unittest.TestCase):
     def test_verification_overlay_is_reproducible_and_only_changes_two_real_configs(self):
         original, _ = build_inventory(REPO)
         amended = apply_overlay(original)
-        self.assertEqual(amended, base_manifest().data)
+        self.assertEqual(amended, project_content_scope(base_manifest().data))
         for before, after in zip(original["work_packages"], amended["work_packages"], strict=True):
             if before["id"] in AMENDMENTS:
                 self.assertEqual({k: v for k, v in before.items() if k != "verification"},
@@ -156,7 +153,9 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(result["verification_amendments"], ["WP-002", "WP-003"])
         self.assertEqual(result["bootstrap_manifest_sha256"],
                          BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"])
-        self.assertEqual(result["manifest_sha256"], BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+        self.assertEqual(digest(project_content_scope(base_manifest().data)),
+                         BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+        self.assertEqual(result["manifest_sha256"], base_manifest().sha256)
         self.assertEqual(result["policy_amendment"], "WP-000-capability-reservations-v1")
 
     def test_previous_or_incorrect_frozen_digest_cannot_admit_candidate(self):

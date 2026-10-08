@@ -10,12 +10,12 @@ import platform
 import re
 import shutil
 import sys
-from source_inventory import ROOT, PIN, MANIFEST, PROJECTION_SUITES, inventory, native_inputs, git, require, unique_json
+from source_inventory import ROOT, PIN, MANIFEST, PROJECTION_SUITES, inventory, native_inputs, git, require, unique_json, current_revisions
 
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
-from controller.gates import policy_revision
 from controller.model import load_manifest
+from controller.verification_config import content_scope_revisions
 
 POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
@@ -41,13 +41,15 @@ def pipeline_invocation(path):
     require(isinstance(identity, dict) and set(identity) == {"binding", "run_id", "run_attempt"},
         "Missing actual native pipeline invocation identity")
     binding = identity["binding"]
+    revisions = current_revisions()
     require(isinstance(binding, dict) and set(binding) == {
         "repository", "work_package", "base_sha", "head_sha", "source_sha", "manifest_sha256", "policy_revision",
     } and binding["repository"] == "cbattlegear/MeshCoreOne-Android"
         and binding["work_package"] == "WP-003" and binding["head_sha"] == git("rev-parse", "HEAD").decode().strip()
         and isinstance(binding["base_sha"], str) and re.fullmatch(r"[0-9a-f]{40}", binding["base_sha"])
         and binding["source_sha"] == PIN
-        and binding["manifest_sha256"] == MANIFEST and binding["policy_revision"] == POLICY,
+        and binding["manifest_sha256"] == revisions["manifest_sha256"]
+        and binding["policy_revision"] == revisions["policy_revision"],
         "Stale/mismatched actual native pipeline invocation")
     require(all(type(identity[key]) is int and identity[key] > 0 for key in ("run_id", "run_attempt")),
         "Missing positive actual native run/attempt")
@@ -65,10 +67,13 @@ def local_execution_binding():
         "Local UI evidence requires a clean committed snapshot")
     manifest = load_manifest(ROOT)
     policy = unique_json(ROOT / "docs" / "android" / "automation-policy.json")
-    require(manifest.sha256 == MANIFEST and manifest.data["reference"]["commit"] == PIN
+    try:
+        revisions = content_scope_revisions(manifest, policy)
+    except PortError as failure:
+        require(False, "Local UI source/manifest/policy drift: " + str(failure))
+    require(manifest.data["reference"]["commit"] == PIN
         and manifest.data["reference"]["tree_sha"] == SOURCE_TREE
         and policy["repository"] == "cbattlegear/MeshCoreOne-Android"
-        and policy_revision(manifest, policy) == POLICY
         and git("rev-parse", PIN + "^{tree}").decode().strip() == SOURCE_TREE,
         "Local UI source/manifest/policy drift")
     inventory()
@@ -77,7 +82,7 @@ def local_execution_binding():
         "binding": {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-304",
             "head_sha": head, "tree_sha": tree, "source_sha": PIN, "source_tree": SOURCE_TREE,
-            "manifest_sha256": MANIFEST, "policy_revision": POLICY,
+            **revisions,
         },
     }
 

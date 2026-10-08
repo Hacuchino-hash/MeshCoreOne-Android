@@ -6,9 +6,14 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT / "tools" / "android-port"))
+from controller.errors import PortError
+from controller.model import load_manifest
+from controller.verification_config import content_scope_revisions
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
 PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
@@ -162,13 +167,22 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
 
 
+def current_revisions():
+    try:
+        return content_scope_revisions(load_manifest(ROOT),
+            unique_json(ROOT / "docs" / "android" / "automation-policy.json"))
+    except PortError as failure:
+        raise EvidenceError("Manifest/policy lineage drift: " + str(failure)) from failure
+
+
 def git(*arguments, data=None):
     return subprocess.check_output(["git", "-C", str(ROOT), *arguments], input=data)
 
 
 def inventory():
     manifest = unique_json(ROOT / "docs" / "android" / "port-manifest.json")
-    require(digest(manifest) == MANIFEST and manifest["reference"]["commit"] == PIN, "Manifest/source drift")
+    current_revisions()
+    require(manifest["reference"]["commit"] == PIN, "Manifest/source drift")
     inputs = [row for row in manifest["inventory"] if row["primary_owner"] == "WP-304"]
     require(len(inputs) == 88 and sum(row["kind"] == "production" for row in inputs) == 75
         and sum(row["kind"] == "test" for row in inputs) == 13, "Changed primary macro")
@@ -256,7 +270,9 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
-    for relative in (FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS,
+    for relative in ("docs/android/port-manifest.json", "docs/android/automation-policy.json",
+            "tools/android-port/controller/verification_config.py",
+            FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS,
             *FROZEN_SERVICE_CARRIES, *PROJECTION_INPUTS):
         path = ROOT.joinpath(*relative.split("/"))
         require(path.is_file(), "Missing actual frozen/projection producer input")

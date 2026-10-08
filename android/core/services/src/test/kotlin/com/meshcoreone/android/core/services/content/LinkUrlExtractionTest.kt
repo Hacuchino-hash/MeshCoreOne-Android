@@ -1,0 +1,142 @@
+// PortedFrom: MC1Tests/Services/LinkPreviewServiceTests.swift@db14559b39d32322b06477c6ae676112f583db50
+// (`extractFirstURL`/`extractGiphyGIFURL` cases only; see `LinkUrlExtraction.kt`.)
+package com.meshcoreone.android.core.services.content
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+
+class LinkUrlExtractionTest {
+    @Test
+    fun `extracts https url from text`() {
+        val text = "Check out https://example.com/article for more info"
+        assertEquals("https://example.com/article", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `extracts http url from text`() {
+        val text = "Visit http://example.com"
+        assertEquals("http://example.com", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `returns null for text without urls`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl("Just some plain text without links"))
+    }
+
+    @Test
+    fun `extracts first url when multiple urls present`() {
+        val text = "First https://first.com then https://second.com"
+        assertEquals("https://first.com", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `ignores non-http schemes like tel and mailto`() {
+        val text = "Call me at tel:+1234567890 or mailto:test@example.com"
+        assertNull(LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `extracts url with path and query string`() {
+        val text = "Read https://example.com/blog/2024/article-title?ref=social"
+        assertEquals("https://example.com/blog/2024/article-title?ref=social", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `extracts url at beginning of text`() {
+        assertEquals("https://example.com", LinkUrlExtraction.extractFirstUrl("https://example.com is a great site"))
+    }
+
+    @Test
+    fun `extracts url at end of text`() {
+        assertEquals("https://example.com", LinkUrlExtraction.extractFirstUrl("Check this out: https://example.com"))
+    }
+
+    @Test
+    fun `returns null for empty text`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl(""))
+    }
+
+    @Test
+    fun `handles url with fragment`() {
+        assertEquals("https://example.com/page#section", LinkUrlExtraction.extractFirstUrl("See https://example.com/page#section"))
+    }
+
+    @Test
+    fun `ignores url-like text within mention brackets`() {
+        val text = "Hey @[Ferret PocketMesh WCMesh.com], check this out!"
+        assertNull(LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `ignores domain-like text within mention brackets`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl("@[Server node.example.com] says hello"))
+    }
+
+    @Test
+    fun `extracts real url when mention also contains url-like text`() {
+        val text = "@[Server node.example.com] says check https://docs.example.com"
+        assertEquals("https://docs.example.com", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `extracts url when no mentions present`() {
+        val text = "Just a normal message with https://example.com link"
+        assertEquals("https://example.com", LinkUrlExtraction.extractFirstUrl(text))
+    }
+
+    @Test
+    fun `returns null when only url-like text in mention`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl("Message from @[192.168.1.100]"))
+    }
+
+    @Test
+    fun `extracts giphy url from g prefix message`() {
+        assertEquals(
+            "https://media.giphy.com/media/JgWZYoIgjzsIQO8joZ/giphy.gif",
+            LinkUrlExtraction.extractFirstUrl("g:JgWZYoIgjzsIQO8joZ"),
+        )
+    }
+
+    @Test
+    fun `extracts giphy url from g with whitespace`() {
+        assertEquals(
+            "https://media.giphy.com/media/ABC123xyz/giphy.gif",
+            LinkUrlExtraction.extractFirstUrl("  g:ABC123xyz  "),
+        )
+    }
+
+    @Test
+    fun `handles g with hyphens and underscores in id`() {
+        assertEquals(
+            "https://media.giphy.com/media/my-gif_ID-123/giphy.gif",
+            LinkUrlExtraction.extractFirstUrl("g:my-gif_ID-123"),
+        )
+    }
+
+    @Test
+    fun `returns null for g with no id`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl("g:"))
+    }
+
+    @Test
+    fun `does not match g embedded in longer text`() {
+        // Should not match because wholeMatch requires the entire string.
+        assertNull(LinkUrlExtraction.extractFirstUrl("Check out g:ABC123 please"))
+    }
+
+    @Test
+    fun `does not match g with invalid characters in id`() {
+        assertNull(LinkUrlExtraction.extractFirstUrl("g:ABC 123"))
+    }
+
+    @Test
+    fun `extractGiphyGifUrl returns null for plain text`() {
+        assertNull(LinkUrlExtraction.extractGiphyGifUrl("hello world"))
+    }
+
+    @Test
+    fun `extractGiphyGifUrl returns null for regular url`() {
+        assertNull(LinkUrlExtraction.extractGiphyGifUrl("https://example.com"))
+    }
+}
