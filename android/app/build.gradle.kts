@@ -162,7 +162,9 @@ val retainContentAppReports by tasks.registering(Exec::class) {
     }
 }
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest") {
+    if (name == "testDebugUnitTest" &&
+        layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/content").asFile.isDirectory
+    ) {
         dependsOn(":core:services:prepareContentInvocation")
         finalizedBy(retainContentAppReports)
     }
