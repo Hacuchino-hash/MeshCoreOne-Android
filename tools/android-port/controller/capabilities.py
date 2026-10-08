@@ -58,8 +58,7 @@ class CapabilityEngine:
         path = git_path(path, subtree=True)
         nonempty(operation, "Capability operation")
         candidates = []
-        if any(self._matches(allowed, path) or self._matches(path, allowed)
-               for allowed in assigned_paths):
+        if any(self._assigned_path(allowed, path) for allowed in assigned_paths):
             candidates.append(self._rules.get("wp-owned"))
         candidates.extend(
             rule for rule in self._rules.values()
@@ -78,6 +77,12 @@ class CapabilityEngine:
             )
         rule = sorted(candidates, key=lambda value: value["id"])[0]
         return Admission(rule["id"], path, operation, tuple(rule["invariants"]), tuple(rule["validation"]))
+
+    @staticmethod
+    def _assigned_path(allowed: str, requested: str) -> bool:
+        allowed = git_path(allowed, subtree=True).rstrip("/")
+        requested = git_path(requested, subtree=True).rstrip("/")
+        return requested == allowed or requested.startswith(allowed + "/")
 
     def admit_scope(self, wp_id: str, assigned_paths: list[str],
                     paths: list[str], operations: list[str]) -> list[Admission]:
@@ -110,6 +115,77 @@ class CapabilityEngine:
                         "advisory": True,
                     })
         return report
+
+    def reconcile_intents(self, expected_base: str, current_base: str, path: str,
+                          capability_id: str, intents: list[dict]) -> dict:
+        """Deterministically combine disjoint semantic edits and preserve every attribution."""
+        path = git_path(path, subtree=True)
+        if capability_id not in self._rules:
+            raise PortError(f"Unknown reconciliation capability: {capability_id}")
+        if not any(self._matches(pattern, path)
+                   for pattern in self._rules[capability_id]["path_rules"]):
+            raise PortError(f"Capability {capability_id} does not admit reconciliation path {path}")
+        if expected_base != current_base:
+            raise PortError("Current base changed; reconcile advisory claims against the current base")
+        if not isinstance(intents, list) or not intents:
+            raise PortError("Semantic reconciliation requires at least one intent")
+        normalized = []
+        for intent in intents:
+            if not isinstance(intent, dict):
+                raise PortError("Malformed semantic reconciliation intent")
+            required = ("owner", "semantic_key", "value_digest", "evidence")
+            if any(not isinstance(intent.get(key), str) or not intent[key] for key in required):
+                raise PortError("Malformed semantic reconciliation intent")
+            normalized.append({key: intent[key] for key in required})
+        normalized.sort(key=lambda value: (value["semantic_key"], value["owner"],
+                                           value["value_digest"], value["evidence"]))
+        by_key = {}
+        for intent in normalized:
+            previous = by_key.get(intent["semantic_key"])
+            if previous and previous["value_digest"] != intent["value_digest"]:
+                owners = sorted({previous["owner"], intent["owner"]})
+                raise PortError(
+                    f"Unresolved semantic ownership collision on {path} "
+                    f"key {intent['semantic_key']}: {owners}"
+                )
+            by_key.setdefault(intent["semantic_key"], intent)
+        return {
+            "path": path,
+            "capability": capability_id,
+            "current_base": current_base,
+            "intents": normalized,
+            "merged": [by_key[key] for key in sorted(by_key)],
+            "owners": sorted({intent["owner"] for intent in normalized}),
+            "evidence": sorted({intent["evidence"] for intent in normalized}),
+            "validation": list(self._rules[capability_id]["validation"]),
+            "advisory": True,
+            "merge_allowed": True,
+        }
+
+    def transfer_intent(self, origin: dict, producer: dict, path: str,
+                        capability_id: str) -> dict:
+        """Record producer handoff without changing either owner's identity or evidence."""
+        path = git_path(path, subtree=True)
+        for label, record in (("origin", origin), ("producer", producer)):
+            if not isinstance(record, dict) or any(
+                not isinstance(record.get(key), str) or not record[key]
+                for key in ("wp", "session", "evidence")
+            ):
+                raise PortError(f"Malformed {label} intent owner")
+        if origin["session"] == producer["session"]:
+            raise PortError("Intent transfer requires distinct owner sessions")
+        if capability_id not in self._rules or not any(
+            self._matches(pattern, path) for pattern in self._rules[capability_id]["path_rules"]
+        ):
+            raise PortError(f"Capability {capability_id} does not admit transfer path {path}")
+        return {
+            "path": path, "capability": capability_id,
+            "origin": dict(origin), "producer": dict(producer),
+            "attributions": sorted(
+                [dict(origin), dict(producer)], key=lambda value: (value["wp"], value["session"])
+            ),
+            "advisory": True, "file_edit_blocked": False,
+        }
 
     @staticmethod
     def validate_merge(expected_base: str, current_base: str, semantic_conflicts=()):

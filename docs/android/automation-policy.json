@@ -25,6 +25,15 @@
     ],
     "merge_gate_approval_required": true,
     "merge_gate_scope": "main-branch merge only",
+    "hard_lock_resources": [
+      "installed-git-common-runtime",
+      "canonical-ledger",
+      "gradle-execution",
+      "native-execution",
+      "physical-device",
+      "credentials-signing-release",
+      "repository-settings"
+    ],
     "migration": {
       "preserve_historical_authorization_bytes": true,
       "preserve_actual_identities_bindings_state_and_repairs": true,
@@ -58,8 +67,8 @@
       },
       {
         "id": "traceability-validation",
-        "path_rules": ["tools/android-port/**", "docs/android/**/*manifest*.json", "docs/android/**/*test-cases*.json", "docs/android/**/*mapping*.json"],
-        "operations": ["add-or-update-mapping", "add-or-update-validator-rule", "add-regression-fixture-or-test", "refresh-derived-digest"],
+        "path_rules": ["tools/android-port/**", "docs/android/evidence/**", "docs/android/deviations/**", "docs/android/**/*manifest*.json", "docs/android/**/*test-cases*.json", "docs/android/**/*mapping*.json"],
+        "operations": ["add-or-update-mapping", "add-or-update-validator-rule", "add-regression-fixture-or-test", "record-validation-evidence", "refresh-derived-digest"],
         "invariants": ["fail-closed", "positive-test-discovery", "pinned-provenance", "no-fake-success"],
         "validation": ["affected validator tests", "manifest and ownership validation"]
       },
@@ -83,6 +92,13 @@
         "operations": ["update-required-check-wiring", "update-directly-required-job-or-input", "add-workflow-regression-test"],
         "invariants": ["candidate-read-only", "ephemeral-runner", "no-dispatch-merge-signing-secret", "trusted-default-branch-controller"],
         "validation": ["workflow trust-boundary tests", "required-check identity validation"]
+      },
+      {
+        "id": "merge-integration",
+        "path_rules": ["**"],
+        "operations": ["reconcile-current-base", "merge-disjoint-semantic-edits", "transfer-current-producer"],
+        "invariants": ["exact-current-base", "all-owner-attributions", "semantic-conflicts-block-merge", "protected-approval-at-main-merge"],
+        "validation": ["current-base tests", "capability-required validation", "protected merge gate"]
       }
     ]
   },

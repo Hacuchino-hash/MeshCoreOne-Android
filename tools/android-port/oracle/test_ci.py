@@ -149,6 +149,25 @@ class FoundationWorkflowTests(unittest.TestCase):
                     self.assertNotIn("if", step)
                     self.assertNotIn("continue-on-error", step)
 
+    def test_auxiliary_conditions_are_job_level_and_preserve_complete_chains(self):
+        expected = {
+            "helpers": "helpers",
+            "reference-codec": "codec",
+            "protocol": "protocol",
+            "kotlin-producer": "backup",
+            "swift-restore-export": "backup",
+            "kotlin-consumer": "backup",
+        }
+        for name, scope in expected.items():
+            with self.subTest(job=name):
+                job = self.workflow["jobs"][name]
+                self.assertEqual(
+                    job["if"], "${{ needs.scope.outputs." + scope + " == 'true' }}"
+                )
+                self.assertIn("scope", job["needs"])
+        self.assertIn("kotlin-producer", self.workflow["jobs"]["swift-restore-export"]["needs"])
+        self.assertIn("swift-restore-export", self.workflow["jobs"]["kotlin-consumer"]["needs"])
+
     def test_privilege_and_action_pin_mutations_fail(self):
         for kind in ("token", "action", "checkout"):
             value = copy.deepcopy(self.workflow)

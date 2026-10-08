@@ -27,6 +27,11 @@ TRANSITIONS = {
     "uncertain": {"running", "review_wait", "pending", "blocked"},
     "completed": set(),
 }
+HARD_LOCK_RESOURCES = {
+    "installed-git-common-runtime", "canonical-ledger", "gradle-execution",
+    "native-execution", "physical-device", "credentials-signing-release",
+    "repository-settings",
+}
 
 
 @dataclass(frozen=True)
@@ -160,7 +165,8 @@ class Ledger:
     def claim(self, wp: dict, binding: dict, backend: str, attempt: str, now: float,
               lease_seconds: int, max_inflight: int, used: float, limit: float, reservation: float,
               external_active_ids=(), *, capabilities=None, operations=None,
-              authorization_context=None, branch=None, worktree=None):
+              authorization_context=None, branch=None, worktree=None,
+              initial_identity: Identity | None = None):
         positive_integer(max_inflight, "Concurrency limit")
         positive_integer(lease_seconds, "Lease duration")
         if any(type(v) not in (int, float) or not math.isfinite(v) for v in (now, used, limit, reservation)):
@@ -202,7 +208,8 @@ class Ledger:
                 "repository": self.repository, "wp": wp["id"], "state": "leased",
                 "attempt": attempt, "binding": binding, "backend": backend,
                 "paths": wp["write_paths"], "expires": now + lease_seconds,
-                "reservation": reservation, "identity": Identity().as_dict(), "repairs": 0,
+                "reservation": reservation,
+                "identity": (initial_identity or Identity()).as_dict(), "repairs": 0,
                 "completion": None,
                 "record_state": "advisory",
                 "capabilities": capabilities or {"wp-owned": sorted(wp["write_paths"])},
@@ -248,13 +255,24 @@ class Ledger:
                 raise PortError(
                     f"Stale capability reservation revision {expected_revision}; current revision {row['revision']}"
                 )
-            merged_caps = {key: sorted(set(value)) for key, value in {
-                **row["capabilities"], **capabilities
-            }.items()}
+            merged_caps = {
+                key: sorted(
+                    set(row["capabilities"].get(key, []))
+                    | set(capabilities.get(key, []))
+                )
+                for key in set(row["capabilities"]) | set(capabilities)
+            }
             merged_ops = sorted(set(row["reservation_operations"]) | set(operations))
             merged_paths = sorted(set(row["paths"]) | set(paths))
             merged_overlaps = sorted(set(row["overlapping_intents"]) | set(overlap_intents))
-            context = row["authorization_context"] if authorization_context is None else row["authorization_context"]
+            context = row["authorization_context"]
+            if (
+                merged_caps == row["capabilities"]
+                and merged_ops == sorted(row["reservation_operations"])
+                and merged_paths == sorted(row["paths"])
+                and merged_overlaps == sorted(row["overlapping_intents"])
+            ):
+                return row
             updated = connection.execute("""
                 UPDATE leases SET capabilities=?,reservation_operations=?,paths=?,
                     overlapping_intents=?,authorization_context=?,migration_revision=?,
@@ -306,20 +324,83 @@ class Ledger:
                     UPDATE leases SET record_state='advisory',capabilities=?,
                         reservation_operations=?,overlapping_intents=?,
                         migration_revision=?,revision=revision+1
-                    WHERE repository=? AND wp=? AND revision=?
+                    WHERE repository=? AND wp=? AND revision=? AND binding=?
+                        AND identity=? AND state=? AND repairs=? AND authorization_context=?
                 """, (
                     json.dumps(capabilities), json.dumps(operations),
                     json.dumps(row["overlapping_intents"] or []), capability_revision,
-                    self.repository, row["wp"], row["revision"],
+                    self.repository, row["wp"], row["revision"], raw["binding"],
+                    raw["identity"], raw["state"], raw["repairs"], raw["authorization_context"],
                 ))
                 if result.rowcount != 1:
                     raise PortError("Legacy reservation changed during migration; retry")
                 migrated += 1
+            legacy_table = connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='supervised_reservations'"
+            ).fetchone()
+            if legacy_table:
+                for historical in connection.execute(
+                    "SELECT receipt FROM supervised_reservations WHERE repository=? ORDER BY session_id",
+                    (self.repository,),
+                ).fetchall():
+                    receipt_raw = historical["receipt"]
+                    receipt = decode_json(receipt_raw)
+                    required = {
+                        "kind", "repository", "wp", "owner", "session_id", "branch",
+                        "worktree", "binding", "paths", "authorization",
+                    }
+                    if set(receipt) != required or receipt["kind"] != "supervised-write-reservation":
+                        raise PortError("Malformed historical supervised reservation")
+                    if receipt["repository"] != self.repository:
+                        raise PortError("Foreign historical supervised reservation")
+                    if not isinstance(receipt["paths"], list) or not receipt["paths"]:
+                        raise PortError("Malformed historical supervised reservation paths")
+                    for path in receipt["paths"]:
+                        from .paths import git_path
+                        git_path(path, subtree=True)
+                    existing = connection.execute(
+                        "SELECT * FROM leases WHERE repository=? AND wp=?",
+                        (self.repository, receipt["wp"]),
+                    ).fetchone()
+                    if existing:
+                        row = self.unpack(existing)
+                        context = row["authorization_context"]
+                        if context.get("historical_receipt") != receipt_raw:
+                            raise PortError(
+                                f"Historical reservation collision for {receipt['wp']}; "
+                                "reconcile the complete current record"
+                            )
+                        continue
+                    identity = Identity(session_id=receipt["session_id"]).as_dict()
+                    context = {
+                        "historical_receipt": receipt_raw,
+                        "authorization": receipt["authorization"],
+                    }
+                    connection.execute("""
+                        INSERT INTO leases
+                        (repository,wp,state,attempt,binding,backend,paths,expires,reservation,
+                         identity,repairs,completion,record_state,capabilities,
+                         reservation_operations,overlapping_intents,authorization_context,
+                         migration_revision,revision,branch,worktree)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, (
+                        self.repository, receipt["wp"], "leased", receipt["session_id"],
+                        json.dumps(receipt["binding"]), "local", json.dumps(receipt["paths"]),
+                        0.0, 1.0, json.dumps(identity), 0, None, "advisory",
+                        json.dumps({"wp-owned": sorted(receipt["paths"])}),
+                        json.dumps(["modify"]), json.dumps([]), json.dumps(context),
+                        capability_revision, 1, receipt["branch"], receipt["worktree"],
+                    ))
+                    migrated += 1
             return migrated
 
     def acquire_hard_lock(self, resource: str, owner: str, payload: dict, now: float):
         if not resource or not owner:
             raise PortError("Hard-lock resource and owner are required")
+        if resource not in HARD_LOCK_RESOURCES:
+            raise PortError(f"Unsupported external hard-lock resource: {resource}")
+        if not isinstance(payload, dict) or type(now) not in (int, float) or not math.isfinite(now):
+            raise PortError("Malformed hard-lock payload or acquisition time")
         with self.transaction() as connection:
             row = connection.execute(
                 "SELECT owner FROM hard_locks WHERE repository=? AND resource=?",
@@ -341,6 +422,29 @@ class Ledger:
             )
             if result.rowcount != 1:
                 raise PortError("Missing or foreign hard lock")
+
+    @contextmanager
+    def hard_lock(self, resource: str, owner: str, payload: dict, now: float):
+        """Acquire and always release one non-isolated external-resource lock."""
+        lock = self.acquire_hard_lock(resource, owner, payload, now)
+        try:
+            yield lock
+        finally:
+            self.release_hard_lock(resource, owner)
+
+    def hard_lock_records(self):
+        with self.transaction() as connection:
+            return [
+                {
+                    **dict(row),
+                    "payload": decode_json(row["payload"]),
+                    "record_state": "hard",
+                }
+                for row in connection.execute(
+                    "SELECT * FROM hard_locks WHERE repository=? ORDER BY resource",
+                    (self.repository,),
+                )
+            ]
 
     def transition(self, wp: str, attempt: str, state: str, identity: Identity | None = None):
         if state not in STATES:

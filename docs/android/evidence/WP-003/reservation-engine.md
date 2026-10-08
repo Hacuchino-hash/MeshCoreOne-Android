@@ -7,6 +7,24 @@ transactional `hard_locks` table. Legacy supervised rows are upgraded in place a
 retain their binding, identity, state, repair count, and authorization context.
 
 Implemented acceptance coverage is in `tools/android-port/tests/test_capabilities.py`
-and the updated controller state regression. The exact configured WP-003 commands
-and the mandatory local seven-stage cycle remain the authoritative verification
-record; this file is not a completion or human-gate attestation.
+and `tools/android-port/local/test_reserve.py`. It covers App3 producer transfer,
+validator2 handoff, annotation plus 37-POM metadata evolution, deterministic
+same-path disjoint semantic edits, stale CAS, malformed/foreign/controller hard
+lock collisions, current-base and semantic-conflict integration blocks, protected
+merge-only approval through the unchanged gate suite, unsupported operations and
+historical receipt migration.
+
+The repository-owned runtime installer stages and hashes the complete controller,
+uses the separate installed-runtime hard lock, atomically swaps the Git-common
+runtime directory, verifies installed bytes, and releases the lock. The exact
+configured WP-003 commands and mandatory local seven-stage cycle remain the
+authoritative verification record; this file is not a completion or human-gate
+attestation.
+
+`tools/android-port/oracle/workflow_scope.py` additionally prevents unrelated
+changes from scheduling auxiliary parity chains. Direct tests prove synthetic
+WP-218 content/location and WP-302 navigation path sets produce `false` for both
+`codec` and `backup`; codec, protocol and WP-203 inputs select only their declared
+chains where independent, workflow dispatch selects all, PR/merge-group/push
+endpoints are parsed explicitly, and malformed events or Git diff failures select
+all rather than silently skipping.

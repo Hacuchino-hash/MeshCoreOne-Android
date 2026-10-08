@@ -366,11 +366,13 @@ class LocalHostBackend:
     def preflight(self, wp_id: str, base_sha: str):
         value = self.host.capabilities()
         required = (
-            "isolated_worktrees", "shared_ledger", "write_lease_enforced",
+            "isolated_worktrees", "shared_ledger", "advisory_reservations",
             "read_only_reference", "credential_isolation", "authenticated",
         )
         if value.get("repository") != self.policy["repository"] or any(value.get(k) is not True for k in required):
             raise PortError("Native host lacks verified repository/isolation/path/authentication capabilities")
+        self.branch = nonempty(value.get("branch"), "Native host worktree branch")
+        self.worktree = nonempty(value.get("worktree"), "Native host worktree path")
         if self.current_base() != base_sha:
             raise PortError("Native host default branch changed")
         owner = self.manifest.wp(wp_id)["owner"]

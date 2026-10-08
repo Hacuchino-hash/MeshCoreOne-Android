@@ -1,0 +1,206 @@
+"""AndroidOnly: WP-003 Fail-safe changed-input scopes for auxiliary parity workflows."""
+
+import argparse
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from controller.errors import PortError
+from controller.schema import load_json
+from oracle.codec_harness import (
+    CODEC_TYPES, CRYPTO_TEST_PATH, EXACT_TYPES, HELPERS, HELPER_ROOT,
+    SOURCE_TEST_PATH, WHOLE_FILES,
+)
+
+SCOPES = ("helpers", "codec", "protocol", "backup")
+SHA = re.compile(r"[0-9a-f]{40}")
+ZERO = "0" * 40
+ALL_SCOPE_INPUTS = {
+    ".github/workflows/android-independent-checks.yml",
+    "tools/android-port/oracle/workflow_scope.py",
+    "docs/android/port-manifest.json",
+    "docs/android/not-ported.json",
+    "docs/android/PORTING_PLAN.md",
+}
+SHARED_GRADLE_INPUTS = {
+    "android/settings.gradle.kts",
+    "android/build.gradle.kts",
+    "android/gradle.properties",
+    "android/gradle/libs.versions.toml",
+    "android/gradle/verification-metadata.xml",
+    "android/gradle/wrapper/gradle-wrapper.properties",
+}
+COMMON_ORACLE_INPUTS = {
+    "tools/android-port/oracle/reference.py",
+    "tools/android-port/oracle/identity.py",
+}
+
+
+def codec_inputs():
+    return (
+        set(WHOLE_FILES) | set(CODEC_TYPES) | set(EXACT_TYPES)
+        | {HELPER_ROOT + name for name in HELPERS}
+        | {
+            CRYPTO_TEST_PATH, SOURCE_TEST_PATH, "LICENSE", "MeshCore/LICENSE",
+            "tools/android-port/oracle/codec_harness.py",
+            "tools/android-port/oracle/CodecOracle.swift",
+            "tools/android-port/oracle/swift.py",
+            "tools/android-port/oracle/test_codec.py",
+        }
+        | COMMON_ORACLE_INPUTS
+    )
+
+
+RULES = {
+    "helpers": {
+        "exact": {
+            "tools/android-port/oracle/run_tests.py",
+            "tools/android-port/oracle/foundation_ci.py",
+            "tools/android-port/oracle/test_ci.py",
+            "tools/android-port/oracle/test_inventory_tools.py",
+            "tools/android-port/oracle/test_vectors.py",
+            "tools/android-port/oracle/test_workflow_scope.py",
+            "tools/android-port/test_inventory.py",
+            "tools/android-port/extract_vectors.py",
+            *SHARED_GRADLE_INPUTS,
+            *COMMON_ORACLE_INPUTS,
+        },
+        "prefix": ("android/core/testing/", "android/build-logic/"),
+    },
+    "codec": {"exact": codec_inputs(), "prefix": ()},
+    "protocol": {
+        "exact": {
+            "tools/android-port/controller/ci.py",
+            "tools/android-port/controller/ci_environment.py",
+            "tools/android-port/controller/ci_evidence.py",
+            "tools/android-port/controller/module_junit.py",
+            "tools/android-port/oracle/test_vectors.py",
+            "tools/android-port/extract_vectors.py",
+            *SHARED_GRADLE_INPUTS,
+        },
+        "prefix": (
+            "android/core/protocol/",
+            "MeshCore/Sources/MeshCore/Protocol/",
+            "MeshCore/Tests/MeshCoreTests/Protocol/",
+        ),
+    },
+    "backup": {
+        "exact": {
+            "tools/android-port/oracle/wp203_ci.py",
+            "tools/android-port/oracle/wp203_interop.py",
+            "tools/android-port/oracle/tests/test_wp203_ci.py",
+            "tools/android-port/oracle/tests/test_wp203_interop.py",
+            "docs/android/evidence/WP-203/WP203InteropTests.swift",
+            *SHARED_GRADLE_INPUTS,
+            *codec_inputs(),
+        },
+        "prefix": (
+            "android/core/data/",
+            "android/core/database/",
+            "android/build-logic/",
+            "docs/android/evidence/WP-202/",
+            "docs/android/evidence/WP-203/",
+            "MC1Services/Sources/",
+            "MC1Services/Tests/MC1ServicesTests/Helpers/",
+            "MeshCore/Sources/",
+            "MeshCore/Tests/MeshCoreTestSupport/",
+            "MeshCore/Tests/MeshCoreTests/",
+        ),
+    },
+}
+
+
+def all_scopes(reason, *, fail_safe=True):
+    return {
+        "scopes": {scope: True for scope in SCOPES},
+        "reason": reason,
+        "fail_safe": fail_safe,
+    }
+
+
+def endpoints(event_name: str, event: dict):
+    if event_name == "workflow_dispatch":
+        return None
+    try:
+        if event_name == "pull_request":
+            base = event["pull_request"]["base"]["sha"]
+            head = event["pull_request"]["head"]["sha"]
+        elif event_name == "merge_group":
+            base, head = event["merge_group"]["base_sha"], event["merge_group"]["head_sha"]
+        elif event_name == "push":
+            base, head = event["before"], event["after"]
+            if base == ZERO:
+                raise PortError("Push has no immutable before commit")
+        else:
+            raise PortError("Unknown workflow event")
+    except (KeyError, TypeError) as error:
+        raise PortError("Malformed workflow event endpoints") from error
+    if not isinstance(base, str) or not isinstance(head, str) or not SHA.fullmatch(base) or not SHA.fullmatch(head):
+        raise PortError("Malformed workflow event endpoint SHA")
+    return base, head
+
+
+def classify(paths):
+    normalized = sorted(set(paths))
+    if not all(isinstance(path, str) and path and "\\" not in path for path in normalized):
+        raise PortError("Malformed changed path")
+    if set(normalized) & ALL_SCOPE_INPUTS:
+        return {scope: True for scope in SCOPES}
+    result = {}
+    for scope, rules in RULES.items():
+        result[scope] = any(
+            path in rules["exact"] or any(path.startswith(prefix) for prefix in rules["prefix"])
+            for path in normalized
+        )
+    return result
+
+
+def changed_paths(repo: Path, base: str, head: str):
+    completed = subprocess.run(
+        ["git", "-C", str(repo), "diff", "--name-only", "--no-renames", base, head, "--"],
+        check=True, capture_output=True, text=True,
+    )
+    return [line for line in completed.stdout.splitlines() if line]
+
+
+def evaluate(repo: Path, event_name: str, event: dict):
+    try:
+        pair = endpoints(event_name, event)
+        if pair is None:
+            return all_scopes("workflow_dispatch", fail_safe=False)
+        base, head = pair
+        paths = changed_paths(repo, base, head)
+        return {
+            "scopes": classify(paths), "reason": "changed-input-classification",
+            "fail_safe": False, "base": base, "head": head, "paths": paths,
+        }
+    except (OSError, PortError, subprocess.SubprocessError, UnicodeError) as error:
+        return all_scopes(f"fail-safe: {error}")
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument("--event-name", required=True)
+    parser.add_argument("--event-path", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args(argv)
+    try:
+        event = load_json(args.event_path)
+    except (OSError, PortError, UnicodeError) as error:
+        result = all_scopes(f"fail-safe: {error}")
+    else:
+        result = evaluate(args.repo, args.event_name, event)
+    with args.output.open("a", encoding="utf-8", newline="\n") as stream:
+        for scope in SCOPES:
+            stream.write(f"{scope}={'true' if result['scopes'][scope] else 'false'}\n")
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

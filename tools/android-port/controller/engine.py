@@ -120,6 +120,7 @@ class Controller:
             operations=["modify"],
             branch=getattr(self.backend, "branch", ""),
             worktree=getattr(self.backend, "worktree", ""),
+            initial_identity=adopting,
         )
 
     def evolve_reservation(self, wp_id: str, paths: list[str], operations: list[str],

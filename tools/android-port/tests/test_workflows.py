@@ -52,6 +52,8 @@ class WorkflowTests(unittest.TestCase):
         job = workflow["jobs"]["protocol"]
         self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
         self.assertEqual(job["runs-on"], "ubuntu-24.04")
+        self.assertEqual(job["needs"], ["preflight", "scope"])
+        self.assertEqual(job["if"], "${{ needs.scope.outputs.protocol == 'true' }}")
         self.assertNotIn("strategy", job)
         self.assertIn("merge_group", workflow["on"])
         self.assertNotIn("paths", workflow["on"]["pull_request"])
@@ -62,6 +64,33 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error", command)
         self.assertEqual(job["steps"][0]["with"]["persist-credentials"], "false")
         self.assertNotIn("secrets.", text)
+
+    def test_independent_chains_use_scope_outputs_on_every_expensive_job(self):
+        workflow, _ = self.read("android-independent-checks.yml")
+        jobs = workflow["jobs"]
+        self.assertEqual(
+            set(jobs["scope"]["outputs"]), {"helpers", "codec", "protocol", "backup"}
+        )
+        expected = {
+            "helpers": ("helpers", ["preflight", "scope"]),
+            "reference-codec": ("codec", ["preflight", "scope"]),
+            "protocol": ("protocol", ["preflight", "scope"]),
+            "kotlin-producer": ("backup", ["preflight", "scope"]),
+            "swift-restore-export": ("backup", ["scope", "kotlin-producer"]),
+            "kotlin-consumer": ("backup", ["scope", "swift-restore-export"]),
+        }
+        for job_name, (scope, needs) in expected.items():
+            with self.subTest(job=job_name):
+                self.assertEqual(jobs[job_name]["needs"], needs)
+                self.assertEqual(
+                    jobs[job_name]["if"],
+                    "${{ needs.scope.outputs." + scope + " == 'true' }}",
+                )
+                self.assertNotIn("continue-on-error", jobs[job_name])
+        scope_run = jobs["scope"]["steps"][1]["run"]
+        self.assertIn('github.event_name', scope_run)
+        self.assertIn('github.event_path', scope_run)
+        self.assertIn('$GITHUB_OUTPUT', scope_run)
 
     def test_duplicate_yaml_keys_and_invalid_yaml_are_rejected(self):
         for text in ("jobs: {}\njobs: {}\n", "jobs: ["):
