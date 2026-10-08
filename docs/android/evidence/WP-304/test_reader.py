@@ -35,7 +35,7 @@ def png(width=1, height=1):
 
 def invocation_record():
     revisions = retain_raw.current_revisions()
-    return {"schema_version": 1, "stage": "verify", "host": "linux", "identity": {
+    return {"schema_version": 1, "stage": "scaffold", "host": "linux", "identity": {
         "run_id": 12, "run_attempt": 1, "binding": {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
             "base_sha": "a" * 40, "head_sha": "b" * 40,
@@ -44,7 +44,7 @@ def invocation_record():
 
 
 def local_invocation_record():
-    return {"schema_version": 1, "stage": "verify", "host": "linux", "identity": None}
+    return {"schema_version": 1, "stage": "scaffold", "host": "linux", "identity": None}
 
 
 def local_git(*arguments):

@@ -17,7 +17,7 @@ from controller.errors import PortError
 from controller.model import load_manifest
 from controller.verification_config import content_scope_revisions
 
-POLICY = "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"
+POLICY = "a9982122122eb695c60550e95d29856ffc9bbdfa02161b9679de9201c0d900db"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 
 
@@ -30,7 +30,7 @@ def invocation_document(path):
     value = unique_json(path)
     require(isinstance(value, dict) and set(value) == {"schema_version", "stage", "identity", "host"}
         and type(value["schema_version"]) is int and value["schema_version"] == 1
-        and value["stage"] == "verify" and value["host"] == "linux",
+        and value["stage"] == "scaffold" and value["host"] == "linux",
         "Wrong native pipeline invocation stage/host/schema")
     return value
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
-  "manifest_sha256": "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094",
+  "manifest_sha256": "4f8328f7295d2fdecce10489f99d992cd6b2d861c709f32297e21ed9c5b8fdf5",
   "generator": "tools/android-port/test_inventory.py",
   "counts": {
     "paths": 468,
