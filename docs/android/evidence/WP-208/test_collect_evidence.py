@@ -19,6 +19,8 @@ class EvidenceReaderTest(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="wp208-reader-")
         self.output = Path(self.temporary.name)
         self.accounting = {
+            "manifest_sha256": READER.MANIFEST, "policy_revision": READER.POLICY,
+            "services_producer": {"current_head_sha": "a" * 40},
             "implementation_inputs": ["synthetic/input.kt"],
             "expanded_originals": {"Example::original()": {}},
             "original_families": {"Example::original()": {}},
@@ -182,13 +184,82 @@ class EvidenceReaderTest(unittest.TestCase):
         receipt = READER.load_json(Path(__file__).with_name("services-bootstrap-carry.json"))
         self.assertEqual(2, len(receipt["files"]))
         for row in receipt["files"]:
-            path = READER.ROOT.joinpath(*row["path"].split("/"))
-            raw = path.read_bytes().replace(b"\r\n", b"\n")
-            self.assertEqual(row["carried_blob"], READER.git(READER.ROOT, "hash-object", "--path=" + row["path"], str(path)))
+            raw = subprocess.check_output(["git", "-C", str(READER.ROOT), "cat-file", "blob",
+                                           receipt["carry_commit"] + ":" + row["path"]])
+            self.assertEqual(row["carried_blob"], READER.git(READER.ROOT, "rev-parse",
+                             receipt["carry_commit"] + ":" + row["path"]))
             self.assertEqual(row["lf_bytes"], len(raw))
             self.assertEqual(row["lf_sha256"], READER.hashlib.sha256(raw).hexdigest())
         lock = receipt["data_local_lock"]
         self.assertEqual(lock["blob"], READER.git(READER.ROOT, "hash-object", str(READER.ROOT.joinpath(*lock["path"].split("/")))))
+        producer = READER.services_producer()
+        self.assertEqual(receipt["carry_commit"], producer["historical_carry_commit"])
+        self.assertEqual(READER.git(READER.ROOT, "rev-parse", "HEAD"), producer["current_head_sha"])
+
+    def test_current_content_build_preserves_entire_original_bootstrap_contract(self):
+        receipt = READER.load_json(READER.ROOT / READER.BOOTSTRAP_RECEIPT)
+        historical = READER.git(READER.ROOT, "show", receipt["carry_commit"] + ":" + receipt["files"][0]["path"]) + "\n"
+        current = (READER.ROOT / receipt["files"][0]["path"]).read_text(encoding="utf-8")
+        READER.bootstrap_contract(current, historical)
+        for changed in (
+            current.replace("kotlinx-serialization-json:1.7.3", "kotlinx-serialization-json:1.8.0"),
+            current.replace('implementation(project(":core:contracts"))', 'implementation(project(":core:data"))'),
+            current.replace("AndroidOnly: WP-218 diagnostic-only raw-failure printer", "AndroidOnly: WP-209 diagnostic-only raw-failure printer"),
+            current.replace('dependsOn(prepareContentInvocation)', 'dependsOn("unowned")'),
+            current.replace('group = "verification"', 'dependencies { implementation("unowned:extra:1") }\n    group = "verification"', 1),
+            current + '\ntasks.named("test") { enabled = false }\n',
+        ):
+            with self.subTest(changed=changed[:80]), self.assertRaises(ValueError):
+                READER.bootstrap_contract(changed, historical)
+
+    def test_exact_content_scope_emits_current_revisions_and_rejects_old_capture(self):
+        from controller.gates import policy_revision
+        from controller.model import Manifest, load_manifest
+        from controller.verification_config import apply_content_scope, content_scope_revisions
+        manifest = load_manifest(READER.ROOT)
+        from controller.verification_config import project_content_scope
+        old = Manifest(project_content_scope(manifest.data), manifest.exclusions, manifest.repo)
+        amended = Manifest(apply_content_scope(old.data), old.exclusions, old.repo)
+        policy = READER.load_json(READER.ROOT / "docs/android/automation-policy.json")
+        revisions = content_scope_revisions(amended, policy)
+        self.assertEqual(amended.sha256, revisions["manifest_sha256"])
+        self.assertEqual(policy_revision(amended, policy), revisions["policy_revision"])
+        self.accounting.update(revisions)
+        self.rejected()
+        self.snapshot.update(revisions)
+        self.invocation["identity"]["binding"].update(revisions)
+        self.expected_identity["binding"].update(revisions)
+        self.save_invocation(); self.save_snapshot()
+        result = self.validate()
+        self.assertEqual(amended.sha256, result["manifest_sha256"])
+        self.assertEqual(revisions["policy_revision"], result["policy_revision"])
+        self.snapshot["policy_revision"] = READER.POLICY
+        self.save_snapshot(); self.rejected()
+
+    def test_current_build_dirty_bytes_and_relabelled_historical_receipt_are_rejected(self):
+        from unittest.mock import patch
+        actual = subprocess.check_output
+        def wrong_current(arguments, **kwargs):
+            raw = actual(arguments, **kwargs)
+            if arguments[-1].endswith(":android/core/services/build.gradle.kts") and \
+                    arguments[-1].startswith(READER.git(READER.ROOT, "rev-parse", "HEAD") + ":"):
+                return raw + b"\n"
+            return raw
+        with patch.object(subprocess, "check_output", side_effect=wrong_current):
+            with self.assertRaisesRegex(ValueError, "actual HEAD"):
+                READER.services_producer()
+        original = READER.load_json(READER.ROOT / READER.BOOTSTRAP_RECEIPT)
+        changed = copy.deepcopy(original)
+        changed["producer_work_package"] = "WP-209"
+        with patch.object(READER, "load_json", return_value=changed):
+            with self.assertRaisesRegex(ValueError, "receipt was changed"):
+                READER.services_producer()
+
+    def test_self_consistent_old_report_and_provider_cannot_replace_current_compiled_head(self):
+        self.accounting["services_producer"]["current_head_sha"] = "c" * 40
+        with self.assertRaisesRegex(ValueError, "stale current Services producer"):
+            self.validate()
+
 
     def test_missing_full_module_xml_fails(self):
         (self.output / "junit" / "data" / "TEST-fixture.xml").unlink()
