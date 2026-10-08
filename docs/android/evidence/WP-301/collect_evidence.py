@@ -79,7 +79,7 @@ def source_parameter_counts():
 
 def static_inventory():
     manifest = load_manifest(ROOT)
-    if manifest.sha256 != "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746":
+    if manifest.sha256 != "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904":
         fail("canonical manifest changed")
     owned = [entry for entry in manifest.data["inventory"] if entry["primary_owner"] == "WP-301"]
     inputs = {entry["path"]: entry["blob_sha"] for entry in owned}

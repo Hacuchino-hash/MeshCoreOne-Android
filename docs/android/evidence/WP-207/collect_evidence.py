@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[4]
 MODULE = ROOT / "android" / "core" / "runtime"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
 CASE = re.compile(r'original\("([^"]+)",\s*"([^"]+)"(?:,\s*"([^"]+)")?', re.MULTILINE)
 NATIVE_CASE = re.compile(r'nativeCase\("([^"]+)"', re.MULTILINE)
 

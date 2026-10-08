@@ -22,8 +22,11 @@ from controller.runtime_inputs import required_inputs as required_runtime_inputs
 from controller.schema import decode_json, fields, load_json
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+INVENTORY_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
+INVENTORY_PATH = "docs/android/evidence/WP-004/inventory-details.json"
 EVIDENCE = ROOT / "docs" / "android" / "evidence" / "WP-109"
 NATIVE_PREFIX = "com.meshcoreone.android.core.protocol."
 SOURCE_PREFIX = "MeshCore/Tests/"
@@ -248,8 +251,13 @@ def original_accounting(repo, catalog, details, manifest, native):
     fields(catalog, {"schema_version", "source_sha", "entries"}, label="frozen original-case catalog")
     if type(catalog["schema_version"]) is not int or catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
         raise PortError("Frozen case catalog pin/version mismatch")
-    if details["source_sha"] != SOURCE or details["manifest_sha256"] != MANIFEST:
+    historical_details = json.loads(git(repo, "show", f"{INVENTORY_BASE}:{INVENTORY_PATH}"))
+    if (historical_details["source_sha"] != SOURCE or historical_details["manifest_sha256"] != HISTORICAL_MANIFEST
+            or details["source_sha"] != SOURCE or details["manifest_sha256"] != MANIFEST):
         raise PortError("Original assertion/parameter detail provenance mismatch")
+    if ({key: value for key, value in historical_details.items() if key != "manifest_sha256"} !=
+            {key: value for key, value in details.items() if key != "manifest_sha256"}):
+        raise PortError("Original assertion/parameter detail inventory drift")
     declarations = {(f["path"], c["id"]): (f, c) for f in details["files"] for c in f["cases"]}
     owners = {i["path"]: i for i in manifest.data["inventory"]}
     scopes = native_source_scopes(repo)

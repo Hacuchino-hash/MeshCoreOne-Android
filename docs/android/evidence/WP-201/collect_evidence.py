@@ -23,8 +23,8 @@ from controller.schema import decode_json, digest, fields, load_json, nonempty
 from portmap import port_map
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
 HISTORY = "docs/android/evidence/WP-201/local-evidence.json"
 HISTORY_SHA256 = "c53017a93cc37fecdd442057423113e72146a18a023bd865909781c1db2fdca8"
 SCHEMA = "android/core/database/schemas/com.meshcoreone.android.core.database.MeshCoreDatabase/1.json"
