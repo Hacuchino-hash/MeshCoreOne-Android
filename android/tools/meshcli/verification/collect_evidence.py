@@ -253,6 +253,7 @@ def original_accounting(repo, catalog, details, manifest, native):
     if type(catalog["schema_version"]) is not int or catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
         raise PortError("Frozen case catalog pin/version mismatch")
     historical_details = json.loads(git(repo, "show", f"{INVENTORY_BASE}:{INVENTORY_PATH}"))
+    historical_details.pop("manifest_sha256", None)
     if inventory_details_predecessor(details, manifest) != historical_details:
         raise PortError("Original assertion/parameter detail inventory drift")
     declarations = {(f["path"], c["id"]): (f, c) for f in details["files"] for c in f["cases"]}
