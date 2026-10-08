@@ -16,11 +16,10 @@ that handle. Process preferences/repositories are never closed on a radio
 disconnect. A retained physical link is recovery state, not a fresh protocol
 generation; reacquisition awaits its real physical close.
 
-Declared verification tasks are `test`, `resolveRuntimeDependencies`,
-`verifyConnectionRuntimeTests`, `verifyRuntimeNativeIntegrationTests` and
-`verifyRuntimeEvidenceReaders`. The owning module hooks join existing root
-`verifyScaffoldTests`; no shared root task or production graph edge is added.
-The dependency proposal runner invokes only `resolveRuntimeDependencies`.
+Declared verification uses `:core:runtime:test`,
+`:core:data:testDebugUnitTest`, and `:core:datastore:testDebugUnitTest`
+directly. The owning module hooks join existing root `verifyScaffoldTests`;
+no shared root task or production graph edge is added.
 
 Equivalent callers observe one submitted attempt; only its authoritative
 revision owner may cancel it or clear its pending slot. A late diagnostic

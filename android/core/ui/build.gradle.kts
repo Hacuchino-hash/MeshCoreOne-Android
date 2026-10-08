@@ -41,7 +41,6 @@ dependencyLocking {
 val repository = rootProject.projectDir.parentFile
 val sharedUiEvidence = repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-304")
 val sourceReader = sharedUiEvidence.resolve("collect_evidence.py")
-val rawRetainer = sharedUiEvidence.resolve("retain_raw.py")
 val frozenRootUiLock = rootProject.layout.projectDirectory.file("gradle/dependency-locks/core-ui.lockfile")
 val seedText = frozenRootUiLock.asFile.readText()
 val seedByConfiguration = linkedMapOf<String, MutableList<String>>()
@@ -96,32 +95,7 @@ class SharedUiPlatformArguments(
         listOf("-Drobolectric.dependency.dir=${directory.get().asFile.absolutePath}")
 }
 
-val retainSharedUiRaw by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Retain produced verbatim JUnit and input bindings before success validation, including failure stacks."
-    workingDir(repository)
-    doFirst {
-        val arguments = mutableListOf("python", rawRetainer.absolutePath,
-            "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-            "--images", layout.buildDirectory.dir("reports/wp304/ui").get().asFile.absolutePath,
-            "--output", layout.buildDirectory.dir("reports/wp304/raw").get().asFile.absolutePath,
-            "--runtime-junit", rootProject.project(":core:runtime").layout.buildDirectory
-                .dir("test-results/test").get().asFile.absolutePath,
-            "--ble-junit", rootProject.project(":core:ble").layout.buildDirectory
-                .dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-            "--services-junit", rootProject.project(":core:services").layout.buildDirectory
-                .dir("test-results/test").get().asFile.absolutePath,
-            "--connectivity-junit", rootProject.project(":core:connectivity").layout.buildDirectory
-                .dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-            "--emit")
-        providers.gradleProperty("meshCliInvocationFile").orNull?.let {
-            arguments += listOf("--invocation", it)
-        }
-        commandLine(arguments)
-    }
-}
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest") finalizedBy(retainSharedUiRaw)
     if (name == "testDebugUnitTest") dependsOn(":core:runtime:test", ":core:ble:testDebugUnitTest",
         ":core:services:test", ":core:connectivity:testDebugUnitTest")
     dependsOn(prepareSharedUiPlatformSdks)

@@ -23,14 +23,12 @@ EXACT = {
     "tools/android-port/controller/module_junit.py",
     "tools/android-port/controller/scaffold_scope.py",
 }
-PREFIXES = ("android/", "tools/android-port/tests/", "docs/android/evidence/")
+PREFIXES = ("android/", "tools/android-port/tests/")
 INDEPENDENT_ONLY_PREFIXES = (
     "android/core/protocol/",
     "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/",
     "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/",
     "android/core/database/",
-    "docs/android/evidence/WP-202/",
-    "docs/android/evidence/WP-203/",
 )
 
 

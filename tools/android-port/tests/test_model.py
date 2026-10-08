@@ -70,17 +70,6 @@ class CurrentCatalogReaderTests(unittest.TestCase):
         }
         return record, head, revisions
 
-    def test_device_current_invocation_ignores_process_only_catalog_revision(self):
-        reader = evidence_reader("docs/android/evidence/WP-211/collect_evidence.py", "device_catalog_lineage")
-        record, _, _ = self.current_invocation()
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "invocation.json"
-            path.write_text(json.dumps(record), encoding="utf-8")
-            self.assertEqual(reader.invocation(path)["run_id"], 17)
-            record["identity"]["binding"].update(manifest_sha256=VERIFICATION_MANIFEST_SHA256)
-            path.write_text(json.dumps(record), encoding="utf-8")
-            self.assertEqual(reader.invocation(path)["run_id"], 17)
-
     def test_cli_current_invocation_rejects_stale_catalog_host_head_and_run(self):
         reader = evidence_reader("android/tools/meshcli/verification/collect_evidence.py", "cli_catalog_lineage")
         record, head, revisions = self.current_invocation()

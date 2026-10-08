@@ -33,20 +33,9 @@ dependencyLocking {
 
 val repository = rootProject.projectDir.parentFile
 val converter = repository.resolve("tools").resolve("android-port").resolve("theme_convert.py")
-val evidenceCollector = repository.resolve("docs").resolve("android").resolve("evidence")
-    .resolve("WP-301").resolve("collect_evidence.py")
-val packagingInspector = evidenceCollector.parentFile.resolve("verify_packaging.py")
-val consumerLockInspector = evidenceCollector.parentFile.resolve("verify_consumer_locks.py")
-val nativeRetainer = evidenceCollector.parentFile.resolve("retain_native_junit.py")
-
-val retainThemeUnitEvidence by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Preserve complete produced raw XML before validation, including failure identities/stacks and input bindings."
-    workingDir(repository)
-    commandLine("python", nativeRetainer.absolutePath, "--self-test", "--junit",
-        layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-        "--output", providers.gradleProperty("wp301EvidenceDirectory").getOrElse(""))
-}
+val themeEvidence = repository.resolve("docs").resolve("android").resolve("evidence").resolve("WP-301")
+val packagingInspector = themeEvidence.resolve("verify_packaging.py")
+val consumerLockInspector = themeEvidence.resolve("verify_consumer_locks.py")
 
 val themePlatformSdk37 = configurations.create("themePlatformSdk37") {
     isCanBeConsumed = false
@@ -66,7 +55,6 @@ class ThemePlatformSdkArguments(
     override fun asArguments(): Iterable<String> = listOf("-Drobolectric.dependency.dir=${directory.get().asFile.absolutePath}")
 }
 tasks.withType<Test>().configureEach {
-    if (name == "testDebugUnitTest") finalizedBy(retainThemeUnitEvidence)
     dependsOn(prepareThemePlatformSdks)
     jvmArgumentProviders.add(ThemePlatformSdkArguments(layout.buildDirectory.dir("theme-platform-sdks")))
     jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
@@ -111,16 +99,8 @@ val verifyThemeNotices by tasks.registering(Exec::class) {
 }
 tasks.named("preBuild") { dependsOn(verifyThemeNotices) }
 
-val verifyThemeTests by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Require all original theme families, parameter counts, current input blobs and complete nonzero raw JUnit."
-    dependsOn("testDebugUnitTest")
-    workingDir(repository)
-    commandLine("python", evidenceCollector.absolutePath, "--check", "--self-test",
-        "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath)
-}
-rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyThemeTests) }
-tasks.named("check") { dependsOn(verifyThemeTests) }
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(":core:designsystem:testDebugUnitTest") }
+tasks.named("check") { dependsOn("testDebugUnitTest") }
 val verifyThemePackaging by tasks.registering(Exec::class) {
     group = "verification"
     description = "Inspect actual debug APK identity, exact theme notices/source map and test-fixture absence."

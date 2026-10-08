@@ -1,5 +1,10 @@
 # WP-208 messaging evidence
 
+> Historical implementation record only. Normal candidate verification now runs
+> the owning Services and Data test tasks directly. Raw JUnit retention,
+> executor/manifest rebinding, and post-test evidence-reader tasks were retired;
+> exact-commit CI results and logs are authoritative.
+
 **Bounded messaging candidate, not a gate approval or a completion receipt.**
 The manual authorization, original identity and authoritative recovery lease
 amendment are in [`receipt.json`](receipt.json). The active owner is native

@@ -149,33 +149,6 @@ tasks.register("resolveWp302NavigationDependencies") {
 }
 
 val contentRepository = rootProject.projectDir.parentFile
-val contentCollector = contentRepository.resolve("docs").resolve("android").resolve("evidence")
-    .resolve("WP-218").resolve("collect_evidence.py")
-val contentInvocation = providers.gradleProperty("meshCliInvocationFile")
-val retainContentAppReports by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Retain complete raw App JUnit and immutable input bytes before verification, including failures."
-    workingDir(contentRepository)
-    val destination = contentInvocation.map {
-        file(it).parentFile.resolve("wp218-native").resolve("app-raw").absolutePath
-    }.getOrElse(layout.buildDirectory.dir("reports/wp218/app-raw").get().asFile.absolutePath)
-    commandLine("python", "-B", contentCollector.absolutePath, "--retain-only", "app", "--output", destination)
-    contentInvocation.orNull?.let { args("--invocation", it) }
-    contentInvocation.orNull?.let {
-        args("--pretest", file(it).parentFile.resolve("wp218-native").resolve("pretest-binding.json").absolutePath)
-    }
-}
-tasks.withType<Test>().configureEach {
-    val contentSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/content").asFile
-    if (name == "testDebugUnitTest" && contentSource.exists()) {
-        check(contentSource.isDirectory && contentCollector.isFile) {
-            "Present Content source requires its real package and evidence collector."
-        }
-        dependsOn(":core:services:prepareContentInvocation")
-        finalizedBy(retainContentAppReports)
-    }
-}
-
 val navigationCollector = contentRepository.resolve("docs/android/evidence/WP-302/collect_evidence.py")
 val navigationBinding = layout.buildDirectory.file("reports/wp302/input-binding.json")
 val prepareWp302NavigationInputs by tasks.registering(Exec::class) {

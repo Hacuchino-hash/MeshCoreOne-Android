@@ -1,5 +1,11 @@
 # WP-207 connection runtime evidence
 
+> Historical implementation record only. Normal candidate verification now runs
+> `:core:runtime:test`, `:core:data:testDebugUnitTest`, and
+> `:core:datastore:testDebugUnitTest` directly with Gradle's fail-on-zero-test
+> behavior. The former JUnit re-collectors, artifact hashes, and reader tests were
+> retired because exact-commit CI logs/results are authoritative.
+
 This records the bounded runtime's provenance, verification commands and
 immutable execution history, not a merge/acceptance receipt. The exact current
 head's run, raw artifact digest and independent review are bound in normal

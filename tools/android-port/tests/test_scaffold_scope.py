@@ -10,12 +10,11 @@ class ScaffoldScopeTests(unittest.TestCase):
         self.assertFalse(classify(["docs/android/adr/005-fast-local-pre-push.md"]))
         self.assertFalse(classify(["MC1/Views/SettingsView.swift"]))
 
-    def test_android_build_controller_and_evidence_select_full_scaffold(self):
+    def test_android_build_and_controller_changes_select_full_scaffold(self):
         for path in (
             "android/core/data/build.gradle.kts",
             "tools/android-port/controller/ci.py",
             "tools/android-port/tests/test_workflows.py",
-            "docs/android/evidence/WP-211/collect_evidence.py",
         ):
             with self.subTest(path=path):
                 self.assertTrue(classify([path]))
@@ -24,6 +23,8 @@ class ScaffoldScopeTests(unittest.TestCase):
         for path in (
             "docs/android/port-manifest.json",
             "docs/android/PORTING_PLAN.md",
+            "docs/android/evidence/WP-211/README.md",
+            "docs/android/deviations/WP-211.md",
             "android/core/protocol/src/test/kotlin/ProtocolTest.kt",
             "android/core/data/src/test/kotlin/com/meshcoreone/android/core/data/backup/BackupInteropTest.kt",
             "android/core/database/src/test/kotlin/DatabaseTest.kt",
