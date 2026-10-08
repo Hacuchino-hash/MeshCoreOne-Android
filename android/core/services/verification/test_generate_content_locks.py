@@ -139,10 +139,17 @@ class GenerationTest(unittest.TestCase):
 
         result = self.candidate_identity(
             manifest_data=content_scope_predecessor(manifest).data,
+            policy_data=json.loads(helper.git(helper.ROOT, "show",
+                "7e2835bad2c03dfb5a088063655f9fc4dbafd00f:docs/android/automation-policy.json")),
             binding_changes={"manifest_sha256": helper.MANIFEST, "policy_revision": helper.POLICY},
         )
         self.assertEqual(result["binding"]["manifest_sha256"], helper.MANIFEST)
         self.assertEqual(result["binding"]["policy_revision"], helper.POLICY)
+        with self.assertRaises(helper.PortError):
+            self.candidate_identity(
+                manifest_data=content_scope_predecessor(manifest).data,
+                binding_changes={"manifest_sha256": helper.MANIFEST, "policy_revision": helper.POLICY},
+            )
 
     def test_unowned_catalog_changes_reject_before_generation(self):
         original = helper.load_manifest(helper.ROOT).data
