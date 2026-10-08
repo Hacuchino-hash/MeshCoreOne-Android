@@ -366,7 +366,7 @@ class ProvenanceTests(unittest.TestCase):
                 with self.assertRaises(PortError):
                     port_map(self.temporary_manifest(directory))
 
-    def test_wp302_scope_rejects_changed_manifest_or_source_even_with_the_exact_proof(self):
+    def test_wp302_scope_preserves_historical_manifest_audit_while_current_manifest_evolves(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             proof = root / WP_302_SCOPE_PROOF
@@ -376,14 +376,15 @@ class ProvenanceTests(unittest.TestCase):
             source.parent.mkdir(parents=True)
             source.write_text("// AndroidOnly: WP-302 approved native shell support\n", encoding="utf-8")
             manifest = self.temporary_manifest(directory)
-            for field in ("source", "manifest"):
-                changed = copy.deepcopy(manifest.data)
-                if field == "source":
-                    changed["reference"]["commit"] = "a" * 40
-                else:
-                    changed["work_packages"][0]["title"] += " changed"
-                with self.subTest(field=field), self.assertRaises(PortError):
-                    port_map(replace(manifest, data=changed))
+            changed = copy.deepcopy(manifest.data)
+            changed["work_packages"][0]["title"] += " changed"
+            self.assertEqual(
+                port_map(replace(manifest, data=changed))[0]["android_only"],
+                ["WP-302"],
+            )
+            changed["reference"]["commit"] = "a" * 40
+            with self.assertRaisesRegex(PortError, "source binding"):
+                port_map(replace(manifest, data=changed))
 
     def test_many_to_many_source_headers_are_derived_not_feature_acceptance(self):
         manifest = base_manifest()

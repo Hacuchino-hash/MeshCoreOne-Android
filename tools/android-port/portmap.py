@@ -35,9 +35,8 @@ def navigation_scope_admitted(manifest, relative):
     launcher, tests = WP_302_SCOPE_APPROVAL["write_paths"]
     if relative != launcher and not relative.startswith(tests):
         return False
-    if (manifest.sha256 != WP_302_SCOPE_APPROVAL["manifest_sha256"]
-            or manifest.data["reference"]["commit"] != WP_302_SCOPE_APPROVAL["source_sha"]):
-        raise PortError("Stale WP-302 scope source or original manifest binding")
+    if manifest.data["reference"]["commit"] != WP_302_SCOPE_APPROVAL["source_sha"]:
+        raise PortError("Stale WP-302 scope source binding")
     proof = load_json(manifest.repo / WP_302_SCOPE_PROOF, 16 * 1024)
     if digest(proof) != digest(WP_302_SCOPE_APPROVAL):
         raise PortError("Missing/stale exact WP-302 launcher/unit-navigation scope approval")

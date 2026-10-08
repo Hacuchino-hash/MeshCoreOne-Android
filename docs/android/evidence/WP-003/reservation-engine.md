@@ -14,6 +14,13 @@ lock collisions, current-base and semantic-conflict integration blocks, protecte
 merge-only approval through the unchanged gate suite, unsupported operations and
 historical receipt migration.
 
+The validator2 regression also removes the old execution-time requirement that
+the *current* manifest digest equal WP-302's historical support-approval digest.
+The exact approval object and its original manifest digest remain immutable audit
+evidence, while runtime admission continues to require the pinned source and
+byte-exact proof. Later manifest evolution therefore no longer turns historical
+authorization prose into mutable capability state.
+
 The repository-owned runtime installer stages and hashes the complete controller,
 uses the separate installed-runtime hard lock, atomically swaps the Git-common
 runtime directory, verifies installed bytes, and releases the lock. The exact
