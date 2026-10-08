@@ -113,8 +113,9 @@ def meshcli_evidence_options(stage: str, state: dict, output: Path):
         positive_integer(identity["run_id"], "Actual meshcli workflow run")
         positive_integer(identity["run_attempt"], "Actual meshcli workflow attempt")
     invocation = output / "wp109-invocation.json"
+    invocation_stage = "verify" if stage == "scaffold" else stage
     write_json(invocation, {
-        "schema_version": 1, "stage": stage, "identity": identity, "host": state["host"],
+        "schema_version": 1, "stage": invocation_stage, "identity": identity, "host": state["host"],
     })
     return [
         "-PmeshCliEvidenceDirectory=" + str(output / "wp109"),

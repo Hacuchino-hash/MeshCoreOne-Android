@@ -91,7 +91,10 @@ class EnvironmentTests(unittest.TestCase):
                     output, state, arguments, calls = self.captured_stage(Path(temporary), host, stage, identity)
                     self.assertEqual(1, calls)
                     self.assertEqual({
-                        "schema_version": 1, "stage": stage, "identity": identity, "host": state["host"],
+                        "schema_version": 1,
+                        "stage": "verify" if stage == "scaffold" else stage,
+                        "identity": identity,
+                        "host": state["host"],
                     }, load_json(output / "wp109-invocation.json"))
                     self.assertIn("-PmeshCliEvidenceDirectory=" + str(output / "wp109"), arguments)
                     self.assertIn("-PmeshCliInvocationFile=" + str(output / "wp109-invocation.json"), arguments)
@@ -139,7 +142,7 @@ class EnvironmentTests(unittest.TestCase):
             value = load_json(directory / "evidence" / "wp109-invocation.json")
             self.assertEqual(identity, value["identity"])
             self.assertEqual(host_name(), value["host"])
-            self.assertEqual("scaffold", value["stage"])
+            self.assertEqual("verify", value["stage"])
             self.assertEqual(2, len(options))
 
     def test_meshcli_forwarding_does_not_touch_other_declared_stages(self):
