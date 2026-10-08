@@ -147,10 +147,15 @@ class WorkflowTests(unittest.TestCase):
         text = "\n".join(path.read_text(encoding="utf-8") for path in gradle_files)
         self.assertNotRegex(text, r"(?i)\bretain\w*Evidence\b")
         self.assertNotRegex(text, r"(?i)\bverify\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\bcollect\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\b(?:evidence|stage)\w*(?:Report|Result|Retention)\b")
         self.assertNotIn("collect_evidence.py", text)
         self.assertNotIn("meshCliEvidence", text)
         self.assertNotIn("wp109-invocation", text)
         self.assertNotIn("raw-retention", text)
+        controller = (REPO / "tools/android-port/controller/ci.py").read_text(encoding="utf-8")
+        self.assertIn("validate_candidate_task_graph(task_graph, tasks)", controller)
+        self.assertIn("--init-script", controller)
 
     def test_cloud_setup_supported_single_job_and_only_supported_properties(self):
         original, text = self.read("copilot-setup-steps.yml")

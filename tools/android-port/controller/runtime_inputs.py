@@ -23,6 +23,7 @@ FIXED_INPUTS = (
     "tools/android-port/controller/toolchain-pins.json",
     "tools/android-port/controller/requirements-ci.txt",
     "tools/android-port/controller/gradle_windows.ps1",
+    "tools/android-port/controller/verify_candidate_task_graph.gradle",
     "tools/android-port/local/reserve.py",
     "tools/android-port/local/hook_test.py",
     "tools/android-port/oracle/workflow_scope.py",

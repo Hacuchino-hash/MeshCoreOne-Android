@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import io
+import json
 import os
 import tempfile
 import tarfile
@@ -89,11 +90,20 @@ class EnvironmentTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             calls = []
+            def capture(command, environment, log, **kwargs):
+                calls.append((command, log))
+                if log.name == "gradle-prepare.log":
+                    graph = Path(environment["ANDROID_CI_TASK_GRAPH"])
+                    graph.parent.mkdir(parents=True, exist_ok=True)
+                    graph.write_text(
+                        '{"schema_version":1,"tasks":[{"path":":resolveScaffoldDependencies",'
+                        '"type":"fixture","command":[]}]}\n',
+                        encoding="utf-8",
+                    )
             with (
                 patch("controller.ci.verify_wrapper"),
                 patch("controller.ci.candidate_environment", return_value={}),
-                patch("controller.ci.execute", side_effect=lambda command, environment, log, **kwargs:
-                      calls.append((command, log))),
+                patch("controller.ci.execute", side_effect=capture),
                 patch("controller.ci.collect_suites", side_effect=AssertionError("prepare read scaffold reports")),
                 patch("controller.ci.check_module_tests", side_effect=AssertionError("prepare read module reports")),
                 patch("controller.ci.collect_lint", side_effect=AssertionError("prepare read lint reports")),
@@ -107,6 +117,47 @@ class EnvironmentTests(unittest.TestCase):
             )
             self.assertIn("resolveScaffoldDependencies", arguments)
             self.assertNotIn("verifyScaffoldTests", arguments)
+            self.assertIn("--init-script", arguments)
+            self.assertTrue(arguments[arguments.index("--init-script") + 1].endswith(
+                "verify_candidate_task_graph.gradle"
+            ))
+
+    def test_resolved_gradle_graph_rejects_all_duplicate_result_task_and_script_families(self):
+        from controller.ci import validate_candidate_task_graph
+
+        safe = [
+            {"path": ":verifyScaffoldTests", "type": "fixture", "command": []},
+            {"path": ":core:protocol:test", "type": "fixture", "command": []},
+        ]
+        rejected = (
+            {"path": ":retainMeshCliEvidence", "type": "fixture", "command": []},
+            {"path": ":collectProtocolEvidence", "type": "fixture", "command": []},
+            {"path": ":verifyRuntimeEvidenceReaders", "type": "fixture", "command": []},
+            {"path": ":stageResultReport", "type": "fixture", "command": []},
+            {
+                "path": ":verifyInputs",
+                "type": "fixture",
+                "command": ["python", str(REPO / "docs/android/evidence/WP-999/collect_evidence.py")],
+            },
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            graph = Path(temporary) / "graph.json"
+            graph.write_text(
+                json.dumps({"schema_version": 1, "tasks": safe}) + "\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                validate_candidate_task_graph(graph, ["verifyScaffoldTests", ":core:protocol:test"]),
+                {"tasks": 2, "result": "no-duplicate-ci-evidence"},
+            )
+            for record in rejected:
+                with self.subTest(record=record["path"]):
+                    graph.write_text(
+                        json.dumps({"schema_version": 1, "tasks": [safe[0], record]}) + "\n",
+                        encoding="utf-8",
+                    )
+                    with self.assertRaises(PortError):
+                        validate_candidate_task_graph(graph, ["verifyScaffoldTests"])
 
     def test_parent_allowlist_is_preserved_and_credentials_are_not_inherited(self):
         with tempfile.TemporaryDirectory() as temporary:

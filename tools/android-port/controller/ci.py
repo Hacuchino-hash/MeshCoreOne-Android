@@ -6,6 +6,7 @@ import io
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,8 @@ from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
 from controller.schema import decode_json, fields, load_json, positive_integer
 from controller.test_runner import run_suite
+
+TASK_GRAPH_GUARD = REPO / "tools" / "android-port" / "controller" / "verify_candidate_task_graph.gradle"
 
 TASKS = {
     "scaffold": [
@@ -108,6 +111,38 @@ def execute(command: list[str], environment: dict | None, log: Path, *, timeout=
         raise PortError(f"Declared command failed with exit {result.returncode}; log: {log.name}")
 
 
+def validate_candidate_task_graph(path: Path, requested_tasks: list[str]):
+    value = load_json(path)
+    fields(value, {"schema_version", "tasks"}, label="resolved Gradle task graph")
+    if value["schema_version"] != 1 or not isinstance(value["tasks"], list) or not value["tasks"]:
+        raise PortError("Malformed or empty resolved Gradle task graph")
+    forbidden_name = re.compile(
+        r"(?i)^(retain|collect).*evidence.*$|^verify.*evidence.*$|^(evidence|stage).*(report|result|retention).*$"
+    )
+    observed = set()
+    for record in value["tasks"]:
+        fields(record, {"path", "type", "command"}, label="resolved Gradle task")
+        if not isinstance(record["path"], str) or not record["path"].startswith(":"):
+            raise PortError("Malformed resolved Gradle task path")
+        if record["path"] in observed:
+            raise PortError("Duplicate resolved Gradle task path")
+        observed.add(record["path"])
+        name = record["path"].rsplit(":", 1)[-1]
+        if forbidden_name.fullmatch(name):
+            raise PortError("Duplicate candidate evidence task in resolved graph: " + record["path"])
+        if not isinstance(record["command"], list) or not all(isinstance(item, str) for item in record["command"]):
+            raise PortError("Malformed resolved Gradle command")
+        for argument in record["command"]:
+            normalized = argument.replace("\\", "/").lower()
+            if "/docs/android/evidence/" in normalized and normalized.endswith(".py"):
+                raise PortError("Gradle invokes repository evidence collector: " + record["path"])
+    for requested in requested_tasks:
+        expected = requested if requested.startswith(":") else ":" + requested
+        if expected not in observed:
+            raise PortError("Requested Gradle task missing from resolved graph: " + expected)
+    return {"tasks": len(observed), "result": "no-duplicate-ci-evidence"}
+
+
 def preflight(state: dict, output: Path, *, local=False):
     verify_committed_inputs(REPO)
     if platform.python_version() != toolchain_lock()["python"]:
@@ -147,6 +182,8 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
     if platform.python_version() != toolchain_lock()["python"]:
         raise PortError("Declared CI executor requires Python 3.12.4")
     environment = candidate_environment(state, local=local)
+    task_graph = output / f"gradle-{stage}-task-graph.json"
+    environment["ANDROID_CI_TASK_GRAPH"] = str(task_graph)
     verify_wrapper()
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
@@ -167,19 +204,24 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
         tasks = TASKS[stage]
     else:
         tasks = list(dict.fromkeys(task for scope in selected for task in SCOPED_TASKS[scope]))
-    command = [str(wrapper), "-p", str(project), *tasks, *options]
+    gradle_arguments = [*tasks, *options, "--init-script", str(TASK_GRAPH_GUARD)]
+    command = [str(wrapper), "-p", str(project), *gradle_arguments]
     if state["host"] == "windows":
         shell = shutil.which("pwsh", path=environment.get("PATH"))
         if shell is None:
             raise PortError("Windows batch execution requires the hosted/local PowerShell 7 input")
         invocation = output / f"gradle-{stage}-invocation.json"
-        write_json(invocation, {"wrapper": str(wrapper), "project": str(project), "arguments": [*tasks, *options]})
+        write_json(invocation, {"wrapper": str(wrapper), "project": str(project), "arguments": gradle_arguments})
         command = [
             shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-File",
             str(Path(__file__).with_name("gradle_windows.ps1")), "-InvocationFile", str(invocation),
         ]
     execute(command, environment, output / f"gradle-{stage}.log")
-    report = {"stage": stage, "scopes": selected, "result": "success", "tasks": tasks, "strict_verification": True}
+    graph = validate_candidate_task_graph(task_graph, tasks)
+    report = {
+        "stage": stage, "scopes": selected, "result": "success", "tasks": tasks,
+        "strict_verification": True, "resolved_task_graph": graph,
+    }
     if "scaffold" in selected:
         report["suites"] = collect_suites(REPO / "android")
         report["module_unit_tests"] = check_module_tests(REPO)
