@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 In-app scan picker port over BluetoothScanPairingService and the BLE scan coordinator.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.core.connectivity.ble.BleScanCoordinator
 import com.meshcoreone.android.core.connectivity.pairing.BluetoothScanPairingService

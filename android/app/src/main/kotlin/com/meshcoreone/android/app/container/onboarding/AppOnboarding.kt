@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Builds OnboardingFeatureDependencies from the AppContainer and supplies the activity seams.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import android.content.Context
 import android.content.Intent
@@ -22,11 +22,11 @@ import com.meshcoreone.android.core.connectivity.pairing.BluetoothScanPairingSer
 import com.meshcoreone.android.core.connectivity.permissions.AndroidPermissionState
 import com.meshcoreone.android.core.connectivity.permissions.PermissionSnapshot
 import com.meshcoreone.android.core.contracts.domain.DeviceConnectionState
-import com.meshcoreone.android.core.services.content.LocationPermissionResultReporting
+import com.meshcoreone.android.app.content.LocationPermissionResultReporting
 import com.meshcoreone.android.core.services.content.RegionResolver
 import com.meshcoreone.android.core.services.device.RadioPreset
-import com.meshcoreone.android.core.services.device.SettingsServiceError
-import com.meshcoreone.android.core.services.device.SettingsServiceException
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceError
+import com.meshcoreone.android.core.contracts.domain.errors.SettingsServiceException
 import com.meshcoreone.android.core.services.simulator.DemoModeManager
 import com.meshcoreone.android.feature.onboarding.OnboardingDemoPort
 import com.meshcoreone.android.feature.onboarding.OnboardingFeatureDependencies

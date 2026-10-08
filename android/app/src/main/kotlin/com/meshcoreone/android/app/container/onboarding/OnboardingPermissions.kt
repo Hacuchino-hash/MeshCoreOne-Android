@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Onboarding permission port over the connectivity permission snapshot and runtime requests.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityFeature
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityPermission

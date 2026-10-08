@@ -1,6 +1,5 @@
-// PortedFrom: MC1/ContentView.swift@db14559b39d32322b06477c6ae676112f583db50
-// Native adaptation: Onboarding replaces the main shell until `hasCompletedOnboarding` is set (Swift ContentView rule).
-package com.meshcoreone.android.app.onboarding
+// AndroidOnly: WP-303 First-run gate: onboarding replaces the main shell until hasCompletedOnboarding is set (Swift ContentView rule).
+package com.meshcoreone.android.app.container.onboarding
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

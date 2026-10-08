@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Fakes shared by the onboarding adapter tests.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.app.state.ConnectionUiSnapshot
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityPermission

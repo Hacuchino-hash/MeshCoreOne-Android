@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Onboarding flag persistence and the first-run gate flow.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.feature.onboarding.OnboardingState
 import kotlinx.coroutines.ExperimentalCoroutinesApi

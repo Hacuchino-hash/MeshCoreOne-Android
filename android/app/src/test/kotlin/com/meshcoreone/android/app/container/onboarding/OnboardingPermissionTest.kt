@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Permission snapshot mapping and runtime request selection.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.core.connectivity.permissions.ConnectivityPermission
 import com.meshcoreone.android.feature.onboarding.OnboardingPermissionKind as Kind

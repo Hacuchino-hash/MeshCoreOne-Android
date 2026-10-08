@@ -28,10 +28,10 @@ import com.meshcoreone.android.core.database.MeshCoreDatabase
 import com.meshcoreone.android.core.datastore.MeshCoreStorage
 import com.meshcoreone.android.app.content.AndroidGeocoderAdapter
 import com.meshcoreone.android.app.content.LocationManagerLocationProducing
-import com.meshcoreone.android.app.onboarding.AndroidOnboardingPermissionFacts
-import com.meshcoreone.android.app.onboarding.OnboardingPlatform
-import com.meshcoreone.android.app.onboarding.WriteBehindOnboardingFlags
-import com.meshcoreone.android.app.onboarding.appSettingsOpener
+import com.meshcoreone.android.app.container.onboarding.AndroidOnboardingPermissionFacts
+import com.meshcoreone.android.app.container.onboarding.OnboardingPlatform
+import com.meshcoreone.android.app.container.onboarding.WriteBehindOnboardingFlags
+import com.meshcoreone.android.app.container.onboarding.appSettingsOpener
 import com.meshcoreone.android.core.services.content.LocationService
 import com.meshcoreone.android.core.services.content.RegionResolver
 import com.meshcoreone.android.core.services.rendering.DraftStore

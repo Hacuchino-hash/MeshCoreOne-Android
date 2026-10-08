@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Synchronous onboarding flag store over an asynchronous preference store.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.core.datastore.AppStorageKey
 import com.meshcoreone.android.core.datastore.PreferenceStore

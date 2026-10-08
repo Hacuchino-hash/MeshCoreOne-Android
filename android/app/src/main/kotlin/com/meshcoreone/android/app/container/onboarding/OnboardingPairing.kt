@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Onboarding pairing, Wi-Fi and demo ports over app state and the pairing coordinator.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.app.state.ConnectionFailures
 import com.meshcoreone.android.app.state.ConnectionUiSnapshot

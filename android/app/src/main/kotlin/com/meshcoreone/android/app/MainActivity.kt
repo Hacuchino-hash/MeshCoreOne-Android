@@ -19,8 +19,8 @@ import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
 import com.meshcoreone.android.app.navigation.NavigationSavedState
 import com.meshcoreone.android.app.navigation.NavigationState
-import com.meshcoreone.android.app.onboarding.AppOnboarding
-import com.meshcoreone.android.app.onboarding.OnboardingGate
+import com.meshcoreone.android.app.container.onboarding.AppOnboarding
+import com.meshcoreone.android.app.container.onboarding.OnboardingGate
 import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.designsystem.MeshCoreTheme
 import kotlinx.coroutines.CancellationException

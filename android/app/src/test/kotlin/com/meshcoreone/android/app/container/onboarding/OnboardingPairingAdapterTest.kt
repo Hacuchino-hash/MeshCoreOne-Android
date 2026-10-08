@@ -1,5 +1,5 @@
 // AndroidOnly: WP-303 Pairing, Wi-Fi and demo adapter outcome mapping against fakes.
-package com.meshcoreone.android.app.onboarding
+package com.meshcoreone.android.app.container.onboarding
 
 import com.meshcoreone.android.app.state.ConnectionUiSnapshot
 import com.meshcoreone.android.core.ble.BleError
