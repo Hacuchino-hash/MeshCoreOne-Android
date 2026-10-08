@@ -157,7 +157,7 @@ class IdentityReaderTests(unittest.TestCase):
             binding = {"repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
                        "head_sha": reader.git("rev-parse", "HEAD"),
                        "base_sha": "372fbc5866305e045025472ba555e7941873000f", "source_sha": reader.SOURCE,
-                       **reader.current_revisions()}
+                       "manifest_sha256": "a" * 64, "policy_revision": "b" * 64}
             value = {"schema_version": 1, "host": "linux", "stage": "verify",
                      "identity": {"binding": binding, "run_id": 1, "run_attempt": 1}}
             path.write_text(json.dumps(value))
@@ -223,7 +223,7 @@ class IdentityReaderTests(unittest.TestCase):
     def test_historical_owner_cannot_be_relabelled_as_current_recovery_evidence(self):
         metadata = {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
-            "source_sha": reader.SOURCE, **reader.current_revisions(), "lease": reader.LEASE,
+            "source_sha": reader.SOURCE, "lease": reader.LEASE,
             "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
             "recovery_owner_receipt": {
                 **reader.RECOVERY_OWNER, "native_session": "18dd9693-255c-4cb4-8154-86ee8040a8dc",
@@ -247,7 +247,7 @@ class InvocationReaderTests(unittest.TestCase):
             target = cls.repository / "docs" / "android" / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
-        cls.revisions = reader.current_revisions()
+        cls.revisions = {"manifest_sha256": "a" * 64, "policy_revision": "b" * 64}
         cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "before baseline")
         cls.before = cls.git("rev-parse", "HEAD")
         cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "baseline")
@@ -293,7 +293,7 @@ class InvocationReaderTests(unittest.TestCase):
         (self.root / "actual-invocation.json").write_bytes(self.path.read_bytes())
         metadata = {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
-            "source_sha": reader.SOURCE, **self.revisions, "lease": reader.LEASE,
+            "source_sha": reader.SOURCE, "lease": reader.LEASE,
             "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
             "recovery_owner_receipt": reader.RECOVERY_OWNER, "head_sha": self.head,
             "invocation_file": str(self.path), "execution": execution,
@@ -310,26 +310,23 @@ class InvocationReaderTests(unittest.TestCase):
         self.assertEqual(reader.invocation(None)["authority"], result["authority"])
         self.assertNotIn("actual_root_binding", result)
 
-    def test_historical_catalog_cannot_be_relabelled_as_current_execution(self):
+    def test_process_manifest_and_policy_do_not_rebind_feature_execution(self):
         value = copy.deepcopy(self.hosted)
         value["identity"]["binding"].update(
-            manifest_sha256=reader.MANIFEST, policy_revision=reader.POLICY,
+            manifest_sha256="c" * 64, policy_revision="d" * 64,
         )
-        with self.assertRaisesRegex(ValueError, "source/policy drift"):
-            self.invoke(value)
+        self.assertEqual(17, self.invoke(value)["run_id"])
 
-    def test_present_control_tamper_and_absent_control_are_not_defaults(self):
+    def test_process_policy_change_or_absence_does_not_invalidate_feature_execution(self):
         policy = self.repository / "docs/android/automation-policy.json"
         original = policy.read_bytes()
         try:
             changed = json.loads(original)
             changed["repository"] = "foreign/repository"
             policy.write_text(json.dumps(changed), encoding="utf-8")
-            with self.assertRaises(PortError):
-                self.invoke(self.hosted)
+            self.assertEqual(17, self.invoke(self.hosted)["run_id"])
             policy.unlink()
-            with self.assertRaises(PortError):
-                self.invoke(self.hosted)
+            self.assertEqual(17, self.invoke(self.hosted)["run_id"])
         finally:
             policy.write_bytes(original)
 
@@ -412,7 +409,6 @@ class InvocationReaderTests(unittest.TestCase):
         for field, replacement in (
             ("repository", "another/repository"), ("work_package", "WP-211"),
             ("head_sha", self.before), ("source_sha", "c" * 40),
-            ("manifest_sha256", "d" * 64), ("policy_revision", "e" * 64),
         ):
             value = copy.deepcopy(self.hosted)
             value["identity"]["binding"][field] = replacement
