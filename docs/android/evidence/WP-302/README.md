@@ -1,7 +1,50 @@
 # WP-302 execution admission
 
-**Product implementation and exact Nav-only dependency support integrated;
-native compilation/execution not yet verified. Not WP-302 acceptance or feature parity.**
+**Product implementation, exact Nav-only dependency support and closed
+traceability admission integrated; native compilation/execution not yet
+verified. Not WP-302 acceptance or feature parity.**
+
+## Actual validator transfer and closed admission
+
+The normal official status now records thirteen WP-302 paths: the previous
+eleven plus `tools/android-port/portmap.py` and its existing `tests/test_cli.py`.
+D0's receipt has thirty-four paths and no longer contains these two.
+`reservation-after-validator-transfer.json` retains that actual readback.
+No direct ledger edit, source/manifest/policy change or Content-specific
+validator import is involved.
+
+`navigation-scope-admission.json` binds exactly the approved native launcher
+and unit-navigation prefix to WP-302, frozen source DB145, original manifest
+78a229 and receiver base678. The validator requires the complete exact proof
+and rejects missing, malformed, duplicate-key, tampered or broadened proof,
+wrong ownership, sibling prefixes and changed source/manifest. This is
+traceability admission only, never parity or merge acceptance.
+
+Actual commands and outcomes before committing this admission:
+
+```powershell
+python -B tools\android-port\portmap.py
+python -B tools\android-port\controller\test_runner.py
+python -B -m unittest discover -s docs\android\evidence\WP-302 -p test_evidence_reader.py -v
+python docs\android\evidence\WP-302\collect_evidence.py --inventory
+```
+
+Traceability passed. The controller runner discovered/executed234 tests:
+232 passed, zero failed/skipped, two errors because its strict immutable-input
+checks correctly reject the then-uncommitted `portmap.py` change. The new
+positive/adversarial provenance assertions passed; the committed-head cycle
+must rerun the full runner without this dirty-input mismatch. Reader19/19
+passed. Static inventory still declares50 original families/140 native nodes,
+not execution. Raw results are the `navigation-admission-*.log` files.
+
+The actual official assembly retry at committed9f0e5511 passed App configuration
+and reached localization conversion; its74-test self-check had one error
+because the old portmap rejected the approved launcher. Full output is
+`assembly-9f0e5511.log`, raw directory
+`/home/cbattagler/meshcoreone-work/local-checks/run-kWo91q7U`.
+This admission addresses that observed blocker; compilation and native
+execution still require the next actual committed-head iteration. Historical
+ownership/pending wording below refers to earlier heads, not current holds.
 
 ## Actual serialized App support integration
 
