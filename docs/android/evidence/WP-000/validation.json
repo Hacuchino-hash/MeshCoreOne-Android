@@ -51,7 +51,9 @@
         "typed_capabilities": 7,
         "wp003_regression_cases": 10,
         "dispatch_off_and_paused": true,
-        "android_product_files_changed": 0,
+        "android_product_behavior_files_changed": 0,
+        "generated_verification_metadata_files_changed": 1,
+        "derived_manifest_or_policy_pin_files_changed": 13,
         "capability_engine_or_runtime_files_changed": 0,
         "json_and_derived_hashes_valid": true
       }

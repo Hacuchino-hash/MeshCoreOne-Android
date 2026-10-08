@@ -15,8 +15,8 @@ MODULE = ROOT / "android" / "core" / "datastore"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 INITIAL_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
 LEASE = "autonomous-WP-204-dc15f1ba"
-PINNED_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-PINNED_POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+PINNED_MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+PINNED_POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
 PACKAGE = "com.meshcoreone.android.core.datastore."
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError

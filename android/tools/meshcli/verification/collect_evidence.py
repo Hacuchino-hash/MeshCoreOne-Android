@@ -22,8 +22,8 @@ from controller.runtime_inputs import required_inputs as required_runtime_inputs
 from controller.schema import decode_json, fields, load_json
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
 EVIDENCE = ROOT / "docs" / "android" / "evidence" / "WP-109"
 NATIVE_PREFIX = "com.meshcoreone.android.core.protocol."
 SOURCE_PREFIX = "MeshCore/Tests/"
