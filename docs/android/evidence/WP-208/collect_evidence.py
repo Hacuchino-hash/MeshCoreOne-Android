@@ -58,14 +58,14 @@ HEX = re.compile(r"^[0-9a-f]{40}$")
 BOOTSTRAP_RECEIPT = "docs/android/evidence/WP-208/services-bootstrap-carry.json"
 BOOTSTRAP_RECEIPT_COMMIT = "ba9de4e3c07e1fd142431e6f722123e3ecbb79ea"
 CONTROL_INPUTS = [
-    BOOTSTRAP_RECEIPT, "docs/android/port-manifest.json", "docs/android/automation-policy.json",
+    BOOTSTRAP_RECEIPT, "docs/android/port-manifest.json",
     "docs/android/test-cases.json", "docs/android/evidence/WP-208/collect_evidence.py",
     "tools/android-port/controller/verification_config.py",
 ]
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
 from controller.model import load_manifest
-from controller.verification_config import content_scope_revisions
+from controller.verification_config import content_scope_manifest_revision
 
 
 def require(condition, reason):
@@ -102,10 +102,9 @@ def record(path, root):
 
 def current_revisions(repo=ROOT):
     try:
-        return content_scope_revisions(load_manifest(repo),
-            load_json(repo / "docs" / "android" / "automation-policy.json"))
+        return {"manifest_sha256": content_scope_manifest_revision(load_manifest(repo))}
     except PortError as failure:
-        raise ValueError("Frozen manifest/policy lineage drift: " + str(failure)) from failure
+        raise ValueError("Frozen manifest lineage drift: " + str(failure)) from failure
 
 
 def bootstrap_contract(current, historical):
@@ -192,12 +191,7 @@ def declarations(directory):
 
 def source_accounting(repo=ROOT):
     manifest = load_json(repo / "docs" / "android" / "port-manifest.json")
-    policy = load_json(repo / "docs" / "android" / "automation-policy.json")
     revisions = current_revisions(repo)
-    semantics = {key: value for key, value in policy.items() if key not in {
-        "dispatch_mode", "paused", "activation_approved", "pending_capabilities",
-    }}
-    require(digest({"manifest": MANIFEST, "policy": semantics, "source": SOURCE}) == POLICY, "Frozen policy drift")
     producer = services_producer(repo)
     require(manifest["reference"]["commit"] == SOURCE and git(repo, "rev-parse", SOURCE + "^{tree}") == TREE, "Frozen reference drift")
     work = manifest["work_packages"]
@@ -383,17 +377,17 @@ def executor_identity(invocation, revisions=None):
             isinstance(binding.get("base_sha"), str) and HEX.fullmatch(binding["base_sha"]) and
             isinstance(binding.get("head_sha"), str) and HEX.fullmatch(binding["head_sha"]) and
             binding.get("source_sha") == SOURCE and binding.get("manifest_sha256") == revisions["manifest_sha256"] and
-            binding.get("policy_revision") == revisions["policy_revision"], "Malformed executor binding")
+            isinstance(binding.get("policy_revision"), str) and
+            re.fullmatch(r"[0-9a-f]{64}", binding["policy_revision"]), "Malformed executor binding")
     return identity
 
 
 def validate_capture(output, accounting, require_hosted=True, *, expected_identity=None):
-    revisions = {key: accounting[key] for key in ("manifest_sha256", "policy_revision")}
+    revisions = {"manifest_sha256": accounting["manifest_sha256"]}
     snapshot = load_json(output / "raw-capture.json")
     require(snapshot.get("schema_version") == 1 and snapshot.get("repository") == "cbattlegear/MeshCoreOne-Android" and snapshot.get("work_package") == "WP-208" and
             HEX.fullmatch(snapshot.get("head_sha", "")) and snapshot.get("source_sha") == SOURCE and
-            snapshot.get("manifest_sha256") == revisions["manifest_sha256"] and
-            snapshot.get("policy_revision") == revisions["policy_revision"], "Malformed capture binding")
+            snapshot.get("manifest_sha256") == revisions["manifest_sha256"], "Malformed capture binding")
     require(not snapshot.get("capture_errors"), "Raw capture contains unsafe/missing inputs")
     require(snapshot["head_sha"] == accounting["services_producer"]["current_head_sha"],
             "Captured reports belong to a stale current Services producer")

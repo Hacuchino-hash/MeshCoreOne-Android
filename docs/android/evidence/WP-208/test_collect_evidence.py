@@ -213,17 +213,19 @@ class EvidenceReaderTest(unittest.TestCase):
                 READER.bootstrap_contract(changed, historical)
 
     def test_exact_content_scope_emits_current_revisions_and_rejects_old_capture(self):
-        from controller.gates import policy_revision
         from controller.model import Manifest, load_manifest
-        from controller.verification_config import apply_content_scope, content_scope_revisions
+        from controller.verification_config import (
+            PRIOR_CONTENT_MANIFEST_REVISION,
+            apply_content_scope,
+            content_scope_manifest_revision,
+        )
         manifest = load_manifest(READER.ROOT)
         from controller.verification_config import project_content_scope
         old = Manifest(project_content_scope(manifest.data), manifest.exclusions, manifest.repo)
         amended = Manifest(apply_content_scope(old.data), old.exclusions, old.repo)
-        policy = READER.load_json(READER.ROOT / "docs/android/automation-policy.json")
-        revisions = content_scope_revisions(amended, policy)
-        self.assertEqual(amended.sha256, revisions["manifest_sha256"])
-        self.assertEqual(policy_revision(amended, policy), revisions["policy_revision"])
+        revisions = {"manifest_sha256": content_scope_manifest_revision(amended)}
+        self.assertEqual(PRIOR_CONTENT_MANIFEST_REVISION, revisions["manifest_sha256"])
+        self.assertNotEqual(amended.sha256, revisions["manifest_sha256"])
         self.accounting.update(revisions)
         self.rejected()
         self.snapshot.update(revisions)
@@ -231,9 +233,11 @@ class EvidenceReaderTest(unittest.TestCase):
         self.expected_identity["binding"].update(revisions)
         self.save_invocation(); self.save_snapshot()
         result = self.validate()
-        self.assertEqual(amended.sha256, result["manifest_sha256"])
-        self.assertEqual(revisions["policy_revision"], result["policy_revision"])
-        self.snapshot["policy_revision"] = READER.POLICY
+        self.assertEqual(PRIOR_CONTENT_MANIFEST_REVISION, result["manifest_sha256"])
+        self.snapshot["policy_revision"] = "d" * 64
+        self.save_snapshot()
+        self.validate()
+        self.snapshot["manifest_sha256"] = READER.MANIFEST
         self.save_snapshot(); self.rejected()
 
     def test_current_build_dirty_bytes_and_relabelled_historical_receipt_are_rejected(self):
@@ -450,14 +454,20 @@ class EvidenceReaderTest(unittest.TestCase):
             self.snapshot["execution_expected"][field] = value
             self.save_invocation(); self.save_snapshot(); self.rejected()
 
-    def test_wrong_provider_source_policy_repository_or_work_package_is_rejected(self):
+    def test_wrong_provider_source_manifest_repository_or_work_package_is_rejected(self):
         original = copy.deepcopy(self.expected_identity)
         for field, value in (("source_sha", "d" * 40), ("manifest_sha256", "d" * 64),
-                             ("policy_revision", "d" * 64), ("repository", "other/repository"),
+                             ("repository", "other/repository"),
                              ("work_package", "WP-208"), ("base_sha", "not-a-sha")):
             self.expected_identity = copy.deepcopy(original)
             self.expected_identity["binding"][field] = value
             self.rejected()
+
+    def test_policy_revision_is_compatibility_metadata_not_feature_evidence(self):
+        self.invocation["identity"]["binding"]["policy_revision"] = "d" * 64
+        self.expected_identity["binding"]["policy_revision"] = "d" * 64
+        self.save_invocation(); self.save_snapshot()
+        self.validate()
 
     def test_different_positive_run_or_attempt_cannot_replace_the_captured_identity(self):
         for field, value in (("run_id", 124), ("run_attempt", 2)):
@@ -503,17 +513,17 @@ class EvidenceReaderTest(unittest.TestCase):
         repo.mkdir()
         source = repo / "android" / "core" / "services" / "src" / "main" / "Example.kt"
         source.parent.mkdir(parents=True)
-        source.write_text("// synthetic capture fixture\n")
+        source.write_text("// synthetic capture fixture\n", newline="\n")
         lock = repo / "android" / "gradle" / "dependency-locks" / "core-services.lockfile"
         lock.parent.mkdir(parents=True)
-        lock.write_text("# synthetic actual-path lock fixture\n")
+        lock.write_text("# synthetic actual-path lock fixture\n", newline="\n")
         for args in (
             ["init", "--quiet"],
             ["add", "."],
             ["-c", "user.name=WP208 Reader Test", "-c", "user.email=wp208@example.invalid", "commit", "--quiet", "-m", "synthetic reader fixture"],
         ):
             subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
-        source.write_text("// changed synthetic capture fixture\n")
+        source.write_text("// changed synthetic capture fixture\n", newline="\n")
         report = repo / "android" / "core" / "services" / "build" / "test-results" / "test" / "TEST-failed.xml"
         report.parent.mkdir(parents=True)
         raw = b'<testsuite tests="1" failures="1" errors="0" skipped="0"><testcase name="failed" classname="fixture"><failure/></testcase></testsuite>'

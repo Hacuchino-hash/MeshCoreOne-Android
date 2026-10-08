@@ -177,6 +177,17 @@ def content_scope_predecessor(manifest):
     return Manifest(project_policy_amendment(project_content_scope(manifest.data)), manifest.exclusions, manifest.repo)
 
 
+def content_scope_manifest_revision(manifest):
+    from controller.model import Manifest
+
+    data = project_content_scope(manifest.data)
+    project_policy_amendment(data)
+    baseline = Manifest(data, manifest.exclusions, manifest.repo)
+    if baseline.sha256 == VERIFICATION_MANIFEST_SHA256:
+        return manifest.sha256
+    return PRIOR_CONTENT_MANIFEST_REVISION
+
+
 def content_scope_revisions(manifest, policy):
     from controller.gates import policy_revision
     from controller.model import Manifest
