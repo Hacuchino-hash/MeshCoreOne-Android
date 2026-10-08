@@ -1,10 +1,42 @@
 # WP-302 execution admission
 
 **Product implementation, exact Nav-only dependency support and closed
-traceability admission integrated; real App compilation/assembly passed,
-native acceptance incomplete. Not WP-302 acceptance or feature parity.**
+traceability admission integrated; real local native acceptance passed at
+0f7443fc. Final-head full-cycle verification remains pending. Not formal
+WP-302 parity, OS instrumentation, hardware or license approval.**
 
 ## Current native milestone
+
+At0f7443fc, official committed-head `--stages verify` passed150/150 App
+nodes with zero failures/skips: all140 bound WP-302 nodes, all50 original
+families on SDK31/37 and all108 required real native renders. Complete
+XML/input bindings/screens are retained in `native-0f7443fc/`; visible output
+is `native-heading-width.log`, raw run `run-EX8fKOUh`. The overall stage
+subsequently failed `runtimeDependencyInventory` on a missing
+adaptive-android1.3.0 POM checksum; this is not a complete-cycle receipt.
+
+The inventory explicitly queries POMs for selected runtime artifacts, whereas
+the previous sixteen-graph generation consumed their module/AAR metadata.
+The bounded repair resolves only this existing runtime inventory, not a
+blanket dependency graph refresh:37 missing POMs from already-selected Nav
+support components. All37 independently downloaded publications are byte-equal
+to the actual native cache. The strict scoped generation succeeded, recorded
+140 linked runtime inputs and changed only checksum XML; all1159 incumbent
+tuples remain with exactly37 additions (1196 total). Locks, pins and other
+tracked bytes are unchanged. Full command,3959 literal input bindings, raw
+POMs and executed recipe are retained in `runtime-pom-admission/`; raw output
+is `wp302-espresso-rbph8hgx`. Inventory declarations remain human-review-pending,
+not legal approval.
+
+Inspection of the accepted font200 screenshot also exposed the unread99+
+badge wrapping into the Chats label. The badge now keeps its intrinsic width
+and single line at the real system font scale, while its unread announcement
+remains on the tab rather than duplicated on the decoration. The existing
+font200 family additionally checks its actual text density/overflow. This
+stronger correction requires a new committed native run; the older accepted
+receipt is not substituted for current compiled inputs.
+
+## Historical native iterations
 
 Atf586c116, official verification actually discovered/executed150 App nodes:
 148 passed, two font200 failures, zero skipped. All100 original SDK31/37
@@ -45,7 +77,11 @@ the already-selected annotation-experimental1.5.1 POM. Independently verified
 publisher/cache-equal2257 bytes and full SHA256 are retained in
 `annotation-pom-admission.json` and the raw POM. All1158 previous tuples remain,
 with exactly one addition. The exact delta was delivered through PR25 for
-serialized carry, never a blind copy of this receiver's full Nav metadata.
+minimal carry, never a blind copy of this receiver's full Nav metadata.
+The later user-directed shared-resource amendment also permits WP-218 to add
+this identical tuple independently in its own worktree. That identical
+annotation overlap requires no replacement of either complete XML and does
+not block its validation on this receiver's native rerun.
 
 ## First real native results and corrections
 

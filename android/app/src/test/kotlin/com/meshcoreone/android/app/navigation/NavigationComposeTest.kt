@@ -197,6 +197,7 @@ class NavigationComposeTest {
         }
         assertTextDoesNotOverflow("navigation-heading")
         assertTextDoesNotOverflow("body:root-CHATS")
+        assertTextDoesNotOverflow("navigation-unread-badge")
         capture("font200-rtl-cjk")
         compose.runOnIdle { width.value = 834.dp }
         for (tab in AppTab.entries) compose.onNodeWithTag("tab:${tab.name}").performScrollTo().performClick().assertIsSelected()
