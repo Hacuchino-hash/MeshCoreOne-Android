@@ -2,14 +2,12 @@
 
 import os
 import re
-import shutil
 import stat
 from pathlib import Path
 
 from .errors import PortError
 from .model import SHA, git
 from .paths import git_path
-from .schema import fields
 
 MODULE_SOURCE = re.compile(r"android/((?:core|feature|platform)/[a-z][a-z0-9-]*)/(.+)")
 UNIT_SOURCE = re.compile(r"src/(?:test|testDebug)/(?:java|kotlin)/.+\.(?:java|kt)")
@@ -42,10 +40,24 @@ def module_sources(repo: Path, revision=None):
     return {module: dict(sorted(entries[module].items())) for module in sorted(active)}
 
 
-def bundle_directory(root: Path, module: str):
-    if re.fullmatch(r"(?:core|feature|platform)/[a-z][a-z0-9-]*", module) is None:
-        raise PortError("Invalid root unit-test module")
-    return root / "junit" / "modules" / module.replace("/", "--")
+def check_module_tests(repo: Path):
+    from .ci_evidence import suite_counts
+
+    expected = module_sources(repo)
+    paths = sorted({path for inputs in expected.values() for path in inputs})
+    if paths and git(repo, "diff", "--name-only", "HEAD", "--", *paths).strip():
+        raise PortError("Compiled module inputs differ from the immutable candidate")
+    results = {}
+    for module, inputs in expected.items():
+        module_root = repo / "android" / module
+        candidates = [
+            module_root / relative for relative in REPORT_LOCATIONS
+            if any((module_root / relative).glob("TEST-*.xml"))
+        ]
+        if len(candidates) != 1:
+            raise PortError("Missing/ambiguous actual unit runner for active module: " + module)
+        results[module] = suite_counts(candidates[0], 1)
+    return results
 
 
 def linked(path: Path):
@@ -75,75 +87,15 @@ def safe_reports(directory: Path, root: Path):
 
 
 def report_record(root: Path, directory: Path):
-    from .ci_evidence import artifact_record, suite_counts
+    from .ci_environment import file_sha256
+    from .ci_evidence import suite_counts
 
     files = safe_reports(directory, root)
-    result = {
+    return {
         "counts": suite_counts(directory, 1),
-        "reports": [artifact_record(root, path) for path in files],
+        "reports": [{
+            "path": path.relative_to(root).as_posix(),
+            "size": path.stat().st_size,
+            "sha256": file_sha256(path),
+        } for path in files],
     }
-    return result
-
-
-def collect_module_tests(repo: Path, output: Path):
-    expected = module_sources(repo)
-    if output.resolve().is_relative_to(repo.resolve()) or repo.resolve().is_relative_to(output.resolve()):
-        raise PortError("Unit evidence must not overwrite project inputs or build reports")
-    paths = sorted({path for inputs in expected.values() for path in inputs})
-    if paths and git(repo, "diff", "--name-only", "HEAD", "--", *paths).strip():
-        raise PortError("Compiled module inputs differ from the immutable candidate")
-    destination_root = output / "junit" / "modules"
-    bounded_directory(destination_root, output)
-    if destination_root.exists():
-        raise PortError("Unit evidence destination must be newly created")
-    plans = {}
-    for module, inputs in expected.items():
-        module_root = repo / "android" / module
-        candidates = [
-            module_root / relative for relative in REPORT_LOCATIONS
-            if any((module_root / relative).glob("TEST-*.xml"))
-        ]
-        if len(candidates) != 1:
-            raise PortError("Missing/ambiguous actual unit runner for active module: " + module)
-        source = candidates[0]
-        original = report_record(repo / "android", source)
-        plans[module] = (source, original)
-    results = {}
-    for module, inputs in expected.items():
-        source, original = plans[module]
-        destination = bundle_directory(output, module)
-        destination.mkdir(parents=True)
-        for path in safe_reports(source, repo / "android"):
-            shutil.copyfile(path, destination / path.name)
-            if path.read_bytes() != (destination / path.name).read_bytes():
-                raise PortError("Copied active-module JUnit bytes changed")
-        copied = report_record(output, destination)
-        original_files = [(Path(item["path"]).name, item["size"], item["sha256"]) for item in original["reports"]]
-        copied_files = [(Path(item["path"]).name, item["size"], item["sha256"]) for item in copied["reports"]]
-        if copied["counts"] != original["counts"] or copied_files != original_files:
-            raise PortError("Copied active-module discovery changed")
-        results[module] = {"inputs": inputs, **copied}
-    return results
-
-
-def validate_module_tests(value, root: Path, repo: Path, revision: str):
-    from .ci_evidence import counts
-
-    expected = module_sources(repo, revision)
-    if not isinstance(value, dict) or set(value) != set(expected):
-        raise PortError("Missing/extra active root-module unit evidence")
-    actual_paths = set()
-    for module, inputs in expected.items():
-        record = value[module]
-        fields(record, {"inputs", "counts", "reports"}, label="active module unit evidence")
-        if record["inputs"] != inputs:
-            raise PortError("Active-module evidence has stale/fabricated candidate input blobs")
-        counts(record["counts"], minimum=1)
-        actual = report_record(root, bundle_directory(root, module))
-        if record["counts"] != actual["counts"] or record["reports"] != actual["reports"]:
-            raise PortError("Active-module raw JUnit differs from typed discovery/report hashes")
-        actual_paths.update(report["path"] for report in actual["reports"])
-    present = {path.relative_to(root).as_posix() for path in (root / "junit" / "modules").rglob("TEST-*.xml")}
-    if present != actual_paths:
-        raise PortError("Unexpected or unaccounted active-module JUnit reports")
-    return value

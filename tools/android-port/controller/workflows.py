@@ -72,26 +72,44 @@ def validate_candidate(value: dict, text: str):
     if not {"pull_request", "merge_group", "push", "workflow_dispatch"}.issubset(events):
         raise PortError("Required PR/merge-group/push/manual event is missing")
     jobs = value.get("jobs", {})
-    if set(jobs) != {"scope", "build", "android-ci"}:
+    if set(jobs) != {"scope", "controller", "build", "external-oracle", "backup-oracle", "android-ci"}:
         raise PortError("Missing/unknown mandatory CI job")
     gate = jobs["android-ci"]
     if (gate.get("name") != "android-ci" or gate.get("if") != "${{ always() }}"
-            or gate.get("needs") != ["scope", "build"]):
-        raise PortError("android-ci must always aggregate every required build outcome")
+            or gate.get("needs") != ["scope", "controller", "build", "external-oracle", "backup-oracle"]):
+        raise PortError("android-ci must always report every selected build outcome")
     build = jobs["build"]
     if (build.get("runs-on") != "ubuntu-24.04" or "strategy" in build
-            or build.get("needs") != ["scope"]
-            or build.get("if") != "${{ needs.scope.outputs.full == 'true' }}"):
-        raise PortError("The Linux execution host is mandatory and unmatrixed")
+            or build.get("needs") != ["scope", "controller"]
+            or "needs.scope.outputs" not in build.get("if", "")):
+        raise PortError("The selected Linux execution host must be mandatory, dependency-gated and unmatrixed")
     runs = "\n".join(step.get("run", "") for step in build["steps"])
     stage_runs = [
         step.get("run", "") for step in build["steps"]
         if "ci.py run --stage" in step.get("run", "")
     ]
-    if stage_runs != ["python tools/android-port/controller/ci.py run --stage scaffold"]:
+    if len(stage_runs) != 1 or "ci.py run --stage scaffold" not in stage_runs[0]:
         raise PortError("Candidate workflow must use one consolidated scaffold Gradle invocation")
-    if "aggregate --artifacts" not in "\n".join(s.get("run", "") for s in gate["steps"]):
-        raise PortError("Aggregator does not validate immutable evidence")
+    gate_runs = "\n".join(s.get("run", "") for s in gate["steps"])
+    gate_environment = {
+        key: value for step in gate["steps"] for key, value in step.get("env", {}).items()
+    }
+    if (
+        gate_environment.get("BUILD_RESULT") != "${{ needs.build.result }}"
+        or "aggregate --artifacts" in gate_runs
+        or any(step.get("uses", "").startswith(("actions/upload-artifact@", "actions/download-artifact@"))
+               for step in gate["steps"])
+    ):
+        raise PortError("Android CI must use direct fail-closed job results without duplicate report artifacts")
+    all_runs = "\n".join(
+        step.get("run", "") for job in jobs.values() for step in job.get("steps", [])
+    )
+    if all_runs.count("controller/test_runner.py") != 1:
+        raise PortError("Controller tests must execute exactly once")
+    for name in ("build", "external-oracle", "backup-oracle"):
+        job = jobs[name]
+        if job.get("if") == "${{ always() }}" or "scope" not in job.get("needs", []):
+            raise PortError("Expensive jobs must be scope-selected and use default fail-closed dependencies")
 
 
 def validate_setup(value: dict, text: str):

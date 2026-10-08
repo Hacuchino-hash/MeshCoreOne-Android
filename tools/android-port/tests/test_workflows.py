@@ -27,9 +27,9 @@ class WorkflowTests(unittest.TestCase):
     def test_actual_workflows_parse_and_have_the_real_trust_boundaries(self):
         self.assertEqual(validate_workflows(REPO)["result"], "valid")
 
-    def test_legacy_bootstrap_installs_the_hash_pinned_yaml_runtime_before_tests(self):
-        workflow, text = self.read("android-bootstrap.yml")
-        steps = workflow["jobs"]["controller-tests"]["steps"]
+    def test_consolidated_controller_installs_hash_pinned_yaml_runtime_before_tests(self):
+        workflow, text = self.read("android-ci.yml")
+        steps = workflow["jobs"]["controller"]["steps"]
         installer = next(index for index, step in enumerate(steps)
                          if "requirements-ci.txt" in step.get("run", ""))
         runner = next(index for index, step in enumerate(steps)
@@ -39,51 +39,49 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("--only-binary=:all:", steps[installer]["run"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         self.assertEqual(steps[0]["with"]["persist-credentials"], "false")
-        self.assertIn("github.event.pull_request.head.sha", steps[0]["with"]["ref"])
         self.assertNotIn("secrets.", text)
 
     def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_linux(self):
         from controller.ci import TASKS
 
-        workflow, text = self.read("android-independent-checks.yml")
-        job = workflow["jobs"]["protocol"]
+        workflow, text = self.read("android-ci.yml")
+        job = workflow["jobs"]["build"]
         self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
         self.assertEqual(job["runs-on"], "ubuntu-24.04")
-        self.assertEqual(job["needs"], ["preflight", "scope"])
-        self.assertEqual(job["if"], "${{ needs.scope.outputs.protocol == 'true' }}")
+        self.assertEqual(job["needs"], ["scope", "controller"])
+        self.assertIn("needs.scope.outputs.protocol", job["if"])
         self.assertNotIn("strategy", job)
         self.assertIn("merge_group", workflow["on"])
         self.assertNotIn("paths", workflow["on"]["pull_request"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         command = next(step for step in job["steps"]
-                       if "--stage protocol" in step.get("run", ""))
+                       if "RUN_PROTOCOL" in step.get("env", {}))
         self.assertNotIn("if", command)
         self.assertNotIn("continue-on-error", command)
         self.assertEqual(job["steps"][0]["with"]["persist-credentials"], "false")
         self.assertNotIn("secrets.", text)
 
-    def test_independent_chains_use_scope_outputs_on_every_expensive_job(self):
-        workflow, _ = self.read("android-independent-checks.yml")
+    def test_consolidated_jobs_use_scope_outputs_and_default_fail_closed_dependencies(self):
+        workflow, _ = self.read("android-ci.yml")
         jobs = workflow["jobs"]
         self.assertEqual(
-            set(jobs["scope"]["outputs"]), {"helpers", "codec", "protocol", "backup"}
+            set(jobs["scope"]["outputs"]), {"controller", "scaffold", "protocol", "backup", "external-oracle"}
         )
         expected = {
-            "helpers": ("helpers", ["preflight", "scope"]),
-            "reference-codec": ("codec", ["preflight", "scope"]),
-            "protocol": ("protocol", ["preflight", "scope"]),
-            "kotlin-producer": ("backup", ["preflight", "scope"]),
-            "swift-restore-export": ("backup", ["scope", "kotlin-producer"]),
-            "kotlin-consumer": ("backup", ["scope", "swift-restore-export"]),
+            "external-oracle": ("external-oracle", ["scope", "controller"]),
+            "backup-oracle": ("backup", ["scope", "build"]),
         }
         for job_name, (scope, needs) in expected.items():
             with self.subTest(job=job_name):
                 self.assertEqual(jobs[job_name]["needs"], needs)
                 self.assertEqual(
                     jobs[job_name]["if"],
-                    "${{ needs.scope.outputs." + scope + " == 'true' }}",
+                    ("${{ needs.scope.outputs['external-oracle'] == 'true' }}"
+                     if scope == "external-oracle"
+                     else "${{ needs.scope.outputs." + scope + " == 'true' }}"),
                 )
                 self.assertNotIn("continue-on-error", jobs[job_name])
+                self.assertNotEqual(jobs[job_name].get("if"), "${{ always() }}")
         scope_run = jobs["scope"]["steps"][1]["run"]
         self.assertIn('github.event_name', scope_run)
         self.assertIn('github.event_path', scope_run)
@@ -98,7 +96,8 @@ class WorkflowTests(unittest.TestCase):
         original, text = self.read("android-ci.yml")
         build_runs = [step["run"] for step in original["jobs"]["build"]["steps"] if "run" in step]
         gradle_runs = [run for run in build_runs if "ci.py run --stage" in run]
-        self.assertEqual(gradle_runs, ["python tools/android-port/controller/ci.py run --stage scaffold"])
+        self.assertEqual(len(gradle_runs), 1)
+        self.assertIn("ci.py run --stage scaffold", gradle_runs[0])
         self.assertNotIn(":convention:test", text)
         scoped = copy.deepcopy(original)
         scoped["on"]["pull_request"]["paths"] = ["android/**", "tools/android-port/**"]
@@ -253,54 +252,3 @@ class WorkflowTests(unittest.TestCase):
         with patch("controller.verification_config.load_json", side_effect=lambda path: changed if path.name == "port-manifest.json" else real(path)):
             with self.assertRaises(PortError):
                 check_configuration(REPO)
-
-
-class StageReportTests(unittest.TestCase):
-    def execute_stage(self, repo, output, stage):
-        from controller.ci import run_stage
-
-        with ExitStack() as mocks:
-            mocks.enter_context(patch("controller.ci.REPO", repo))
-            mocks.enter_context(patch("controller.ci.execution_identity", return_value=None))
-            mocks.enter_context(patch("controller.ci.platform.python_version", return_value="3.12.4"))
-            mocks.enter_context(patch("controller.ci.toolchain_lock", return_value={"python": "3.12.4"}))
-            mocks.enter_context(patch("controller.ci.verify_wrapper"))
-            mocks.enter_context(patch("controller.ci.candidate_environment",
-                                     return_value={"GRADLE_USER_HOME": str(repo / "private-gradle")}))
-            mocks.enter_context(patch("controller.ci.execute"))
-            if stage == "scaffold":
-                mocks.enter_context(patch("controller.ci.collect_lint",
-                                         return_value={"app": {"warnings": 0, "sha256": "1" * 64}}))
-                mocks.enter_context(patch("controller.ci.collect_suites", return_value={"fixture": {"passed": 1}}))
-                mocks.enter_context(patch("controller.ci.collect_module_tests", return_value={"core/model": {"fixture": True}}))
-            run_stage(stage, {"host": "linux", "private_root": str(repo / "private")}, output)
-        return json.loads((output / f"stage-{stage}.json").read_text(encoding="utf-8"))
-
-    def test_protocol_report_copies_actual_cases_without_accessing_lint_fields(self):
-        from test_ci_evidence import junit_report
-
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            output = repo / "evidence"
-            source = repo / "android" / "core" / "protocol" / "build" / "test-results" / "test" / "TEST-protocol.xml"
-            junit_report(source, 84)
-            result = self.execute_stage(repo, output, "protocol")
-            self.assertEqual(result["suite"]["passed"], 84)
-            self.assertNotIn("reports", result)
-            self.assertEqual(source.read_bytes(), (output / "junit" / "protocol" / source.name).read_bytes())
-
-    def test_scaffold_report_preserves_lint_and_test_artifacts_in_one_stage(self):
-        from controller.ci_evidence import lint_bundle_path
-
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            output = repo / "evidence"
-            source = repo / "android" / "app" / "build" / "reports" / "lint-results-debug.xml"
-            source.parent.mkdir(parents=True)
-            source.write_text('<issues format="6" by="lint fixture"/>', encoding="utf-8")
-            result = self.execute_stage(repo, output, "scaffold")
-            self.assertIn("app", result["reports"])
-            self.assertNotIn("suite", result)
-            self.assertEqual(result["module_unit_tests"], {"core/model": {"fixture": True}})
-            self.assertEqual(result["suites"], {"fixture": {"passed": 1}})
-            self.assertEqual(source.read_bytes(), (output / lint_bundle_path("app")).read_bytes())

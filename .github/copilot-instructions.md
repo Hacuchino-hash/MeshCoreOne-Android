@@ -34,6 +34,9 @@ Swift/Kotlin and Compose skills as applicable. Installation is not fleet activat
   typed errors, cancellation and consumer behavior; no silent failure, dropped data or fake success.
 - Use only actual declared verification commands; fail on missing/malformed/zero-test evidence.
   Never claim iOS, Android, hardware, license or signing verification that did not occur.
+- The exact-commit hosted job result and log are authoritative for reproducible automated checks; do not
+  commit, upload, hash, or revalidate a second CI-result bundle. Retain only non-reproducible hardware,
+  device, signing, release, human, or legal evidence.
 - Feature-branch publication is processor-neutral. A missing or failed local fast check records an
   explicit unverified candidate but does not block push. Merge verification is change-scoped and
   exact-candidate bound; full repository verification is reserved for broad/unclassifiable Android,

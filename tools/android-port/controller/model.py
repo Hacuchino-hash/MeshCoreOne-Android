@@ -10,7 +10,7 @@ from .paths import git_path
 from .schema import check_schema, digest, load_json
 
 REFERENCE_SHA = "db14559b39d32322b06477c6ae676112f583db50"
-APPROVED_PLAN_SHA256 = "8c24603007be729bd8c0978860255c6576f4b297bbeda59edcb82c0451016031"
+APPROVED_PLAN_SHA256 = "b4e78619f84583221cbf38a48212c89669c91aa26cdcbcd60d4e04cd6b6dc888"
 HUMAN_GATES = {"WP-000", "WP-001", "WP-002", "WP-003", "WP-006", "WP-406", "WP-505", "WP-506"}
 SUPERVISED = {"WP-000", "WP-001", "WP-002", "WP-003"}
 REFERENCE_ROOTS = ("MC1/", "MC1Tests/", "MC1Widgets/", "MC1Services/", "MeshCore/", "Shared/", "AppIcon.icon/")

@@ -30,12 +30,12 @@ BOOTSTRAP_POLICY_AMENDMENT = {
     "human_gates": 8,
 }
 BOOTSTRAP_MANIFEST_SHA256 = BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"]
-WP_003_BOOTSTRAP_MANIFEST_SHA256 = "6854873bbcb05645f8b92869dcfd33680d2cf0920f7f8805db1590155e392c98"
+WP_003_BOOTSTRAP_MANIFEST_SHA256 = "c8d7f2baba33c0cf4bfea24c9a7105654adebbcbc39226ea3f8ae397e8c2a061"
 POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-WP_003_MANIFEST_REVISION = "1a66fee1b616d4c0dcf51cbb9341c4aff79339f2404715eed94b8c95a313a63c"
-PRIOR_CONTENT_MANIFEST_REVISION = "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094"
-WP_003_SEMANTIC_POLICY_REVISION = "a9982122122eb695c60550e95d29856ffc9bbdfa02161b9679de9201c0d900db"
+WP_003_MANIFEST_REVISION = "1dd7bc4f74f10e566b66fc8bc3822bb2bd66068053e1aa866e520326aab4dde6"
+PRIOR_CONTENT_MANIFEST_REVISION = "4f8328f7295d2fdecce10489f99d992cd6b2d861c709f32297e21ed9c5b8fdf5"
+WP_003_SEMANTIC_POLICY_REVISION = "08ee454858fa350783ba37e02c0c2720d4b36a29b6f135a8e7a6f7e41c73954d"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
     "android/app/src/test/kotlin/com/meshcoreone/android/app/content/",
@@ -193,12 +193,9 @@ def content_scope_revisions(manifest, policy):
 
 def inventory_details_predecessor(details, manifest):
     predecessor = content_scope_predecessor(manifest)
-    if (not isinstance(details, dict) or details.get("source_sha") != predecessor.data["reference"]["commit"]
-            or details.get("manifest_sha256") not in (manifest.sha256, PRIOR_CONTENT_MANIFEST_REVISION)):
+    if not isinstance(details, dict) or details.get("source_sha") != predecessor.data["reference"]["commit"]:
         raise PortError("Original inventory details do not bind the actual canonical catalog")
-    result = copy.deepcopy(details)
-    result["manifest_sha256"] = predecessor.sha256
-    return result
+    return copy.deepcopy(details)
 
 
 def check_configuration(repo: Path):

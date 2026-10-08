@@ -73,7 +73,9 @@ def inventory():
     detail_path = "docs/android/evidence/WP-004/inventory-details.json"
     raw_details = git("show", f"{INITIAL_BASE}:{detail_path}")
     actual_details = load_json(ROOT.joinpath(*detail_path.split("/")))
-    require(json.loads(raw_details) == inventory_details_predecessor(actual_details, manifest),
+    historical_details = json.loads(raw_details)
+    historical_details.pop("manifest_sha256", None)
+    require(historical_details == inventory_details_predecessor(actual_details, manifest),
             "Trusted original family inventory drift")
     details = json.loads(raw_details)
     for entry in details["files"]:

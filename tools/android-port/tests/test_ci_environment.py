@@ -214,15 +214,16 @@ class EnvironmentTests(unittest.TestCase):
                 "ACTIONS_RUNTIME_TOKEN": "fixture-not-a-secret", "SIGNING_PASSWORD": "fixture-not-a-secret",
                 "ANDROID_PORT_GITHUB_TOKEN": "fixture-not-a-secret", "NODE_OPTIONS": "fixture-options",
                 "JAVA_OPTS": "-Dcredential=fixture", "GRADLE_OPTS": "-Dcredential=fixture",
+                "GRADLE_USER_HOME": str(Path(temporary) / "restored-gradle-cache"),
             }
             value = candidate_environment(state, inherited)
-            for key in inherited.keys() - {"PATH", "JAVA_OPTS", "GRADLE_OPTS"}:
+            for key in inherited.keys() - {"PATH", "JAVA_OPTS", "GRADLE_OPTS", "GRADLE_USER_HOME"}:
                 self.assertNotIn(key, value)
             self.assertNotIn("credential", value["JAVA_OPTS"] + value["GRADLE_OPTS"])
             self.assertEqual(value["ANDROID_HOME"], state["android_home"])
-            self.assertNotEqual(value["GRADLE_USER_HOME"], state["private_root"])
+            self.assertEqual(value["GRADLE_USER_HOME"], inherited["GRADLE_USER_HOME"])
             standalone = candidate_environment(state, inherited, standalone=True)
-            self.assertNotEqual(value["GRADLE_USER_HOME"], standalone["GRADLE_USER_HOME"])
+            self.assertEqual(value["GRADLE_USER_HOME"], standalone["GRADLE_USER_HOME"])
 
     def test_private_absolute_inputs_and_exact_host_are_required(self):
         with tempfile.TemporaryDirectory() as temporary:

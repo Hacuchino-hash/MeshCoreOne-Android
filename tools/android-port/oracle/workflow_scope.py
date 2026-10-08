@@ -1,4 +1,4 @@
-"""AndroidOnly: WP-003 Fail-safe changed-input scopes for auxiliary parity workflows."""
+"""AndroidOnly: WP-003 Fail-safe scopes for the single Android candidate workflow."""
 
 import argparse
 import json
@@ -16,11 +16,11 @@ from oracle.codec_harness import (
     SOURCE_TEST_PATH, WHOLE_FILES,
 )
 
-SCOPES = ("helpers", "codec", "protocol", "backup")
+SCOPES = ("controller", "scaffold", "protocol", "backup", "external-oracle")
 SHA = re.compile(r"[0-9a-f]{40}")
 ZERO = "0" * 40
 ALL_SCOPE_INPUTS = {
-    ".github/workflows/android-independent-checks.yml",
+    ".github/workflows/android-ci.yml",
     "tools/android-port/oracle/workflow_scope.py",
 }
 SHARED_GRADLE_INPUTS = {
@@ -53,7 +53,23 @@ def codec_inputs():
 
 
 RULES = {
-    "helpers": {
+    "controller": {
+        "exact": {
+            ".github/copilot-instructions.md",
+            "docs/android/PORTING_PLAN.md",
+            "docs/android/automation-policy.json",
+            "tools/android-port/controller/requirements-ci.txt",
+        },
+        "prefix": (
+            ".github/workflows/",
+            "tools/android-port/controller/",
+            "tools/android-port/tests/",
+            "docs/android/adr/",
+            "docs/android/build/",
+            "docs/android/ci/",
+        ),
+    },
+    "scaffold": {
         "exact": {
             "tools/android-port/oracle/run_tests.py",
             "tools/android-port/oracle/foundation_ci.py",
@@ -66,9 +82,13 @@ RULES = {
             *SHARED_GRADLE_INPUTS,
             *COMMON_ORACLE_INPUTS,
         },
-        "prefix": ("android/core/testing/", "android/build-logic/"),
+        "prefix": (
+            "android/app/", "android/build-logic/", "android/core/testing/",
+            "android/core/contracts/", "android/core/designsystem/", "android/core/model/",
+            "android/feature/", "android/platform/",
+        ),
     },
-    "codec": {"exact": codec_inputs(), "prefix": ()},
+    "external-oracle": {"exact": codec_inputs(), "prefix": ()},
     "protocol": {
         "exact": {
             "tools/android-port/oracle/test_vectors.py",
@@ -147,6 +167,8 @@ def classify(paths):
             path in rules["exact"] or any(path.startswith(prefix) for prefix in rules["prefix"])
             for path in normalized
         )
+    if set(normalized) & SHARED_GRADLE_INPUTS:
+        result.update({"scaffold": True, "protocol": True, "backup": True})
     return result
 
 

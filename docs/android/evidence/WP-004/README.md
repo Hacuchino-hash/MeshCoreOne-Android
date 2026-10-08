@@ -98,7 +98,7 @@ any golden bytes. The final local run discovered/executed/passed all 35 cases.
 
 ## Real macOS codec/oracle command and output contract
 
-The regular read-only `android-independent-checks.yml` runs:
+The external-oracle scope of the regular read-only `android-ci.yml` runs:
 
 ```text
 python tools/android-port/oracle/codec_harness.py run --output <new absolute runner-temp directory>

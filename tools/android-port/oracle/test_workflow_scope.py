@@ -10,7 +10,7 @@ HEAD = "b" * 40
 
 
 class WorkflowScopeTests(unittest.TestCase):
-    def test_unrelated_wp218_and_wp302_changes_schedule_no_auxiliary_chain(self):
+    def test_feature_changes_schedule_scaffold_without_unrelated_oracles(self):
         for paths in (
             ["android/feature/content/src/main/kotlin/ContentScreen.kt",
              "android/feature/location/src/test/kotlin/LocationTest.kt"],
@@ -18,9 +18,10 @@ class WorkflowScopeTests(unittest.TestCase):
         ):
             with self.subTest(paths=paths):
                 result = classify(paths)
-                self.assertFalse(result["codec"])
+                self.assertTrue(result["scaffold"])
+                self.assertFalse(result["external-oracle"])
                 self.assertFalse(result["backup"])
-                self.assertEqual(result, {scope: False for scope in SCOPES})
+                self.assertFalse(result["protocol"])
 
     def test_codec_source_and_harness_schedule_codec(self):
         for path in (
@@ -28,7 +29,7 @@ class WorkflowScopeTests(unittest.TestCase):
             "tools/android-port/oracle/codec_harness.py",
         ):
             with self.subTest(path=path):
-                self.assertTrue(classify([path])["codec"])
+                self.assertTrue(classify([path])["external-oracle"])
 
     def test_wp203_room_backup_and_harness_schedule_complete_backup_chain(self):
         for path in (
@@ -45,7 +46,8 @@ class WorkflowScopeTests(unittest.TestCase):
             "android/core/protocol/src/main/kotlin/com/meshcoreone/android/core/protocol/bytes/Bytes.kt"
         ])
         self.assertEqual(result, {
-            "helpers": False, "codec": False, "protocol": True, "backup": False,
+            "controller": False, "scaffold": False, "protocol": True,
+            "backup": False, "external-oracle": False,
         })
 
     def test_workflow_and_provenance_changes_schedule_all(self):
@@ -53,16 +55,15 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), {scope: True for scope in SCOPES})
 
-    def test_plan_manifest_and_shared_build_changes_do_not_fan_out_feature_suites(self):
-        for path in (
-            "docs/android/PORTING_PLAN.md",
-            "docs/android/port-manifest.json",
-            "android/gradle/libs.versions.toml",
-        ):
-            with self.subTest(path=path):
-                result = classify([path])
-                self.assertFalse(result["protocol"])
-                self.assertFalse(result["backup"])
+    def test_plan_is_controller_only_and_shared_build_inputs_select_all_gradle_scopes(self):
+        plan = classify(["docs/android/PORTING_PLAN.md"])
+        self.assertTrue(plan["controller"])
+        self.assertFalse(plan["scaffold"])
+        shared = classify(["android/gradle/libs.versions.toml"])
+        self.assertTrue(shared["scaffold"])
+        self.assertTrue(shared["protocol"])
+        self.assertTrue(shared["backup"])
+        self.assertFalse(shared["external-oracle"])
 
     def test_event_endpoints_are_exact(self):
         self.assertEqual(

@@ -15,9 +15,6 @@ from source_inventory import ROOT, PIN, MANIFEST, PROJECTION_SUITES, inventory, 
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
 from controller.model import load_manifest
-from controller.verification_config import content_scope_revisions
-
-POLICY = "a9982122122eb695c60550e95d29856ffc9bbdfa02161b9679de9201c0d900db"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 
 
@@ -48,8 +45,7 @@ def pipeline_invocation(path):
         and binding["work_package"] == "WP-003" and binding["head_sha"] == git("rev-parse", "HEAD").decode().strip()
         and isinstance(binding["base_sha"], str) and re.fullmatch(r"[0-9a-f]{40}", binding["base_sha"])
         and binding["source_sha"] == PIN
-        and binding["manifest_sha256"] == revisions["manifest_sha256"]
-        and binding["policy_revision"] == revisions["policy_revision"],
+        and binding["manifest_sha256"] == revisions["manifest_sha256"],
         "Stale/mismatched actual native pipeline invocation")
     require(all(type(identity[key]) is int and identity[key] > 0 for key in ("run_id", "run_attempt")),
         "Missing positive actual native run/attempt")
@@ -66,16 +62,12 @@ def local_execution_binding():
     require(not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
         "Local UI evidence requires a clean committed snapshot")
     manifest = load_manifest(ROOT)
-    policy = unique_json(ROOT / "docs" / "android" / "automation-policy.json")
-    try:
-        revisions = content_scope_revisions(manifest, policy)
-    except PortError as failure:
-        require(False, "Local UI source/manifest/policy drift: " + str(failure))
-    require(manifest.data["reference"]["commit"] == PIN
+    revisions = current_revisions()
+    require(revisions["manifest_sha256"] == manifest.sha256
+        and manifest.data["reference"]["commit"] == PIN
         and manifest.data["reference"]["tree_sha"] == SOURCE_TREE
-        and policy["repository"] == "cbattlegear/MeshCoreOne-Android"
         and git("rev-parse", PIN + "^{tree}").decode().strip() == SOURCE_TREE,
-        "Local UI source/manifest/policy drift")
+        "Local UI source/manifest drift")
     inventory()
     return {
         "scope": "local-committed-inputs-no-hosted-run-authority", "host": "linux",

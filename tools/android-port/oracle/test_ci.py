@@ -118,14 +118,14 @@ class HelperDiscoveryTests(unittest.TestCase):
 class FoundationWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.text = (REPO / ".github" / "workflows" / "android-independent-checks.yml").read_text(encoding="utf-8")
+        cls.text = (REPO / ".github" / "workflows" / "android-ci.yml").read_text(encoding="utf-8")
         cls.workflow = parse_yaml(cls.text)
 
     def test_pinned_read_only_ephemeral_candidate_boundaries(self):
         validate_boundary(self.workflow, self.text)
         self.assertEqual(self.workflow["permissions"], {"contents": "read"})
-        self.assertEqual(self.workflow["jobs"]["helpers"]["runs-on"], "ubuntu-24.04")
-        self.assertEqual(self.workflow["jobs"]["reference-codec"]["runs-on"], "macos-26")
+        self.assertEqual(self.workflow["jobs"]["build"]["runs-on"], "ubuntu-24.04")
+        self.assertEqual(self.workflow["jobs"]["external-oracle"]["runs-on"], "macos-26")
         for job in self.workflow["jobs"].values():
             self.assertFalse(job.get("environment"))
             self.assertFalse(job.get("services"))
@@ -141,32 +141,25 @@ class FoundationWorkflowTests(unittest.TestCase):
         runs = "\n".join(step.get("run", "") for job in self.workflow["jobs"].values() for step in job["steps"])
         for command in ("test_inventory.py --check", "extract_vectors.py --check",
                         "oracle/run_tests.py", "controller/ci.py provision",
-                        "oracle/foundation_ci.py kotlin", "oracle/codec_harness.py run"):
+                        "controller/ci.py run --stage scaffold", "oracle/codec_harness.py run"):
             self.assertIn(command, runs)
-        for job in self.workflow["jobs"].values():
-            for step in job["steps"]:
-                if "run" in step:
-                    self.assertNotIn("if", step)
-                    self.assertNotIn("continue-on-error", step)
+        self.assertEqual(runs.count("controller/test_runner.py"), 1)
+        self.assertEqual(runs.count("controller/ci.py run --stage scaffold"), 1)
 
     def test_auxiliary_conditions_are_job_level_and_preserve_complete_chains(self):
-        expected = {
-            "helpers": "helpers",
-            "reference-codec": "codec",
-            "protocol": "protocol",
-            "kotlin-producer": "backup",
-            "swift-restore-export": "backup",
-            "kotlin-consumer": "backup",
-        }
+        expected = {"external-oracle": "external-oracle", "backup-oracle": "backup"}
         for name, scope in expected.items():
             with self.subTest(job=name):
                 job = self.workflow["jobs"][name]
                 self.assertEqual(
-                    job["if"], "${{ needs.scope.outputs." + scope + " == 'true' }}"
+                    job["if"],
+                    ("${{ needs.scope.outputs['external-oracle'] == 'true' }}"
+                     if scope == "external-oracle"
+                     else "${{ needs.scope.outputs." + scope + " == 'true' }}"),
                 )
                 self.assertIn("scope", job["needs"])
-        self.assertIn("kotlin-producer", self.workflow["jobs"]["swift-restore-export"]["needs"])
-        self.assertIn("swift-restore-export", self.workflow["jobs"]["kotlin-consumer"]["needs"])
+        self.assertIn("controller", self.workflow["jobs"]["build"]["needs"])
+        self.assertIn("build", self.workflow["jobs"]["backup-oracle"]["needs"])
 
     def test_privilege_and_action_pin_mutations_fail(self):
         for kind in ("token", "action", "checkout"):
@@ -174,17 +167,16 @@ class FoundationWorkflowTests(unittest.TestCase):
             if kind == "token":
                 value["permissions"]["contents"] = "write"
             elif kind == "action":
-                value["jobs"]["helpers"]["steps"][0]["uses"] = "actions/checkout@v4"
+                value["jobs"]["build"]["steps"][0]["uses"] = "actions/checkout@v4"
             else:
-                value["jobs"]["helpers"]["steps"][0]["with"]["persist-credentials"] = "true"
+                value["jobs"]["build"]["steps"][0]["with"]["persist-credentials"] = "true"
             with self.subTest(kind=kind), self.assertRaises(PortError):
                 validate_boundary(value, self.text)
 
-    def test_artifacts_do_not_publish_compiled_executables_or_oracle_code(self):
-        steps = self.workflow["jobs"]["reference-codec"]["steps"]
+    def test_only_actual_backup_bytes_cross_the_job_boundary(self):
+        steps = self.workflow["jobs"]["build"]["steps"]
         uploads = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
         self.assertEqual(len(uploads), 1)
         paths = uploads[0]["with"]["path"]
-        self.assertNotIn("*.swift", paths)
-        self.assertNotIn("codec-oracle", paths)
-        self.assertIn("source-map.json", paths)
+        self.assertIn("wp203/interop", paths)
+        self.assertNotIn("ci-result", paths)

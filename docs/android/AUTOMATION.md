@@ -303,10 +303,10 @@ including infrastructure changes. WP-003 must prove them before activation.
 
 ## Workflow trust and supervised handoff
 
-`android-bootstrap.yml` runs only the Python controller/traceability tests on an ephemeral
-`ubuntu-24.04` PR/merge-group runner (the prior Windows leg was removed; local Windows
-development is covered by WSL) with read-only permissions and no persisted checkout credentials, caches,
-dispatch/signing/merge secrets or Android build claims. It is **not** production `android-ci`.
+The path-scoped `controller` job in `android-ci.yml` runs the Python
+controller/traceability tests once on an ephemeral `ubuntu-24.04`
+PR/merge-group runner with read-only permissions and no persisted checkout
+credentials or dispatch/signing/merge secrets.
 The four controller wrappers are manual-only, default-branch-only, pinned-action, read-only **dry-run**
 previews/audits. They have no schedule, cloud/local launches, required-gate publishing or merge authority.
 A successful preview job is not a parity/gate verdict. Protected offline audits without real approval block.

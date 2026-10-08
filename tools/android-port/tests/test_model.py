@@ -239,16 +239,11 @@ class ManifestTests(unittest.TestCase):
         original = project_content_scope(base_manifest().data)
         manifest = Manifest(apply_content_scope(original), {}, REPO)
         details = load_json(REPO / "docs/android/evidence/WP-004/inventory-details.json")
-        details["manifest_sha256"] = manifest.sha256
         before = copy.deepcopy(details)
         historical = inventory_details_predecessor(details, manifest)
-        self.assertEqual(historical["manifest_sha256"], VERIFICATION_MANIFEST_SHA256)
-        self.assertEqual(historical["files"], before["files"])
-        self.assertEqual(historical["counts"], before["counts"])
+        self.assertEqual(historical, before)
+        self.assertNotIn("manifest_sha256", historical)
         self.assertEqual(details, before)
-        for revision in ("0" * 64, VERIFICATION_MANIFEST_SHA256):
-            with self.subTest(stale=revision), self.assertRaises(PortError):
-                inventory_details_predecessor({**details, "manifest_sha256": revision}, manifest)
         with self.assertRaises(PortError):
             inventory_details_predecessor({**details, "source_sha": "0" * 40}, manifest)
         with self.assertRaises(PortError):
@@ -286,10 +281,10 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(historical.data, original)
         self.assertEqual(historical.sha256, VERIFICATION_MANIFEST_SHA256)
         self.assertEqual(apply_content_scope(baseline), manifest.data)
-        self.assertEqual(manifest.sha256, "4f8328f7295d2fdecce10489f99d992cd6b2d861c709f32297e21ed9c5b8fdf5")
+        self.assertEqual(manifest.sha256, "58f7ebd7f46bbe0636c71005f20776efe139a287279e4f4708b25ce6bfa3f892")
         self.assertEqual(content_scope_revisions(manifest, load_json(REPO / "docs/android/automation-policy.json")),
                          {"manifest_sha256": manifest.sha256,
-                          "policy_revision": "375c9252499e63787449b907755e7bfa0dfb49281f0a46954527480165734428"})
+                          "policy_revision": "1f5f2b54f17595b3bab93edc4f607ccb9e3b2fdd409943e32fd394ec19c3bfd4"})
 
     def test_policy_projection_rejects_partial_metadata_and_unowned_changes_without_mutation(self):
         baseline = project_content_scope(base_manifest().data)

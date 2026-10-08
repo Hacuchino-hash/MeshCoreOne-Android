@@ -5,27 +5,23 @@ workflow runs real scaffold commands. The four trusted-duty workflows remain
 manual, deployed-default-branch-only previews and deliberately return `BLOCKED`
 for absent integrations. They do not publish `parity-review` or `gate-integrity`.
 
-## Candidate execution and output contract
+## Candidate execution contract
 
 `android-ci.yml` runs for every pull request, including dependent drafts, plus
-merge groups, `main` pushes and manual validation. There is no required-check
-workflow path/branch filter. `ubuntu-24.04` x64 is the sole mandatory host; the
+merge groups, `main` pushes and manual validation. A small scope job classifies
+whether Android build inputs changed; metadata-only changes validate the
+controller inputs without running the scaffold build. `ubuntu-24.04` x64 is the sole mandatory host; the
 prior `windows-2025` leg was removed (no shipped Windows build, local Windows
-development is covered by WSL instead). Module-selection optimization is
-intentionally deferred: skipping the host, a suite, lint target or evidence
-artifact is not success.
+development is covered by WSL instead).
 
-The always-running `android-ci` job checks the build outcome and downloads only
-this run/attempt's build bundle. It verifies repository, exact base/head,
-source, candidate manifest/policy, run/attempt, the host, actual discovery
-contracts and every artifact's size/SHA-256. Failure,
-cancellation, a skipped required job, a missing bundle or stale/tampered evidence
-fails. Cancellation of an entire obsolete workflow is not evidence for a new head.
-It also reparses complete verbatim composite JUnit and all lint XML,
-compares actual cases/outcomes with claimed counts and the discovery TSV, checks
-typed lint values/hashes, validates graph/runtime TSV contracts, and compares
-the full APK-inspection JSON with the result and uploaded APK bytes/native ELF.
-No artifact code is executed.
+The exact-commit GitHub job result and log are the authoritative reproducible
+CI record. The build job validates complete JUnit and lint XML in place,
+compares actual cases/outcomes with discovery and graph/runtime outputs, and
+inspects the built APK before it can succeed. Zero discovery, failures, errors,
+skips, malformed output or a failed command fail the job. The always-running
+`android-ci` job directly requires success when the scope selected the build
+and requires a skipped build otherwise. CI does not upload, download, hash or
+revalidate a second result bundle.
 
 | Stage | Actual executable tasks / mandatory evidence |
 | --- | --- |
@@ -37,28 +33,24 @@ No artifact code is executed.
 Four Kotlin suites retain at least conventions31, contracts4, app10 and Room2
 actual cases. The executor independently compares XML testcase/outcome nodes
 with the scaffold TSV. These are scaffold assertions, **not original feature
-test parity**. Reports include the 30-module boundary graph, real Room/KSP schema
-check, runtime POM/license inputs, per-stage logs, exact debug APK and `SHA256SUMS`.
-Each host's debug key/artifact is ephemeral; APK hashes need not match between
-hosts. Static 16KB alignment is not real-device/MapLibre/HIL evidence.
+test parity**. The 30-module boundary graph, Room/KSP schema check, runtime
+POM/license inputs and exact debug APK are validated in the executing job.
+Each host's debug key and APK are ephemeral. Static 16KB alignment is not
+real-device/MapLibre/HIL evidence.
 
-The version2 result additionally requires every committed active unit-test source
+The live report validation additionally requires every committed active unit-test source
 set under `core`, `feature` and `platform` to have complete nonzero raw JUnit
 evidence. Original scaffold suites and the separately required protocol/testing
 workflows are not double-counted. Expected modules and all their main/unit/build
-input blob identities come from the exact candidate Git tree, not an artifact's
-own list. An active module missing a runner/report, having ambiguous JVM/Android
-report directories, or claiming failed/skipped/fabricated/stale cases fails.
-Files are copied verbatim to `junit/modules/<group>--<module>`; the same-run
-aggregator independently derives the module set and reparses every case, counter,
-source blob and report digest. Version1 historical bundles are not silently
-upgraded into current evidence.
+input blob identities come from the exact candidate Git tree. An active module
+missing a runner/report, having ambiguous JVM/Android report directories, or
+containing failed/skipped/malformed cases fails.
 
 Module owners must connect their actual `test` or `testDebugUnitTest` task to
 `verifyScaffoldTests` in their module build script, following the existing
 localization hook. Missing wiring is an explicit CI failure, not an empty-success
 fallback. The localization-specific source/resource/family verifier still runs
-and retains its own evidence. This additive unit-run proof is not original-case
+against its live report. This additive unit-run proof is not original-case
 parity, instrumentation, radio behavior or a protected WP acceptance receipt.
 
 The WP-201 `verifyDomainRoomTests` hook validates current immutable model,

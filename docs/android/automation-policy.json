@@ -43,6 +43,13 @@
       "cache_warmth_is_correctness_evidence": false,
       "cold_cache_dependency_audit_scope": "dependency-toolchain-changes",
       "strict_dependency_locks_checksums_and_verification_required": true,
+      "authoritative_reproducible_evidence": "exact-commit-hosted-job-result-and-log",
+      "repository_managed_ci_result_bundles_required": false,
+      "retained_nonreproducible_evidence": [
+        "hardware-and-physical-device",
+        "signing-and-release",
+        "human-and-legal-gates"
+      ],
       "candidate_supplied_runner_is_not_self_authorizing": true,
       "trusted_base_validates_tools_tasks_counts_failures_skips_and_outputs": true
     },

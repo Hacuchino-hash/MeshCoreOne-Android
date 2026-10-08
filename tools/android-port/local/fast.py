@@ -32,8 +32,8 @@ def main():
     sys.path.insert(0, str(args.repo / "tools" / "android-port"))
     from controller import ci
     from controller.ci_environment import candidate_environment, verify_wrapper, write_json
-    from controller.ci_evidence import collect_lint, collect_suites, suite_counts, SUITES
-    from controller.module_junit import collect_module_tests
+    from controller.ci_evidence import collect_lint, collect_suites, validate_graph_runtime
+    from controller.module_junit import check_module_tests
 
     stages = args.stages.split(",")
     state = json.loads((args.work / "toolchain" / "environment.json").read_text(encoding="utf-8"))
@@ -52,7 +52,6 @@ def main():
         print(f"\n===== FAST LOCAL: {stage} =====", flush=True)
         if stage == "python":
             ci.python_checks(args.output)
-            print((args.output / "python-evidence.json").read_text(encoding="utf-8"), flush=True)
             execute([sys.executable, "-m", "unittest", "discover", "-s", str(Path(__file__).parent),
                      "-p", "test_*.py", "-v"], args.repo, environment, args.output / "local-tool-tests.log")
         elif stage == "preflight":
@@ -78,13 +77,14 @@ def main():
                      *ci.TASKS[stage], *options], args.repo, environment, args.output / f"gradle-{stage}.log")
             report = {"stage": stage, "result": "success", "tasks": ci.TASKS[stage], "warm_cache": True}
             report["suites"] = collect_suites(args.repo / "android")
-            report["module_unit_tests"] = collect_module_tests(args.repo, args.output)
+            report["module_unit_tests"] = check_module_tests(args.repo)
             report["reports"] = collect_lint(args.repo / "android")
+            validate_graph_runtime(args.repo / "android/build/reports/scaffold")
             execute([sys.executable, str(args.repo / "tools/android-port/l10n_convert.py"), "--check",
                      "--verify-android-tests", str(args.repo / "android/core/l10n/build/test-results/testDebugUnitTest"),
                      "--copy-android-junit", str(args.output / "l10n/junit")],
                     args.repo, environment, args.output / "l10n-junit.log")
-            write_json(args.output / f"stage-{stage}.json", report)
+            print(json.dumps(report, indent=2), flush=True)
         elif stage == "inspect":
             ci.inspect(state, args.output)
         else:
@@ -96,7 +96,6 @@ def main():
         "stages": stages, "elapsed_seconds": round(time.monotonic() - started, 2),
         "scope": "Local pre-push check; not hosted/cold-cache, hardware, signing or human-gate evidence",
     }
-    write_json(args.output / "fast-local-result.json", binding)
     print(json.dumps(binding, indent=2), flush=True)
     print("FAST LOCAL CHECK PASSED. No second cold local run is required.", flush=True)
 

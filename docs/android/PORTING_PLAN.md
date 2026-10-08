@@ -72,6 +72,10 @@ Ordinary candidates use targeted jobs plus hosted integration coverage. Verified
 caches, task reuse, and parallel workers are permitted, but cache warmth is not
 correctness evidence; strict dependency locks, checksums, pinned coordinates, and
 verification metadata remain mandatory.
+The exact-candidate hosted job result and log are authoritative for reproducible
+automated checks; the repository does not persist or revalidate duplicate CI
+result bundles. Non-reproducible hardware/device, signing, release, human and
+legal evidence remains retained.
 
 ## 3. Target architecture
 

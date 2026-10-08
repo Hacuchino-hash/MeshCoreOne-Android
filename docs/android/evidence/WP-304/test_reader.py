@@ -39,7 +39,7 @@ def invocation_record():
         "run_id": 12, "run_attempt": 1, "binding": {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
             "base_sha": "a" * 40, "head_sha": "b" * 40,
-            "source_sha": retain_raw.PIN, **revisions,
+            "source_sha": retain_raw.PIN, "policy_revision": "d" * 64, **revisions,
         }}}
 
 
@@ -252,7 +252,7 @@ class NativeTest {
                     changed = record | {key: value}; path.write_text(json.dumps(changed))
                     with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
                 for key, value in (("head_sha", "c" * 40), ("repository", "other/repo"),
-                        ("work_package", "WP-304"), ("policy_revision", "c" * 64),
+                        ("work_package", "WP-304"),
                         ("source_sha", "c" * 40), ("manifest_sha256", "c" * 64),
                         ("base_sha", None), ("base_sha", "a" * 39)):
                     changed = copy.deepcopy(record); changed["identity"]["binding"][key] = value
@@ -264,7 +264,7 @@ class NativeTest {
                     with self.assertRaises(EvidenceError): retain_raw.pipeline_invocation(path)
 
     def test_explicit_local_invocation_binds_actual_clean_head_tree_and_frozen_inputs(self):
-        manifest = manifest_fixture()
+        manifest = manifest_fixture(amended=True)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "wp109-invocation.json"
             path.write_text(json.dumps(local_invocation_record()))
@@ -281,16 +281,15 @@ class NativeTest {
             self.assertEqual("c" * 40, local["binding"]["tree_sha"])
             self.assertEqual(retain_raw.PIN, local["binding"]["source_sha"])
             self.assertEqual(retain_raw.SOURCE_TREE, local["binding"]["source_tree"])
-            self.assertEqual(retain_raw.MANIFEST, local["binding"]["manifest_sha256"])
-            self.assertEqual(retain_raw.POLICY, local["binding"]["policy_revision"])
+            self.assertEqual(manifest.sha256, local["binding"]["manifest_sha256"])
+            self.assertNotIn("policy_revision", local["binding"])
             self.assertNotIn("run_id", local)
             self.assertNotIn("run_attempt", local)
             inventory.assert_called_once_with()
 
     def test_historical_hosted_receipt_cannot_be_relabelled_as_current_catalog_execution(self):
         manifest = manifest_fixture(amended=True)
-        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
-        revisions = content_scope_revisions(manifest, policy)
+        revisions = {"manifest_sha256": manifest.sha256}
         record = invocation_record()
         record["identity"]["binding"].update(revisions)
         with tempfile.TemporaryDirectory() as directory:
@@ -299,10 +298,9 @@ class NativeTest {
                     patch.object(retain_raw, "git", return_value=b"b" * 40):
                 path.write_text(json.dumps(record))
                 self.assertEqual((path.parent, record), retain_raw.pipeline_invocation(path))
-                for key, historical in (("manifest_sha256", retain_raw.MANIFEST),
-                                        ("policy_revision", retain_raw.POLICY),
-                                        ("manifest_sha256", "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"),
-                                        ("policy_revision", "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a")):
+                for key, historical in (
+                        ("manifest_sha256", retain_raw.MANIFEST),
+                        ("manifest_sha256", "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746")):
                     changed = copy.deepcopy(record)
                     changed["identity"]["binding"][key] = historical
                     path.write_text(json.dumps(changed))
@@ -331,9 +329,8 @@ class NativeTest {
                 with self.assertRaisesRegex(EvidenceError, message):
                     retain_raw.local_execution_binding()
 
-    def test_local_binding_rejects_source_manifest_policy_or_original_tree_drift(self):
-        original = manifest_fixture()
-        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
+    def test_local_binding_rejects_source_manifest_or_original_tree_drift(self):
+        original = manifest_fixture(amended=True)
         variants = []
         for section, key, value in (("reference", "commit", "a" * 40),
                                     ("reference", "tree_sha", "a" * 40),
@@ -343,30 +340,25 @@ class NativeTest {
                 data[section] = value
             else:
                 data[section][key] = value
-            variants.append((Manifest(data, original.exclusions, original.repo), policy, local_git))
-        wrong_policy = copy.deepcopy(policy)
-        wrong_policy["repository"] = "other/repository"
+            variants.append((Manifest(data, original.exclusions, original.repo), local_git))
         variants += [
-            (original, wrong_policy, local_git),
-            (original, policy, lambda *args: b"a" * 40 if args ==
+            (original, lambda *args: b"a" * 40 if args ==
              ("rev-parse", retain_raw.PIN + "^{tree}") else local_git(*args)),
         ]
-        for manifest, policy, git in variants:
-            with self.subTest(manifest=manifest, policy=policy), \
+        for manifest, git in variants:
+            with self.subTest(manifest=manifest), \
                     patch.object(retain_raw.platform, "system", return_value="Linux"), \
                     patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
                     patch.object(retain_raw, "git", side_effect=git), \
                     patch.object(retain_raw, "load_manifest", return_value=manifest), \
-                    patch.object(retain_raw, "unique_json", return_value=policy), \
                     patch.object(retain_raw, "inventory") as inventory:
-                with self.assertRaisesRegex(EvidenceError, "source/manifest/policy drift"):
+                with self.assertRaisesRegex(EvidenceError, "source/manifest drift"):
                     retain_raw.local_execution_binding()
                 inventory.assert_not_called()
 
     def test_reversible_content_scope_binds_actual_current_local_and_hosted_revisions(self):
         manifest = manifest_fixture(amended=True)
-        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
-        revisions = content_scope_revisions(manifest, policy)
+        revisions = {"manifest_sha256": manifest.sha256}
         with patch.object(retain_raw.platform, "system", return_value="Linux"), \
                 patch.object(retain_raw.platform, "machine", return_value="x86_64"), \
                 patch.object(retain_raw, "git", side_effect=local_git), \
@@ -374,7 +366,7 @@ class NativeTest {
                 patch.object(retain_raw, "inventory"):
             local = retain_raw.local_execution_binding()
         self.assertEqual(revisions["manifest_sha256"], local["binding"]["manifest_sha256"])
-        self.assertEqual(revisions["policy_revision"], local["binding"]["policy_revision"])
+        self.assertNotIn("policy_revision", local["binding"])
         self.assertNotEqual(retain_raw.MANIFEST, local["binding"]["manifest_sha256"])
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "wp109-invocation.json"
@@ -385,15 +377,17 @@ class NativeTest {
                 path.write_text(json.dumps(current))
                 self.assertEqual(current, retain_raw.pipeline_invocation(path)[1])
                 for key, value in (("manifest_sha256", retain_raw.MANIFEST),
-                                   ("policy_revision", retain_raw.POLICY),
                                    ("manifest_sha256", "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"),
-                                   ("policy_revision", "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"),
                                    ("head_sha", "c" * 40)):
                     stale = copy.deepcopy(current)
                     stale["identity"]["binding"][key] = value
                     path.write_text(json.dumps(stale))
                     with self.subTest(key=key), self.assertRaises(EvidenceError):
                         retain_raw.pipeline_invocation(path)
+                policy_only = copy.deepcopy(current)
+                policy_only["identity"]["binding"]["policy_revision"] = "c" * 64
+                path.write_text(json.dumps(policy_only))
+                self.assertEqual(policy_only, retain_raw.pipeline_invocation(path)[1])
                 path.write_text(json.dumps(local_invocation_record()))
                 with self.assertRaises(EvidenceError):
                     retain_raw.pipeline_invocation(path)
