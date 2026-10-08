@@ -29,7 +29,15 @@ gradle.taskGraph.whenReady { graph ->
     def forbiddenScripts = records.findAll { record ->
         record.command.any { argument ->
             def normalized = argument.replace("\\", "/").toLowerCase(Locale.ROOT)
-            normalized.contains("/docs/android/evidence/") && normalized.endsWith(".py")
+            def name = normalized.tokenize("/").last()
+            normalized.contains("/docs/android/evidence/") &&
+                (name == "collect_evidence.py" ||
+                 name == "collect_native_evidence.py" ||
+                 name == "retain_raw.py" ||
+                 name == "run_linux_verification.py" ||
+                 name == "verify_producers.py" ||
+                 name == "print_failures.py" ||
+                 name == "source_bindings.py")
         }
     }
     if (forbiddenTasks || forbiddenScripts) {

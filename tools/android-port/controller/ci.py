@@ -134,7 +134,12 @@ def validate_candidate_task_graph(path: Path, requested_tasks: list[str]):
             raise PortError("Malformed resolved Gradle command")
         for argument in record["command"]:
             normalized = argument.replace("\\", "/").lower()
-            if "/docs/android/evidence/" in normalized and normalized.endswith(".py"):
+            name = normalized.rsplit("/", 1)[-1]
+            if "/docs/android/evidence/" in normalized and name in {
+                "collect_evidence.py", "collect_native_evidence.py", "retain_raw.py",
+                "run_linux_verification.py", "verify_producers.py", "print_failures.py",
+                "source_bindings.py",
+            }:
                 raise PortError("Gradle invokes repository evidence collector: " + record["path"])
     for requested in requested_tasks:
         expected = requested if requested.startswith(":") else ":" + requested

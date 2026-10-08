@@ -150,6 +150,19 @@ class EnvironmentTests(unittest.TestCase):
                 validate_candidate_task_graph(graph, ["verifyScaffoldTests", ":core:protocol:test"]),
                 {"tasks": 2, "result": "no-duplicate-ci-evidence"},
             )
+            packaging = {
+                "path": ":verifyPackaging",
+                "type": "fixture",
+                "command": ["python", str(REPO / "docs/android/evidence/WP-999/inspect_packaging.py"), "--self-test"],
+            }
+            graph.write_text(
+                json.dumps({"schema_version": 1, "tasks": [safe[0], packaging]}) + "\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                validate_candidate_task_graph(graph, ["verifyScaffoldTests"]),
+                {"tasks": 2, "result": "no-duplicate-ci-evidence"},
+            )
             for record in rejected:
                 with self.subTest(record=record["path"]):
                     graph.write_text(
