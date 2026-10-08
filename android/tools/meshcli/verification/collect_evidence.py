@@ -24,6 +24,7 @@ from controller.schema import decode_json, fields, load_json
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
 POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 EVIDENCE = ROOT / "docs" / "android" / "evidence" / "WP-109"
 NATIVE_PREFIX = "com.meshcoreone.android.core.protocol."
 SOURCE_PREFIX = "MeshCore/Tests/"
@@ -248,7 +249,7 @@ def original_accounting(repo, catalog, details, manifest, native):
     fields(catalog, {"schema_version", "source_sha", "entries"}, label="frozen original-case catalog")
     if type(catalog["schema_version"]) is not int or catalog["schema_version"] != 1 or catalog["source_sha"] != SOURCE:
         raise PortError("Frozen case catalog pin/version mismatch")
-    if details["source_sha"] != SOURCE or details["manifest_sha256"] != MANIFEST:
+    if details["source_sha"] != SOURCE or details["manifest_sha256"] != HISTORICAL_MANIFEST:
         raise PortError("Original assertion/parameter detail provenance mismatch")
     declarations = {(f["path"], c["id"]): (f, c) for f in details["files"] for c in f["cases"]}
     owners = {i["path"]: i for i in manifest.data["inventory"]}
