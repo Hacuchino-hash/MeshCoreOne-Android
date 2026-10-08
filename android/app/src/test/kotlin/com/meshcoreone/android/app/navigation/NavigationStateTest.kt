@@ -326,6 +326,12 @@ class NavigationStateTest {
         for (tokens in malformed) assertEquals(NavigationFailure.InvalidSavedState, NavigationSavedState.restore(tokens).failure)
     }
     @Test fun restorationCannotOverwriteLiveHostAndInvalidWindowWidthIsNotSilentlyAccepted() {
+        val cold = NavigationCoordinator()
+        val restored = NavigationState(selectedTab = AppTab.NODES)
+        cold.restoreHostState(restored)
+        assertSame(restored, cold.state.value)
+        assertThrows(IllegalStateException::class.java) { cold.restoreHostState(NavigationState()) }
+        assertSame("Rejected restoration must not change the live state", restored, cold.state.value)
         val n = NavigationCoordinator(); n.navigateToChat(contact)
         assertThrows(IllegalStateException::class.java) { n.restoreHostState(NavigationState()) }
         for (width in listOf(Float.NaN, Float.POSITIVE_INFINITY, -1f)) {

@@ -39,8 +39,9 @@ class NavigationCoordinator(initial: NavigationState = NavigationState()) {
 
     // AndroidOnly: WP-302 Called only by a newly created host, not on resize or connection changes.
     fun restoreHostState(restored: NavigationState) {
-        check(state.value == NavigationState()) { "A live navigation host cannot be overwritten by restoration" }
-        mutableState.value = restored
+        check(mutableState.compareAndSet(NavigationState(), restored)) {
+            "A live navigation host cannot be overwritten by restoration"
+        }
     }
 
     fun selectTab(tab: AppTab) = mutableState.update { it.select(tab) }

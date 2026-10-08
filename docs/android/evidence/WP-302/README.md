@@ -215,6 +215,44 @@ and asserted POM/module requirements; `coordinate-api-review.log` retains
 the matched source-jar hashes and exact used declarations. Earlier inspection
 probes are retained separately and are not passing evidence.
 
+## Full official cycle on the corrected dependency head
+
+After the coordinate correction, the complete unchanged official cycle was
+actually invoked again against committed `5507d4041ea7535b7b758d419894eb15eede92c9`:
+
+```powershell
+python C:\Users\camer\source\repos\MeshCoreOne-Android\.git\hooks\meshcore-local\check.py --distribution Ubuntu-22.04 --commit 5507d4041ea7535b7b758d419894eb15eede92c9
+```
+
+**Failed, exit 1.** All **3885** tracked inputs were materialized from immutable
+candidate Git blobs. Manifest validation passed, but the actual Python-stage
+traceability CLI again exited 2 at the approved Android-only preserved launcher.
+The later preflight/verify/standalone/assemble/lint/inspect stages did not run.
+Correcting Nav3 cannot repair this independently owned validator admission gap.
+No corrected graph generation, Kotlin compilation or native execution occurred.
+
+`full-cycle-5507d404.log` retains the complete visible output. Raw installed
+reports are `/home/cbattagler/meshcoreone-work/local-checks/run-e26bnifB`, including
+`traceability.log`. D0's subsequently inspected frozen `0f8ff964` commit changes
+its Content TLS test, not the outstanding Nav producer support. Its retained Nav
+packet still reports the rejected 1.2 graph; no support carry was inferred from
+that branch advancing. No new development push or WP-302 PR was attempted.
+
+Further bounded source review makes host restoration one atomic StateFlow
+compare-and-set, matching the coordinator's other transitions. The former
+check-then-assignment could overwrite a navigation update between those two
+operations. The existing restoration assertion now checks fresh-host acceptance,
+the exact restored state and rejection without changing a live host. This
+preserves the host-only initialization contract and does not add a process/radio
+owner. These Kotlin assertions remain unexecuted; declarations remain140/108.
+`restoration-reader-regressions.log` retains the actual nineteen passing reader
+checks after this correction; the inventory still reports fifty original
+families and140 declared nodes, not native execution.
+D0 subsequently recorded receipt of the exact5507d404 coordinate correction
+in its frozen `2d275d06` producer packet and updated its owned pending proposal.
+That packet explicitly still requires actual corrected graph generation;
+recognizing the proposal is not a completed support carry.
+
 ## Complete official cycle attempt after the correctness fixes
 
 The full, unchanged official cycle was actually invoked, not a selected-stage
