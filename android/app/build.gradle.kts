@@ -152,11 +152,12 @@ tasks.register("resolveWp302NavigationDependencies") {
 
 val repository = rootProject.projectDir.parentFile
 val navigationInputBinding = layout.buildDirectory.file("reports/wp302/input-binding.properties")
+val navigationArtifactDirectory = layout.buildDirectory.dir("reports/wp302/screens")
 val prepareNavigationTestInputs by tasks.registering {
     group = "verification"
     description = "Provide the current source/input identity consumed by navigation tests."
     inputs.dir(layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation"))
-    outputs.file(navigationInputBinding)
+    outputs.files(navigationInputBinding, navigationArtifactDirectory)
     doLast {
         val sourceRoot = layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation").asFile
         val digest = MessageDigest.getInstance("SHA-256")
@@ -177,12 +178,14 @@ val prepareNavigationTestInputs by tasks.registering {
                 setProperty("inputs_sha256", digest.digest().joinToString("") { "%02x".format(it) })
             }.store(writer(), "Actual navigation test inputs")
         }
+        navigationArtifactDirectory.get().asFile.mkdirs()
     }
 }
 tasks.withType<Test>().configureEach {
     if (name == "testDebugUnitTest") {
         dependsOn(prepareNavigationTestInputs)
         systemProperty("navigationInputBinding", navigationInputBinding.get().asFile.absolutePath)
+        systemProperty("navigationArtifactDirectory", navigationArtifactDirectory.get().asFile.absolutePath)
     }
 }
 
