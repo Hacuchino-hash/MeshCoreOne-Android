@@ -32,6 +32,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -174,6 +176,19 @@ class AppStateBehaviorTest {
         state.regionSelection = null
         runCurrent()
         assertNull(store.storedJson)
+    }
+
+    @Test fun regionWritesPersistInOrderOnAMultiThreadedDispatcher() = runBlocking<Unit> {
+        val store = MemoryRegionStore()
+        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+        try {
+            val state = appStateOf(scope, regionStore = store)
+            val values = (1..200).map { RegionSelection("C$it", RegionSelection.Source.MANUAL) } + listOf(null)
+            values.forEach { state.regionSelection = it }
+            kotlinx.coroutines.withTimeout(5_000) { while (store.persisted.size < values.size) kotlinx.coroutines.delay(5) }
+            assertEquals(values, store.persisted.toList(), "persisted in the order they were set, ending with the clear")
+            assertNull(store.storedJson)
+        } finally { scope.cancel() }
     }
 
     @OriginalCase("AppStateRegionTests::AppState loads persisted regionSelection on init()")

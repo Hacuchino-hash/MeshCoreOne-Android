@@ -242,6 +242,12 @@ class RadioSessionContainer private constructor(
     val hasResyncLoop: Boolean get() = retryController.resyncTask != null
     val hasChannelRetry: Boolean get() = retryController.channelRetryTask != null
 
+    /**
+     * Whether the WiFi heartbeat probe must pause (syncing, resync loop or channel retry pending). The runtime's
+     * heartbeat has no hook that reads this yet (WP-303.md C-04), so it is exposed for that seam.
+     */
+    val shouldPauseWiFiHeartbeatProbe: Boolean get() = retryController.shouldPauseWiFiHeartbeatProbe
+
     // endregion
 
     init {
@@ -249,6 +255,8 @@ class RadioSessionContainer private constructor(
         syncCoordinator.setCleanChannelSyncCallback { inputs.callbacks.cleanChannelSync() }
         syncCoordinator.setChannelSyncAttemptedCallback { inputs.callbacks.channelSyncAttempted() }
         env.notificationStrings?.let(notificationService::setStringProvider)
+        // The cycle-forced upward call into the connection manager: an identity import re-resolves the radio id.
+        nodeConfigService.setOnPostIdentityImport { inputs.callbacks.reconcileIdentity() }
     }
 
     override val batteryServices: BatteryServices = object : BatteryServices {
@@ -398,6 +406,7 @@ class RadioSessionContainer private constructor(
             step(LifecycleStage.STOP_SERVICES) { resetSyncState() }
             // Stop the monitors before clearing handlers so the event tasks that read them are cancelled first.
             step(LifecycleStage.STOP_SERVICES) { stopEventMonitoring() }
+            nodeConfigService.setOnPostIdentityImport(null)
             step(LifecycleStage.STOP_SERVICES) { messagePollingService.clearMessageHandlers() }
             step(LifecycleStage.STOP_SERVICES) { syncCoordinator.cancelDiscoveryEventMonitoring() }
             // Finishing every stream ends each consumer's collection, releasing the service references they hold.

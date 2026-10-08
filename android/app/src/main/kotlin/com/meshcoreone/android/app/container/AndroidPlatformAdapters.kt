@@ -4,6 +4,7 @@ package com.meshcoreone.android.app.container
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.core.content.edit
 import android.os.UserManager
 import com.meshcoreone.android.core.contracts.domain.Capability
 import com.meshcoreone.android.core.contracts.domain.NotificationId
@@ -40,7 +41,7 @@ object UnavailableNotificationDelivery : NotificationDeliveryPort {
 class SharedPreferencesContactFlags(context: Context) : ContactPreferenceFlags {
     private val preferences = context.applicationContext.getSharedPreferences("mc1.contact-flags", Context.MODE_PRIVATE)
     override fun bool(key: String): Boolean = preferences.getBoolean(key, false)
-    override fun set(key: String, value: Boolean) { preferences.edit().putBoolean(key, value).apply() }
+    override fun set(key: String, value: Boolean) { preferences.edit { putBoolean(key, value) } }
 }
 
 /** The composer-draft dictionary as one JSON object under one key (Swift `UserDefaults` `[String: String]`). */
@@ -58,7 +59,7 @@ class SharedPreferencesDraftDefaults(context: Context) : DraftDefaults {
     }
 
     override fun setStringDictionary(value: Map<String, String>, key: String) {
-        preferences.edit().putString(key, JSONObject(value).toString()).apply()
+        preferences.edit { putString(key, JSONObject(value).toString()) }
     }
 }
 

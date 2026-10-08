@@ -2,6 +2,7 @@
 package com.meshcoreone.android.app.container
 
 import android.content.Context
+import androidx.core.content.edit
 import com.meshcoreone.android.core.connectivity.pairing.AssociationRecordStore
 import com.meshcoreone.android.core.connectivity.pairing.BluetoothEndpoint
 import com.meshcoreone.android.core.connectivity.pairing.KnownEndpointStore
@@ -23,8 +24,8 @@ class SharedPreferencesAssociationRecords(context: Context) : AssociationRecordS
         }
     }
 
-    override fun remember(deviceId: UUID, name: String) = synchronized(lock) { preferences.edit().putString(deviceId.toString(), name).apply() }
-    override fun forget(deviceId: UUID) = synchronized(lock) { preferences.edit().remove(deviceId.toString()).apply() }
+    override fun remember(deviceId: UUID, name: String) = synchronized(lock) { preferences.edit { putString(deviceId.toString(), name) } }
+    override fun forget(deviceId: UUID) = synchronized(lock) { preferences.edit { remove(deviceId.toString()) } }
 }
 
 /** Scan-fallback endpoints (`address` and optional association id) so a picked radio is reachable after a restart. */
@@ -47,8 +48,8 @@ class SharedPreferencesKnownEndpoints(context: Context) : KnownEndpointStore {
     override suspend fun remember(endpoint: BluetoothEndpoint) = synchronized(lock) {
         val json = JSONObject().put("address", endpoint.address)
         endpoint.associationId?.let { json.put("association", it) }
-        preferences.edit().putString(endpoint.deviceId.toString(), json.toString()).apply()
+        preferences.edit { putString(endpoint.deviceId.toString(), json.toString()) }
     }
 
-    override suspend fun forget(deviceId: UUID) = synchronized(lock) { preferences.edit().remove(deviceId.toString()).apply() }
+    override suspend fun forget(deviceId: UUID) = synchronized(lock) { preferences.edit { remove(deviceId.toString()) } }
 }

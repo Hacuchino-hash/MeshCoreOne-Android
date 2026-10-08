@@ -222,17 +222,30 @@ class AppState(private val deps: AppStateDependencies) : MessageEventHost {
             persistRegionSelection(value)
         }
 
-    private fun persistRegionSelection(value: RegionSelection?) {
-        val store = deps.regionStore ?: return
-        scope.launch {
-            try {
-                store.persist(value)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: Exception) {
-                logger.log(Level.WARNING, "Failed to persist region selection: ${failure.message}")
+    // One consumer drains the queue so persisted values keep the order they were set in, whatever the scope's dispatcher.
+    private val regionWrites = kotlinx.coroutines.channels.Channel<RegionWrite>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+
+    private class RegionWrite(val selection: RegionSelection?)
+
+    init {
+        val store = deps.regionStore
+        if (store != null) {
+            scope.launch {
+                for (write in regionWrites) {
+                    try {
+                        store.persist(write.selection)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Exception) {
+                        logger.log(Level.WARNING, "Failed to persist region selection: ${failure.message}")
+                    }
+                }
             }
         }
+    }
+
+    private fun persistRegionSelection(value: RegionSelection?) {
+        if (deps.regionStore != null) regionWrites.trySend(RegionWrite(value))
     }
 
     /** Loads the persisted region without writing it back (Swift `suppressRegionPersist`). */

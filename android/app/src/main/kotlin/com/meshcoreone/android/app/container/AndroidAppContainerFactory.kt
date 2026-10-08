@@ -26,6 +26,7 @@ import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
 import com.meshcoreone.android.core.database.MeshCoreDatabase
 import com.meshcoreone.android.core.datastore.MeshCoreStorage
 import com.meshcoreone.android.core.services.rendering.DraftStore
+import com.meshcoreone.android.core.services.simulator.DemoModeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,6 +40,8 @@ import kotlinx.coroutines.cancel
 object AndroidAppContainerFactory {
     suspend fun create(application: Application, mainScope: CoroutineScope, foreground: ProcessForegroundState): AppContainer {
         val storage = MeshCoreStorage.get(application)
+        // Demo mode reads its flags synchronously: bind the loaded snapshot before the first `shared` access.
+        DemoModeManager.installStandardDefaults(DataStoreDemoModeDefaults.load(storage.preferences, mainScope))
         val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val database = MeshCoreDatabase.open(application)
         val store = RoomPersistenceStore(database, storeScope)

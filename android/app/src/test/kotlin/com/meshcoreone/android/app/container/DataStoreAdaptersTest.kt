@@ -10,6 +10,8 @@ import com.meshcoreone.android.core.runtime.RuntimePreferenceValue
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlinx.coroutines.cancel
 import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -71,5 +73,26 @@ class DataStoreAdaptersTest {
         preferences.recordRun(at)
         assertEquals(at, preferences.lastRun())
         assertEquals(725_760_000.5, storage.preferences.get(com.meshcoreone.android.core.datastore.AppStorageKey.lastStaleCleanupDate))
+    }
+
+    @Test fun demoModeDefaultsServeReadsFromTheSnapshotAndPersistWritesInOrder() = runBlocking<Unit> {
+        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+        try {
+            val defaults = DataStoreDemoModeDefaults.load(storage.preferences, scope)
+            assertEquals(false, defaults.bool("isDemoModeUnlocked"))
+            defaults.set(true, "isDemoModeUnlocked")
+            defaults.set(false, "isDemoModeUnlocked")
+            defaults.set(true, "isDemoModeUnlocked")
+            defaults.set(true, "isDemoModeEnabled")
+            assertEquals(true, defaults.bool("isDemoModeUnlocked"), "the snapshot is current before persistence finishes")
+            kotlinx.coroutines.withTimeout(5_000) {
+                while (!storage.preferences.get(com.meshcoreone.android.core.datastore.AppStorageKey.isDemoModeEnabled)) kotlinx.coroutines.delay(5)
+            }
+            kotlinx.coroutines.delay(50)
+            val reloaded = DataStoreDemoModeDefaults.load(storage.preferences, scope)
+            assertEquals(true, reloaded.bool("isDemoModeUnlocked"), "writes persisted in order; the last write wins")
+            assertEquals(true, reloaded.bool("isDemoModeEnabled"))
+            assertFailsWith<IllegalArgumentException> { defaults.set(true, "somethingElse") }
+        } finally { scope.cancel() }
     }
 }

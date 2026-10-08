@@ -11,6 +11,7 @@ import com.meshcoreone.android.core.datastore.PreferenceValue
 import com.meshcoreone.android.core.model.RegionSelection
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import java.time.Instant
+import kotlinx.coroutines.launch
 
 /** Region selection under the backup-contract key; an undecodable stored value is cleared and reported as absent. */
 class DataStoreRegionSelectionStore(private val store: PreferenceStore) : RegionSelectionStore {
@@ -56,5 +57,62 @@ class DataStoreStaleCleanupPreferences(private val store: PreferenceStore) : Sta
             val nanos = ((seconds - whole) * 1_000_000_000.0).toLong()
             return Instant.ofEpochSecond(whole + REFERENCE_DATE_EPOCH_SECONDS, nanos)
         }
+    }
+}
+
+/**
+ * The synchronous boolean port demo mode reads and writes. Reads are served from a snapshot loaded before install;
+ * each write updates the snapshot at once and persists in order on [scope], so the in-memory value is never stale.
+ */
+class DataStoreDemoModeDefaults private constructor(
+    private val store: PreferenceStore,
+    private val scope: kotlinx.coroutines.CoroutineScope,
+    initial: Map<String, Boolean>,
+    private val onFailure: (Throwable) -> Unit,
+) : com.meshcoreone.android.core.services.simulator.DemoModeDefaults {
+    private val lock = Any()
+    private var values: Map<String, Boolean> = initial
+
+    // One consumer drains the queue, so writes persist in the order they were made (concurrent launches would not).
+    private val writes = kotlinx.coroutines.channels.Channel<Pair<com.meshcoreone.android.core.datastore.PreferenceKey.BooleanKey, Boolean>>(
+        kotlinx.coroutines.channels.Channel.UNLIMITED,
+    )
+
+    init {
+        scope.launch {
+            for ((key, value) in writes) {
+                try {
+                    store.set(key, value)
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    onFailure(failure)
+                }
+            }
+        }
+    }
+
+    override fun bool(forKey: String): Boolean = synchronized(lock) { values[forKey] ?: false }
+
+    override fun set(value: Boolean, forKey: String) {
+        val key = KEYS[forKey] ?: throw IllegalArgumentException("Unknown demo-mode key: $forKey")
+        synchronized(lock) {
+            values = values + (forKey to value)
+            writes.trySend(key to value)
+        }
+    }
+
+    companion object {
+        private val KEYS = mapOf(
+            com.meshcoreone.android.core.services.simulator.DemoModeManager.IS_DEMO_MODE_UNLOCKED_KEY to AppStorageKey.isDemoModeUnlocked,
+            com.meshcoreone.android.core.services.simulator.DemoModeManager.IS_DEMO_MODE_ENABLED_KEY to AppStorageKey.isDemoModeEnabled,
+        )
+
+        suspend fun load(
+            store: PreferenceStore,
+            scope: kotlinx.coroutines.CoroutineScope,
+            onFailure: (Throwable) -> Unit = {},
+        ): DataStoreDemoModeDefaults =
+            DataStoreDemoModeDefaults(store, scope, KEYS.mapValues { (_, key) -> store.get(key) }, onFailure)
     }
 }
