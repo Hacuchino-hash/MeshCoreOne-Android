@@ -157,7 +157,8 @@ val prepareNavigationTestInputs by tasks.registering {
     group = "verification"
     description = "Provide the current source/input identity consumed by navigation tests."
     inputs.dir(layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation"))
-    outputs.files(navigationInputBinding, navigationArtifactDirectory)
+    outputs.file(navigationInputBinding)
+    outputs.dir(navigationArtifactDirectory)
     doLast {
         val sourceRoot = layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation").asFile
         val digest = MessageDigest.getInstance("SHA-256")
