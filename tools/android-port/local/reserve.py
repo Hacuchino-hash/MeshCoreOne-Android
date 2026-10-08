@@ -51,6 +51,7 @@ def runtime_sources():
         "hook_test.py": Path(__file__).with_name("hook_test.py"),
         "check.py": Path(__file__).with_name("check.py"),
         "fast.py": Path(__file__).with_name("fast.py"),
+        "run.sh": Path(__file__).with_name("run.sh"),
     }
     files.update({
         f"controller/{source.name}": source
@@ -123,7 +124,8 @@ def install_runtime(target: Path, ledger: Ledger, owner: str, now: float):
             hook = target.parent / "hooks" / "meshcore-local"
             if hook.is_dir():
                 for source, name in (
-                    ("hook_test.py", "test_check.py"), ("check.py", "check.py"), ("fast.py", "fast.py"),
+                    ("hook_test.py", "test_check.py"), ("check.py", "check.py"),
+                    ("fast.py", "fast.py"), ("run.sh", "run.sh"),
                 ):
                     replacement = hook / (name + ".next")
                     replacement.write_bytes((target / source).read_bytes())

@@ -17,6 +17,7 @@ class ReservationRuntimeTests(unittest.TestCase):
             second = reserve.install_runtime(target, ledger, "session", 2.0)
             self.assertTrue(first["atomic"])
             self.assertEqual(first["manifest_sha256"], second["manifest_sha256"])
+            self.assertTrue((target / "run.sh").is_file())
             self.assertEqual((target / "runtime-manifest.json").read_bytes(), first_manifest)
             self.assertEqual(reserve.verify_runtime(target)["schema_version"], 1)
             self.assertEqual(ledger.hard_lock_records(), [])

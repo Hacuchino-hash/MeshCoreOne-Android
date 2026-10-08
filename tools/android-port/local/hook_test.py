@@ -41,6 +41,10 @@ from controller.ledger import Ledger
 
 
 class LocalCheckTests(unittest.TestCase):
+    def test_default_all_runner_is_installed_beside_check(self):
+        runner = Path(check.__file__).resolve().with_name("run.sh")
+        self.assertTrue(runner.is_file(), f"Missing default-all runner: {runner}")
+
     def test_fast_scaffold_options_execute_without_deleted_evidence_forwarding(self):
         options = fast.scaffold_options()
 
