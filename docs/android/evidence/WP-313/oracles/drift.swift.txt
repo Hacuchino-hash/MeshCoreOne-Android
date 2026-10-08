@@ -1,0 +1,7 @@
+import Foundation
+for id in ["en_US", "de_DE"] {
+  for s in [300.0, 301.5, 359.9, 360, 3599, 3600, 3661, 7325.4, 86399, 86400, 90061, 172800.6, 1_000_000, 300.4, 299.6] {
+    let f = Duration.seconds(s).formatted(.units(allowed: [.days, .hours, .minutes, .seconds], width: .abbreviated, maximumUnitCount: 2).locale(Locale(identifier: id)))
+    print("\(id)|\(s)|\(f)")
+  }
+}

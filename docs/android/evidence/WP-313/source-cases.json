@@ -1,0 +1,1406 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 175,
+ "bound_case_count": 174,
+ "unbound": [
+  {
+   "id": "NodeContactInfoSectionTests::contact info text color stays readable while the field is focused()",
+   "source": "MC1Tests/Views/RemoteNodes/NodeContactInfoSectionTests.swift",
+   "reason": "UIKit-hosted focus-color assertion; deferred to the Compose screen"
+  }
+ ],
+ "cases": [
+  {
+   "id": "LocationReportFormatTests::Coordinates format to four decimal places with a dotted separator()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Coordinates format to four decimal places with a dotted separator",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "LocationReportFormatTests::Coordinates round to four places rather than truncate()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Coordinates round to four places rather than truncate",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "LocationReportFormatTests::Zero coordinates format without dropping the pair()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Zero coordinates format without dropping the pair",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "LocationReportFormatTests::Relative time for a past report is non-empty()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Relative time for a past report is non-empty",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "LocationReportFormatTests::Altitude formats to a non-empty localized length()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Altitude formats to a non-empty localized length",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "LocationReportFormatTests::Sea-level altitude still renders()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.LocationReportFormatTest",
+   "method": "Sea-level altitude still renders",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Formatters/LocationReportFormatTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RemoteNodeSession correctly stores role()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "room session reports the room role",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RemoteNodeSession correctly stores repeater role()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "repeater session reports the repeater role",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RemoteNodeSessionDTO computed properties work()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "session computed properties work",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RemoteNodeSessionDTO canPost requires room and readWrite()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "canPost requires room and readWrite",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessage.generateDeduplicationKey produces consistent keys()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "deduplication key is consistent",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessage.generateDeduplicationKey differs for different content()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "deduplication key differs for different content",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessage.generateDeduplicationKey differs for different timestamps()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "deduplication key differs for different timestamps",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessage.generateDeduplicationKey differs for different authors()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "deduplication key differs for different authors",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessage author display name fallback works()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "author display name falls back to hex",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "RemoteNodeModelTests::RoomMessageDTO date conversion works()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeModelTest",
+   "method": "room message date converts from the timestamp",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Models/RemoteNodeModelTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage at minimum voltage (3.0V) returns 0%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage at minimum voltage returns 0",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage at maximum voltage (4.2V) returns 100%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage at maximum voltage returns 100",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage at midpoint voltage (3.6V) returns approximately 50%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage at midpoint voltage returns 50",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage at 3.9V returns 75%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage at 3_9V returns 75",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage below minimum voltage clamps to 0%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage below minimum clamps to 0",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage above maximum voltage clamps to 100%()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage above maximum clamps to 100",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage for non-voltage type returns nil()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage for non-voltage type is null",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage for integer value returns nil()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage for integer value is null",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Battery percentage for percentage type returns nil()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "battery percentage for percentage type is null",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Voltage formatted value includes V suffix()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "voltage formatted value includes V suffix",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Temperature formatted value uses locale-appropriate unit()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "temperature formatted value uses the measurement system unit",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Temperature conversion from Celsius to Fahrenheit()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "temperature converts from Celsius to Fahrenheit outside metric",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Voltage is not locale-sensitive()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "voltage is not measurement-system sensitive",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "LPPDataPointDisplayTests::Altitude uses locale-appropriate unit symbol()",
+   "class": "com.meshcoreone.android.feature.remotenodes.telemetry.LppDataPointDisplayTest",
+   "method": "altitude uses the measurement system unit symbol",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Protocol/LPPDataPointDisplayTests.swift"
+  },
+  {
+   "id": "NodeLocationCaptureTests::A GPS-only response persists the fix and exposes it live()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.NodeLocationCaptureTest",
+   "method": "a GPS-only response persists the fix and exposes it live",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeLocationCaptureTests.swift"
+  },
+  {
+   "id": "NodeLocationCaptureTests::A (0,0) response captures no fix()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.NodeLocationCaptureTest",
+   "method": "a null-island response captures no fix",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeLocationCaptureTests.swift"
+  },
+  {
+   "id": "NodeLocationCaptureTests::A plausible altitude is captured and persisted alongside the fix()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.NodeLocationCaptureTest",
+   "method": "a plausible altitude is captured and persisted",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeLocationCaptureTests.swift"
+  },
+  {
+   "id": "NodeLocationCaptureTests::A sea-level altitude is retained, not dropped like null-island()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.NodeLocationCaptureTest",
+   "method": "a sea-level altitude is retained",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeLocationCaptureTests.swift"
+  },
+  {
+   "id": "NodeLocationCaptureTests::An implausible altitude is dropped but the fix survives()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.NodeLocationCaptureTest",
+   "method": "an implausible altitude is dropped but the fix survives",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeLocationCaptureTests.swift"
+  },
+  {
+   "id": "NodeSettingsLateRecoveryTests::belated get radio reply is recovered after its command timed out()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsLateRecoveryTest",
+   "method": "belated get radio reply is recovered after its command timed out",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsLateRecoveryTests.swift"
+  },
+  {
+   "id": "NodeSettingsLateRecoveryTests::mesh duplicate of an answered reply is not recovered for another query()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsLateRecoveryTest",
+   "method": "mesh duplicate of an answered reply is not recovered for another query",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsLateRecoveryTests.swift"
+  },
+  {
+   "id": "NodeSettingsLateRecoveryTests::a bare double is not recovered while both coordinates are unanswered()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsLateRecoveryTest",
+   "method": "a bare double is not recovered while both coordinates are unanswered",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsLateRecoveryTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::in range coordinates produce no errors()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "in range coordinates produce no errors",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::zero coordinates are valid()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "zero coordinates are valid",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::nil fields are skipped not flagged()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "null fields are skipped not flagged",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::latitude boundaries are inclusive(lat : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "latitude boundaries are inclusive",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::longitude boundaries are inclusive(lon : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "longitude boundaries are inclusive",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::out of range latitude is rejected(lat : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "out of range latitude is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::out of range longitude is rejected(lon : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "out of range longitude is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::ranges are not swapped()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "ranges are not swapped",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::non finite latitude is rejected(lat : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "non finite latitude is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::non finite longitude is rejected(lon : Double)",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "non finite longitude is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::name at byte cap is valid()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "name at byte cap is valid",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::name over byte cap is rejected()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "name over byte cap is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::name byte cap counts UTF 8 bytes not characters()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "name byte cap counts UTF-8 bytes not characters",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityValidationTests::all three invalid reports all three()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsValidationTest",
+   "method": "all three invalid reports all three",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityApplyGuardTests::out of range latitude blocks set lat()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "out of range latitude blocks set lat",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityApplyGuardTests::out of range longitude blocks set lon()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "out of range longitude blocks set lon",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityApplyGuardTests::over long name blocks set name()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "over long name blocks set name",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityApplyGuardTests::valid coordinates are sent over the transport()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "valid coordinates are sent over the transport",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsIdentityApplyGuardTests::reapply clears stale errors once corrected()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "reapply clears stale errors once corrected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsRadioApplyTests::apply radio settings sends only set radio and clears modified flag()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "apply radio settings sends only set radio and clears modified flag",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsRadioApplyTests::fetch radio settings sends only get radio()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "fetch radio settings sends only get radio",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsClockSyncTests::syncTime sends the host epoch as time not bare clock sync()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "syncTime sends the host epoch as time not bare clock sync",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsClockSyncTests::fetchDeviceInfo records drift from clock against a fixed now()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "fetchDeviceInfo records drift from clock against a fixed now",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsClockSyncTests::syncTime on OK with clock text updates device time and drift()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "syncTime on OK with clock text updates device time and drift",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsClockSyncTests::syncTime on bare OK hides the warning without a second command()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "syncTime on bare OK hides the warning without a second command",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsContactInfoTests::apply converts display newlines to the pipe wire form()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "apply converts display newlines to the pipe wire form",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "NodeSettingsContactInfoTests::apply failure sets errorMessage()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.NodeSettingsApplyTest",
+   "method": "apply failure sets errorMessage",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/NodeSettingsViewModelValidationTests.swift"
+  },
+  {
+   "id": "RemoteNodeStatusHandlerSurvivalTests::Repeater registerHandlers preserves a previously-set CLI handler()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeStatusHandlerSurvivalTest",
+   "method": "repeater registerHandlers preserves the CLI handler",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RemoteNodeStatusHandlerSurvivalTests.swift"
+  },
+  {
+   "id": "RemoteNodeStatusHandlerSurvivalTests::Room registerHandlers preserves a previously-set CLI handler()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeStatusHandlerSurvivalTest",
+   "method": "room registerHandlers preserves the CLI handler",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RemoteNodeStatusHandlerSurvivalTests.swift"
+  },
+  {
+   "id": "RemoteNodeStatusHandlerSurvivalTests::Repeater clearStatusHandlers leaves the CLI handler firing()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeStatusHandlerSurvivalTest",
+   "method": "repeater clearStatusHandlers leaves the CLI handler firing",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RemoteNodeStatusHandlerSurvivalTests.swift"
+  },
+  {
+   "id": "RemoteNodeStatusHandlerSurvivalTests::Room clearStatusHandlers leaves the CLI handler firing()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeStatusHandlerSurvivalTest",
+   "method": "room clearStatusHandlers leaves the CLI handler firing",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RemoteNodeStatusHandlerSurvivalTests.swift"
+  },
+  {
+   "id": "RemoteNodeStatusHandlerSurvivalTests::Repeater cleanup clears the CLI handler on true teardown()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RemoteNodeStatusHandlerSurvivalTest",
+   "method": "repeater cleanup clears the CLI handler",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RemoteNodeStatusHandlerSurvivalTests.swift"
+  },
+  {
+   "id": "RepeaterRegionEntryNamedParentTests::namedParent is nil for Unscoped and for children of Unscoped()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionEntryTest",
+   "method": "namedParent is null for Unscoped and for children of Unscoped",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterRegionEntryTests.swift"
+  },
+  {
+   "id": "RepeaterRegionEntryNamedParentTests::namedParent is the immediate named parent()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionEntryTest",
+   "method": "namedParent is the immediate named parent",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterRegionEntryTests.swift"
+  },
+  {
+   "id": "RegionFloodToggleRowLayoutTests::visibleDepth is zero for the root()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionEntryTest",
+   "method": "visibleDepth is zero for the root",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterRegionEntryTests.swift"
+  },
+  {
+   "id": "RegionFloodToggleRowLayoutTests::visibleDepth caps at four when indent is the default()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionEntryTest",
+   "method": "visibleDepth caps at four when indent is the default",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterRegionEntryTests.swift"
+  },
+  {
+   "id": "RegionFloodToggleRowLayoutTests::visibleDepth caps by gutter width at large type()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionEntryTest",
+   "method": "visibleDepth caps by gutter width at large type",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterRegionEntryTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::firmware flood-allow put reply adds the region as flood allowed()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "firmware flood-allow put reply adds the region as flood allowed",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::legacy OK put reply still adds the region as flood allowed()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "legacy OK put reply still adds the region as flood allowed",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::empty name throws rejected()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "empty name throws rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::invalid name sets addFailed and does not send()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "invalid name sets addFailed and does not send",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::non-OK put reply sets addFailed and does not append()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "non-OK put reply sets addFailed and does not append",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion with named parent sends put name parent()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion with named parent sends put name parent",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::named parent missing from tree throws rejected and does not send()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "named parent missing from tree throws rejected and does not send",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion under Unscoped with no star row still appends()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion under Unscoped with no star row still appends",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion inserts after grandchildren of the parent()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion inserts after grandchildren of the parent",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion re-finds the parent after the put reply()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion re-finds the parent after the put reply",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion uses live parent depth after the put reply()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion uses live parent depth after the put reply",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::saveRegions after a truncated refetch still persists unsaved edits()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "saveRegions after a truncated refetch still persists unsaved edits",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsRegionTests::addRegion sends nothing when not loaded()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionAddTest",
+   "method": "addRegion sends nothing when not loaded",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree keeps Ontario indent and parents()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree keeps Ontario indent and parents",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree strips caret and reads deny-flood()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree strips caret and reads deny-flood",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree strips factory Unscoped caret()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree strips factory Unscoped caret",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree rejects skipped indent()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree rejects skipped indent",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::fetchRegions does not mark loaded on empty parse()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "fetchRegions does not mark loaded on empty parse",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree rejects a space in the name()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree rejects a space in the name",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree CRLF dump matches LF()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree CRLF dump matches LF",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree single-line CRLF dump matches LF()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree single-line CRLF dump matches LF",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree rejects a dump that does not end with a newline()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree rejects a dump that does not end with a newline",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree rejects a saturated newline-terminated dump()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree rejects a saturated newline-terminated dump",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::parseRegionTree accepts a dump one byte under the firmware cap()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "parseRegionTree accepts a dump one byte under the firmware cap",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsParseRegionTreeTests::fetchRegions empty parse after a successful load unloads and does not wipe()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterRegionParseTest",
+   "method": "fetchRegions empty parse after a successful load unloads and does not wipe",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::parseDefaultScopeReply reads get and set lines()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "parseDefaultScopeReply reads get and set lines",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchRegions does not send region default()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchRegions does not send region default",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchDefaultScope reads the firmware default()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchDefaultScope reads the firmware default",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchDefaultScope sends nothing before repeater v1_15()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchDefaultScope sends nothing before repeater v1_15",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchDefaultScope sends region default for CLI ver banner at v1_15()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchDefaultScope sends region default for CLI ver banner at v1_15",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchDefaultScope sends nothing when firmware version is unknown()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchDefaultScope sends nothing when firmware version is unknown",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope sends nothing before repeater v1_15()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope sends nothing before repeater v1_15",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of current default skips clear before repeater v1_15()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of current default skips clear before repeater v1_15",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::fetchDefaultScope treats firmware null as no default scope()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "fetchDefaultScope treats firmware null as no default scope",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::unparsed default reply does not fail the regions section()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "unparsed default reply does not fail the regions section",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::unparsed default reply keeps the previous default scope()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "unparsed default reply keeps the previous default scope",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::default-scope timeout keeps the previous value and does not fail regions()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "default-scope timeout keeps the previous value and does not fail regions",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope sends nothing when not loaded()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope sends nothing when not loaded",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope sends region default and does not mark unsaved()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope sends region default and does not mark unsaved",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope nil sends firmware null token()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope null sends firmware null token",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope non-matching reply leaves the current value()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope non-matching reply leaves the current value",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope does not send wildcard()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope does not send wildcard",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::setDefaultScope same value is a no-op()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "setDefaultScope same value is a no-op",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion sends nothing when not loaded()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion sends nothing when not loaded",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::toggleRegionFlood re-finds by name after the reply()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "toggleRegionFlood re-finds by name after the reply",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::toggleRegionFlood does not trap when the row is gone after await()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "toggleRegionFlood does not trap when the row is gone after await",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::toggleRegionFlood sends nothing when not loaded()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "toggleRegionFlood sends nothing when not loaded",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of current default sends remove then default clear()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of current default sends remove then default clear",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of current default keeps the name when trailing clear fails()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of current default keeps the name when trailing clear fails",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of current default does not send default clear when remove is rejected()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of current default does not send default clear when remove is rejected",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of a different region does not send region default()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of a different region does not send region default",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of a parent maps not empty and does not drop the row()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of a parent maps not empty and does not drop the row",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterSettingsDefaultScopeTests::removeRegion of nested non-default does not send region default()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.RepeaterDefaultScopeTest",
+   "method": "removeRegion of nested non-default does not send region default",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterSettingsViewModelRegionTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Enrichment lost when snapshot is throttled on refresh()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "enrichment persists after a throttled refresh",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Status stays unloaded until a status response is applied()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "status stays unloaded until a response is applied",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Telemetry without status persists a telemetry-only snapshot()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "telemetry without status persists a telemetry-only snapshot",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Neighbors expanded without status persist a neighbor-only snapshot()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "neighbors without status persist a neighbor-only snapshot",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Status applied after telemetry-first enriches the telemetry-only snapshot()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "status after telemetry-first enriches the telemetry-only snapshot",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Owner info response exposes the firmware version()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "owner info response exposes the firmware version",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Empty firmware string maps to nil so the row stays hidden()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "empty firmware string maps to null",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Neighbours response captures the key display width from the device hash size()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "neighbours response captures the key display width",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "RepeaterStatusViewModelTests::Captured key display width survives a later disconnect()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.RepeaterStatusViewModelTest",
+   "method": "captured key display width survives a later disconnect",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/RepeaterStatusViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::loadData fetches snapshots from persistence store()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "loadData fetches snapshots from persistence store",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::loadData with no snapshots leaves empty array()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "loadData with no snapshots leaves empty array",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::loadData resolves OCV from contact preset()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "loadData resolves OCV from contact preset",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::loadData defaults to liIon when no contact found()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "loadData defaults to liIon when no contact found",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::filteredSnapshots returns all when timeRange is .all()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "filteredSnapshots returns all when timeRange is all",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::filteredSnapshots excludes old snapshots for .week range()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "filteredSnapshots excludes old snapshots for week range",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::hasSnapshots reflects snapshot count()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "hasSnapshots reflects snapshot count",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::hasTelemetryData returns true when telemetry entries exist()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "hasTelemetryData returns true when telemetry entries exist",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::hasNeighborData returns true when neighbor snapshots exist()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "hasNeighborData returns true when neighbor snapshots exist",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::resolveNeighborName disambiguates short contact prefixes by resolver policy()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "resolveNeighborName disambiguates short contact prefixes by resolver policy",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::Radio section surfaces for a snapshot carrying only packet-type counters()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "Radio section surfaces for a snapshot carrying only packet-type counters",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "TelemetryHistoryOverviewViewModelTests::channelGroups groups by channel and sorts by chartSortPriority then alphabetically()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.TelemetryHistoryOverviewViewModelTest",
+   "method": "channelGroups groups by channel and sorts by chartSortPriority then alphabetically",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/ViewModels/TelemetryHistoryOverviewViewModelTests.swift"
+  },
+  {
+   "id": "ChannelGroupTests::single temperature on channel 1 stays one Temperature chart()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.ChannelGroupTest",
+   "method": "single temperature on channel 1 stays one Temperature chart",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/ChannelGroupTests.swift"
+  },
+  {
+   "id": "ChannelGroupTests::two temperatures in one snapshot split into Temperature and MCU temperature()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.ChannelGroupTest",
+   "method": "two temperatures in one snapshot split into Temperature and MCU temperature",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/ChannelGroupTests.swift"
+  },
+  {
+   "id": "ChannelGroupTests::first temperature in a later snapshot is not MCU()",
+   "class": "com.meshcoreone.android.feature.remotenodes.history.ChannelGroupTest",
+   "method": "first temperature in a later snapshot is not MCU",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/ChannelGroupTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::center located plus exact located neighbor draws pins, an SNR line, and a badge()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "centerLocatedPlusExactLocatedNeighborDrawsPinsLineAndBadge",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::center plus two located neighbors draws a ring, two repeater pins, two badges, and two lines()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "centerPlusTwoLocatedNeighborsDrawsRingTwoPinsTwoBadgesTwoLines",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::center not located draws neighbor pin without line or badge()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "centerNotLocatedDrawsNeighborPinWithoutLineOrBadge",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::ambiguous fallback neighbor is not plotted and is listed as fallback()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "ambiguousFallbackNeighborIsNotPlottedAndIsListedAsFallback",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::exact neighbor without a location is not plotted()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "exactNeighborWithoutALocationIsNotPlotted",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::exact neighbor with an out-of-range coordinate is rejected by the builder guard()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "exactNeighborWithAnOutOfRangeCoordinateIsRejectedByTheBuilderGuard",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::unresolved neighbor falls back to a hex name and is listed()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "unresolvedNeighborFallsBackToAHexNameAndIsListed",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::unresolved title hex length matches secondary formatting for the same count(keyDisplayByteCount : Int)",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "unresolvedTitleHexLengthMatchesSecondaryFormattingForTheSameCount",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::colliding unresolved titles widen to the full prefix()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "collidingUnresolvedTitlesWidenToTheFullPrefix",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::all neighbors unplottable keeps only the center pin and lists them all()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "allNeighborsUnplottableKeepsOnlyTheCenterPinAndListsThemAll",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::nothing plotted yields a nil region()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "nothingPlottedYieldsANilRegion",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::favorites only keeps session pin and drops non-favorite neighbor()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "favoritesOnlyKeepsSessionPinAndDropsNonFavoriteNeighbor",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::discovered off drops discovered-only exact neighbor into unplottable()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "discoveredOffDropsDiscoveredOnlyExactNeighborIntoUnplottable",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::same inputs twice produce equal points under MapPoint equality()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "sameInputsTwiceProduceEqualPointsUnderMapPointEquality",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::favorites with discovered true still drops discovered-only neighbor()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "favoritesWithDiscoveredTrueStillDropsDiscoveredOnlyNeighbor",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::stableID namespaces separate roles for same key()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "stableIdNamespacesSeparateRolesForSameKey",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::SNR buckets map to the expected trace line style(snr : Double ? , style : MapLine . LineStyle)",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "snrBucketsMapToTheExpectedTraceLineStyle",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NeighborSNRMapBuilderTests::SNR badge midpoint stays between coordinates that straddle the antimeridian()",
+   "class": "com.meshcoreone.android.feature.remotenodes.map.NeighborSNRMapBuilderTest",
+   "method": "snrBadgeMidpointStaysBetweenCoordinatesThatStraddleTheAntimeridian",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NeighborSNRMapBuilderTests.swift"
+  },
+  {
+   "id": "NodeContactInfoSectionTests::typing into contact info updates ownerInfo while focused()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.ContactInfoEditingTest",
+   "method": "typing into contact info updates ownerInfo",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NodeContactInfoSectionTests.swift"
+  },
+  {
+   "id": "NodeContactInfoSectionTests::apply after typing sends set owner.info with the edited value()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.ContactInfoEditingTest",
+   "method": "apply after typing sends set owner info with the edited value",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NodeContactInfoSectionTests.swift"
+  },
+  {
+   "id": "NodeContactInfoSectionTests::backspace on loaded contact info updates ownerInfo()",
+   "class": "com.meshcoreone.android.feature.remotenodes.settings.ContactInfoEditingTest",
+   "method": "backspace on loaded contact info updates ownerInfo",
+   "disposition": "platform-adaptation",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/NodeContactInfoSectionTests.swift"
+  },
+  {
+   "id": "TelemetryRowLabelTests::equal temperatures on one channel still label the second as MCU()",
+   "class": "com.meshcoreone.android.feature.remotenodes.status.TelemetryRowLabelTest",
+   "method": "equal temperatures on one channel still label the second as MCU",
+   "disposition": "source-behavior",
+   "junit": "passed",
+   "source": "MC1Tests/Views/RemoteNodes/TelemetryRowLabelTests.swift"
+  }
+ ]
+}
