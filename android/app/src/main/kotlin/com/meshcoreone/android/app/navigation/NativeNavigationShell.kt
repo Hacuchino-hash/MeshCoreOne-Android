@@ -10,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.rememberScrollState
@@ -209,12 +211,14 @@ fun NativeNavigationShell(
                         )
                     }),
                     badge = if (tab == AppTab.CHATS && unreadCount > 0) ({
-                        Badge(Modifier.wrapContentWidth(unbounded = true).semantics { hideFromAccessibility() }) {
+                        Badge(
+                            Modifier.wrapContentWidth(unbounded = true).width(IntrinsicSize.Max)
+                                .semantics { hideFromAccessibility() },
+                        ) {
                             Text(
                                 if (unreadCount > 99) stringResource(Chats.chatsScrollButtonBadgeOverflow) else unreadCount.toString(),
                                 Modifier.testTag("navigation-unread-badge"),
                                 maxLines = 1,
-                                softWrap = false,
                             )
                         }
                     }) else null,

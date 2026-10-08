@@ -38,6 +38,17 @@ receipt is not substituted for current compiled inputs.
 
 ## Historical native iterations
 
+The complete official cycle atf22299c1 passed Python/preflight but the
+strengthened badge assertion correctly failed both SDKs: its real single-line
+text measured41/42px against an infinite RTL paragraph width. The unbounded
+outer badge now uses a finite intrinsic-width child, with bounded paragraph
+layout and the same maxLines1/system font scale. The assertion is unchanged.
+`native-f22299c1/` retains current input bindings and actual150-node XML
+(148 passed,2 failed,0 skipped); its XML includes the104 real render payloads,
+not stale leftover screenshot files from another head. The complete visible
+failed cycle is `full-cycle-f22299c1.log`, raw `run-6Zk6NMcJ`. This correction
+requires execution; the failed full cycle did not authorize any push.
+
 Atf586c116, official verification actually discovered/executed150 App nodes:
 148 passed, two font200 failures, zero skipped. All100 original SDK31/37
 nodes passed; all140 mandatory WP-302 execution bindings are present.
