@@ -342,6 +342,7 @@ class Ledger:
                 for key in ("repository", "session_id", "pr_number", "head_sha", "merge_sha", "paths"):
                     if persisted[key] != receipt[key]:
                         raise PortError("Terminal intent receipt collision; preserved record differs")
+                receipt["reconciled_at"] = persisted["reconciled_at"]
                 return receipt, False
             connection.execute("""
                 INSERT INTO intent_reconciliations

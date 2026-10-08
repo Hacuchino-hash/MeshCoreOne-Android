@@ -95,6 +95,7 @@ class CapabilityReservationTests(unittest.TestCase):
         )
         self.assertFalse(created)
         self.assertEqual(repeated["paths"], sorted(paths))
+        self.assertEqual(repeated["reconciled_at"], receipt["reconciled_at"])
         with self.assertRaisesRegex(PortError, "receipt collision"):
             self.ledger.reconcile_merged_intent(
                 "coordinator-session", 65, "c" * 40, "b" * 40, paths, NOW,
