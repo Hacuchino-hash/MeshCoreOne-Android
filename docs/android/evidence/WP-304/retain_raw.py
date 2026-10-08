@@ -17,7 +17,7 @@ from controller.errors import PortError
 from controller.model import load_manifest
 from controller.verification_config import content_scope_revisions
 
-POLICY = "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 
 

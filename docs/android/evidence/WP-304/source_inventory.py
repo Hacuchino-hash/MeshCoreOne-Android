@@ -15,7 +15,7 @@ from controller.errors import PortError
 from controller.model import load_manifest
 from controller.verification_config import content_scope_revisions
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
+MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
 PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
 FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt"

@@ -256,6 +256,8 @@ class InvocationReaderTests(unittest.TestCase):
         cls.later = cls.git("rev-parse", "HEAD")
         cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "actual head")
         cls.head = cls.git("rev-parse", "HEAD")
+        cls.diverged = cls.git("-c", "commit.gpgsign=false", "commit-tree", f"{cls.later}^{{tree}}",
+                               "-p", cls.later, "-m", "advanced integration base")
         cls.unrelated = cls.git("-c", "commit.gpgsign=false", "commit-tree", "HEAD^{tree}", "-m", "unrelated root")
         cls.noncommit = cls.git("rev-parse", "HEAD^{tree}")
 
@@ -365,8 +367,8 @@ class InvocationReaderTests(unittest.TestCase):
             with self.subTest(missing=field), self.assertRaises(ValueError):
                 self.invoke(value)
 
-    def test_existing_baseline_and_later_ancestor_are_both_valid_hosted_bases(self):
-        for base in (self.baseline, self.later):
+    def test_existing_baseline_ancestor_and_diverged_integration_head_are_valid_hosted_bases(self):
+        for base in (self.baseline, self.later, self.diverged):
             value = copy.deepcopy(self.hosted)
             value["identity"]["binding"]["base_sha"] = base
             with self.subTest(base=base):
@@ -398,12 +400,12 @@ class InvocationReaderTests(unittest.TestCase):
             with self.subTest(base=base), self.assertRaises((ValueError, subprocess.CalledProcessError)):
                 self.invoke(value)
 
-    def test_base_must_be_an_ancestor_of_current_head_not_just_baseline_descendant(self):
+    def test_actual_head_must_descend_from_the_integration_baseline(self):
         with patch.object(reader, "git", wraps=reader.git) as actual_git:
             value = copy.deepcopy(self.hosted)
-            value["identity"]["binding"]["head_sha"] = self.baseline
-            actual_git.side_effect = lambda *args: self.baseline if args == ("rev-parse", "HEAD") else self.git(*args)
-            with self.assertRaisesRegex(ValueError, "ancestor of the actual HEAD"):
+            value["identity"]["binding"]["head_sha"] = self.before
+            actual_git.side_effect = lambda *args: self.before if args == ("rev-parse", "HEAD") else self.git(*args)
+            with self.assertRaisesRegex(ValueError, "Actual HEAD is outside"):
                 self.invoke(value)
 
     def test_foreign_stale_and_immutable_binding_drift_are_rejected(self):

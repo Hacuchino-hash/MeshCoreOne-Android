@@ -162,24 +162,35 @@ class DomainRoomEvidenceTests(unittest.TestCase):
         self.assertIsNone(self.report()["execution"]["branch"])
 
     def test_exact_content_scope_emits_current_binding_without_rewriting_original_room_receipt(self):
-        original = self.report()
-        legacy = project_content_scope(self.fixture.manifest().data)
-        amended = apply_content_scope(legacy)
-        self.fixture.write("docs/android/port-manifest.json", json.dumps(amended))
-        self.fixture.commit()
-        result = self.report()
-        self.assertEqual(result["manifest_sha256"],
-                         "fdbce89204ae5e391a2baac1c1aa4910742242b2007d32ac0efb799720cb4958")
-        self.assertEqual(result["policy_revision"],
-                         "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68")
-        self.assertEqual(result["execution"]["head_sha"], self.fixture.head)
-        self.assertEqual(result["historical_baseline"], original["historical_baseline"])
-        self.assertEqual(result["source_cases"], original["source_cases"])
-        self.assertEqual(result["native_cases"], original["native_cases"])
-        self.assertEqual(len(result["source_cases"]), 114)
-        self.assertEqual(result["discovery"]["total"], 215)
-        self.assertEqual(collector.historical_baseline(
-            (self.fixture.repo / collector.HISTORY).read_bytes()), self.fixture.baseline)
+        for revision, manifest_sha, policy_sha in (
+            (None, "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094",
+             "53e1f7be2a9262a2de772ec3e30a9a8b04ee51644dab4e0be463ffa85029e68c"),
+            ("7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
+             "fdbce89204ae5e391a2baac1c1aa4910742242b2007d32ac0efb799720cb4958",
+             "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68"),
+        ):
+            with self.subTest(revision=revision):
+                if revision is not None:
+                    for path in ("docs/android/port-manifest.json", "docs/android/automation-policy.json"):
+                        self.fixture.write(path, subprocess.check_output(
+                            ["git", "-C", str(REPO), "show", f"{revision}:{path}"]).decode("utf-8"))
+                    self.fixture.commit()
+                original = self.report()
+                legacy = project_content_scope(self.fixture.manifest().data)
+                amended = apply_content_scope(legacy)
+                self.fixture.write("docs/android/port-manifest.json", json.dumps(amended))
+                self.fixture.commit()
+                result = self.report()
+                self.assertEqual(result["manifest_sha256"], manifest_sha)
+                self.assertEqual(result["policy_revision"], policy_sha)
+                self.assertEqual(result["execution"]["head_sha"], self.fixture.head)
+                self.assertEqual(result["historical_baseline"], original["historical_baseline"])
+                self.assertEqual(result["source_cases"], original["source_cases"])
+                self.assertEqual(result["native_cases"], original["native_cases"])
+                self.assertEqual(len(result["source_cases"]), 114)
+                self.assertEqual(result["discovery"]["total"], 215)
+                self.assertEqual(collector.historical_baseline(
+                    (self.fixture.repo / collector.HISTORY).read_bytes()), self.fixture.baseline)
 
     def test_scope_only_lineage_rejects_policy_and_unrelated_ownership_changes(self):
         manifest_path = self.fixture.repo / "docs/android/port-manifest.json"

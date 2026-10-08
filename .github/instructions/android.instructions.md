@@ -4,7 +4,13 @@ applyTo: "android/**"
 
 # Android implementation boundaries
 
-Use the approved contracts/ADRs, exact manifest owner and shared all-write-path lease.
+Use the approved contracts/ADRs and exact manifest owner. Assignment authorizes ordinary implementation,
+tests, evidence, generated outputs and directly necessary support edits inside manifest capabilities.
+Automatically acquire/evolve the typed reservation before editing; do not ask for repeated per-path
+permission. A trusted path+operation rule must admit shared support work and enforce its invariants.
+Reconcile disjoint semantic edits automatically; serialize or transfer real overlap. Unknown capabilities,
+unresolved collisions, drift and protected/human/tool gates fail closed with one actionable blocker.
+
 Features do not depend on other features; protocol/model/contracts are Android-free where specified.
 Production code never depends on testing helpers. Do not choose speculative dependency versions.
 

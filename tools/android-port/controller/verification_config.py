@@ -12,7 +12,25 @@ if __package__ in (None, ""):
 from controller.errors import PortError
 from controller.schema import digest, load_json
 
-BOOTSTRAP_MANIFEST_SHA256 = "f3fd3a0a51841a8fb43d3f2c4b3953e6ef564d4e96e74f4e3035200face5c90e"
+BOOTSTRAP_POLICY_AMENDMENT = {
+    "schema_version": 1,
+    "amendment_id": "WP-000-capability-reservations-v1",
+    "policy_commit_sha": "4658275ca7f753527aa14fd5eacbad3ae606536e",
+    "previous_approved_plan_sha256": "0afc364cd63a99f438bffe7df8542d49503bfd113c363ed89e60d284b6a3c837",
+    "approved_plan_sha256": "badb1f34f22295d0f7ac4316eba0cc5f6189c9012ac7c96981fb352e9133944c",
+    "previous_generated_manifest_sha256": "f3fd3a0a51841a8fb43d3f2c4b3953e6ef564d4e96e74f4e3035200face5c90e",
+    "generated_manifest_sha256": "b30b20c2d2225c98e13c52020a251d7bad87febd27e9dc1929c142c19c10d8b6",
+    "previous_final_manifest_sha256": "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746",
+    "final_manifest_sha256": "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904",
+    "semantic_policy_revision": "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981",
+    "reference_sha": "db14559b39d32322b06477c6ae676112f583db50",
+    "work_packages": 65,
+    "dependency_edges": 185,
+    "agents": 17,
+    "human_gates": 8,
+}
+BOOTSTRAP_MANIFEST_SHA256 = BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"]
+POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
@@ -58,11 +76,14 @@ def apply_overlay(data: dict):
     for wp in result["work_packages"]:
         if wp["id"] in AMENDMENTS:
             wp["verification"] = copy.deepcopy(AMENDMENTS[wp["id"]])
+    if digest(result) != BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]:
+        raise PortError("Frozen bootstrap final manifest changed outside the protected WP-003 overlay")
     return result
 
 
 def apply_content_scope(data: dict):
-    if not isinstance(data, dict) or digest(data) != VERIFICATION_MANIFEST_SHA256:
+    if not isinstance(data, dict) or digest(data) not in (
+            VERIFICATION_MANIFEST_SHA256, BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]):
         raise PortError("Content scope requires the complete frozen verification manifest")
     result = copy.deepcopy(data)
     wp = next(item for item in result["work_packages"] if item["id"] == "WP-218")
@@ -74,7 +95,8 @@ def project_content_scope(data: dict):
     if not isinstance(data, dict):
         raise PortError("Malformed content-scope manifest lineage")
     result = copy.deepcopy(data)
-    if digest(result) == VERIFICATION_MANIFEST_SHA256:
+    baselines = (VERIFICATION_MANIFEST_SHA256, BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+    if digest(result) in baselines:
         return result
     packages = result.get("work_packages")
     if not isinstance(packages, list) or not all(isinstance(wp, dict) for wp in packages):
@@ -86,22 +108,45 @@ def project_content_scope(data: dict):
     if not isinstance(paths, list) or paths[2:4] != list(CONTENT_SCOPE_PATHS):
         raise PortError("Content scope must contain only the exact ordered two-prefix addition")
     del paths[2:4]
-    if digest(result) != VERIFICATION_MANIFEST_SHA256:
+    if digest(result) not in baselines:
         raise PortError("Content scope changed the frozen manifest outside its exact two-prefix addition")
+    return result
+
+
+def project_policy_amendment(data: dict):
+    if not isinstance(data, dict):
+        raise PortError("Malformed policy-amendment manifest lineage")
+    result = copy.deepcopy(data)
+    if digest(result) == VERIFICATION_MANIFEST_SHA256:
+        return result
+    if digest(result) != BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"]:
+        raise PortError("Policy amendment requires the complete frozen WP-000 catalog")
+    result["reference"]["approved_plan_sha256"] = BOOTSTRAP_POLICY_AMENDMENT["previous_approved_plan_sha256"]
+    result["reference"]["installed_plan_sha256"] = "1d6f194d8c40ecec1618a1650056d37777d8981ce029249755a22d0603b52cd7"
+    orchestrator = next(agent for agent in result["agents"] if agent["name"] == "port-orchestrator")
+    orchestrator["sha256"] = "8f0bcc7d4359c04094d2f2f644c125e8453a23390b4fefa755890ea53d1ff99e"
+    if digest(result) != VERIFICATION_MANIFEST_SHA256:
+        raise PortError("Policy amendment changed the historical catalog outside its exact metadata fields")
     return result
 
 
 def content_scope_predecessor(manifest):
     from controller.model import Manifest
 
-    return Manifest(project_content_scope(manifest.data), manifest.exclusions, manifest.repo)
+    return Manifest(project_policy_amendment(project_content_scope(manifest.data)), manifest.exclusions, manifest.repo)
 
 
 def content_scope_revisions(manifest, policy):
     from controller.gates import policy_revision
+    from controller.model import Manifest
 
-    predecessor = content_scope_predecessor(manifest)
-    if policy_revision(predecessor, policy) != "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a":
+    data = project_content_scope(manifest.data)
+    project_policy_amendment(data)
+    baseline = Manifest(data, manifest.exclusions, manifest.repo)
+    expected = ("56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"
+                if baseline.sha256 == VERIFICATION_MANIFEST_SHA256
+                else BOOTSTRAP_POLICY_AMENDMENT["semantic_policy_revision"])
+    if policy_revision(baseline, policy) != expected:
         raise PortError("Frozen predecessor policy changed outside the approved content scope")
     return {"manifest_sha256": manifest.sha256, "policy_revision": policy_revision(manifest, policy)}
 
@@ -122,12 +167,16 @@ def check_configuration(repo: Path):
     generated, exclusions = build_inventory(repo)
     expected = apply_overlay(generated)
     actual = load_json(repo / "docs" / "android" / "port-manifest.json")
+    amendment = load_json(repo / POLICY_AMENDMENT_EVIDENCE)
+    if amendment != BOOTSTRAP_POLICY_AMENDMENT:
+        raise PortError("Protected bootstrap policy amendment evidence drift")
     if project_content_scope(actual) != expected or load_json(repo / "docs" / "android" / "not-ported.json") != exclusions:
         raise PortError("Protected verification overlay or frozen inventory drift")
     return {
         "schema_version": 1, "result": "valid", "bootstrap_manifest_sha256": digest(generated),
         "manifest_sha256": digest(actual), "verification_amendments": sorted(AMENDMENTS),
         "content_scope_amended": actual != expected,
+        "policy_amendment": amendment["amendment_id"],
         "feature_verification_configured": False, "human_or_dependency_acceptance": False,
     }
 

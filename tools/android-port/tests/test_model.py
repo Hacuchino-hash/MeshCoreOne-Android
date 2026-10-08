@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -11,14 +12,22 @@ from unittest.mock import patch
 
 from fixtures import REPO, base_manifest
 from controller.errors import PortError
-from controller.model import HUMAN_GATES, REFERENCE_SHA, plan_rows, profile, validate_manifest
+from controller.model import (
+    APPROVED_PLAN_SHA256,
+    HUMAN_GATES,
+    REFERENCE_SHA,
+    plan_rows,
+    profile,
+    validate_manifest,
+)
 from controller.paths import conflicts, expand_selectors, git_path, overlaps, permits, validate_writes
 from controller.schema import check_schema, decode_json
 from bootstrap import build_inventory, check_generated
 from controller.verification_config import (
     CONTENT_SCOPE_PATHS, VERIFICATION_MANIFEST_SHA256,
     apply_content_scope, apply_overlay, check_configuration, content_scope_revisions,
-    inventory_details_predecessor, project_content_scope,
+    content_scope_predecessor, inventory_details_predecessor, project_content_scope, project_policy_amendment,
+    BOOTSTRAP_POLICY_AMENDMENT,
 )
 from controller.model import Manifest
 from controller.schema import load_json
@@ -206,7 +215,7 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue(all("*" not in e["path"] for e in data["inventory"]))
 
     def test_content_scope_projects_the_complete_frozen_manifest_without_mutation(self):
-        original = project_content_scope(base_manifest().data)
+        original = content_scope_predecessor(base_manifest()).data
         before = copy.deepcopy(original)
         amended = apply_content_scope(original)
         wp = next(item for item in amended["work_packages"] if item["id"] == "WP-218")
@@ -246,8 +255,11 @@ class ManifestTests(unittest.TestCase):
             inventory_details_predecessor([], manifest)
 
     def test_current_revision_projection_rejects_changed_policy_or_unowned_catalog(self):
-        manifest = Manifest(apply_content_scope(project_content_scope(base_manifest().data)), {}, REPO)
-        policy = load_json(REPO / "docs/android/automation-policy.json")
+        manifest = Manifest(apply_content_scope(content_scope_predecessor(base_manifest()).data), {}, REPO)
+        policy = decode_json(subprocess.check_output([
+            "git", "-C", str(REPO), "show",
+            "7e2835bad2c03dfb5a088063655f9fc4dbafd00f:docs/android/automation-policy.json",
+        ]).decode("utf-8"))
         result = content_scope_revisions(manifest, policy)
         self.assertEqual(result["manifest_sha256"], manifest.sha256)
         self.assertEqual(result["policy_revision"], "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68")
@@ -259,6 +271,61 @@ class ManifestTests(unittest.TestCase):
         changed["inventory"][0]["blob_sha"] = "0" * 40
         with self.assertRaises(PortError):
             content_scope_revisions(Manifest(changed, {}, REPO), policy)
+
+    def test_process_and_content_amendments_preserve_complete_historical_catalog(self):
+        manifest = base_manifest()
+        baseline = project_content_scope(manifest.data)
+        historical = content_scope_predecessor(manifest)
+        original = decode_json(subprocess.check_output([
+            "git", "-C", str(REPO), "show",
+            "7e2835bad2c03dfb5a088063655f9fc4dbafd00f:docs/android/port-manifest.json",
+        ]).decode("utf-8"))
+        self.assertEqual(digest(baseline), BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+        self.assertEqual(project_policy_amendment(baseline), original)
+        self.assertEqual(historical.data, original)
+        self.assertEqual(historical.sha256, VERIFICATION_MANIFEST_SHA256)
+        self.assertEqual(apply_content_scope(baseline), manifest.data)
+        self.assertEqual(manifest.sha256, "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094")
+        self.assertEqual(content_scope_revisions(manifest, load_json(REPO / "docs/android/automation-policy.json")),
+                         {"manifest_sha256": manifest.sha256,
+                          "policy_revision": "53e1f7be2a9262a2de772ec3e30a9a8b04ee51644dab4e0be463ffa85029e68c"})
+
+    def test_policy_projection_rejects_partial_metadata_and_unowned_changes_without_mutation(self):
+        baseline = project_content_scope(base_manifest().data)
+        for mode in ("plan", "installed-plan", "profile", "source", "blob", "extra-field"):
+            changed = copy.deepcopy(baseline)
+            if mode == "plan":
+                changed["reference"]["approved_plan_sha256"] = BOOTSTRAP_POLICY_AMENDMENT["previous_approved_plan_sha256"]
+            elif mode == "installed-plan":
+                changed["reference"]["installed_plan_sha256"] = "0" * 64
+            elif mode == "profile":
+                next(agent for agent in changed["agents"] if agent["name"] == "port-orchestrator")["sha256"] = "0" * 64
+            elif mode == "source":
+                changed["reference"]["commit"] = "0" * 40
+            elif mode == "blob":
+                changed["inventory"][0]["blob_sha"] = "0" * 40
+            else:
+                changed["approved"] = True
+            before = copy.deepcopy(changed)
+            with self.subTest(mode=mode), self.assertRaises(PortError):
+                project_policy_amendment(changed)
+            self.assertEqual(changed, before)
+        for malformed in (None, [], {}):
+            with self.subTest(malformed=malformed), self.assertRaises(PortError):
+                project_policy_amendment(malformed)
+
+    def test_current_and_historical_policy_catalog_versions_cannot_be_cross_bound(self):
+        current = base_manifest()
+        historical = content_scope_predecessor(current)
+        old_policy = decode_json(subprocess.check_output([
+            "git", "-C", str(REPO), "show",
+            "7e2835bad2c03dfb5a088063655f9fc4dbafd00f:docs/android/automation-policy.json",
+        ]).decode("utf-8"))
+        policy = load_json(REPO / "docs/android/automation-policy.json")
+        for manifest, wrong_policy in ((current, old_policy), (historical, policy)):
+            with self.subTest(manifest=manifest.sha256), self.assertRaises(PortError):
+                content_scope_revisions(manifest, wrong_policy)
+
     def test_content_scope_rejects_all_other_manifest_and_ownership_drift(self):
         original = project_content_scope(base_manifest().data)
         amended = apply_content_scope(original)
@@ -319,7 +386,8 @@ class ManifestTests(unittest.TestCase):
     def test_protected_configuration_reports_actual_scope_revision_not_historical_hash(self):
         generated, exclusions = build_inventory(REPO)
         amended = apply_content_scope(apply_overlay(generated))
-        with patch("controller.verification_config.load_json", side_effect=[amended, exclusions]):
+        with patch("controller.verification_config.load_json", side_effect=[
+                amended, BOOTSTRAP_POLICY_AMENDMENT, exclusions]):
             result = check_configuration(REPO)
         self.assertTrue(result["content_scope_amended"])
         self.assertEqual(result["manifest_sha256"], digest(amended))
@@ -338,12 +406,22 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(check_configuration(REPO)["result"], "valid")
 
     def test_every_owner_and_dependency_matches_approved_plan(self):
-        plan = plan_rows((REPO / "docs" / "android" / "PORTING_PLAN.md").read_text(encoding="utf-8"))
+        plan_text = (REPO / "docs" / "android" / "PORTING_PLAN.md").read_text(encoding="utf-8")
+        plan = plan_rows(plan_text)
         for wp_id, wp in base_manifest().work_packages.items():
             for key in ("title", "owner", "depends_on", "human_gate"):
                 self.assertEqual(wp[key], plan[wp_id][key])
         self.assertEqual(base_manifest().wp("WP-106")["depends_on"], ["WP-101", "WP-105"])
         self.assertEqual(base_manifest().wp("WP-103")["depends_on"], ["WP-101", "WP-106"])
+        normalized = plan_text.replace("../../.github/agents/", "files/agents/").replace(
+            "../../.github/skills/", "files/skills/"
+        )
+        self.assertEqual(hashlib.sha256(normalized.encode()).hexdigest(), APPROVED_PLAN_SHA256)
+        with patch(
+            "controller.model.APPROVED_PLAN_SHA256",
+            "0afc364cd63a99f438bffe7df8542d49503bfd113c363ed89e60d284b6a3c837",
+        ), self.assertRaisesRegex(PortError, "Approved plan changed"):
+            self.validate(copy.deepcopy(base_manifest().data))
 
     def test_resources_helpers_and_licenses_are_explicit(self):
         entries = {e["path"]: e for e in base_manifest().data["inventory"]}
