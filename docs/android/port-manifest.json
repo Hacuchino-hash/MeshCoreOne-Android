@@ -6,7 +6,7 @@
     "tree_sha": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
     "source_inventory_sha256": "f03406900d3cd976f1557cb6f10cc52ab3b976f5194a0aa6e9bb97da4095c8b3",
     "approved_plan_sha256": "0afc364cd63a99f438bffe7df8542d49503bfd113c363ed89e60d284b6a3c837",
-    "installed_plan_sha256": "1d6f194d8c40ecec1618a1650056d37777d8981ce029249755a22d0603b52cd7"
+    "installed_plan_sha256": "87de92c5236d5891c358df22d72b51bba68f839113660f6c9d1fe6624e1b5213"
   },
   "agents": [
     {
@@ -51,7 +51,7 @@
     },
     {
       "name": "port-orchestrator",
-      "sha256": "8f0bcc7d4359c04094d2f2f644c125e8453a23390b4fefa755890ea53d1ff99e"
+      "sha256": "29fab623b86a43107b73fb2d0b90fdfd0319b713fc5a1ea4adc0cad7f3a1ef33"
     },
     {
       "name": "protocol-porter",

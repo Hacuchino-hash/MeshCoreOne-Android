@@ -5,6 +5,87 @@
   "dispatch_mode": "off",
   "paused": true,
   "activation_approved": false,
+  "reservation_policy": {
+    "model_version": 2,
+    "activation_state": "policy-only-wp003-required",
+    "assignment_authorizes_declared_capabilities": true,
+    "pre_edit_approval_required": false,
+    "automatic_initial_reservation": true,
+    "automatic_same_owner_evolution": true,
+    "authorization_text_mutable": false,
+    "unknown_capability_action": "block-with-wp-path-operation-and-missing-rule",
+    "disjoint_semantic_edit_action": "automatic-transaction-or-deterministic-merge",
+    "overlapping_semantic_edit_action": "serialize-or-transfer-to-current-producer",
+    "escalation_reasons": [
+      "unresolved-semantic-ownership-collision",
+      "source-manifest-or-policy-drift",
+      "protected-human-license-hardware-signing-or-release-gate",
+      "missing-authentication-or-tool-capability",
+      "substantive-product-decision"
+    ],
+    "merge_gate_approval_required": true,
+    "merge_gate_scope": "main-branch merge only",
+    "migration": {
+      "preserve_historical_authorization_bytes": true,
+      "preserve_actual_identities_bindings_state_and_repairs": true,
+      "release_recreate_allowed": false,
+      "manual_ledger_edit_allowed": false,
+      "transaction": "compare-and-swap-complete-prior-record",
+      "idempotent": true,
+      "legacy_read_compatibility_required": true
+    },
+    "capabilities": [
+      {
+        "id": "wp-owned",
+        "path_rules": ["manifest.work_packages[assigned_wp].write_paths"],
+        "operations": ["create", "modify", "delete", "generate", "test", "record-evidence"],
+        "invariants": ["one-wp-branch-pr", "pinned-source", "declared-verification", "evidence-provenance"],
+        "validation": ["manifest-declared verification commands", "trusted ownership and traceability validators"]
+      },
+      {
+        "id": "dependency-resolution-metadata",
+        "path_rules": ["android/**/libs.versions.toml", "android/**/dependency-locks/*", "android/**/verification-metadata.xml", "android/**/*.gradle.kts"],
+        "operations": ["add-or-update-dependency", "add-resolved-lock", "add-resolved-artifact-checksum", "update-directly-required-build-wiring"],
+        "invariants": ["no-speculative-version", "resolved-artifact-provenance", "complete-lock-and-checksum-set", "license-policy"],
+        "validation": ["dependency verification", "affected build and tests", "license checks when distribution changes"]
+      },
+      {
+        "id": "app-build-launcher",
+        "path_rules": ["android/app/**", "android/**/AndroidManifest.xml", "android/**/AppContainer.kt", "android/**/RadioSessionContainer.kt"],
+        "operations": ["add-direct-support-wiring", "update-build-or-manifest", "update-launcher-or-composition"],
+        "invariants": ["no-unrelated-feature-activation", "process-and-connection-lifetimes", "gms-independent-core", "min-target-application-id"],
+        "validation": ["affected compile and tests", "manifest and navigation checks"]
+      },
+      {
+        "id": "traceability-validation",
+        "path_rules": ["tools/android-port/**", "docs/android/**/*manifest*.json", "docs/android/**/*test-cases*.json", "docs/android/**/*mapping*.json"],
+        "operations": ["add-or-update-mapping", "add-or-update-validator-rule", "add-regression-fixture-or-test", "refresh-derived-digest"],
+        "invariants": ["fail-closed", "positive-test-discovery", "pinned-provenance", "no-fake-success"],
+        "validation": ["affected validator tests", "manifest and ownership validation"]
+      },
+      {
+        "id": "generated-resources",
+        "path_rules": ["android/**/generated/**", "android/**/src/**/res/**", "tools/android-port/*convert*.py"],
+        "operations": ["update-generator-input", "run-generator", "replace-generated-output"],
+        "invariants": ["generator-and-input-provenance", "deterministic-output", "no-unattributed-hand-edit"],
+        "validation": ["generator reproducibility", "affected resource and localization tests"]
+      },
+      {
+        "id": "persistence-schemas",
+        "path_rules": ["android/**/schemas/*", "android/core/database/**"],
+        "operations": ["add-schema", "add-migration", "update-directly-required-entity-or-dao"],
+        "invariants": ["no-destructive-recreate", "forward-migration", "exported-schema-provenance"],
+        "validation": ["real migration tests", "schema export comparison", "affected database tests"]
+      },
+      {
+        "id": "trusted-workflows",
+        "path_rules": [".github/workflows/**", ".github/actions/**"],
+        "operations": ["update-required-check-wiring", "update-directly-required-job-or-input", "add-workflow-regression-test"],
+        "invariants": ["candidate-read-only", "ephemeral-runner", "no-dispatch-merge-signing-secret", "trusted-default-branch-controller"],
+        "validation": ["workflow trust-boundary tests", "required-check identity validation"]
+      }
+    ]
+  },
   "foundation_required": ["WP-000", "WP-001", "WP-002", "WP-003"],
   "required_checks": ["android-ci", "parity-review", "gate-integrity"],
   "trusted_check_app_ids": [],
@@ -55,6 +136,16 @@
     "android/**/signing*",
     "android/**/keystore*"
   ],
+  "merge_gate_policy": {
+    "protected_paths_require_human_approval_for_main_merge": true,
+    "pre_edit_permission_not_required": true,
+    "capability_admission_required": true,
+    "semantic_reconciliation_required": true,
+    "historical_authorization_strings_retained_as_audit_only": true,
+    "implementation_evidence_binds_bytes_and_tests": true,
+    "exact_head_local_before_push": true,
+    "serialized_current_base_validation": true
+  },
   "read_only_paths": ["MC1/", "MC1Services/", "MC1Tests/", "MC1Widgets/", "MeshCore/", "Shared/", "AppIcon.icon/", "LICENSE"],
   "pending_capabilities": [
     "Trusted default-branch deployment of WP-000",
@@ -62,7 +153,7 @@
     "Configured required-check application/workflow identities and branch rules",
     "Cloud user-to-server authentication and repository/account assignability (read-only probe returned HTTP 404)",
     "Native Copilot app local-host adapter and isolated reviewer/check publisher",
-    "Durable shared lease/merge ledger and complete backend usage measurements",
+    "Durable shared capability-reservation/merge ledger and complete backend usage measurements",
     "User-selected concurrency/usage limits and separate explicit activation",
     "Supervised WP-003 Windows/Linux hosted scaffold evidence and cloud setup review",
     "Protected versioned historical foundation receipt migration/revalidation",

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "repository": "cbattlegear/MeshCoreOne-Android",
+  "work_package": "WP-000",
+  "base_sha": "67857474ef3d3012ab73c19a4943ec1334c20676",
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "commands": [
+    {
+      "command": "python tools/android-port/controller/validate.py",
+      "exit_code": 2,
+      "result": "BLOCKED: Approved plan changed beyond repository-relative documentation paths",
+      "interpretation": "The current WP-003 validator permits only repository-relative path substitutions in the originally installed plan. This authorized policy amendment does not modify that controller implementation."
+    },
+    {
+      "command": "python tools/android-port/controller/test_runner.py --quiet",
+      "exit_code": 2,
+      "discovered": 231,
+      "run": 231,
+      "passed": 55,
+      "failed": 18,
+      "errors": 158,
+      "skipped": 0,
+      "result": "BLOCKED: all cascading failures/errors were preceded by the same approved-plan amendment blocker",
+      "interpretation": "The stacked WP-003 layer must implement reviewed versioned policy amendment validation; this WP-000 layer does not bypass or silently advance the pin."
+    },
+    {
+      "command": "python - (focused reservation-policy assertions)",
+      "exit_code": 0,
+      "result": "valid",
+      "assertions": {
+        "typed_capabilities": 7,
+        "wp003_regression_groups": 9,
+        "dispatch_off_and_paused": true,
+        "android_product_files_changed": 0,
+        "wp003_controller_files_changed": 0,
+        "json_and_derived_hashes_valid": true
+      }
+    }
+  ],
+  "claims_not_made": [
+    "Android build or device verification",
+    "iOS or hardware verification",
+    "WP-003 controller acceptance",
+    "fleet activation",
+    "protected-path human approval"
+  ]
+}
