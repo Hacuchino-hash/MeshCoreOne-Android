@@ -183,10 +183,10 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
         raise PortError("Declared CI executor requires Python 3.12.4")
     environment = candidate_environment(state, local=local)
     task_graph = output / f"gradle-{stage}-task-graph.json"
-    environment["ANDROID_CI_TASK_GRAPH"] = str(task_graph)
     verify_wrapper()
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
+    environment["ANDROID_CI_TASK_GRAPH"] = str(task_graph)
     project = REPO / "android"
     cache = Path(state["private_root"]) / "project-root"
     options = [
