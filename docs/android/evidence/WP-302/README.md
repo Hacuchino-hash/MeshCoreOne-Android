@@ -253,6 +253,31 @@ in its frozen `2d275d06` producer packet and updated its owned pending proposal.
 That packet explicitly still requires actual corrected graph generation;
 recognizing the proposal is not a completed support carry.
 
+## Frozen stable producer graph review and exact source scenarios
+
+D0 subsequently committed the three producer files at `efd67917`. Read-only
+Git lock review finds matching Nav3.1.1.0, NavigationEvent1.0.2 and incumbent
+Compose1.10.6/Material3.1.4.0. XML artifact/SHA256 tuple comparison preserves
+all1097 inherited checksum entries, with75 additions and no removals.
+`producer-review-efd67917.json` binds the exact three blobs and limits.
+
+The full App build is **not yet a base678-applicable Nav-only carry**: it
+unconditionally depends on `:core:services:prepareContentInvocation` and
+finalizes through the WP-218 collector, both absent on this branch. They exist
+in D0's producer tree. The concrete missing-consumer review was delivered to
+D0; no producer file was copied, edited or silently repaired here.
+An actual corrected generator receipt and serialized reviewed carry remain
+required, independently of the existing validator admission blocker.
+
+The original-family audit corrects exact source scenarios rather than just
+their names: the reaction-channel case now uses source index1, automatic-add
+uses a real connected device with `manualAddContacts=false` instead of nil,
+and the narrow sidebar family checks retained navigation and collapsing shapes.
+The existing native Compose collapse family exercises both744 and834dp,
+including noncollapsing CLI and both collapsing tools. Existing screenshot IDs
+and declaration counts140/108 remain unchanged; reader19/19 still passes.
+These corrected Kotlin bodies have not been compiled or executed.
+
 ## Complete official cycle attempt after the correctness fixes
 
 The full, unchanged official cycle was actually invoked, not a selected-stage

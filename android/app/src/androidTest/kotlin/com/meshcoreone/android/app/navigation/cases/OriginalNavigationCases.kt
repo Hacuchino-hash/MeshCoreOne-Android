@@ -71,7 +71,8 @@ abstract class OriginalNavigationCases {
 
     @Test fun `New contact notification without manualAddContacts navigates to contact detail`() = runBlocking {
         val n = NavigationCoordinator(); val c = contact()
-        NotificationFixture(this, radio, n, lookup()).use {
+        val device = DeviceDTO(radioId = radio, publicKey = c.publicKey, nodeName = "Fixture", manualAddContacts = false)
+        NotificationFixture(this, radio, n, lookup(), { device }).use {
             requireNotNull(it.service.onNewContactNotificationTapped)(EntityKey(radio, c.id))
             assertEquals(listOf(NavigationOutcome.Navigated), it.outcomes)
         }
@@ -100,7 +101,7 @@ abstract class OriginalNavigationCases {
     }
 
     @Test fun `Reaction notification on channel navigates to channel with scrollToMessageID`() = runBlocking {
-        val n = NavigationCoordinator(); val c = channel()
+        val n = NavigationCoordinator(); val c = channel(1u)
         NotificationFixture(this, radio, n, lookup()).use {
             requireNotNull(it.service.onReactionNotificationTapped)(null, c.index, radio, messageId)
             assertEquals(listOf(NavigationOutcome.Navigated), it.outcomes)
@@ -350,6 +351,9 @@ abstract class OriginalNavigationCases {
     @Test fun `A narrow container collapses to the section's hidden shape`() {
         assertFalse(NavigationLayout.tilesListDetail(744f))
         assertTrue(NavigationLayout.usesRail(744f))
+        assertTrue(NavigationLayout.showsRail(744f, null))
+        assertFalse(NavigationLayout.showsRail(744f, ToolSelection.LINE_OF_SIGHT))
+        assertFalse(NavigationLayout.showsRail(744f, ToolSelection.TRACE_PATH))
         assertFalse(NavigationLayout.usesRail(599f))
         assertTrue(NavigationLayout.usesRail(600f))
     }

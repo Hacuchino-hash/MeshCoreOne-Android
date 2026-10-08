@@ -139,16 +139,24 @@ class NavigationComposeTest {
         capture("resize-compact-draft")
     }
     @Test fun collapsingToolsShowOnlyDetailAndNativeBackRestoresSectionNavigation() {
-        compose.runOnIdle { width.value = 834.dp; navigation.navigateToTool(ToolSelection.CLI) }
-        compose.onNodeWithTag("navigation-rail").assertIsDisplayed()
-        compose.onNodeWithTag("navigation-list-pane").assertIsDisplayed()
-        for (tool in listOf(ToolSelection.TRACE_PATH, ToolSelection.LINE_OF_SIGHT)) {
-            compose.runOnIdle { navigation.navigateToTool(tool) }
-            compose.onNodeWithTag("navigation-hidden").assertIsDisplayed()
-            compose.onNodeWithTag("single-pane").assertIsDisplayed()
-            compose.onNodeWithTag("navigation-list-pane").assertDoesNotExist()
-            compose.onNodeWithTag("fixture:tool-${tool.sourceName}").assertIsDisplayed()
-            capture("collapse-${tool.sourceName.lowercase()}")
+        for (value in listOf(744, 834)) {
+            compose.runOnIdle { width.value = value.dp; navigation.navigateToTool(ToolSelection.CLI) }
+            compose.onNodeWithTag("navigation-rail").assertIsDisplayed()
+            compose.onNodeWithTag("fixture:tool-cli").assertIsDisplayed()
+            if (value >= NavigationLayout.TILE_MIN_WIDTH_DP) {
+                compose.onNodeWithTag("navigation-list-pane").assertIsDisplayed()
+            } else {
+                compose.onNodeWithTag("single-pane").assertIsDisplayed()
+                compose.onNodeWithTag("navigation-list-pane").assertDoesNotExist()
+            }
+            for (tool in listOf(ToolSelection.TRACE_PATH, ToolSelection.LINE_OF_SIGHT)) {
+                compose.runOnIdle { navigation.navigateToTool(tool) }
+                compose.onNodeWithTag("navigation-hidden").assertIsDisplayed()
+                compose.onNodeWithTag("single-pane").assertIsDisplayed()
+                compose.onNodeWithTag("navigation-list-pane").assertDoesNotExist()
+                compose.onNodeWithTag("fixture:tool-${tool.sourceName}").assertIsDisplayed()
+                if (value == 834) capture("collapse-${tool.sourceName.lowercase()}")
+            }
         }
         compose.onNodeWithTag("navigation-back").assertHeightIsAtLeast(48.dp).performClick()
         assertEquals(ToolSelection.TRACE_PATH, navigation.state.value.selectedTool)
