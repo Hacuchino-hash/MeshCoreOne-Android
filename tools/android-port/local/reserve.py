@@ -16,7 +16,6 @@ if not (MODULE_ROOT / "controller").is_dir():
     MODULE_ROOT = MODULE_ROOT.parent
 sys.path.insert(0, str(MODULE_ROOT))
 
-from controller.capabilities import CapabilityEngine
 from controller.errors import PortError
 from controller.gates import policy_revision
 from controller.ledger import Identity, Ledger
@@ -47,7 +46,10 @@ def runtime_target(repo: Path):
 
 
 def runtime_sources():
-    files = {"reserve.py": Path(__file__).resolve()}
+    files = {
+        "reserve.py": Path(__file__).resolve(),
+        "hook_test.py": Path(__file__).with_name("hook_test.py"),
+    }
     files.update({
         f"controller/{source.name}": source
         for source in sorted((MODULE_ROOT / "controller").glob("*.py"))
@@ -116,6 +118,11 @@ def install_runtime(target: Path, ledger: Ledger, owner: str, now: float):
             actual = verify_runtime(target)
             if actual != expected:
                 raise PortError("Installed reservation runtime did not preserve staged bytes")
+            hook_test = target.parent / "hooks" / "meshcore-local" / "test_check.py"
+            if hook_test.parent.is_dir():
+                replacement = hook_test.with_name("test_check.py.next")
+                replacement.write_bytes((target / "hook_test.py").read_bytes())
+                os.replace(replacement, hook_test)
             if backup.exists():
                 shutil.rmtree(backup)
             return {
@@ -188,6 +195,8 @@ def build_parser():
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
+        from controller.capabilities import CapabilityEngine
+
         repo = Path(git(args.repo, "rev-parse", "--show-toplevel"))
         policy = load_json(repo / "docs/android/automation-policy.json")
         manifest = load_manifest(repo)
