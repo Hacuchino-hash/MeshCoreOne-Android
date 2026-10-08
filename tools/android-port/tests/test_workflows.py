@@ -219,6 +219,9 @@ class WorkflowTests(unittest.TestCase):
         ), patch(
             "controller.verification_config.WP_003_BOOTSTRAP_MANIFEST_SHA256",
             candidate["generated_manifest_sha256"],
+        ), patch(
+            "controller.verification_config.WP_003_MANIFEST_REVISION",
+            candidate["final_manifest_sha256"],
         ), self.assertRaisesRegex(PortError, "policy amendment evidence drift"):
             check_configuration(REPO)
 
