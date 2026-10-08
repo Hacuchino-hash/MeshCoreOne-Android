@@ -18,11 +18,12 @@ import collect_evidence as reader
 import retain_raw
 from source_inventory import EvidenceError
 from controller.model import Manifest, load_manifest
-from controller.verification_config import apply_content_scope, content_scope_predecessor, content_scope_revisions
+from controller.verification_config import apply_content_scope, content_scope_revisions, project_content_scope
 
 
 def manifest_fixture(amended=False):
-    original = content_scope_predecessor(load_manifest(retain_raw.ROOT))
+    current = load_manifest(retain_raw.ROOT)
+    original = Manifest(project_content_scope(current.data), current.exclusions, current.repo)
     return Manifest(apply_content_scope(original.data), original.exclusions, original.repo) if amended else original
 
 
@@ -299,7 +300,9 @@ class NativeTest {
                 path.write_text(json.dumps(record))
                 self.assertEqual((path.parent, record), retain_raw.pipeline_invocation(path))
                 for key, historical in (("manifest_sha256", retain_raw.MANIFEST),
-                                        ("policy_revision", retain_raw.POLICY)):
+                                        ("policy_revision", retain_raw.POLICY),
+                                        ("manifest_sha256", "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"),
+                                        ("policy_revision", "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a")):
                     changed = copy.deepcopy(record)
                     changed["identity"]["binding"][key] = historical
                     path.write_text(json.dumps(changed))
@@ -382,7 +385,10 @@ class NativeTest {
                 path.write_text(json.dumps(current))
                 self.assertEqual(current, retain_raw.pipeline_invocation(path)[1])
                 for key, value in (("manifest_sha256", retain_raw.MANIFEST),
-                                   ("policy_revision", retain_raw.POLICY), ("head_sha", "c" * 40)):
+                                   ("policy_revision", retain_raw.POLICY),
+                                   ("manifest_sha256", "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"),
+                                   ("policy_revision", "56bdc53548bc86d631245795dfa38b4fc86048e0e7cbe1c7d5695879b035b42a"),
+                                   ("head_sha", "c" * 40)):
                     stale = copy.deepcopy(current)
                     stale["identity"]["binding"][key] = value
                     path.write_text(json.dumps(stale))
