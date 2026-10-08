@@ -2,7 +2,6 @@
 package com.meshcoreone.android.app.container
 
 import com.meshcoreone.android.core.connectivity.ConnectivityPlatform
-import com.meshcoreone.android.core.connectivity.ble.LinkFailureKind
 import com.meshcoreone.android.core.connectivity.pairing.PairingConnectionPort
 import com.meshcoreone.android.core.connectivity.pairing.PairingDisconnectReason
 import com.meshcoreone.android.core.contracts.domain.ConnectionTarget
@@ -42,17 +41,7 @@ class RuntimePlatformAdapter(val connectivity: ConnectivityPlatform) : Connectio
         (target as? ConnectionTarget.Bluetooth)?.let { connectivity.adoptSystemLink(it.deviceId) } ?: false
 
     override fun classifyFailure(failure: Throwable): LinkFailure? =
-        failure as? LinkFailure ?: when (connectivity.classifyFailure(failure)) {
-            LinkFailureKind.AuthenticationFailed -> LinkFailure.AuthenticationFailed(failure)
-            LinkFailureKind.ConnectionTimeout -> LinkFailure.ConnectionTimeout(failure)
-            LinkFailureKind.BluetoothPoweredOff -> LinkFailure.BluetoothPoweredOff()
-            LinkFailureKind.BluetoothUnavailable -> LinkFailure.BluetoothUnavailable()
-            LinkFailureKind.BluetoothUnauthorized -> LinkFailure.BluetoothUnauthorized()
-            LinkFailureKind.DeviceConnectedToOtherApp -> LinkFailure.DeviceConnectedToOtherApp()
-            LinkFailureKind.ConnectionFailed, LinkFailureKind.DeviceNotFound ->
-                LinkFailure.ConnectionFailed(failure.message ?: "", failure)
-            null -> null
-        }
+        failure as? LinkFailure ?: connectivity.classifyFailure(failure)?.let { linkFailureFor(it, failure) }
 }
 
 /** The pairing coordinator's connection port over the runtime manager. */

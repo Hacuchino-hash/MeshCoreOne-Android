@@ -89,3 +89,24 @@ service, companion/presence, bonding and permission routes, and every Wi-Fi/BLE 
 compiled and unit-tested at their seams only. The BLE `RuntimeLink`, WP-401 notification
 adapter, WP-218 content cache and WP-307 `ChatTimeline` do not exist on main (coordinator
 notes C-03, C-06, C-07).
+
+## BLE runtime link addendum (C-06)
+
+`BleRuntimeLink` (+ factory branch, `BleReconnectMemory`) is covered by `BleRuntimeLinkTest`:
+12 tests, 0 failures, 0 errors, 0 skipped (JUnit XML), over the real `BleTransport` with a
+scripted `GattFacade` fake. Cases: connect then firmware frame capacity 20 to 172; connect
+authentication failure classifies as `AuthenticationFailed`; lost bond after connect delivers
+`LinkFailure.AuthenticationFailed`; link loss delivered once and the next link uses
+`Reconnect`; clean remote disconnect delivers a null cause; user disconnect reports nothing;
+auto-reconnect callbacks in order then loss; bond refresh and `mayRefreshBond` validity;
+close unregisters the collector and bond handler; re-register replaces rather than
+accumulates; a throwing callback is contained; factory builds Wi-Fi and Bluetooth links.
+Mutation checks (production line changed, tests rerun, line restored):
+
+| Behavior | Mutation | Failing test |
+| --- | --- | --- |
+| user stop is not a loss | `!stoppedByUser` guard removed | `userDisconnectIsNotReportedAndClearsReconnectMemory` |
+| no leaked collector | registration `close()` no longer cancels its job | `closeUnregistersHandlersAndLeavesNoCollector`, `reRegisteringReplacesTheCollectorInsteadOfAccumulating` |
+
+Not verifiable without a radio/device: real GATT callback ordering, OEM bond behavior, the
+172-byte frame limit against firmware, and `AndroidGattFacade` under the main looper.

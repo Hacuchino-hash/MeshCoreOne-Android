@@ -1,6 +1,11 @@
-// AndroidOnly: WP-303 The Wi-Fi/TCP runtime link; the BLE link has no production implementation on main (see WP-303.md).
+// AndroidOnly: WP-303 The Wi-Fi/TCP runtime link and the per-connect runtime link factory (BLE link: BleRuntimeLink.kt).
 package com.meshcoreone.android.app.container
 
+import com.meshcoreone.android.core.ble.BleConfiguration
+import com.meshcoreone.android.core.ble.BleDeviceHandle
+import com.meshcoreone.android.core.ble.BleTransport
+import com.meshcoreone.android.core.ble.GattFacade
+import com.meshcoreone.android.core.connectivity.ble.BleLinkSnapshot
 import com.meshcoreone.android.core.contracts.domain.ConnectionTarget
 import com.meshcoreone.android.core.contracts.domain.SessionToken
 import com.meshcoreone.android.core.model.DevicePlatform
@@ -8,12 +13,14 @@ import com.meshcoreone.android.core.model.TransportType
 import com.meshcoreone.android.core.protocol.model.DeviceCapabilities
 import com.meshcoreone.android.core.protocol.transport.MeshTransport
 import com.meshcoreone.android.core.protocol.transport.tcp.WiFiTransport
-import com.meshcoreone.android.core.runtime.ConnectionError
 import com.meshcoreone.android.core.runtime.LinkCallbacks
 import com.meshcoreone.android.core.runtime.RuntimeLink
 import com.meshcoreone.android.core.runtime.RuntimeLinkFactory
 import java.time.Instant
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -40,14 +47,34 @@ class WifiRuntimeLink(host: String, port: UShort, private val wifi: WiFiTranspor
 }
 
 /**
- * Builds a link per connect. Wi-Fi targets get a [WifiRuntimeLink]; Bluetooth targets are refused with a typed
- * unsupported-capability error because no `RuntimeLink` over `core:ble`'s `BleTransport` is merged (the mapping of
- * its phase diagnostics, firmware capabilities and bond refresh to [LinkCallbacks] is unowned by any merged WP).
+ * Builds a link per connect. Wi-Fi targets get a [WifiRuntimeLink]; Bluetooth targets get a [BleRuntimeLink] over a
+ * fresh `BleTransport` whose GATT facade comes from [gattFacades] (production: `AndroidGattFacade`; JVM tests: a fake).
+ * The most recent Bluetooth link is exposed through [currentBleLink] for the process-wide link inspector.
  */
-class AndroidRuntimeLinkFactory(private val bluetooth: ((ConnectionTarget.Bluetooth) -> RuntimeLink)? = null) : RuntimeLinkFactory {
+class AndroidRuntimeLinkFactory(
+    private val gattFacades: (BleDeviceHandle) -> GattFacade,
+    private val configuration: BleConfiguration = BleConfiguration(),
+    private val memory: BleReconnectMemory = BleReconnectMemory(),
+    private val linkDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : RuntimeLinkFactory {
+    private val latest = AtomicReference<BleRuntimeLink?>(null)
+    private val latestId = AtomicReference<UUID?>(null)
+
     override fun create(target: ConnectionTarget): RuntimeLink = when (target) {
         is ConnectionTarget.WiFi -> WifiRuntimeLink(target.host, target.port)
-        is ConnectionTarget.Bluetooth -> bluetooth?.invoke(target)
-            ?: throw ConnectionError.UnsupportedCapability("bluetooth runtime link")
+        is ConnectionTarget.Bluetooth -> {
+            val handle = BleDeviceHandle(target.handle.address.value)
+            val link = BleRuntimeLink(BleTransport(gattFacades(handle), configuration), target.deviceId, memory, dispatcher = linkDispatcher)
+            latest.getAndSet(link)?.release()
+            latestId.set(target.deviceId)
+            link
+        }
+    }
+
+    /** The newest Bluetooth link's diagnostics, or null before any Bluetooth connect. */
+    fun currentBleLink(): BleLinkSnapshot? {
+        val link = latest.get() ?: return null
+        val id = latestId.get() ?: return null
+        return BleLinkSnapshot(id, link.currentDiagnostics)
     }
 }

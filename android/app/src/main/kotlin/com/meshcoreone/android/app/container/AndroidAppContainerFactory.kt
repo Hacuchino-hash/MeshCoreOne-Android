@@ -21,6 +21,7 @@ import com.meshcoreone.android.core.connectivity.platform.AndroidBondGateway
 import com.meshcoreone.android.core.connectivity.platform.AndroidCompanionDeviceGateway
 import com.meshcoreone.android.core.connectivity.platform.AndroidSystemLinkProbe
 import com.meshcoreone.android.core.connectivity.service.AndroidForegroundServiceStarter
+import com.meshcoreone.android.core.ble.AndroidGattFacade
 import com.meshcoreone.android.core.ble.BluetoothAvailability
 import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
 import com.meshcoreone.android.core.database.MeshCoreDatabase
@@ -60,8 +61,8 @@ object AndroidAppContainerFactory {
         }
         val probe = AndroidSystemLinkProbe(application, diagnostics)
         val endpoints = SharedPreferencesKnownEndpoints(application)
-        // No BLE link is owned by the process yet, so the inspector reports an idle link and adapter availability only.
-        val inspector = BleLinkInspector(probe, { null }) { BluetoothAvailability.Ready }
+        val linkFactory = AndroidRuntimeLinkFactory({ handle -> AndroidGattFacade(application, handle) })
+        val inspector = BleLinkInspector(probe, linkFactory::currentBleLink) { BluetoothAvailability.Ready }
         val connectivity = ConnectivityPlatform(pairing, inspector, endpoints, SystemLinkAdopter { false })
 
         val bondGateway = AndroidBondGateway(application, diagnostics)
@@ -85,7 +86,7 @@ object AndroidAppContainerFactory {
                 connectivity = connectivity,
                 linkProbe = probe,
                 scans = BleScanCoordinator(AndroidBleScanGateway(application, diagnostics), diagnostics),
-                linkFactory = AndroidRuntimeLinkFactory(),
+                linkFactory = linkFactory,
                 hostingStarter = AndroidForegroundServiceStarter(application),
                 hostEnvironment = environment,
                 ensureBonded = { deviceId ->
