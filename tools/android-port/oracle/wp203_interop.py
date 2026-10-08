@@ -16,7 +16,7 @@ from controller.errors import PortError
 from controller.schema import load_json
 from oracle.codec_harness import mac_environment, run as run_reference_codec
 from oracle.reference import FrozenReference, OracleError, REPO, SOURCE_SHA, json_bytes, sha256, write_or_check
-from oracle.wp203_ci import DATA_NAMES, identity, record, validate_bundle
+from oracle.wp203_ci import DATA_NAMES, identity, record, validate_bundle, validate_producer_data
 
 TEST_NAME = "testRealKotlinExportRestoresIntoSwiftDataAndSwiftExportsForRoom"
 HARNESS = "docs/android/evidence/WP-203/WP203InteropTests.swift"
@@ -161,7 +161,7 @@ def run(incoming, output, stage_root):
     if output.exists() or not output.is_absolute():
         raise OracleError("New absolute Swift evidence output required")
     bound = identity()
-    validate_bundle(incoming, "producer", bound)
+    validate_producer_data(incoming)
     output.mkdir(parents=True)
     source_map = stage_package(FrozenReference(), stage_root)
     write_or_check(output / "swift-source-map.json", json_bytes(source_map), check=False)

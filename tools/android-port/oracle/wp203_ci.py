@@ -54,10 +54,44 @@ def digest_file(path):
 
 def record(root, name):
     path = root / name
-    return {"path": name, "size": path.stat().st_size, "sha256": digest_file(path)}
+    file_digest = digest_file(path)
+    return {"path": name, "size": path.stat().st_size, "sha256": file_digest}
+
+
+def validate_producer_data(root):
+    records = [record(root, name) for name in DATA_NAMES["producer"]]
+    exported = load_json(root / "kotlin-export.json")
+    proof = load_json(root / "kotlin-room-proof.json")
+    expected_proof = {
+        "compressedSha256", "inserted", "messageId", "preferencesRestored", "producer",
+        "radioId", "restoreVerified", "skipped",
+    }
+    if set(proof) != expected_proof:
+        raise OracleError("Malformed Kotlin Room producer proof")
+    compressed = next(item["sha256"] for item in records if item["path"] == "kotlin-export.meshcoreone")
+    if (proof["compressedSha256"] != compressed or proof["inserted"] != 12 or proof["skipped"] != 0
+            or proof["restoreVerified"] is not True or proof["preferencesRestored"] is not True
+            or proof["producer"] != "actual-Room-Kotlin-export"
+            or proof["messageId"] != "00000000-0000-0000-0000-000000000004"
+            or proof["radioId"] != "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"):
+        raise OracleError("Kotlin Room producer proof disagrees with actual backup bytes")
+    manifest = exported.get("manifest")
+    expected_manifest = {
+        "blockedChannelSenderCount", "channelCount", "contactCount", "deviceCount",
+        "discoveredNodeCount", "messageCount", "messageRepeatCount", "nodeStatusSnapshotCount",
+        "reactionCount", "remoteNodeSessionCount", "roomMessageCount", "savedTracePathCount",
+    }
+    if (exported.get("version") != 1 or not isinstance(manifest, dict)
+            or set(manifest) != expected_manifest or any(manifest[name] != 1 for name in expected_manifest)
+            or not isinstance(exported.get("userDefaults"), dict)):
+        raise OracleError("Kotlin export semantics are stale or incomplete")
+    return {"stage": "producer", "data": records, "proof": proof}
+
 
 
 def validate_bundle(root, stage, expected_identity):
+    if stage == "producer" and not (root / "wp203-evidence.json").exists():
+        return validate_producer_data(root)
     evidence = load_json(root / "wp203-evidence.json")
     if set(evidence) != {"schema_version", "stage", "identity", "source_sha", "tasks", "data", "junit"}:
         raise OracleError("Malformed backup stage evidence")
