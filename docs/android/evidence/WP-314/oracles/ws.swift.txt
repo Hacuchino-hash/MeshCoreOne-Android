@@ -1,0 +1,7 @@
+import Foundation
+var out: [String] = []
+for v in 0...0x10FFFF {
+  guard let s = Unicode.Scalar(v) else { continue }
+  if CharacterSet.whitespaces.contains(s) { out.append(String(format: "%04X", v)) }
+}
+print(out.joined(separator: " "))

@@ -1,0 +1,17 @@
+import CoreLocation
+import Foundation
+let pairs: [(Double, Double, Double, Double)] = [
+  (37.7749, -122.4194, 37.8044, -122.2712),
+  (37.8044, -122.2712, 37.8716, -122.2727),
+  (37.8716, -122.2727, 37.7749, -122.4194),
+  (37.0005, -122.0005, 37.0, -122.0),
+  (37.0005, -122.0005, 38.0, -123.0),
+  (0, 0, 0, 1),
+  (89.9, 10, -89.9, -170),
+  (51.5, -0.12, 40.7, -74.0),
+]
+for p in pairs {
+  let a = CLLocation(latitude: p.0, longitude: p.1)
+  let b = CLLocation(latitude: p.2, longitude: p.3)
+  print(String(format: "%.9f", a.distance(from: b)))
+}

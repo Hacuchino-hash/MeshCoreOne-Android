@@ -1,0 +1,11 @@
+classify FF11 FF21 ["FF11 FF21=InvalidFormat"]
+classify FB00 ["0046 0046=WillAdd"]
+classify 00C9 002C 0045 0301 ["00C9=InvalidFormat"]
+classify 000A 0041 0033 ["000A 0041 0033=InvalidFormat"]
+classify 0041 0033 002C 0301 0042 0037 ["0041 0033 002C 0301 0042 0037=InvalidFormat"]
+classify 0020 0061 0033 0020 002C 00A0 0062 0037 200B ["0041 0033=WillAdd", "0042 0037=WillAdd"]
+classify 00DF ["0053 0053=InvalidFormat"]
+inferred FF11 FF21 Optional(0)
+inferred 0031 0041 002C FF12 FF22 Optional(0)
+inferred 0041 0301 0042 nil
+inferred 0031 0041 000A 002C 0032 0042 nil

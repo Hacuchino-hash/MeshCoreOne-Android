@@ -1,0 +1,35 @@
+trim U+0020 U+0031 U+0041 U+0009 -> U+0031 U+0041
+trim U+00A0 U+0031 U+0041 U+3000 -> U+0031 U+0041
+trim U+000A U+0031 U+0041 -> U+000A U+0031 U+0041
+trim U+0031 U+0041 U+2028 -> U+0031 U+0041 U+2028
+trim U+200B U+0031 U+0041 -> U+0031 U+0041
+trim U+FEFF U+0031 U+0041 -> U+FEFF U+0031 U+0041
+hex U+0041 true
+hex U+0066 true
+hex U+FF11 true
+hex U+FF21 true
+hex U+FF41 true
+hex U+0041 U+0301 false
+hex U+FF11 U+0301 false
+hex U+0067 false
+hex U+0661 false
+count U+0031 U+0041 2
+count U+FF11 U+FF21 2
+count U+0041 U+0301 U+0042 2
+count U+1F1FA U+1F1F8 1
+upper U+00DF -> U+0053 U+0053
+upper U+FB00 -> U+0046 U+0046
+upper U+0061 U+0033 -> U+0041 U+0033
+upper U+0131 -> U+0049
+upper U+0069 -> U+0049
+u8 nil Optional(26) Optional(1)
+split ["U+0041 U+0033 U+002C U+0301 U+0042 U+0037", "U+0043 U+0031"]
+eq true 1
+std Node 9 node 10 -1 1
+std alpha Alpha -1 0
+std e é -1 -1
+std Zed apple 1 1
+std a10 a9 1 -1
+std B a 1 1
+std x X1 -1 -1
+AB
