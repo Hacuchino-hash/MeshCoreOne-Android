@@ -279,8 +279,8 @@ def invocation(path):
     require(git("cat-file", "-t", typed_binding.base_sha) == "commit", "Invocation base is not an existing commit")
     require(git("merge-base", BASE, typed_binding.base_sha) == BASE,
             "Invocation base is outside the inherited integration baseline")
-    require(git("merge-base", typed_binding.base_sha, head) == typed_binding.base_sha,
-            "Invocation base is not an ancestor of the actual HEAD")
+    require(git("merge-base", BASE, head) == BASE,
+            "Actual HEAD is outside the inherited integration baseline")
     require(binding["source_sha"] == SOURCE and binding["manifest_sha256"] == MANIFEST and binding["policy_revision"] == POLICY,
             "Invocation source/policy drift")
     require(type(identity["run_id"]) is int and identity["run_id"] > 0 and

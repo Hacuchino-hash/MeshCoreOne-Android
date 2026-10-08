@@ -58,6 +58,7 @@
     "docs/android/evidence/WP-207/collect_evidence.py",
     "docs/android/evidence/WP-208/collect_evidence.py",
     "docs/android/evidence/WP-211/collect_evidence.py",
+    "docs/android/evidence/WP-211/test_collect_evidence.py",
     "docs/android/evidence/WP-301/collect_evidence.py",
     "docs/android/evidence/WP-304/retain_raw.py",
     "docs/android/evidence/WP-304/source_inventory.py",
