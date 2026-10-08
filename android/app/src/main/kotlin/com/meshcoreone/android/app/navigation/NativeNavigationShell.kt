@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.only
@@ -177,7 +178,7 @@ fun NativeNavigationShell(
         val type = when {
             hideNavigation -> NavigationSuiteType.None
             useRail -> NavigationSuiteType.NavigationRail
-            else -> NavigationSuiteType.NavigationBar
+            else -> NavigationSuiteType.ShortNavigationBarCompact
         }
         val navigationItems: @Composable () -> Unit = {
             AppTab.entries.forEach { tab ->
@@ -226,7 +227,10 @@ fun NativeNavigationShell(
                         },
                         navigationIcon = {
                             if (state.canGoBack) {
-                                IconButton(onClick = { coordinator.back() }, modifier = Modifier.testTag("navigation-back")) {
+                                IconButton(
+                                    onClick = { coordinator.back() },
+                                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).testTag("navigation-back"),
+                                ) {
                                     Icon(painterResource(R.drawable.ic_back), stringResource(Strings.string.scaffold_back))
                                 }
                             }
@@ -234,7 +238,7 @@ fun NativeNavigationShell(
                         actions = {
                             IconButton(
                                 onClick = { coordinator.navigate(FeatureRoute(FeatureId.ONBOARDING)) },
-                                modifier = Modifier.testTag("open-radio-setup"),
+                                modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).testTag("open-radio-setup"),
                             ) {
                                 Icon(MeshSymbol.RADIO.vector, stringResource(Strings.string.scaffold_onboarding_title))
                             }

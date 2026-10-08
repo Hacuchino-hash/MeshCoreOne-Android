@@ -84,6 +84,15 @@ class NavigationStateTest {
         failed.navigateToChat(contact, message)
         assertEquals(before, failed.state.value.activeStack)
         assertNull("A successful duplicate route must dismiss the superseded failure", failed.state.value.failure)
+        val refreshed = contact.copy(name = "Updated fixture", lastHeardTimestamp = 0u)
+        assertEquals(ChatSelection.Direct(contact), ChatSelection.Direct(refreshed))
+        assertEquals(ChatSelection.Direct(contact).hashCode(), ChatSelection.Direct(refreshed).hashCode())
+        assertNotEquals(ChatSelection.Direct(contact), ChatSelection.Channel(channel.copy(id = contact.id)))
+        n.navigateToChat(refreshed, message)
+        assertEquals(before.last().id, n.state.value.activeStack.last().id)
+        val selection = n.state.value.activeStack.last().destination as NavigationDestination.Chat
+        assertEquals("Updated fixture", (selection.selection as ChatSelection.Direct).contact.name)
+        assertEquals(refreshed, n.state.value.pendingChatContact)
     }
     @Test fun auxiliaryRoutesAreOwnedByTheSelectedTabAndDoNotCreateAnotherRoot() {
         val n = NavigationCoordinator(); n.selectTab(AppTab.NODES)

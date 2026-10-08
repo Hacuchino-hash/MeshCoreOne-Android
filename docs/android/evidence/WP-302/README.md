@@ -2,7 +2,40 @@
 
 **Product implementation, exact Nav-only dependency support and closed
 traceability admission integrated; real App compilation/assembly passed,
-native execution unverified. Not WP-302 acceptance or feature parity.**
+native acceptance incomplete. Not WP-302 acceptance or feature parity.**
+
+## First real native results and corrections
+
+Official `--stages verify` at39e7a763 really compiled and discovered150 App
+nodes (140 WP-302 plus10 incumbent scaffold):134 passed,16 failed, zero
+skipped. All100 original SDK31/37 nodes ran,94 passed. Raw XML contains133
+bound WP-302 executions and49 actual SDK31 native renders, zero SDK37 renders.
+The seven SDK37 Compose cases failed in Espresso initialization before their
+WP-302 binding hook. Complete raw XML/input binding is retained in
+`native-39e7a763/`; visible output is `native-39e7a763.log`, raw run
+`/home/cbattagler/meshcoreone-work/local-checks/run-0Nh8oXqk`.
+Neither partial screenshots nor discovered failures satisfy140/108 acceptance.
+
+The real failures exposed these bounded corrections:
+
+- Frozen `ChatRoute.swift` compares conversation kind/UUID, not every DTO
+  field. Native selections now preserve that equality/hash contract, retain
+  entry IDs and refresh duplicate destination payloads. Original pending
+  contact assertions now match the source's UUID checks, rather than adding
+  an unrelated null-versus-zero Room timestamp assertion. Original fixture
+  contact type/path values are also restored to1/0. Existing native assertions
+  exercise changed payloads with stable route identity; counts are unchanged.
+- The suite's legacy `NavigationBar` combines unweighted short items; its
+  published source recommends `ShortNavigationBarCompact`. The actual native
+  compact bar now uses that type. Back/setup icon layouts explicitly have48dp
+  minimums. Hidden retained panes are asserted not displayed, not absent from
+  composition, preserving saveable state and the same visible-only-detail
+  requirement. Font200 diagnostics still fail on actual measured overflow.
+- Transitive Espresso3.5.0 reflects the removed API37 `InputManager.getInstance`.
+  First-party stable3.7.0 uses the actual context input service on API23+.
+  App-only local/instrumentation test coordinates now explicitly request3.7.0;
+  the actual16 graphs and strict lock/checksum outputs must be regenerated
+  before another native run. Incumbent catalog pins are unchanged.
 
 ## Actual compiled-head verification iteration
 

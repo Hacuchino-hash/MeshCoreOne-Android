@@ -1,6 +1,7 @@
 // PortedFrom: MC1/State/NavigationCoordinator.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/State/AppTab.swift@db14559b39d32322b06477c6ae676112f583db50
 // PortedFrom: MC1/Views/MainSidebarView.swift@db14559b39d32322b06477c6ae676112f583db50
+// PortedFrom: MC1/Views/Chats/Navigation/ChatRoute.swift@db14559b39d32322b06477c6ae676112f583db50
 package com.meshcoreone.android.app.navigation
 
 import com.meshcoreone.android.core.contracts.AppTab
@@ -37,9 +38,18 @@ enum class SettingsDetail(val sourceName: String, val requiresDevice: Boolean) {
 }
 
 sealed interface ChatSelection {
-    data class Direct(val contact: ContactDTO) : ChatSelection
-    data class Channel(val channel: ChannelDTO) : ChatSelection
-    data class Room(val session: RemoteNodeSessionDTO) : ChatSelection
+    data class Direct(val contact: ContactDTO) : ChatSelection {
+        override fun equals(other: Any?): Boolean = other is Direct && contact.id == other.contact.id
+        override fun hashCode(): Int = contact.id.hashCode()
+    }
+    data class Channel(val channel: ChannelDTO) : ChatSelection {
+        override fun equals(other: Any?): Boolean = other is Channel && channel.id == other.channel.id
+        override fun hashCode(): Int = channel.id.hashCode()
+    }
+    data class Room(val session: RemoteNodeSessionDTO) : ChatSelection {
+        override fun equals(other: Any?): Boolean = other is Room && session.id == other.session.id
+        override fun hashCode(): Int = session.id.hashCode()
+    }
 }
 
 sealed interface NavigationDestination {
@@ -149,7 +159,11 @@ data class NavigationState(
     internal fun push(tab: AppTab, destination: NavigationDestination): NavigationState {
         val base = select(tab)
         val stack = base.stacks.getValue(tab)
-        if (stack.last().destination == destination) return base.copy(failure = null)
+        if (stack.last().destination == destination) return base.copy(
+            stacks = (base.stacks + (tab to
+                (stack.dropLast(1) + stack.last().copy(destination = destination)).snapshot())).snapshotMap(),
+            failure = null,
+        )
         val entry = NavigationEntry(base.nextEntryId, destination)
         return base.copy(
             selectedTab = tab,

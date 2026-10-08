@@ -147,13 +147,13 @@ class NavigationComposeTest {
                 compose.onNodeWithTag("navigation-list-pane").assertIsDisplayed()
             } else {
                 compose.onNodeWithTag("single-pane").assertIsDisplayed()
-                compose.onNodeWithTag("navigation-list-pane").assertDoesNotExist()
+                compose.onNodeWithTag("navigation-list-pane").assertIsNotDisplayed()
             }
             for (tool in listOf(ToolSelection.TRACE_PATH, ToolSelection.LINE_OF_SIGHT)) {
                 compose.runOnIdle { navigation.navigateToTool(tool) }
                 compose.onNodeWithTag("navigation-hidden").assertIsDisplayed()
                 compose.onNodeWithTag("single-pane").assertIsDisplayed()
-                compose.onNodeWithTag("navigation-list-pane").assertDoesNotExist()
+                compose.onNodeWithTag("navigation-list-pane").assertIsNotDisplayed()
                 compose.onNodeWithTag("fixture:tool-${tool.sourceName}").assertIsDisplayed()
                 if (value == 834) capture("collapse-${tool.sourceName.lowercase()}")
             }
@@ -222,7 +222,12 @@ class NavigationComposeTest {
         val layouts = mutableListOf<TextLayoutResult>()
         compose.onNodeWithTag(tag, useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
-        assertFalse("$tag must honor font scaling without clipping", layouts.single().hasVisualOverflow)
+        val layout = layouts.single()
+        assertFalse(
+            "$tag must honor font scaling without clipping: size=${layout.size}, " +
+                "lines=${layout.lineCount}, widthOverflow=${layout.didOverflowWidth}, heightOverflow=${layout.didOverflowHeight}",
+            layout.hasVisualOverflow,
+        )
     }
     private fun capture(id: String) {
         compose.waitForIdle()

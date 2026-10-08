@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":platform:shortcuts"))
     implementation(project(":platform:translation"))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation("androidx.test.espresso:espresso-core:3.7.0")
     implementation("androidx.navigation3:navigation3-runtime:1.1.0")
     implementation("androidx.navigation3:navigation3-ui:1.1.0")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.4.0")
@@ -46,6 +47,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }

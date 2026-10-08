@@ -27,7 +27,7 @@ abstract class OriginalNavigationCases {
     protected fun contact(name: String = "TestContact") = ContactDTO(
         id = UUID.nameUUIDFromBytes(name.toByteArray(Charsets.UTF_8)),
         radioId = radio, publicKey = Bytes(ByteArray(32) { 0xAA.toByte() }),
-        name = name, lastHeardTimestamp = null,
+        name = name, typeRawValue = 1u, outPathLength = 0u, lastHeardTimestamp = null,
     )
     protected fun channel(index: UByte = 0u) = ChannelDTO(
         id = UUID.fromString("00000000-0000-0000-0000-000000000003"),
@@ -44,7 +44,7 @@ abstract class OriginalNavigationCases {
     ): NavigationLookup
 
     private fun assertChat(n: NavigationCoordinator, c: ContactDTO) {
-        assertEquals(c, n.state.value.pendingChatContact)
+        assertEquals(c.id, n.state.value.pendingChatContact?.id)
         assertEquals(ChatSelection.Direct(c), n.state.value.chatsSelectedRoute)
         assertEquals(AppTab.CHATS, n.state.value.selectedTab)
     }
@@ -76,7 +76,7 @@ abstract class OriginalNavigationCases {
             requireNotNull(it.service.onNewContactNotificationTapped)(EntityKey(radio, c.id))
             assertEquals(listOf(NavigationOutcome.Navigated), it.outcomes)
         }
-        assertEquals(c, n.state.value.pendingContactDetail)
+        assertEquals(c.id, n.state.value.pendingContactDetail?.id)
         assertEquals(AppTab.NODES, n.state.value.selectedTab)
     }
 
