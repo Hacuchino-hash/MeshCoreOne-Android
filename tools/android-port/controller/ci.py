@@ -191,7 +191,8 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None
         options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
         options.append("-Pwp207EvidenceDirectory=" + str(output / "wp207-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
-    selected = list(scopes or (("protocol",) if stage == "protocol" else ("scaffold",)))
+    default_selection = ("scaffold",) if stage == "scaffold" else ("protocol",) if stage == "protocol" else ()
+    selected = list(scopes or default_selection)
     if stage not in ("scaffold", "protocol") or not selected or any(scope not in SCOPED_TASKS for scope in selected):
         tasks = TASKS[stage]
     else:
