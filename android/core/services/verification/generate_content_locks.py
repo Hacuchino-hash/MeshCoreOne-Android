@@ -20,10 +20,12 @@ sys.path.insert(0, str(ROOT / "docs" / "android" / "evidence" / "WP-218"))
 from controller import ci
 from controller.ci_environment import candidate_environment, file_sha256, toolchain_lock, verify_wrapper, write_json
 from controller.errors import PortError
-from controller.gates import Binding, policy_revision
+from controller.gates import Binding
 from controller.model import git, load_manifest
 from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
+from controller.schema import load_json
+from controller.verification_config import content_scope_revisions
 from controller.workflows import parse_yaml, validate_boundary
 import verify_content_locks as locks
 
@@ -98,12 +100,14 @@ def identity():
     current = ci.execution_identity()
     require(current is not None, "missing immutable run identity")
     manifest = load_manifest(ROOT)
-    policy = json.loads((ROOT / "docs" / "android" / "automation-policy.json").read_text(encoding="utf8"))
+    policy = load_json(ROOT / "docs" / "android" / "automation-policy.json")
     binding = dict(current["binding"], work_package="WP-218")
     subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", binding["base_sha"],
         binding["head_sha"]], check=True, capture_output=True)
-    require(binding["source_sha"] == SOURCE and manifest.sha256 == MANIFEST
-        and binding["policy_revision"] == POLICY and policy_revision(manifest, policy) == POLICY, "changed source/manifest/policy")
+    revisions = content_scope_revisions(manifest, policy)
+    require(binding["source_sha"] == SOURCE
+        and binding["manifest_sha256"] == revisions["manifest_sha256"]
+        and binding["policy_revision"] == revisions["policy_revision"], "changed source/manifest/policy")
     require(git(ROOT, "rev-parse", SOURCE + "^{tree}").decode().strip() == "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
         "changed frozen source tree")
     return {"binding": asdict(Binding.parse(binding)), "run_id": current["run_id"], "run_attempt": current["run_attempt"]}

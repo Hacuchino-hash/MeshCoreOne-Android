@@ -1,4 +1,5 @@
 # AndroidOnly: WP-218 Auxiliary workflow/command admission is fail-closed and cannot substitute for native verification.
+import copy
 import importlib.util
 import json
 import os
@@ -12,6 +13,7 @@ path = Path(__file__).with_name("generate_content_locks.py")
 spec = importlib.util.spec_from_file_location("wp218_generation", path)
 helper = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(helper)
+from controller.model import Manifest
 
 
 class GenerationTest(unittest.TestCase):
@@ -80,6 +82,82 @@ class GenerationTest(unittest.TestCase):
         with patch.dict(os.environ, {"GITHUB_EVENT_NAME": "workflow_dispatch"}):
             with self.assertRaises(helper.PortError):
                 helper.identity()
+
+    def candidate_identity(self, manifest_data=None, policy_data=None, binding_changes=None):
+        manifest = helper.load_manifest(helper.ROOT)
+        if manifest_data is not None:
+            manifest = Manifest(manifest_data, manifest.exclusions, helper.ROOT)
+        policy = helper.load_json(helper.ROOT / "docs" / "android" / "automation-policy.json")
+        if policy_data is not None:
+            policy = policy_data
+        actual = helper.content_scope_revisions(helper.load_manifest(helper.ROOT),
+            helper.load_json(helper.ROOT / "docs" / "android" / "automation-policy.json"))
+        binding = {
+            "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-002",
+            "base_sha": helper.locks.BASE, "head_sha": "f" * 40, "source_sha": helper.SOURCE,
+            **actual, **(binding_changes or {}),
+        }
+        current = {"binding": binding, "run_id": 123, "run_attempt": 1}
+        event = {"number": 25, "pull_request": {"state": "open", "merged": False,
+            "title": "[WP-218] Safe content and location services", "base": {"ref": "main"},
+            "head": {"ref": "cbattlegear-bookish-funicular",
+                "repo": {"full_name": "cbattlegear/MeshCoreOne-Android"}}}}
+        with tempfile.TemporaryDirectory() as directory:
+            event_path = Path(directory) / "event.json"
+            event_path.write_text(json.dumps(event), encoding="utf8")
+            with patch.dict(os.environ, {"GITHUB_EVENT_NAME": "pull_request",
+                    "GITHUB_EVENT_PATH": str(event_path)}), \
+                    patch.object(helper.ci, "execution_identity", return_value=current), \
+                    patch.object(helper, "load_manifest", return_value=manifest), \
+                    patch.object(helper, "load_json", return_value=policy), \
+                    patch.object(helper, "git", return_value=b"8918fdc604341e6996a68c88f6bb1c02b9c2f87e"), \
+                    patch("subprocess.run"):
+                return helper.identity()
+
+    def test_current_execution_accepts_only_exact_reversible_catalog_lineage(self):
+        result = self.candidate_identity()
+        current = helper.content_scope_revisions(helper.load_manifest(helper.ROOT),
+            helper.load_json(helper.ROOT / "docs" / "android" / "automation-policy.json"))
+        self.assertEqual(result["binding"]["manifest_sha256"], current["manifest_sha256"])
+        self.assertEqual(result["binding"]["policy_revision"], current["policy_revision"])
+        self.assertEqual(result["binding"]["work_package"], "WP-218")
+        self.assertEqual(result["run_id"], 123)
+        self.assertEqual(result["run_attempt"], 1)
+        self.assertNotEqual(current["manifest_sha256"], helper.MANIFEST)
+        self.assertNotEqual(current["policy_revision"], helper.POLICY)
+
+    def test_historical_or_stale_execution_revisions_cannot_relabel_current_candidate(self):
+        for changes in ({"manifest_sha256": helper.MANIFEST}, {"policy_revision": helper.POLICY},
+                {"manifest_sha256": "0" * 64}, {"policy_revision": "0" * 64},
+                {"source_sha": "0" * 40}):
+            with self.subTest(changes=changes), self.assertRaises(helper.PortError):
+                self.candidate_identity(binding_changes=changes)
+
+    def test_genuine_historical_catalog_execution_keeps_original_receipt_revisions(self):
+        manifest = helper.load_manifest(helper.ROOT)
+        from controller.verification_config import content_scope_predecessor
+
+        result = self.candidate_identity(
+            manifest_data=content_scope_predecessor(manifest).data,
+            binding_changes={"manifest_sha256": helper.MANIFEST, "policy_revision": helper.POLICY},
+        )
+        self.assertEqual(result["binding"]["manifest_sha256"], helper.MANIFEST)
+        self.assertEqual(result["binding"]["policy_revision"], helper.POLICY)
+
+    def test_unowned_catalog_changes_reject_before_generation(self):
+        original = helper.load_manifest(helper.ROOT).data
+        for owner, field in (("WP-218", "depends_on"), ("WP-211", "write_paths")):
+            changed = copy.deepcopy(original)
+            wp = next(wp for wp in changed["work_packages"] if wp["id"] == owner)
+            wp[field].append("unapproved/catalog/change")
+            with self.subTest(owner=owner, field=field), self.assertRaises(helper.PortError):
+                self.candidate_identity(manifest_data=changed)
+
+    def test_changed_policy_cannot_bind_even_its_current_digest(self):
+        policy = copy.deepcopy(helper.load_json(helper.ROOT / "docs" / "android" / "automation-policy.json"))
+        policy["unapproved_generation_policy"] = True
+        with self.assertRaises(helper.PortError):
+            self.candidate_identity(policy_data=policy)
 
     def test_unapproved_candidate_or_fork_is_rejected(self):
         with tempfile.TemporaryDirectory() as name:
