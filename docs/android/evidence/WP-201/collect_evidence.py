@@ -24,7 +24,7 @@ from portmap import port_map
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-POLICY = "45df0b4e40b210780e072e58fd935cb0d5abf2d29341703b4ac486c9596b56e0"
+POLICY = "c36b635a62516a552a3ce8f5e04a79298aa7077630802d3c65469f0b2f3172ac"
 HISTORY = "docs/android/evidence/WP-201/local-evidence.json"
 HISTORY_SHA256 = "c53017a93cc37fecdd442057423113e72146a18a023bd865909781c1db2fdca8"
 SCHEMA = "android/core/database/schemas/com.meshcoreone.android.core.database.MeshCoreDatabase/1.json"

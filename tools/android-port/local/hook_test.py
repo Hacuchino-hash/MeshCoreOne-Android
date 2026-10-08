@@ -24,9 +24,11 @@ except ImportError:
     import check
 
 RESERVATIONS = Path(check.__file__).resolve().parents[2] / "meshcore-reservations"
+if Path(check.__file__).resolve().parent.name == "local":
+    RESERVATIONS = Path(check.__file__).resolve().parent
 if (Path(check.__file__).parent.name != "meshcore-local"
         or Path(check.__file__).parent.parent.name != "hooks"
-        or not (RESERVATIONS / "reserve.py").is_file()):
+        or not (RESERVATIONS / "reserve.py").is_file()) and Path(check.__file__).resolve().parent.name != "local":
     RESERVATIONS = Path.cwd() / ".git" / "meshcore-local-reservations"
 if not (RESERVATIONS / "reserve.py").is_file():
     raise RuntimeError("Missing exact reservation runtime; hook regressions cannot be skipped")
@@ -71,13 +73,17 @@ class LocalCheckTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(check.main(["--pre-push", *options]), 1)
 
-    def test_nonzero_runner_blocks_push(self):
-        with patch("check.capture", return_value=str(Path.cwd())), \
+    def test_failed_runner_publishes_only_as_unverified(self):
+        sha = "a" * 40
+        with patch("sys.stdin", io.StringIO(f"refs/a {sha} refs/a {check.ZERO}\n")), \
+             patch("check.capture", return_value=str(Path.cwd())), \
              patch("check.transport", return_value=[]), \
              patch("check.run_candidate",
                    side_effect=subprocess.CalledProcessError(1, ["checks"])), \
+             patch("check.record_pending") as pending, \
              contextlib.redirect_stderr(io.StringIO()):
-            self.assertEqual(check.main([]), 1)
+            self.assertEqual(check.main(["--pre-push"]), 0)
+            pending.assert_called_once()
 
     def test_hook_runs_every_exact_commit(self):
         first, second = "a" * 40, "b" * 40
@@ -98,6 +104,57 @@ class LocalCheckTests(unittest.TestCase):
                    side_effect=subprocess.CalledProcessError(1, ["wsl"])):
             with self.assertRaises(subprocess.CalledProcessError):
                 check.transport("BrokenDistribution")
+
+    def test_unsupported_arm_push_is_pending_without_false_pass(self):
+        sha = "a" * 40
+        text = f"refs/heads/feature {sha} refs/heads/feature {check.ZERO}\n"
+        with patch("sys.stdin", io.StringIO(text)), \
+             patch("check.capture", return_value=str(Path.cwd())), \
+             patch("check.transport", side_effect=ValueError("unsupported Darwin arm64")), \
+             patch("check.record_pending") as pending:
+            self.assertEqual(check.main(["--pre-push"]), 0)
+            pending.assert_called_once_with(Path.cwd(), sha, unittest.mock.ANY)
+
+    def valid_result(self, commit="a" * 40, tree="b" * 40):
+        return {
+            "schema_version": 1, "result": "success", "commit": commit, "tree": tree,
+            "stages": list(check.ALL_STAGES), "host": {"system": "Darwin", "machine": "arm64"},
+            "toolchain": {
+                name: {"version": "pinned", "packages": ["verified-package"]}
+                for name in check.REQUIRED_TOOLCHAIN
+            },
+            "stage_results": [
+                {
+                    "stage": stage, "result": "success", "tasks": ["declared-task"],
+                    "discovered": 1, "failures": 0, "errors": 0, "skipped": 0,
+                }
+                for stage in check.ALL_STAGES
+            ],
+            "outputs": {"report.json": "c" * 64},
+        }
+
+    def test_native_arm_equivalent_result_is_accepted_for_exact_binding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            result = Path(temporary) / "result.json"
+            result.write_text(json.dumps(self.valid_result()), encoding="utf-8")
+            self.assertEqual(check.validate_result(result, "a" * 40, "b" * 40)["result"], "success")
+
+    def test_reduced_zero_test_failed_or_stale_results_block_merge(self):
+        mutations = (
+            lambda value: value.update(stages=check.ALL_STAGES[:-1]),
+            lambda value: value["stage_results"][0].update(discovered=0),
+            lambda value: value["stage_results"][0].update(failures=1),
+            lambda value: value.update(commit="d" * 40),
+            lambda value: value.update(tree="e" * 40),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            result = Path(temporary) / "result.json"
+            for mutate in mutations:
+                value = self.valid_result()
+                mutate(value)
+                result.write_text(json.dumps(value), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    check.validate_result(result, "a" * 40, "b" * 40)
 
     def test_existing_hook_is_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -34,6 +34,9 @@ Swift/Kotlin and Compose skills as applicable. Installation is not fleet activat
   typed errors, cancellation and consumer behavior; no silent failure, dropped data or fake success.
 - Use only actual declared verification commands; fail on missing/malformed/zero-test evidence.
   Never claim iOS, Android, hardware, license or signing verification that did not occur.
+- Feature-branch publication is processor-neutral. A missing or failed local fast check records an
+  explicit unverified candidate but does not block push; exact seven-stage verification remains a
+  fail-closed merge-to-main requirement and later commits invalidate earlier results.
 - Candidate CI has read-only tokens, ephemeral runners, no persisted checkout credentials and no
   dispatch/merge/signing secrets. Trusted controllers execute default-branch code, not PR scripts.
 - Reviewer profile/skills/policy are staged from the trusted base. `parity-reviewer` has only

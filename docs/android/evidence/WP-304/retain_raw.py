@@ -17,7 +17,7 @@ from controller.errors import PortError
 from controller.gates import policy_revision
 from controller.model import load_manifest
 
-POLICY = "45df0b4e40b210780e072e58fd935cb0d5abf2d29341703b4ac486c9596b56e0"
+POLICY = "c36b635a62516a552a3ce8f5e04a79298aa7077630802d3c65469f0b2f3172ac"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 
 

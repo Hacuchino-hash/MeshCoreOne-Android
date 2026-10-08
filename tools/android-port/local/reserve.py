@@ -49,6 +49,8 @@ def runtime_sources():
     files = {
         "reserve.py": Path(__file__).resolve(),
         "hook_test.py": Path(__file__).with_name("hook_test.py"),
+        "check.py": Path(__file__).with_name("check.py"),
+        "fast.py": Path(__file__).with_name("fast.py"),
     }
     files.update({
         f"controller/{source.name}": source
@@ -118,11 +120,14 @@ def install_runtime(target: Path, ledger: Ledger, owner: str, now: float):
             actual = verify_runtime(target)
             if actual != expected:
                 raise PortError("Installed reservation runtime did not preserve staged bytes")
-            hook_test = target.parent / "hooks" / "meshcore-local" / "test_check.py"
-            if hook_test.parent.is_dir():
-                replacement = hook_test.with_name("test_check.py.next")
-                replacement.write_bytes((target / "hook_test.py").read_bytes())
-                os.replace(replacement, hook_test)
+            hook = target.parent / "hooks" / "meshcore-local"
+            if hook.is_dir():
+                for source, name in (
+                    ("hook_test.py", "test_check.py"), ("check.py", "check.py"), ("fast.py", "fast.py"),
+                ):
+                    replacement = hook / (name + ".next")
+                    replacement.write_bytes((target / source).read_bytes())
+                    os.replace(replacement, hook / name)
             if backup.exists():
                 shutil.rmtree(backup)
             return {

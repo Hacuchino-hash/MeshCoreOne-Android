@@ -42,3 +42,10 @@ Active feature collectors and dependency-proposal validators are rebound to the
 new current-policy digest; their manifest, source, artifact, test, and protected
 approval checks are unchanged. Historical bootstrap evidence retains its original
 policy digest as immutable audit data.
+
+The local hook now treats the seven-stage run as a development accelerator rather
+than a feature-branch publication gate. Unavailable or failing host execution
+records only an exact-SHA/tree `verification-pending` status. Trusted-base merge
+validation requires the full architecture-neutral result schema and rejects
+reduced stages, missing tool/package metadata, zero tests, failures, skips, stale
+commits/trees, or malformed output digests.
