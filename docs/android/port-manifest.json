@@ -5,7 +5,7 @@
     "commit": "db14559b39d32322b06477c6ae676112f583db50",
     "tree_sha": "8918fdc604341e6996a68c88f6bb1c02b9c2f87e",
     "source_inventory_sha256": "f03406900d3cd976f1557cb6f10cc52ab3b976f5194a0aa6e9bb97da4095c8b3",
-    "approved_plan_sha256": "0afc364cd63a99f438bffe7df8542d49503bfd113c363ed89e60d284b6a3c837",
+    "approved_plan_sha256": "badb1f34f22295d0f7ac4316eba0cc5f6189c9012ac7c96981fb352e9133944c",
     "installed_plan_sha256": "87de92c5236d5891c358df22d72b51bba68f839113660f6c9d1fe6624e1b5213"
   },
   "agents": [

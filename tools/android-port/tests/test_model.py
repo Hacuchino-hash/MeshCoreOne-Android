@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import tempfile
 import unittest
@@ -8,7 +9,14 @@ from unittest.mock import patch
 
 from fixtures import REPO, base_manifest
 from controller.errors import PortError
-from controller.model import HUMAN_GATES, REFERENCE_SHA, plan_rows, profile, validate_manifest
+from controller.model import (
+    APPROVED_PLAN_SHA256,
+    HUMAN_GATES,
+    REFERENCE_SHA,
+    plan_rows,
+    profile,
+    validate_manifest,
+)
 from controller.paths import conflicts, expand_selectors, git_path, overlaps, permits, validate_writes
 from controller.schema import check_schema, decode_json
 from bootstrap import build_inventory, check_generated
@@ -49,12 +57,22 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(check_configuration(REPO)["result"], "valid")
 
     def test_every_owner_and_dependency_matches_approved_plan(self):
-        plan = plan_rows((REPO / "docs" / "android" / "PORTING_PLAN.md").read_text(encoding="utf-8"))
+        plan_text = (REPO / "docs" / "android" / "PORTING_PLAN.md").read_text(encoding="utf-8")
+        plan = plan_rows(plan_text)
         for wp_id, wp in base_manifest().work_packages.items():
             for key in ("title", "owner", "depends_on", "human_gate"):
                 self.assertEqual(wp[key], plan[wp_id][key])
         self.assertEqual(base_manifest().wp("WP-106")["depends_on"], ["WP-101", "WP-105"])
         self.assertEqual(base_manifest().wp("WP-103")["depends_on"], ["WP-101", "WP-106"])
+        normalized = plan_text.replace("../../.github/agents/", "files/agents/").replace(
+            "../../.github/skills/", "files/skills/"
+        )
+        self.assertEqual(hashlib.sha256(normalized.encode()).hexdigest(), APPROVED_PLAN_SHA256)
+        with patch(
+            "controller.model.APPROVED_PLAN_SHA256",
+            "0afc364cd63a99f438bffe7df8542d49503bfd113c363ed89e60d284b6a3c837",
+        ), self.assertRaisesRegex(PortError, "Approved plan changed"):
+            self.validate(copy.deepcopy(base_manifest().data))
 
     def test_resources_helpers_and_licenses_are_explicit(self):
         entries = {e["path"]: e for e in base_manifest().data["inventory"]}

@@ -11,7 +11,14 @@ from unittest.mock import patch
 from fixtures import REPO, base_manifest
 from bootstrap import build_inventory
 from controller.errors import PortError
-from controller.verification_config import AMENDMENTS, apply_overlay, check_configuration
+from controller.schema import digest
+from controller.verification_config import (
+    AMENDMENTS,
+    BOOTSTRAP_POLICY_AMENDMENT,
+    POLICY_AMENDMENT_EVIDENCE,
+    apply_overlay,
+    check_configuration,
+)
 from controller.workflows import parse_yaml, validate_candidate, validate_setup, validate_trusted, validate_workflows
 
 
@@ -145,7 +152,54 @@ class WorkflowTests(unittest.TestCase):
                                  {k: v for k, v in after.items() if k != "verification"})
             else:
                 self.assertEqual(before, after)
-        self.assertEqual(check_configuration(REPO)["verification_amendments"], ["WP-002", "WP-003"])
+        result = check_configuration(REPO)
+        self.assertEqual(result["verification_amendments"], ["WP-002", "WP-003"])
+        self.assertEqual(result["bootstrap_manifest_sha256"],
+                         BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"])
+        self.assertEqual(result["manifest_sha256"], BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+        self.assertEqual(result["policy_amendment"], "WP-000-capability-reservations-v1")
+
+    def test_previous_or_incorrect_frozen_digest_cannot_admit_candidate(self):
+        original, _ = build_inventory(REPO)
+        for candidate in (
+            BOOTSTRAP_POLICY_AMENDMENT["previous_generated_manifest_sha256"],
+            "0" * 64,
+        ):
+            with self.subTest(candidate=candidate), patch(
+                "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256", candidate
+            ), self.assertRaisesRegex(PortError, "Frozen bootstrap generator changed"):
+                apply_overlay(original)
+
+    def test_changed_generator_digest_cannot_self_authorize_without_matching_evidence(self):
+        original, exclusions = build_inventory(REPO)
+        changed = copy.deepcopy(original)
+        changed["reference"]["installed_plan_sha256"] = "0" * 64
+        amended = copy.deepcopy(changed)
+        for wp in amended["work_packages"]:
+            if wp["id"] in AMENDMENTS:
+                wp["verification"] = copy.deepcopy(AMENDMENTS[wp["id"]])
+        candidate = {
+            **BOOTSTRAP_POLICY_AMENDMENT,
+            "generated_manifest_sha256": digest(changed),
+            "final_manifest_sha256": digest(amended),
+        }
+        with patch("bootstrap.build_inventory", return_value=(changed, exclusions)), patch(
+            "controller.verification_config.BOOTSTRAP_POLICY_AMENDMENT", candidate
+        ), patch(
+            "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256",
+            candidate["generated_manifest_sha256"],
+        ), self.assertRaisesRegex(PortError, "policy amendment evidence drift"):
+            check_configuration(REPO)
+
+    def test_verification_configuration_check_is_read_only(self):
+        paths = (
+            REPO / "docs" / "android" / "port-manifest.json",
+            REPO / "docs" / "android" / "not-ported.json",
+            REPO / POLICY_AMENDMENT_EVIDENCE,
+        )
+        before = {path: path.read_bytes() for path in paths}
+        self.assertEqual(check_configuration(REPO)["result"], "valid")
+        self.assertEqual({path: path.read_bytes() for path in paths}, before)
 
     def test_generator_or_future_feature_configuration_drift_is_rejected(self):
         original, _ = build_inventory(REPO)
