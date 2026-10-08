@@ -2,10 +2,31 @@
 
 **Product implementation, exact Nav-only dependency support and closed
 traceability admission integrated; real local native acceptance passed at
-0f7443fc. Final-head full-cycle verification remains pending. Not formal
+38c0ebb9, including the strengthened scaled-badge assertions. Publication
+requires the complete official current-head cycle; this retained source record
+does not replace that live receipt. Not formal
 WP-302 parity, OS instrumentation, hardware or license approval.**
 
-## Current native milestone
+## Retained native milestones
+
+At38c0ebb9, the corrected finite-width badge passed its real fontScale2/no-
+overflow assertions on SDK31/37. All150 App nodes passed with zero skips,
+all140 WP-302 nodes/all50 original families and108 real renders were accepted.
+Complete raw XML/current input bindings/screens are in `native-38c0ebb9/`;
+visible output is `verify-38c0ebb9.log`, raw run `run-wjHNTIki`.
+The full Gradle verification command also passed, including140 runtime POM
+inventory inputs and the thirty-module graph.
+
+The installed local runner then correctly rejected cached localization XML:
+its immutable materializer recreates all tracked files (new mtimes), but
+unchanged localization tests were `UP-TO-DATE`. No reader, timestamp or
+unowned source is altered. The actual `:core:l10n:clean` maintenance task
+invalidated only that private snapshot's build outputs under the native lane,
+with tracked bytes verified unchanged. The complete official cycle must run
+the real localization suite afresh; the same cleanup is needed before the
+unchanged normal pre-push run while this shared warm-cache behavior remains.
+Exact cleanup command/output/recipe are retained as `l10n-output-clean.log`
+and `clean-l10n-outputs.py`. Cleanup is not test or publication evidence.
 
 At0f7443fc, official committed-head `--stages verify` passed150/150 App
 nodes with zero failures/skips: all140 bound WP-302 nodes, all50 original
@@ -33,8 +54,9 @@ badge wrapping into the Chats label. The badge now keeps its intrinsic width
 and single line at the real system font scale, while its unread announcement
 remains on the tab rather than duplicated on the decoration. The existing
 font200 family additionally checks its actual text density/overflow. This
-stronger correction requires a new committed native run; the older accepted
-receipt is not substituted for current compiled inputs.
+initial stronger correction was unexecuted at thef22299c1 source commit.
+Its actual failed assertion and the subsequent accepted finite-width
+correction are both retained; no older receipt substitutes for current inputs.
 
 ## Historical native iterations
 
