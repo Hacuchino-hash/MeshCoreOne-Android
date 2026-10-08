@@ -24,7 +24,7 @@ from controller.verification_config import content_scope_revisions, inventory_de
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-POLICY = "c36b635a62516a552a3ce8f5e04a79298aa7077630802d3c65469f0b2f3172ac"
+POLICY = "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"
 HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 INVENTORY_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
 INVENTORY_PATH = "docs/android/evidence/WP-004/inventory-details.json"

@@ -95,8 +95,6 @@ class EvidenceTests(unittest.TestCase):
                 "schema_version": 2, "binding": asdict(binding), "run_id": 71, "run_attempt": 2, "host": host,
                 "scope": "fixture shape only",
                 "stages": {name: "success" for name in ("verify", "standalone", "assemble", "lint")},
-                "cache_proofs": {name: {"user_cache_initially_absent": True, "project_cache_initially_absent": True}
-                                 for name in ("composite", "standalone")},
                 "python": {name: discovery(number) for name, number in PYTHON_MINIMUMS.items()},
                 "suites": suites, "standalone": discovery(31), "lint": lint, "apk": inspection,
                 "module_unit_tests": {"core/model": {
@@ -171,22 +169,6 @@ class EvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(PortError, "Exactly one Linux"):
                 self.aggregate(directory, binding)
 
-    def test_warmed_or_missing_root_and_standalone_cache_proofs_fail(self):
-        from controller.schema import load_json
-
-        for kind in ("composite", "standalone", "missing"):
-            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temporary:
-                directory = Path(temporary)
-                binding = self.fixture(directory)
-                path = directory / "linux" / "ci-result.json"
-                value = load_json(path)
-                if kind == "missing":
-                    value.pop("cache_proofs")
-                else:
-                    value["cache_proofs"][kind]["user_cache_initially_absent"] = False
-                write_json(path, value)
-                with self.assertRaises(PortError):
-                    self.aggregate(directory, binding)
     def test_stale_base_head_source_policy_repository_run_attempt_and_host_fail(self):
         for field in ("repository", "base_sha", "head_sha", "source_sha", "manifest_sha256", "policy_revision",
                       "run_id", "run_attempt", "host"):

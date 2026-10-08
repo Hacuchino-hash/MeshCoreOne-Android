@@ -78,8 +78,9 @@ class EnvironmentTests(unittest.TestCase):
             self.assertNotIn(key, calls[1][1], "No credential or disallowed parent environment forwarding")
         self.assertIn("--dependency-verification", arguments)
         self.assertEqual("strict", arguments[arguments.index("--dependency-verification") + 1])
-        self.assertIn("--rerun-tasks", arguments)
-        self.assertIn("--max-workers=1", arguments)
+        self.assertNotIn("--rerun-tasks", arguments)
+        self.assertNotIn("--no-build-cache", arguments)
+        self.assertNotIn("--max-workers=1", arguments)
         return output, state, arguments, observe_identity.call_count
 
     def test_meshcli_forwarding_uses_actual_arguments_and_bound_json_on_both_hosts(self):

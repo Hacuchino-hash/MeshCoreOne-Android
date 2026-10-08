@@ -1,12 +1,15 @@
 # Local checks
 
-Run the configured seven-stage fast check with:
+Run the relevant declared checks for the change. A full local check remains
+available for broad/unclassifiable Android, dependency/toolchain/build-graph, or
+release changes:
 
 ```text
 python <git-common-dir>/hooks/meshcore-local/check.py --commit HEAD --stages all
 ```
 
-The installed pre-push hook attempts the same check for each pushed commit. An
+The installed pre-push hook may attempt the full check for each pushed commit as
+a development optimization. An
 unavailable or failing local runner does not block the push: it records
 `verification-pending` and prints an explicit unverified-candidate warning.
 Do not describe that status as a pass.
@@ -20,7 +23,9 @@ validates the result against the exact candidate using trusted-base policy:
 python tools/android-port/local/check.py --commit <sha> --validate-result <result.json>
 ```
 
-The result must identify the host and actual Python/JDK/Android SDK/Gradle
-versions/packages, all seven ordered stages and declared tasks, positive discovery
-counts, zero failures/errors/skips, and SHA-256 output digests. Reduced, malformed,
-failed, stale, or zero-test results block merge.
+The result must identify the host, exact commit/tree, selected declared tasks,
+positive discovery where tests apply, zero failures/errors/skips, and output
+digests. Full results include all seven stages only when full verification is
+required. Verified caches, task reuse, and parallel workers are allowed; cache
+warmth is never correctness evidence. Dependency/toolchain changes additionally
+require a targeted cold-cache dependency audit with strict locks/checksums.

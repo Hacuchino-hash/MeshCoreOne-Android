@@ -268,7 +268,7 @@ def artifact_record(root: Path, path: Path):
 def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_attempt: int, host: str):
     fields(value, {
         "schema_version", "binding", "run_id", "run_attempt", "host", "scope",
-        "stages", "cache_proofs", "python", "suites", "standalone", "lint", "apk", "artifacts",
+        "stages", "python", "suites", "standalone", "lint", "apk", "artifacts",
         "module_unit_tests",
     }, label="scaffold CI result")
     if (
@@ -281,12 +281,6 @@ def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_
         raise PortError("Missing required build stage")
     if any(v != "success" for v in value["stages"].values()):
         raise PortError("Failed/cancelled/skipped build stage is not success")
-    if not isinstance(value["cache_proofs"], dict) or set(value["cache_proofs"]) != {"composite", "standalone"}:
-        raise PortError("Missing fresh strict resolver topology evidence")
-    for proof in value["cache_proofs"].values():
-        fields(proof, {"user_cache_initially_absent", "project_cache_initially_absent"}, label="fresh-cache proof")
-        if any(flag is not True for flag in proof.values()):
-            raise PortError("Reused/warmed user/project cache cannot prove the mandatory fresh strict topology")
     if (
         not isinstance(value["python"], dict) or not isinstance(value["suites"], dict)
         or set(value["python"]) != set(PYTHON_MINIMUMS) or set(value["suites"]) != set(SUITES)

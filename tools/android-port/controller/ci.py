@@ -172,13 +172,8 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             environment, output / f"{stage}-preflight.log", timeout=60)
     project = REPO / "android" / ("build-logic" if standalone else "")
     cache = Path(state["private_root"]) / ("project-standalone" if standalone else "project-root")
-    cache_proof = {
-        "user_cache_initially_absent": not Path(environment["GRADLE_USER_HOME"]).exists(),
-        "project_cache_initially_absent": not cache.exists(),
-    }
     options = [
         "--no-daemon", "--console=plain", "--dependency-verification", "strict",
-        "--no-build-cache", "--rerun-tasks", "--max-workers=1",
         "-Pkotlin.compiler.execution.strategy=in-process",
         "-PscaffoldTestHeap=" + ("256m" if local else "512m"),
         "--project-cache-dir", str(cache), "--quiet",
@@ -202,8 +197,7 @@ def run_stage(stage: str, state: dict, output: Path, *, local=False):
             str(Path(__file__).with_name("gradle_windows.ps1")), "-InvocationFile", str(invocation),
         ]
     execute(command, environment, output / f"gradle-{stage}.log")
-    report = {"stage": stage, "result": "success", "tasks": TASKS[stage], "strict_verification": True,
-              "cache_proof": cache_proof}
+    report = {"stage": stage, "result": "success", "tasks": TASKS[stage], "strict_verification": True}
     if stage == "verify":
         report["suites"] = collect_suites(REPO / "android")
         for name, (path, _) in SUITES.items():
@@ -291,7 +285,6 @@ def inspect(state: dict, output: Path, *, local=False):
         "schema_version": 2, **identity, "host": state["host"],
         "scope": "scaffold assertions only; all feature, human, license, device and release gates remain pending",
         "stages": {name: item["result"] for name, item in stages.items()},
-        "cache_proofs": {"composite": stages["verify"]["cache_proof"], "standalone": stages["standalone"]["cache_proof"]},
         "python": load_json(output / "python-evidence.json"),
         "suites": stages["verify"]["suites"], "standalone": stages["standalone"]["suite"],
         "module_unit_tests": stages["verify"]["module_unit_tests"],

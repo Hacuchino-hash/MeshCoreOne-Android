@@ -32,7 +32,7 @@ BOOTSTRAP_POLICY_AMENDMENT = {
 BOOTSTRAP_MANIFEST_SHA256 = BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"]
 POLICY_AMENDMENT_EVIDENCE = Path("docs/android/evidence/WP-000/bootstrap-verifier.json")
 VERIFICATION_MANIFEST_SHA256 = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
-WP_003_SEMANTIC_POLICY_REVISION = "c36b635a62516a552a3ce8f5e04a79298aa7077630802d3c65469f0b2f3172ac"
+WP_003_SEMANTIC_POLICY_REVISION = "ad164e326d9a576c9c38d315188f8a21c1f5af8d3e62d96041a615690326eac5"
 CONTENT_SCOPE_PATHS = (
     "android/app/src/main/kotlin/com/meshcoreone/android/app/content/",
     "android/app/src/test/kotlin/com/meshcoreone/android/app/content/",

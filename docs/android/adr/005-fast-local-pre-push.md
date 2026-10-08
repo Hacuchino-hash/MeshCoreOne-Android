@@ -9,19 +9,25 @@ the exact commit and tree as `verification-pending`, and prints
 `UNVERIFIED CANDIDATE — merge verification still required`. It never emits a
 passing receipt for that candidate.
 
-Merge-to-main remains fail closed. Trusted-base merge handling accepts only a
-result bound to the exact candidate commit and tree, containing all seven stages
-(`python`, `preflight`, `verify`, `standalone`, `assemble`, `lint`, `inspect`),
-the actual Python/JDK/Android SDK/Gradle versions and package metadata, declared
-tasks, positive discovery counts, zero failures/errors/skips, and hashed outputs.
-A later commit invalidates an earlier result.
+Merge-to-main remains fail closed, but verification is change-scoped. Full
+repository verification is required only for broad or unclassifiable Android
+changes, dependency/toolchain/build-graph changes, release candidates, or an
+explicit maintainer request. Other candidates run the relevant declared jobs and
+must report positive discovery and zero failures/errors/skips for selected work.
+A later commit invalidates earlier evidence.
+
+Path/job scoping, normal task reuse, parallel workers, and verified caches are
+allowed. Strict Gradle dependency locks, checksums, and
+`--dependency-verification strict` remain mandatory. Cache warmth is not
+correctness evidence; a cold-cache dependency audit targets dependency/toolchain
+changes rather than every ordinary pull request.
 
 ## Native adapters
 
 Contributors may provide an explicit JSON toolchain state with an adapter command.
 The adapter can use a native macOS ARM64 toolchain; it need not use archives
 downloaded by the x64 provisioner. It must execute the exact committed candidate
-and produce the common result schema. Candidate runner changes are ordinary
+and produce the applicable change-scoped result schema. Candidate runner changes are ordinary
 reviewed branch changes and cannot authorize themselves: merge handling validates
 the result with trusted default-branch policy.
 

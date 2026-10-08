@@ -164,7 +164,7 @@ class DomainRoomEvidenceTests(unittest.TestCase):
     def test_exact_content_scope_emits_current_binding_without_rewriting_original_room_receipt(self):
         for revision, manifest_sha, policy_sha in (
             (None, "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094",
-             "d5425c752fded8b75d3166bee2df19ea53a1d8185169745db337ea732d296ed0"),
+             "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"),
             ("7e2835bad2c03dfb5a088063655f9fc4dbafd00f",
              "fdbce89204ae5e391a2baac1c1aa4910742242b2007d32ac0efb799720cb4958",
              "661f067bd956f1c1867480350c2f50a538e600b952f8e44b03716d9e535afc68"),

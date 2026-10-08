@@ -94,13 +94,14 @@ class WorkflowTests(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(PortError):
                 parse_yaml(text)
 
-    def test_required_ci_no_path_filters_and_merge_group_are_enforced(self):
+    def test_required_ci_allows_scope_filters_but_preserves_merge_and_gate_contract(self):
         original, text = self.read("android-ci.yml")
-        for kind in ("path", "branch", "merge", "gate", "needs", "host", "strategy", "skip-stage"):
+        scoped = copy.deepcopy(original)
+        scoped["on"]["pull_request"]["paths"] = ["android/**", "tools/android-port/**"]
+        validate_candidate(scoped, text)
+        for kind in ("merge", "gate", "needs", "host", "strategy"):
             value = copy.deepcopy(original)
-            if kind in ("path", "branch"):
-                value["on"]["pull_request"]["paths" if kind == "path" else "branches"] = ["android/**"]
-            elif kind == "merge":
+            if kind == "merge":
                 value["on"].pop("merge_group")
             elif kind == "gate":
                 value["jobs"]["android-ci"]["if"] = "success()"

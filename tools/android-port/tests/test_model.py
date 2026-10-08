@@ -288,7 +288,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(manifest.sha256, "a93854c137ed4df06fbc20a0533038f0b273472ba211c888e20af0812a7d5094")
         self.assertEqual(content_scope_revisions(manifest, load_json(REPO / "docs/android/automation-policy.json")),
                          {"manifest_sha256": manifest.sha256,
-                          "policy_revision": "d5425c752fded8b75d3166bee2df19ea53a1d8185169745db337ea732d296ed0"})
+                          "policy_revision": "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"})
 
     def test_policy_projection_rejects_partial_metadata_and_unowned_changes_without_mutation(self):
         baseline = project_content_scope(base_manifest().data)
