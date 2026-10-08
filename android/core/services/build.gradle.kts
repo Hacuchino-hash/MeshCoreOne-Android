@@ -135,7 +135,11 @@ val prepareContentInvocation by tasks.registering(Exec::class) {
     commandLine("python", "-B", contentCollector.absolutePath, "--prepare-binding",
         "--invocation", contentInvocation.getOrElse(""), "--output", contentPretestBinding.getOrElse(""))
 }
-tasks.named("test") { dependsOn(prepareContentInvocation) }
+tasks.named<Test>("test") {
+    dependsOn(prepareContentInvocation)
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf("Content evidence requires fresh current-head Services execution") { true }
+}
 
 val retainContentServiceReports by tasks.registering(Exec::class) {
     group = "verification"
