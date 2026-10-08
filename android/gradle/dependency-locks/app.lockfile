@@ -194,6 +194,7 @@ com.google.auto.value:auto-value-annotations:1.11.1=debugUnitTestCompileClasspat
 com.google.code.findbugs:jsr305:2.0.2=debugAndroidTestLintChecksClasspath,debugAndroidTestRuntimeClasspath,debugUnitTestLintChecksClasspath,debugUnitTestRuntimeClasspath
 com.google.code.findbugs:jsr305:3.0.2=androidLintTool
 com.google.code.gson:gson:2.11.0=androidLintTool
+com.google.errorprone:error_prone_annotations:2.30.0=debugAndroidTestCompileClasspath,debugAndroidTestLintChecksClasspath,debugAndroidTestRuntimeClasspath
 com.google.errorprone:error_prone_annotations:2.36.0=androidLintTool
 com.google.errorprone:error_prone_annotations:2.47.0=debugUnitTestCompileClasspath,debugUnitTestLintChecksClasspath,debugUnitTestRuntimeClasspath
 com.google.guava:failureaccess:1.0.2=androidLintTool

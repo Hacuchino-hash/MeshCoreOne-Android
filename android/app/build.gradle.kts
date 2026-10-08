@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":platform:shortcuts"))
     implementation(project(":platform:translation"))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation("androidx.test.espresso:espresso-core:3.7.0")
     testImplementation(libs.androidx.room.runtime)
     implementation("com.squareup.okhttp3:okhttp:5.5.0")
     implementation("androidx.navigation3:navigation3-runtime:1.1.0")
@@ -58,13 +59,14 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }
 
 android {
     defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    sourceSets.getByName("test").java.srcDir(
+    sourceSets.getByName("test").kotlin.srcDir(
         "src/androidTest/kotlin/com/meshcoreone/android/app/navigation/cases",
     )
 }
@@ -116,14 +118,16 @@ tasks.register("resolveContentHttpDependencies") {
 
 tasks.register("resolveWp302NavigationDependencies") {
     group = "verification"
-    description = "Resolve only App navigation assembly/lint/unit/instrumentation classpaths and retain actual graphs."
-    dependsOn("resolveContentHttpDependencies")
+    description = "Resolve only sixteen reviewed App navigation assembly/lint/unit/instrumentation/compiler graphs."
     val names = listOf(
-        "debugAndroidTestRuntimeClasspath",
-        "kotlinCompilerPluginClasspathDebug",
-        "kotlinCompilerPluginClasspathDebugUnitTest",
-        "kotlinCompilerPluginClasspathDebugAndroidTest",
-        "kotlinCompilerPluginClasspathRelease",
+        "debugCompileClasspath", "debugRuntimeClasspath",
+        "debugUnitTestCompileClasspath", "debugUnitTestRuntimeClasspath",
+        "debugAndroidTestCompileClasspath", "debugAndroidTestRuntimeClasspath",
+        "releaseCompileClasspath", "releaseRuntimeClasspath",
+        "debugLintChecksClasspath", "debugUnitTestLintChecksClasspath",
+        "debugAndroidTestLintChecksClasspath", "releaseLintChecksClasspath",
+        "kotlinCompilerPluginClasspathDebug", "kotlinCompilerPluginClasspathDebugUnitTest",
+        "kotlinCompilerPluginClasspathDebugAndroidTest", "kotlinCompilerPluginClasspathRelease",
     )
     doLast {
         val directory = layout.buildDirectory.dir("reports/wp302/navigation-dependencies").get().asFile
