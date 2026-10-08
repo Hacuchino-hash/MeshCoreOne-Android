@@ -1,7 +1,9 @@
 """AndroidOnly: WP-211 Reader regressions; synthetic XML never counts as native service evidence."""
 
+import copy
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -152,30 +154,24 @@ class IdentityReaderTests(unittest.TestCase):
     def test_actual_invocation_requires_linux_verify_and_current_immutable_bindings(self):
         with tempfile.TemporaryDirectory(prefix="wp211-invocation-") as directory:
             path = Path(directory) / "invocation.json"
-            binding = {"repository": "cbattlegear/MeshCoreOne-Android", "head_sha": "a" * 40,
-                       "base_sha": reader.BASE, "source_sha": reader.SOURCE,
+            binding = {"repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
+                       "head_sha": reader.git("rev-parse", "HEAD"),
+                       "base_sha": "372fbc5866305e045025472ba555e7941873000f", "source_sha": reader.SOURCE,
                        "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY}
             value = {"schema_version": 1, "host": "linux", "stage": "verify",
                      "identity": {"binding": binding, "run_id": 1, "run_attempt": 1}}
             path.write_text(json.dumps(value))
-            with patch.object(reader, "git", return_value="a" * 40):
-                self.assertEqual(1, reader.invocation(path)["run_id"])
-                for field, replacement in (("host", "windows"), ("stage", "assemble")):
-                    bad = {**value, field: replacement}
-                    path.write_text(json.dumps(bad))
-                    with self.assertRaises(ValueError):
-                        reader.invocation(path)
-                for wrong_base in (reader.RECEIPT_BASE, "5f9a7fec22f81e75b42e220d141c342a3c735954", "f" * 40):
-                    value["identity"]["binding"]["base_sha"] = wrong_base
-                    path.write_text(json.dumps(value))
-                    with self.subTest(base=wrong_base), self.assertRaisesRegex(
-                            ValueError, "authorized current integration base"):
-                        reader.invocation(path)
-                value["identity"]["binding"]["base_sha"] = reader.BASE
-                value["identity"]["binding"]["head_sha"] = "c" * 40
-                path.write_text(json.dumps(value))
-                with self.assertRaisesRegex(ValueError, "Stale/foreign"):
+            self.assertEqual(1, reader.invocation(path)["run_id"])
+            self.assertEqual(value, reader.invocation(path)["actual_invocation"])
+            for field, replacement in (("host", "windows"), ("stage", "assemble")):
+                bad = {**value, field: replacement}
+                path.write_text(json.dumps(bad))
+                with self.assertRaises(ValueError):
                     reader.invocation(path)
+            value["identity"]["binding"]["head_sha"] = "c" * 40
+            path.write_text(json.dumps(value))
+            with self.assertRaisesRegex(ValueError, "Stale/foreign"):
+                reader.invocation(path)
 
     def test_current_coordinator_freeze_keeps_the_exact_reviewed_producer_and_test_blobs(self):
         freeze = reader.frozen_producers()
@@ -237,6 +233,212 @@ class IdentityReaderTests(unittest.TestCase):
         with patch.object(reader, "load_json", return_value=metadata):
             with self.assertRaisesRegex(ValueError, "Retained recovery owner receipt drift"):
                 reader.validate_retained(Path("synthetic-retention"))
+
+
+class InvocationReaderTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.history = tempfile.TemporaryDirectory(prefix="wp211-invocation-history-")
+        cls.repository = Path(cls.history.name)
+        cls.git("init", "--quiet")
+        cls.git("config", "user.name", "Reader fixture")
+        cls.git("config", "user.email", "reader-fixture@example.invalid")
+        cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "before baseline")
+        cls.before = cls.git("rev-parse", "HEAD")
+        cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "baseline")
+        cls.baseline = cls.git("rev-parse", "HEAD")
+        cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "later base")
+        cls.later = cls.git("rev-parse", "HEAD")
+        cls.git("-c", "commit.gpgsign=false", "commit", "--quiet", "--allow-empty", "-m", "actual head")
+        cls.head = cls.git("rev-parse", "HEAD")
+        cls.unrelated = cls.git("-c", "commit.gpgsign=false", "commit-tree", "HEAD^{tree}", "-m", "unrelated root")
+        cls.noncommit = cls.git("rev-parse", "HEAD^{tree}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.history.cleanup()
+
+    @classmethod
+    def git(cls, *args):
+        return subprocess.check_output(["git", "-C", str(cls.repository), *args]).decode().strip()
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="wp211-invocation-record-")
+        self.root = Path(self.temporary.name)
+        self.path = self.root / "invocation.json"
+        self.local = {"schema_version": 1, "host": "linux", "stage": "verify", "identity": None}
+        self.hosted = {**self.local, "identity": {
+            "binding": {"repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
+                        "base_sha": self.later, "head_sha": self.head, "source_sha": reader.SOURCE,
+                        "manifest_sha256": reader.MANIFEST, "policy_revision": reader.POLICY},
+            "run_id": 17, "run_attempt": 2,
+        }}
+        self.addCleanup(self.temporary.cleanup)
+        self.enterContext(patch.object(reader, "ROOT", self.repository))
+        self.enterContext(patch.object(reader, "BASE", self.baseline))
+
+    def invoke(self, value):
+        self.path.write_text(json.dumps(value), encoding="utf-8")
+        return reader.invocation(self.path)
+
+    def retention(self, value):
+        execution = self.invoke(value)
+        (self.root / "actual-invocation.json").write_bytes(self.path.read_bytes())
+        metadata = {
+            "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-211",
+            "source_sha": reader.SOURCE, "manifest_sha256": reader.MANIFEST,
+            "policy_revision": reader.POLICY, "lease": reader.LEASE,
+            "receipt_base_sha": reader.RECEIPT_BASE, "integration_base_sha": reader.BASE,
+            "recovery_owner_receipt": reader.RECOVERY_OWNER, "head_sha": self.head,
+            "invocation_file": str(self.path), "execution": execution,
+            "input_blobs": {}, "producer_freeze": {}, "missing_directories": ["synthetic"],
+        }
+        (self.root / "retention.json").write_text(json.dumps(metadata), encoding="utf-8")
+
+    def test_explicit_null_is_local_only_with_current_head_and_no_hosted_ids(self):
+        result = self.invoke(self.local)
+        self.assertEqual(self.head, result["head_sha"])
+        self.assertEqual(self.local, result["actual_invocation"])
+        self.assertIsNone(result["run_id"])
+        self.assertIsNone(result["run_attempt"])
+        self.assertEqual(reader.invocation(None)["authority"], result["authority"])
+        self.assertNotIn("actual_root_binding", result)
+
+    def test_missing_identity_is_not_a_local_fallback(self):
+        value = {key: item for key, item in self.local.items() if key != "identity"}
+        with self.assertRaisesRegex(ValueError, "Malformed declared"):
+            self.invoke(value)
+
+    def test_only_exact_typed_linux_verify_contract_is_accepted(self):
+        for field, replacement in (
+            ("schema_version", True), ("schema_version", "1"), ("schema_version", 2),
+            ("host", "windows"), ("host", None), ("stage", "assemble"), ("stage", None),
+        ):
+            with self.subTest(field=field, replacement=replacement), self.assertRaises(ValueError):
+                self.invoke({**self.local, field: replacement})
+        for value in (None, [], 1, {**self.local, "run_id": 17}):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.invoke(value)
+
+    def test_nonnull_malformed_identities_never_fall_back_to_local(self):
+        for identity in (False, 0, "", [], {}, {"binding": None},
+                         {**self.hosted["identity"], "unexpected": True}):
+            with self.subTest(identity=identity), self.assertRaises(ValueError):
+                self.invoke({**self.local, "identity": identity})
+
+    def test_hosted_ids_must_both_be_present_positive_integers(self):
+        for field in ("run_id", "run_attempt"):
+            for replacement in (None, False, True, 0, -1, "1", 1.0):
+                value = copy.deepcopy(self.hosted)
+                value["identity"][field] = replacement
+                with self.subTest(field=field, replacement=replacement), self.assertRaises(ValueError):
+                    self.invoke(value)
+            value = copy.deepcopy(self.hosted)
+            del value["identity"][field]
+            with self.subTest(missing=field), self.assertRaises(ValueError):
+                self.invoke(value)
+
+    def test_existing_baseline_and_later_ancestor_are_both_valid_hosted_bases(self):
+        for base in (self.baseline, self.later):
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"]["base_sha"] = base
+            with self.subTest(base=base):
+                result = self.invoke(value)
+                self.assertEqual(base, result["base_sha"])
+                self.assertEqual(value, result["actual_invocation"])
+                self.assertEqual(value["identity"]["binding"], result["actual_root_binding"])
+
+    def test_base_must_be_a_full_typed_immutable_sha(self):
+        for base in (None, 123, self.later[:12], self.later.upper(), "z" * 40):
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"]["base_sha"] = base
+            with self.subTest(base=base), self.assertRaises(PortError):
+                self.invoke(value)
+
+    def test_missing_commit_and_existing_noncommit_base_are_rejected(self):
+        value = copy.deepcopy(self.hosted)
+        value["identity"]["binding"]["base_sha"] = "f" * 40
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.invoke(value)
+        value["identity"]["binding"]["base_sha"] = self.noncommit
+        with self.assertRaisesRegex(ValueError, "existing commit"):
+            self.invoke(value)
+
+    def test_unrelated_and_prebaseline_commits_are_rejected(self):
+        for base in (self.unrelated, self.before):
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"]["base_sha"] = base
+            with self.subTest(base=base), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                self.invoke(value)
+
+    def test_base_must_be_an_ancestor_of_current_head_not_just_baseline_descendant(self):
+        with patch.object(reader, "git", wraps=reader.git) as actual_git:
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"]["head_sha"] = self.baseline
+            actual_git.side_effect = lambda *args: self.baseline if args == ("rev-parse", "HEAD") else self.git(*args)
+            with self.assertRaisesRegex(ValueError, "ancestor of the actual HEAD"):
+                self.invoke(value)
+
+    def test_foreign_stale_and_immutable_binding_drift_are_rejected(self):
+        for field, replacement in (
+            ("repository", "another/repository"), ("work_package", "WP-211"),
+            ("head_sha", self.before), ("source_sha", "c" * 40),
+            ("manifest_sha256", "d" * 64), ("policy_revision", "e" * 64),
+        ):
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"][field] = replacement
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.invoke(value)
+
+    def test_malformed_hosted_binding_cannot_be_reinterpreted_as_local(self):
+        for binding in (None, [], {}, {**self.hosted["identity"]["binding"], "unexpected": 1}):
+            value = copy.deepcopy(self.hosted)
+            value["identity"]["binding"] = binding
+            with self.subTest(binding=binding), self.assertRaises((ValueError, PortError)):
+                self.invoke(value)
+
+    def test_retained_local_and_hosted_invocations_reach_existing_raw_report_guards(self):
+        for value in (self.local, self.hosted):
+            self.retention(value)
+            with self.subTest(identity=value["identity"]), \
+                    patch.object(reader, "inputs", return_value={}), \
+                    patch.object(reader, "frozen_producers", return_value={}):
+                with self.assertRaisesRegex(ValueError, "Missing actual mandatory JUnit"):
+                    reader.validate_retained(self.root, self.path)
+
+    def test_missing_retained_invocation_cannot_be_replaced_by_external_input(self):
+        self.retention(self.local)
+        (self.root / "actual-invocation.json").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing/linked retained"):
+            reader.validate_retained(self.root, self.path)
+
+    def test_tampered_retained_invocation_is_rejected_even_when_external_original_is_supplied(self):
+        self.retention(self.hosted)
+        changed = copy.deepcopy(self.hosted)
+        changed["identity"]["run_attempt"] += 1
+        (self.root / "actual-invocation.json").write_text(json.dumps(changed), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Retained execution identity drift"):
+            reader.validate_retained(self.root, self.path)
+
+    def test_different_valid_external_invocation_cannot_replace_the_retained_record(self):
+        self.retention(self.hosted)
+        for change in ("run_attempt", "base_sha"):
+            changed = copy.deepcopy(self.hosted)
+            if change == "base_sha":
+                changed["identity"]["binding"]["base_sha"] = self.baseline
+            else:
+                changed["identity"]["run_attempt"] += 1
+            self.invoke(changed)
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "Provided invocation differs"):
+                reader.validate_retained(self.root, self.path)
+
+    def test_duplicate_json_keys_do_not_hide_a_local_identity(self):
+        self.path.write_text(
+            '{"schema_version":1,"host":"linux","stage":"verify","identity":{},"identity":null}',
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(PortError, "Duplicate JSON key"):
+            reader.invocation(self.path)
 
 
 class NativeHookTests(unittest.TestCase):

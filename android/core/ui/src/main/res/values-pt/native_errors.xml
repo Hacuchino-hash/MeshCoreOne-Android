@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-304 Native storage and committed-preference distinctions. -->
+<resources>
+    <string name="ui_storage_encoding_failed">Não foi possível codificar o item guardado.</string>
+    <string name="ui_storage_save_failed">Não foi possível guardar os dados locais.</string>
+    <string name="ui_storage_read_failed">Não foi possível ler os dados locais.</string>
+    <string name="ui_storage_delete_failed">Não foi possível eliminar os dados locais.</string>
+    <string name="ui_storage_first_unlock">Desbloqueie o dispositivo uma vez após reiniciar para aceder aos dados guardados.</string>
+    <string name="ui_storage_locked">Desbloqueie o dispositivo para aceder aos dados guardados.</string>
+    <string name="ui_storage_inaccessible">O armazenamento do dispositivo está indisponível.</string>
+    <string name="ui_storage_permission_denied">O acesso ao armazenamento do dispositivo foi negado.</string>
+    <string name="ui_storage_io_failed">O dispositivo não conseguiu concluir a operação de armazenamento.</string>
+    <string name="ui_storage_corrupt_preferences">As preferências guardadas estão danificadas.</string>
+    <string name="ui_storage_corrupt_state">Os dados seguros guardados estão danificados.</string>
+    <string name="ui_storage_corrupt_envelope">Não é possível descodificar o item guardado.</string>
+    <string name="ui_storage_authentication_failed">Não foi possível autenticar o item guardado.</string>
+    <string name="ui_storage_key_missing">A chave de encriptação dos dados guardados está em falta.</string>
+    <string name="ui_storage_key_invalidated">A chave de encriptação já não é válida.</string>
+    <string name="ui_storage_key_corrupt">A chave de encriptação guardada está danificada.</string>
+    <string name="ui_storage_provider_failed">O armazenamento seguro está indisponível.</string>
+    <string name="ui_storage_owner_duplicate">O armazenamento local já está em utilização.</string>
+    <string name="ui_storage_owner_closed">O armazenamento local está fechado.</string>
+    <string name="ui_storage_invalid_identity">O identificador do item guardado é inválido.</string>
+    <string name="ui_storage_invalid_value">Não é possível guardar o valor.</string>
+    <string name="ui_storage_already_exists">O item guardado já existe.</string>
+    <string name="ui_storage_not_found">O item guardado não foi encontrado.</string>
+    <string name="ui_storage_unsupported_version">O formato dos dados guardados %1$d não é suportado.</string>
+    <string name="ui_storage_too_large">Os dados guardados excedem o limite de %1$d bytes.</string>
+    <string name="ui_storage_preference_type">Uma preferência guardada tem um tipo de valor incompatível.</string>
+    <string name="ui_storage_preference_no_default">Uma preferência em falta não tem valor predefinido.</string>
+    <string name="ui_storage_preference_invalid">Uma preferência guardada tem um valor inválido.</string>
+    <string name="ui_backup_preferences_incomplete">Os registos da cópia de segurança foram importados. Não foi possível concluir as preferências. Repita apenas as preferências em falta; não importe os registos novamente.</string>
+    <string name="ui_backup_complete_preferences">Concluir preferências</string>
+    <string name="ui_storage_unlock_device">Desbloquear dispositivo</string>
+</resources>

@@ -1,0 +1,98 @@
+// PortedFrom: MC1Services/Sources/MC1Services/Services/MessageLRUCache.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.core.services.rendering
+
+import java.time.Clock
+import java.time.Instant
+import java.util.UUID
+
+/** Key for channel message lookup. [senderName] is canonical (NFC), matching Swift `String` hashing. */
+internal data class MessageCacheKey(val channelIndex: UByte, val senderName: String, val messageHash: String)
+
+/** Key for DM message lookup. */
+internal data class DirectMessageCacheKey(val contactID: UUID, val messageHash: String)
+
+/** Candidate message for reaction matching. */
+internal data class MessageCandidate(
+    val messageID: UUID,
+    val text: String,
+    val timestamp: UInt,
+    val indexedAt: Instant,
+)
+
+/**
+ * LRU cache of recent channel and DM messages for reaction matching with collision resolution. Keys are
+ * evicted least-recently-indexed first once more than [capacity] keys exist; each key keeps at most
+ * [maxCandidatesPerKey] candidates (most recent). Swift isolates this in an actor; here every operation
+ * runs under one lock and never suspends.
+ */
+internal class MessageLRUCache(
+    private val capacity: Int = DEFAULT_CAPACITY,
+    private val maxCandidatesPerKey: Int = DEFAULT_MAX_CANDIDATES_PER_KEY,
+    private val clock: Clock = Clock.systemUTC(),
+) {
+    private val lock = Any()
+    private var cache: Map<MessageCacheKey, List<MessageCandidate>> = emptyMap()
+    private var order: List<MessageCacheKey> = emptyList()
+    private var dmCache: Map<DirectMessageCacheKey, List<MessageCandidate>> = emptyMap()
+    private var dmOrder: List<DirectMessageCacheKey> = emptyList()
+
+    /** Indexes a channel message for later lookup. */
+    fun index(messageID: UUID, channelIndex: UByte, senderName: String, text: String, timestamp: UInt) {
+        val key = MessageCacheKey(channelIndex, SwiftText.canonical(senderName), ReactionWireFormat.generateMessageHash(text, timestamp))
+        val candidate = MessageCandidate(messageID, text, timestamp, clock.instant())
+        synchronized(lock) {
+            val (newOrder, evicted) = touched(order, key)
+            order = newOrder
+            cache = withCandidate(evicted?.let { cache - it } ?: cache, key, candidate)
+        }
+    }
+
+    /** Candidates for a channel key, oldest first; empty when unknown. */
+    fun lookup(channelIndex: UByte, senderName: String, messageHash: String): List<MessageCandidate> =
+        synchronized(lock) { cache[MessageCacheKey(channelIndex, SwiftText.canonical(senderName), messageHash)].orEmpty() }
+
+    /** Indexes a DM message for later lookup. */
+    fun indexDM(messageID: UUID, contactID: UUID, text: String, timestamp: UInt) {
+        val key = DirectMessageCacheKey(contactID, ReactionWireFormat.generateMessageHash(text, timestamp))
+        val candidate = MessageCandidate(messageID, text, timestamp, clock.instant())
+        synchronized(lock) {
+            val (newOrder, evicted) = touched(dmOrder, key)
+            dmOrder = newOrder
+            dmCache = withCandidate(evicted?.let { dmCache - it } ?: dmCache, key, candidate)
+        }
+    }
+
+    /** Candidates for a DM key, oldest first; empty when unknown. */
+    fun lookupDM(contactID: UUID, messageHash: String): List<MessageCandidate> =
+        synchronized(lock) { dmCache[DirectMessageCacheKey(contactID, messageHash)].orEmpty() }
+
+    /** Clears both caches. */
+    fun clear() {
+        synchronized(lock) {
+            cache = emptyMap()
+            order = emptyList()
+            dmCache = emptyMap()
+            dmOrder = emptyList()
+        }
+    }
+
+    /**
+     * Moves [key] to the most-recent end, then evicts the oldest key when over capacity — before the
+     * candidate is stored, exactly as Swift orders it.
+     */
+    private fun <K> touched(order: List<K>, key: K): Pair<List<K>, K?> {
+        val moved = order.filter { it != key } + key
+        return if (moved.size > capacity) moved.drop(1) to moved.first() else moved to null
+    }
+
+    /** Replaces a re-indexed message id, appends the candidate, keeps the newest [maxCandidatesPerKey]. */
+    private fun <K> withCandidate(cache: Map<K, List<MessageCandidate>>, key: K, candidate: MessageCandidate): Map<K, List<MessageCandidate>> {
+        val candidates = cache[key].orEmpty().filter { it.messageID != candidate.messageID } + candidate
+        return cache + (key to candidates.takeLast(maxCandidatesPerKey))
+    }
+
+    companion object {
+        const val DEFAULT_CAPACITY: Int = 500
+        const val DEFAULT_MAX_CANDIDATES_PER_KEY: Int = 5
+    }
+}

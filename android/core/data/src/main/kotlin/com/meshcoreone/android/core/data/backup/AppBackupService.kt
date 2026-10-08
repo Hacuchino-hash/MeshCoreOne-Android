@@ -25,7 +25,16 @@ class CommittedBackupPreferenceException(
     val result: ImportResult,
     val preferences: BackupUserDefaults,
     val storageFailure: StorageFailure,
-) : Exception("Backup rows committed; preference completion failed", storageFailure)
+) : Exception("Backup rows committed; preference completion failed", storageFailure), CommittedBackupPreferenceFailure {
+    override val committedReceipt: CommittedBackupReceipt = CommittedBackupReceipt(
+        result.counts.entries.associate { (kind, counts) ->
+            kind.arrayKey to CommittedBackupCounts(counts.inserted, counts.merged, counts.skipped, counts.dropped)
+        },
+        result.userDefaultsRestored,
+        result.channelSlotsAffectedByImport,
+    )
+    override val preferenceFailure: Throwable get() = storageFailure
+}
 
 internal data class BackupImportHooks(
     val beforeWrite: suspend (BackupModelKind) -> Unit = {},
