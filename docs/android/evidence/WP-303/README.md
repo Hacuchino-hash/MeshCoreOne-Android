@@ -110,3 +110,15 @@ Mutation checks (production line changed, tests rerun, line restored):
 
 Not verifiable without a radio/device: real GATT callback ordering, OEM bond behavior, the
 172-byte frame limit against firmware, and `AndroidGattFacade` under the main looper.
+
+## Onboarding binding (JVM/Robolectric evidence)
+
+`app/src/test/.../container/onboarding/`: `OnboardingPairingAdapterTest` (connected/cancelled/ignored/failed/other-app
+mapping, retry, stale clear, Wi-Fi port validation and failures, demo unlock/unavailable),
+`OnboardingPermissionTest` (snapshot mapping per API level, denied-after-request, scan-fallback and per-kind request
+names), `OnboardingRegionPresetAdapterTest` (catalog, region port, preset outcomes applied/demo/unknown/
+not-connected/retryable/failed, cancellation propagates), `OnboardingFlagsTest` (ordered write-behind persistence,
+gate flow, failed write reported), `OnboardingGateTest` (Compose: shell hidden until the flag flips, flip selects
+Chats, completed install untouched, no bindings shows the shell). Not verifiable without a device: the runtime
+permission dialogs and Settings round trip, the CompanionDeviceManager chooser, real BLE/Wi-Fi connect, location
+and geocoder region detection, preset write against a radio, back-gesture behavior and TalkBack.

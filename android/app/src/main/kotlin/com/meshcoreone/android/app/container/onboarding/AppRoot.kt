@@ -42,3 +42,6 @@ fun OnboardingGate(
 }
 
 private val ALWAYS_COMPLETED = kotlinx.coroutines.flow.MutableStateFlow(true)
+
+/** What the app root learned about onboarding bindings: [bindings] is null when none exist (shell only). */
+class OnboardingResolution(val bindings: AppOnboarding?)

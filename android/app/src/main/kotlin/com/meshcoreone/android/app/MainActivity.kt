@@ -19,7 +19,7 @@ import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
 import com.meshcoreone.android.app.navigation.NavigationSavedState
 import com.meshcoreone.android.app.navigation.NavigationState
-import com.meshcoreone.android.app.container.onboarding.AppOnboarding
+import com.meshcoreone.android.app.container.onboarding.OnboardingResolution
 import com.meshcoreone.android.app.container.onboarding.OnboardingGate
 import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.designsystem.MeshCoreTheme
@@ -55,25 +55,33 @@ open class MainActivity : ComponentActivity() {
         }
         setContent {
             MeshCoreTheme {
-                val onboarding by produceOnboarding()
-                OnboardingGate(host.navigation, onboarding) { bound ->
-                    NativeNavigationShell(host.navigation, onboarding = bound?.forRerun())
+                // Nothing is drawn until the container answers, so a first run never flashes the main shell.
+                val resolved by produceOnboarding()
+                resolved?.let { answer ->
+                    OnboardingGate(host.navigation, answer.bindings) { bound ->
+                        NativeNavigationShell(host.navigation, onboarding = bound?.forRerun())
+                    }
                 }
             }
         }
     }
 
-    /** Resolves the process container's onboarding bindings; null while it builds or if it failed to build. */
+    /**
+     * The process container's onboarding bindings once known (null answer = none: no process container, or it failed
+     * to build); null state while the container is still building.
+     */
     @Composable
-    private fun produceOnboarding(): State<AppOnboarding?> = produceState<AppOnboarding?>(null) {
-        val app = application as? MeshCoreApplication ?: return@produceState
-        value = try {
-            app.container.await().onboarding
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Exception) {
-            null
-        }
+    private fun produceOnboarding(): State<OnboardingResolution?> = produceState<OnboardingResolution?>(null) {
+        val app = application as? MeshCoreApplication
+        value = OnboardingResolution(
+            if (app == null) null else try {
+                app.container.await().onboarding
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                null
+            },
+        )
     }
 
     /** While resumed, this activity is the host that can launch the system companion-device chooser. */
