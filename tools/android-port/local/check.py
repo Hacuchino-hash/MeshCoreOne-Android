@@ -72,7 +72,7 @@ def run_candidate(repo, revision, prefix, stages, worktree):
         directory = Path(temporary)
         control = directory / "control"
         control.mkdir()
-        for name in ("fast.py", "run.sh", "test_check.py"):
+        for name in ("check.py", "fast.py", "run.sh", "test_check.py"):
             source = tool / name
             if source.is_file():
                 (control / name).write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
