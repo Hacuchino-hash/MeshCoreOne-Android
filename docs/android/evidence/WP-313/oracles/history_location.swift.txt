@@ -1,0 +1,59 @@
+// Oracle for LocationReportFormat: C-printf coordinates, RelativeDateTimeFormatter unit choice,
+// MeasurementFormatter .naturalScale altitude, and .dateTime month/day/hour/minute output.
+import Foundation
+
+func coords(_ lat: Double, _ lon: Double) -> String { String(format: "%.4f, %.4f", lat, lon) }
+print("COORD", coords(37.784712, -122.401233))
+print("COORD", coords(37.78475, -122.40125))
+print("COORD", coords(0, 0))
+print("COORD", coords(-0.0, -0.00001))
+print("COORD", coords(0.00005, 0.00015))
+print("COORD", coords(1.00005, 2.00025))
+print("COORD", coords(0.125, 1.0005))
+print("COORD", coords(Double.nan, Double.infinity))
+print("COORD", coords(-Double.infinity, 89.99995))
+
+let now = Date(timeIntervalSince1970: 1_000_000)
+let rel = RelativeDateTimeFormatter()
+rel.unitsStyle = .abbreviated
+rel.locale = Locale(identifier: "en_US")
+var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "UTC")!
+rel.calendar = cal
+let day: Double = 86400
+let offsets: [Double] = [0, -1, -59, -60, -89, -5400, -7200, -86399, -86400, -6 * day, -7 * day, -13 * day, -30 * day, -35 * day, -364 * day, -400 * day, 30, 7200, 3 * day]
+for offset in offsets {
+  print("REL", Int(offset), rel.localizedString(for: now.addingTimeInterval(offset), relativeTo: now))
+}
+
+for id in ["en_US", "en_GB", "de_DE", "fr_FR"] {
+  let f = MeasurementFormatter()
+  f.locale = Locale(identifier: id)
+  f.unitOptions = .naturalScale
+  f.numberFormatter.maximumFractionDigits = 0
+  for m: Double in [0.0, 42, -50, 999, 1000, 1500, 1609, 2500, 8848, 10000, 0.4, 0.5, 1.5, 2.5] {
+    print("ALT", id, m, f.string(from: Measurement(value: m, unit: UnitLength.meters)))
+  }
+}
+
+let date = Date(timeIntervalSince1970: 1_720_856_460) // 2024-07-13 07:41 UTC
+for id in ["en_US", "en_GB", "de_DE", "fr_FR", "ko_KR", "zh_Hans_CN", "ru_RU"] {
+  var style = Date.FormatStyle.dateTime.month(.abbreviated).day().hour().minute()
+  style.locale = Locale(identifier: id)
+  style.timeZone = TimeZone(identifier: "UTC")!
+  var md = Date.FormatStyle.dateTime.month(.abbreviated).day()
+  md.locale = Locale(identifier: id)
+  md.timeZone = TimeZone(identifier: "UTC")!
+  print("ABS", id, date.formatted(style), "|", date.formatted(md))
+}
+
+// Calendar month/day arithmetic used by HistoryTimeRange.startDate
+var c2 = Calendar(identifier: .gregorian); c2.timeZone = TimeZone(identifier: "America/New_York")!
+let iso = ISO8601DateFormatter()
+for s in ["2024-03-31T12:00:00Z", "2024-03-10T12:00:00Z", "2024-05-31T03:30:00Z", "2024-11-07T06:30:00Z"] {
+  let d = iso.date(from: s)!
+  print("CAL", s, iso.string(from: c2.date(byAdding: .day, value: -7, to: d)!),
+        iso.string(from: c2.date(byAdding: .month, value: -1, to: d)!),
+        iso.string(from: c2.date(byAdding: .month, value: -3, to: d)!))
+}
+// Number formatting of the readout value
+for v: Double in [3.8, 3.85, 1234.5, -0.0, 7.1234567, 100.0] { print("NUM", v, v.formatted(.number.locale(Locale(identifier: "en_US")))) }
