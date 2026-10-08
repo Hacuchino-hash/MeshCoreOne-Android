@@ -98,6 +98,7 @@ object AndroidAppContainerFactory {
                 bonds = PlatformBondInspector(android.os.Build.VERSION.SDK_INT, bondGateway) { addresses[it] },
                 permissionSnapshot = AndroidPermissionState(application)::snapshot,
                 companionSetup = companionService.takeIf { companionGateway.isSupported },
+                chooserResult = companionGateway::onChooserResult,
                 refreshAssociations = { (pairing as? CompanionPairingService)?.let { companionService.refreshAssociations() } },
                 notificationDelivery = UnavailableNotificationDelivery,
                 notificationPreferences = storage.notificationPreferences(),

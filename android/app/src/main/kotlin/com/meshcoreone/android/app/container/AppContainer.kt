@@ -114,6 +114,8 @@ class AppContainerDependencies(
     val permissionSnapshot: (() -> com.meshcoreone.android.core.connectivity.permissions.PermissionSnapshot)? = null,
     /** The companion setup the resumed activity attaches its chooser host to; null when no companion registry exists. */
     val companionSetup: com.meshcoreone.android.core.connectivity.pairing.CompanionSetupService? = null,
+    /** Forwards an API 31-32 chooser activity result (request id, result code, data) to the companion gateway. */
+    val chooserResult: ((Long, Int, android.content.Intent?) -> Unit)? = null,
     val newBootstrapDebugLog: (CoroutineScope) -> DebugLogBuffer? = { null },
     /** Releases process-owned resources (database, storage) once the runtime has closed. */
     val onClose: suspend () -> Unit = {},
@@ -237,6 +239,11 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
 
     /** The companion setup service (for `setChooserHost` and the chooser result), when a registry exists. */
     val companionSetup = dependencies.companionSetup
+
+    /** Forwards a chooser activity result to the platform gateway; a no-op without a companion registry. */
+    fun onChooserResult(requestId: Long, resultCode: Int, data: android.content.Intent?) {
+        dependencies.chooserResult?.invoke(requestId, resultCode, data)
+    }
 
     private val revocationGuard: PermissionRevocationGuard? = dependencies.permissionSnapshot?.let { read ->
         PermissionRevocationGuard(

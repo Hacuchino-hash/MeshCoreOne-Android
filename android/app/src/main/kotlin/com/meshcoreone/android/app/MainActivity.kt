@@ -2,6 +2,8 @@
 // Native adaptation: Edge-to-edge Activity and retained screen navigation; no process/radio graph assembly.
 package com.meshcoreone.android.app
 
+import android.content.Intent
+import android.content.IntentSender
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +15,12 @@ import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
 import com.meshcoreone.android.app.navigation.NavigationSavedState
 import com.meshcoreone.android.app.navigation.NavigationState
+import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.designsystem.MeshCoreTheme
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class NavigationHostViewModel : ViewModel() {
     val navigation = NavigationCoordinator()
@@ -22,6 +29,9 @@ class NavigationHostViewModel : ViewModel() {
 
 open class MainActivity : ComponentActivity() {
     private lateinit var host: NavigationHostViewModel
+    private val uiScope = MainScope()
+    private val chooserRequests = HashMap<Int, Long>()
+    private var nextChooserCode = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +52,56 @@ open class MainActivity : ComponentActivity() {
                 NativeNavigationShell(host.navigation)
             }
         }
+    }
+
+    /** While resumed, this activity is the host that can launch the system companion-device chooser. */
+    override fun onResume() {
+        super.onResume()
+        val application = application as? MeshCoreApplication ?: return
+        uiScope.launch {
+            val setup = try {
+                application.container.await().companionSetup
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                null
+            }
+            setup?.setChooserHost(CompanionChooserHost { chooser, requestId -> launchChooser(chooser, requestId) })
+        }
+    }
+
+    override fun onPause() {
+        (application as? MeshCoreApplication)?.let { app ->
+            if (app.container.isCompleted && !app.container.isCancelled) {
+                uiScope.launch { app.container.await().companionSetup?.setChooserHost(null) }
+            }
+        }
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        uiScope.cancel()
+        super.onDestroy()
+    }
+
+    private fun launchChooser(chooser: Any, requestId: Long) {
+        val sender = chooser as? IntentSender ?: return
+        val code = nextChooserCode.also { nextChooserCode = if (it >= MAX_CHOOSER_CODE) 1 else it + 1 }
+        chooserRequests[code] = requestId
+        startIntentSenderForResult(sender, code, null, 0, 0, 0)
+    }
+
+    /** API 31-32 deliver the chooser selection here; API 33+ report it through the association callbacks instead. */
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val requestId = chooserRequests.remove(requestCode) ?: return
+        val app = application as? MeshCoreApplication ?: return
+        uiScope.launch { app.container.await().onChooserResult(requestId, resultCode, data) }
+    }
+
+    private companion object {
+        const val MAX_CHOOSER_CODE = 0x7FFF
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
