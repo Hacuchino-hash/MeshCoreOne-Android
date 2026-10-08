@@ -52,7 +52,7 @@ dependencies {
 
 android {
     defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    sourceSets.getByName("test").java.srcDir(
+    sourceSets.getByName("test").kotlin.srcDir(
         "src/androidTest/kotlin/com/meshcoreone/android/app/navigation/cases",
     )
 }

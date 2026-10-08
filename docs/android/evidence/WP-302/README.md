@@ -1,8 +1,35 @@
 # WP-302 execution admission
 
 **Product implementation, exact Nav-only dependency support and closed
-traceability admission integrated; native compilation/execution not yet
-verified. Not WP-302 acceptance or feature parity.**
+traceability admission integrated; real App compilation/assembly passed,
+native execution unverified. Not WP-302 acceptance or feature parity.**
+
+## Actual compiled-head verification iteration
+
+At `a19f571f95916c244b22fda8fe52e1d382811e43`, the installed official
+`--stages python,assemble` cycle passed: controller234/234, scaffold15/15,
+installed-helper64/64, then real App Kotlin compilation and `:app:assembleDebug`
+under strict dependency verification. Full visible output is
+`assembly-a19f571f.log`; isolated raw directory is
+`/home/cbattagler/meshcoreone-work/local-checks/run-BXmEWA9B`.
+This removes the earlier dirty-input and traceability blockers. It is not the
+required complete publication cycle.
+
+The subsequent actual `--stages verify` command at the same head reached
+`:app:compileDebugUnitTestKotlin` and failed: shared original-case/fixture
+Kotlin sources were not in that compilation. The producer had attached them
+to the Java source set. The real pinned AGP9.4.1 API exposes
+`AndroidSourceSet.getKotlin()`; the receiver now uses the corresponding
+`test.kotlin.srcDir` for the exact existing shared-case directory, preserving
+one assertion body for local and instrumentation consumers. No duplicated
+assertions, missing-test fallback or changed family count is introduced.
+`native-a19f571f.log` retains full output and
+`/home/cbattagler/meshcoreone-work/local-checks/run-4ufkSaqp` is the raw run.
+
+The reaction-channel original uses source index1; its actual seeded Room
+lookup is now explicitly given that same channel instead of default index0.
+Expected source assertions are unchanged. Actual native execution/screens
+remain zero until the corrected wiring really compiles and executes.
 
 ## Actual validator transfer and closed admission
 

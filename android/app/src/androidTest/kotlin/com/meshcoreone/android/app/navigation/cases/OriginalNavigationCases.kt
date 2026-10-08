@@ -102,7 +102,7 @@ abstract class OriginalNavigationCases {
 
     @Test fun `Reaction notification on channel navigates to channel with scrollToMessageID`() = runBlocking {
         val n = NavigationCoordinator(); val c = channel(1u)
-        NotificationFixture(this, radio, n, lookup()).use {
+        NotificationFixture(this, radio, n, lookup(channel = c)).use {
             requireNotNull(it.service.onReactionNotificationTapped)(null, c.index, radio, messageId)
             assertEquals(listOf(NavigationOutcome.Navigated), it.outcomes)
         }
