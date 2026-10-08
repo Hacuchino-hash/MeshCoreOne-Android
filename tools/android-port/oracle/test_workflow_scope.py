@@ -36,10 +36,19 @@ class WorkflowScopeTests(unittest.TestCase):
             "android/core/data/src/main/kotlin/com/meshcoreone/android/core/data/backup/AppBackupCodec.kt",
             "android/core/database/src/main/kotlin/com/meshcoreone/android/core/database/MeshDatabase.kt",
             "tools/android-port/oracle/wp203_interop.py",
-            "docs/android/evidence/WP-203/WP203InteropTests.swift",
         ):
             with self.subTest(path=path):
                 self.assertTrue(classify([path])["backup"])
+
+    def test_wp_oracle_evidence_and_deviations_do_not_schedule_candidate_execution(self):
+        for path in (
+            "docs/android/evidence/WP-203/WP203InteropTests.swift",
+            "docs/android/evidence/WP-316/oracle-output.txt",
+            "docs/android/evidence/WP-315/source-cases.json",
+            "docs/android/deviations/WP-314.md",
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path]), {scope: False for scope in SCOPES})
 
     def test_protocol_only_change_schedules_protocol_only(self):
         result = classify([

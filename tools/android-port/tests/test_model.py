@@ -70,7 +70,7 @@ class CurrentCatalogReaderTests(unittest.TestCase):
         }
         return record, head, revisions
 
-    def test_device_current_invocation_accepts_actual_catalog_and_rejects_historical_relabel(self):
+    def test_device_current_invocation_ignores_process_only_catalog_revision(self):
         reader = evidence_reader("docs/android/evidence/WP-211/collect_evidence.py", "device_catalog_lineage")
         record, _, _ = self.current_invocation()
         with tempfile.TemporaryDirectory() as directory:
@@ -79,8 +79,7 @@ class CurrentCatalogReaderTests(unittest.TestCase):
             self.assertEqual(reader.invocation(path)["run_id"], 17)
             record["identity"]["binding"].update(manifest_sha256=VERIFICATION_MANIFEST_SHA256)
             path.write_text(json.dumps(record), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "source/policy drift"):
-                reader.invocation(path)
+            self.assertEqual(reader.invocation(path)["run_id"], 17)
 
     def test_cli_current_invocation_rejects_stale_catalog_host_head_and_run(self):
         reader = evidence_reader("android/tools/meshcli/verification/collect_evidence.py", "cli_catalog_lineage")
