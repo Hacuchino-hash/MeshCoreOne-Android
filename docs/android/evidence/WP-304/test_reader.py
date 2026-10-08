@@ -33,12 +33,12 @@ def png(width=1, height=1):
     return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(b"\0" + b"\xff" * 4)) + chunk(b"IEND", b"")
 
 def invocation_record():
+    revisions = retain_raw.current_revisions()
     return {"schema_version": 1, "stage": "verify", "host": "linux", "identity": {
         "run_id": 12, "run_attempt": 1, "binding": {
             "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-003",
             "base_sha": "a" * 40, "head_sha": "b" * 40,
-            "source_sha": retain_raw.PIN, "manifest_sha256": retain_raw.MANIFEST,
-            "policy_revision": retain_raw.POLICY,
+            "source_sha": retain_raw.PIN, **revisions,
         }}}
 
 
@@ -285,6 +285,26 @@ class NativeTest {
             self.assertNotIn("run_id", local)
             self.assertNotIn("run_attempt", local)
             inventory.assert_called_once_with()
+
+    def test_historical_hosted_receipt_cannot_be_relabelled_as_current_catalog_execution(self):
+        manifest = manifest_fixture(amended=True)
+        policy = retain_raw.unique_json(retain_raw.ROOT / "docs/android/automation-policy.json")
+        revisions = content_scope_revisions(manifest, policy)
+        record = invocation_record()
+        record["identity"]["binding"].update(revisions)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wp109-invocation.json"
+            with patch.object(retain_raw, "current_revisions", return_value=revisions), \
+                    patch.object(retain_raw, "git", return_value=b"b" * 40):
+                path.write_text(json.dumps(record))
+                self.assertEqual((path.parent, record), retain_raw.pipeline_invocation(path))
+                for key, historical in (("manifest_sha256", retain_raw.MANIFEST),
+                                        ("policy_revision", retain_raw.POLICY)):
+                    changed = copy.deepcopy(record)
+                    changed["identity"]["binding"][key] = historical
+                    path.write_text(json.dumps(changed))
+                    with self.subTest(key=key), self.assertRaisesRegex(EvidenceError, "Stale/mismatched"):
+                        retain_raw.pipeline_invocation(path)
 
     def test_local_binding_rejects_wrong_host_dirty_snapshot_or_bad_actual_head_tree(self):
         with patch.object(retain_raw.platform, "system", return_value="Windows"):
