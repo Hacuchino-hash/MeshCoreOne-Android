@@ -74,11 +74,12 @@ build-tools 37.0.0, explicit private caches and strict dependency verification:
 | `:core:maps:lintDebug :feature:map:lintDebug :app:lintDebug` | Passed; no lint errors |
 | `:app:assembleDebug` through `android/scaffold/invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 1536m` | Passed |
 | `:core:datastore:verifyPreferencePackaging` | Passed against the rebuilt APK, including the established four-ABI DataStore provenance check |
+| `:core:designsystem:verifyThemePackaging` | Passed; exact permission set retained, with MapLibre precise-location and Wi-Fi-state permissions removed |
 | `zipalign -c -P 16 4 app-debug.apk` | Passed |
 | Repository `apk_alignment.inspect_alignment` | Passed for every packaged ELF: MapLibre is packaged only for arm64-v8a/x86_64, while existing 32-bit non-map libraries remain packaged; every packaged `PT_LOAD` segment uses `p_align=0x4000` |
 
 Built debug APK SHA-256:
-`4C5B98EC2BC5936F0541FC8ECE0D979A123714640CB49AECCAB703B741888475`.
+`021AFD5D8417AD54DFC36FF3E1A76B356773E3CECD67AE8BAE83090CA1826B9A`.
 This is static packaging evidence, not execution on a 16 KiB device.
 
 ## Acceptance

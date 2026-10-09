@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- AndroidOnly: WP-002 Launcher; WP-303 registers the process Application. Radio, network and service declarations come from core:connectivity's manifest. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Optional: approximate location is read once to suggest the radio region during onboarding. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- AndroidOnly: WP-312 retain existing connectivity permissions without MapLibre's precise/Wi-Fi additions. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="replace" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="replace" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" tools:node="remove" />
 
     <application
         android:name="com.meshcoreone.android.app.MeshCoreApplication"
