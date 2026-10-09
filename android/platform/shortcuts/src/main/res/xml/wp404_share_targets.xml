@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-404 Direct-share declaration; the app launcher activity must reference it via android.app.shortcuts meta-data. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <share-target android:targetClass="com.meshcoreone.android.platform.shortcuts.ShareTargetActivity">
+        <data android:mimeType="text/plain" />
+        <category android:name="com.meshcoreone.android.platform.shortcuts.category.SEND_TARGET" />
+    </share-target>
+</shortcuts>
