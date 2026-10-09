@@ -1,12 +1,15 @@
 """AndroidOnly: WP-003 Validate live CI reports without checked-in result bundles."""
 
+import ast
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from controller.ci_evidence import counts, lint_evidence, suite_counts
+from controller.ci_evidence import EXPECTED_APK_PERMISSIONS, counts, lint_evidence, suite_counts
 from controller.errors import PortError
+
+REPO = Path(__file__).resolve().parents[3]
 
 
 def junit_report(path: Path, tests=1, failures=0, errors=0, skipped=0):
@@ -29,6 +32,21 @@ def junit_report(path: Path, tests=1, failures=0, errors=0, skipped=0):
 
 
 class LiveReportTests(unittest.TestCase):
+    def test_apk_inspector_and_controller_require_the_same_exact_permissions(self):
+        module = ast.parse((REPO / "android/scaffold/inspect_apk.py").read_text(encoding="utf-8"))
+        expected = next(
+            ast.literal_eval(node.value)
+            for node in ast.walk(module)
+            if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "expected" for target in node.targets)
+            and isinstance(node.value, ast.List)
+            and any(
+                isinstance(element, ast.Constant) and element.value == "android.permission.BLUETOOTH_CONNECT"
+                for element in node.value.elts
+            )
+        )
+        self.assertEqual(expected, EXPECTED_APK_PERMISSIONS)
+
     def test_complete_junit_report_has_positive_discovery(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / "TEST-suite.xml"

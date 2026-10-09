@@ -32,8 +32,9 @@ def inspect_apk():
     if "launchable-activity: name='com.meshcoreone.android.MainActivity'" not in badging:
         raise ValueError("Actual APK launcher is missing")
     permissions = re.findall(r"^uses-permission: name='([^']+)'", badging, re.MULTILINE)
-    # WP-206 core:connectivity merges BLE/CDM presence/connectedDevice FGS/LAN permissions (manifest order).
+    # WP-303 adds optional coarse location before WP-206 connectivity permissions (manifest order).
     expected = [
+        "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.BLUETOOTH_SCAN",
         "android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE",
