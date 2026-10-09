@@ -1,0 +1,277 @@
+{
+  "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+  "owned_case_count": 29,
+  "bound_case_count": 29,
+  "unbound": [],
+  "unknown_bindings": [],
+  "junit": {
+    "passed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "not-run": 0
+  },
+  "android_only_tests": 164,
+  "cases": [
+    {
+      "id": "DeviceSelectionFilterTests::WiFi-capable device is shown regardless of ASK registration()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "wifi device is shown regardless of registration",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::BLE device registered with AccessorySetupKit is shown()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "ble device registered with the system is shown",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::BLE device missing from ASK is hidden (imported shadow)()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "ble device missing from the registry is hidden",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::Device with empty connection methods and no ASK entry is hidden()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "method-less device without registry entry is hidden",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::Device with empty connection methods is shown when ASK knows its id()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "method-less device is shown when the registry knows its id",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::WiFi+BLE device is shown when its BLE id is missing from ASK()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "wifi plus ble device is shown when the ble id is unregistered",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::macOS: BLE device with a stored bluetooth method is shown (no ASK registry)()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "registry-less ble device with a stored method is shown",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::macOS: ghost/shadow with no bluetooth method is hidden()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "registry-less ghost without a method is hidden",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::macOS: a method-less device is hidden even when its id is in the registry set()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "registry-less method-less device stays hidden even if its id is in the set",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::saved radio and unsaved ASK accessory both appear()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "saved radio and unsaved accessory both appear",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::macOS registry-less builder never reports needs-setup()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "registry-less builder never reports needs-setup",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DeviceSelectionFilterTests::needs-setup row copy is Set Up VoiceOver and is not a Connect row()",
+      "class": "com.meshcoreone.android.feature.settings.device.DeviceSelectionTest",
+      "method": "needs-setup row copy is Set Up and not a connect row",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/DeviceSelectionSheetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::expand only when not authorized and incomplete()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "expand only when not authorized and incomplete",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::incomplete is nil or a subdivided country with no administrativeAreaCode()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "incomplete is null or a subdivided country with no area code",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::shouldResolveOnAppear is true only when authorized and source is not manual()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "resolve on appear only when authorized and not manual",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::useMyLocationAction maps authorization status()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "use my location action maps authorization",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::appear commit keeps manual Portugal over California GPS()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "appear commit keeps manual portugal",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::user-initiated commit replaces manual Portugal with California GPS()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "user initiated commit replaces manual portugal",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::actionAfterAuthorizationWait()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "action after authorization wait",
+      "disposition": "platform-adaptation",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::lookup miss is silent on appear and when request is in flight()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "lookup miss is silent on appear and while a request is in flight",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::committedSelection with nil GPS keeps current()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "committed selection with a null result keeps current",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::shouldCommitAppearResult is false only for manual()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "appear result commits unless manual",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::appear commit of nil current takes GPS result()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "appear commit of a null current takes the result",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::appear commit of location current takes GPS result()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "appear commit of a location current takes the result",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::useMyLocation failure copy does not say region, below, or this screen()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "failure copy avoids region below and this screen",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::useMyLocation locating copy does not say region()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "locating copy avoids region",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::denied copy does not say region or mesh contacts()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "denied copy avoids region and mesh contacts",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "PresetLocationPolicyTests::pt lookup-miss and denied use voce()",
+      "class": "com.meshcoreone.android.feature.settings.device.PresetLocationPolicyTest",
+      "method": "portuguese lookup miss and denied use the formal form",
+      "disposition": "source-behavior",
+      "source": "MC1Tests/Views/Settings/PresetLocationPolicyTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    },
+    {
+      "id": "DangerZoneViewModelForgetTests::declining Remove Accessory does not set errorMessage()",
+      "class": "com.meshcoreone.android.feature.settings.device.DangerZoneStateHolderTest",
+      "method": "declining the system removal prompt does not set an error",
+      "disposition": "adapted-service-fake",
+      "source": "MC1Tests/Views/Settings/Sections/DangerZoneViewModelForgetTests.swift",
+      "parameter_family": "single",
+      "junit": "passed"
+    }
+  ]
+}

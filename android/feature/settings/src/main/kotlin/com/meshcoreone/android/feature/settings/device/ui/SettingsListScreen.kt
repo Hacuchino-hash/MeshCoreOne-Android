@@ -45,7 +45,7 @@ fun SettingsListScreen(
                 ActionRow(res(AppSettingsStrings.advancedSettingsTitle), true, { onSelect(SettingsDetail.ADVANCED) })
             }
         } else {
-            SettingsSection(res(AppSettingsStrings.deviceHeader)) {
+            SettingsSection(res(AppSettingsStrings.deviceHeader), listOf(res(AppSettingsStrings.deviceNoDeviceConnected))) {
                 ActionRow(res(AppSettingsStrings.deviceConnect), true, onConnect)
             }
         }
