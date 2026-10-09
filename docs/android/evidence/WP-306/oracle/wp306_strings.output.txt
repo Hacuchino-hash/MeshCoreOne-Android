@@ -1,0 +1,24 @@
+ci "alice" "ALICE" true
+ci "Ä" "ä" true
+ci "é" "e" false
+ci "é" "é" true
+ci "ß" "SS" true
+ci "ß" "ss" true
+ci "İ" "i" false
+ci "ａ" "a" true
+ci "Alice " "Alice" false
+ci "ǅ" "ǆ" true
+ci "σ" "ς" true
+ci "Σ" "ς" true
+sc "Café" "cafe" true
+sc "cafe" "Café" true
+sc "Straße" "strasse" true
+sc "strasse" "Straße" true
+sc "ａlice" "alice" false
+sc "Alice" "ａ" false
+sc "İstanbul" "istanbul" true
+sc "Ångström" "angstrom" true
+sc "Alice" "ALI" true
+sc "a b" "a  b" false
+sc "alice" "" false
+lang en_US

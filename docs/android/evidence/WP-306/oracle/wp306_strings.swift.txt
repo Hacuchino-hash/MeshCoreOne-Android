@@ -1,0 +1,6 @@
+import Foundation
+let ci: [(String,String)] = [("alice","ALICE"),("Ä","ä"),("é","e"),("e\u{301}","é"),("ß","SS"),("ß","ss"),("İ","i"),("ａ","a"),("Alice ","Alice"),("ǅ","ǆ"),("σ","ς"),("Σ","ς")]
+for (a,b) in ci { print("ci", a.debugDescription, b.debugDescription, a.localizedCaseInsensitiveCompare(b) == .orderedSame) }
+let sc: [(String,String)] = [("Café","cafe"),("cafe","Café"),("Straße","strasse"),("strasse","Straße"),("ａlice","alice"),("Alice","ａ"),("İstanbul","istanbul"),("Ångström","angstrom"),("Alice","ALI"),("a b","a  b"),("alice","")]
+for (h,n) in sc { print("sc", h.debugDescription, n.debugDescription, h.localizedStandardContains(n)) }
+print("lang", Locale.current.identifier)
