@@ -1,2 +1,24 @@
-<!-- AndroidOnly: WP-002 Shortcut boundary without intent registration. -->
-<manifest />
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidOnly: WP-404 Share target (exported, text/plain only) and internal shortcut trampoline. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name="com.meshcoreone.android.platform.shortcuts.ShareTargetActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.meshcoreone.android.platform.shortcuts.ShortcutActionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+    </application>
+</manifest>
