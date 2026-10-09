@@ -1,0 +1,88 @@
+// WP-317 parity oracle: Swift/Foundation behaviors the Kotlin settings port relies on.
+import Foundation
+
+func show(_ label: String, _ value: Any?) {
+  print("\(label)\t\(value.map { "\($0)" } ?? "nil")")
+}
+
+let posix = Locale(identifier: "en_US_POSIX")
+let usLocale = Locale(identifier: "en_US")
+
+print("== frequency field: FloatingPointFormatStyle<Double>.number.precision(.fractionLength(3)).locale(.posix) parse (TextField)")
+let freqStyle = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(3)).locale(posix)
+for s in ["915", "915.0", "915.125", "915.1254", " 915", "915 ", "915,5", "1,915.5", "1e3", "-1", "+915", ".5", "5.", "", "-", "abc", "915abc", "abc915", "0x10", "nan", "inf", "٩١٥", "915.5.5", "1_000", "９１５"] {
+  show("[\(s)]", try? freqStyle.parseStrategy.parse(s))
+}
+print("== frequency display")
+for k in [915000, 869525, 433175, 150000, 2500000, 7800, 0] as [UInt32] {
+  show("\(k)", (Double(k) / 1000.0).formatted(freqStyle))
+}
+
+print("== tx power field: IntegerFormatStyle<Int>.number parse (en_US)")
+let intStyle = IntegerFormatStyle<Int>.number.locale(usLocale)
+for s in ["20", "-9", "+5", " 7", "7 ", "1,5", "1,000", "7.9", "7.0", "", "-", "abc", "7abc", "٧", "99999999999999999999", "1e1", "−5"] {
+  show("[\(s)]", try? intStyle.parseStrategy.parse(s))
+}
+
+print("== scaled frequency rounding / exact conversions")
+for v in [915.0, 915.0005, 915.0004, 869.5255, 150.0, 149.9996, 2500.0, 2500.0004, 2500.0005, -1.0, .nan, .infinity, 4294967.295, 0.0005] as [Double] {
+  let scaled = (v * 1000).rounded()
+  let inRange = v.isFinite && scaled >= 150000 && scaled <= 2500000
+  show("\(v)", "scaled=\(scaled) inRange=\(inRange) exactU32=\(UInt32(exactly: scaled).map(String.init) ?? "nil")")
+}
+print("== Int8(exactly:) txPower range -9...maxTx(20)")
+for p in [-10, -9, 0, 20, 21, 127, 128, -128, -129] {
+  show("\(p)", Int8(exactly: p).map { String($0) })
+}
+print("== UInt8(exactly:) sf/cr")
+for p in [4, 5, 12, 255, 256, -1] { show("\(p)", UInt8(exactly: p).map { String($0) }) }
+
+print("== BLE PIN UInt32(String)")
+for s in ["123456", "000000", "099999", "100000", "999999", "1000000", "+123456", "-123456", " 123456", "123456 ", "12345", "１２３４５６", "123456\n", "", "4294967295", "4294967296", "0x1E240", "1e5"] {
+  show("[\(s)]", UInt32(s).map { String($0) })
+}
+
+print("== formatBandwidth fallback (NumberFormatter en_US_POSIX, 0...2 fraction digits)")
+func fmtBW(_ hz: UInt32) -> String {
+  let khz = Double(hz) / 1000.0
+  if khz.truncatingRemainder(dividingBy: 1) == 0 { return "\(Int(khz))" }
+  let f = NumberFormatter()
+  f.locale = Locale(identifier: "en_US_POSIX")
+  f.minimumFractionDigits = 0
+  f.maximumFractionDigits = 2
+  return f.string(from: NSNumber(value: khz)) ?? "\(khz)"
+}
+for hz in [7799, 7801, 7800, 31249, 31251, 1, 999, 1005, 1015, 1025, 1035, 62499, 125001, 124999, 0, 500000, 62505, 4294967295] as [UInt32] { show("\(hz)", fmtBW(hz)) }
+
+print("== nearestBandwidth")
+let bws: [UInt32] = [7800, 10400, 15600, 20800, 31250, 41700, 62500, 125_000, 250_000, 500_000]
+func nearest(_ hz: UInt32) -> UInt32 {
+  if bws.contains(hz) { return hz }
+  return bws.min { l, r in
+    let ld = l > hz ? l - hz : hz - l
+    let rd = r > hz ? r - hz : hz - r
+    return ld < rd
+  } ?? 250_000
+}
+for hz in [7799, 9100, 9101, 13000, 18200, 26000, 36475, 52100, 93750, 187500, 375000, 0, 900000, 4294967295] as [UInt32] { show("\(hz)", nearest(hz)) }
+
+print("== hex sanitize: uppercased().filter { isASCII && isHexDigit }.prefix(n)")
+for s in ["ab12", "AB 12", "ﬀ", "ß", "ǆ0", "ａｂ", "12345", "0xff", "g1h2", "\u{0131}a", "ﬁ", "\u{1E9E}", "ǰ"] {
+  show("[\(s)]", String(s.uppercased().filter { $0.isASCII && $0.isHexDigit }))
+}
+print("== reserved prefix check upper.count >= 2 hasPrefix 00/FF")
+for s in ["0", "00", "000", "F", "FF", "F0", "ff", "ﬀ"] {
+  let upper = s.uppercased()
+  show("[\(s)]", "\(upper) reserved=\(upper.count >= 2 && ["00", "FF"].contains(where: upper.hasPrefix))")
+}
+
+print("== localizedStandardCompare sort of region names")
+let regions = ["Zone 10", "Zone 2", "zone 1", "Île", "Ile", "alpha", "Alpha", "beta", "Beta2", "Beta10", "é", "e", "f"]
+show("sorted", regions.sorted { $0.localizedStandardCompare($1) == .orderedAscending })
+
+print("== custom OCV parse: split(',').compactMap { Int(trimmed whitespaces) }")
+for s in ["1,2,3", " 4200 , 4100,x,3900", "1,,2", "", "5000,4900,4800,4700,4600,4500,4400,4300,4200,4100,4000", "1.5,2", "+5,-5"] {
+  show("[\(s)]", s.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) })
+}
+print("== OCV field Int parse (TextField value: Int, format: .number, en_US)")
+for s in ["4200", "4,200", " 4200", "4200.5", "", "-", "abc", "4200mV"] { show("[\(s)]", try? intStyle.parseStrategy.parse(s)) }

@@ -1,0 +1,357 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 47,
+ "bound_case_count": 37,
+ "native_test_count": 47,
+ "unbound": [
+  {
+   "id": "NodeConfigImportViewModelTests::A radio-out-of-range error maps to the localized field label and template()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A position-coordinate error maps to the localized position template()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A contact-coordinate error maps to the localized contact template with the contact name()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A non-NodeConfigServiceError falls through to its localizedDescription()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::An invalid-out-path error maps to the localized template with the contact name()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A contact-capacity error maps to the localized template with the needed and available counts()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A cancellation message distinguishes a partial cancel from a clean one()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::A failure message wraps the localized description only when a write already landed()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::Leaving the screen resets a loaded preview back to the file picker()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  },
+  {
+   "id": "NodeConfigImportViewModelTests::Leaving the screen mid-import preserves the in-flight import state()",
+   "source": "MC1Tests/ViewModels/NodeConfigImportViewModelTests.swift",
+   "reason": "NodeConfig import/export needs the radio NodeConfigService; deferred (WP-318.md D-8)"
+  }
+ ],
+ "missing": [],
+ "cases": [
+  {
+   "id": "AppearanceSelectionTests::with no purchases, only the default theme is available and Browse-more is shown()",
+   "source": "MC1Tests/AppearanceSelectionTests.swift",
+   "class": "AppearanceStateTest",
+   "method": "every registry theme is offered, unlocked and in registry order",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "AppearanceSelectionTests::a theme owned via the bundle becomes available; selecting it updates current()",
+   "source": "MC1Tests/AppearanceSelectionTests.swift",
+   "class": "AppearanceStateTest",
+   "method": "selecting any theme applies it and marks only that card selected",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "AppearanceSelectionTests::owning the bundle makes every theme available and hides Browse-more()",
+   "source": "MC1Tests/AppearanceSelectionTests.swift",
+   "class": "AppearanceStateTest",
+   "method": "all themes are reachable with no purchase path",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewCatalogTests::every catalog SF Symbol name resolves to an image()",
+   "source": "MC1Tests/Models/WhatsNewCatalogTests.swift",
+   "class": "WhatsNewCatalogTest",
+   "method": "every catalog item has a glyph and distinct title and description resources",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewCatalogTests::no release ships an empty item list()",
+   "source": "MC1Tests/Models/WhatsNewCatalogTests.swift",
+   "class": "WhatsNewCatalogTest",
+   "method": "no release ships an empty item list",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewVersionTests::parses major.minor()",
+   "source": "MC1Tests/Models/WhatsNewVersionTests.swift",
+   "class": "WhatsNewVersionTest",
+   "method": "parses major dot minor",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewVersionTests::ignores the patch component()",
+   "source": "MC1Tests/Models/WhatsNewVersionTests.swift",
+   "class": "WhatsNewVersionTest",
+   "method": "ignores the patch component",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewVersionTests::comparison is lexicographic on (major, minor)()",
+   "source": "MC1Tests/Models/WhatsNewVersionTests.swift",
+   "class": "WhatsNewVersionTest",
+   "method": "comparison is lexicographic on major then minor",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewVersionTests::a patch bump is not greater(baseline : String , current : String)",
+   "source": "MC1Tests/Models/WhatsNewVersionTests.swift",
+   "class": "WhatsNewVersionTest",
+   "method": "a patch bump is not greater",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewVersionTests::unparseable strings yield nil(input : String)",
+   "source": "MC1Tests/Models/WhatsNewVersionTests.swift",
+   "class": "WhatsNewVersionTest",
+   "method": "unparseable strings yield null",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::new install (not onboarded, no baseline) suppresses()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "new install suppresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::upgrader (onboarded, no baseline, entry exists) shows()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "upgrader shows",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::patch bump suppresses()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "patch bump suppresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::minor bump shows()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "minor bump shows",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::major bump shows()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "major bump shows",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::skipped version shows the current release's entry()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "skipped version shows the current releases entry",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::no catalog entry for current version suppresses()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "no catalog entry suppresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::matched entry with empty items suppresses()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "matched entry with empty items suppresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::re-launch after a show (baseline equals current) does not re-show()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "relaunch after a show does not re-show",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::screenshot mode neither shows nor writes a baseline()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "screenshot mode neither shows nor writes a baseline",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::show path sets pendingRelease and defers the baseline to markShown()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "show path sets pending and defers the baseline",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::suppress path finalizes the baseline immediately()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "suppress path finalizes the baseline immediately",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::unparseable version fails closed: neither shows nor writes a baseline()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "unparseable version fails closed",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "WhatsNewStateTests::markShown persists the running version and clears the pending release()",
+   "source": "MC1Tests/State/WhatsNewStateTests.swift",
+   "class": "WhatsNewStateTest",
+   "method": "markShown persists the running version and clears pending",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelExportTests::handleExportResult(.success) promotes pending to success()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "saved outcome promotes pending to success with filename size and manifest",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelExportTests::handleExportResult(.failure(userCancelled)) returns to idle without errorMessage()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "cancelled picker returns to idle without an error",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelExportTests::handleExportResult(.failure(other)) surfaces errorMessage()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "low space while saving surfaces the platform message and returns to idle",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelExportTests::handleExportResult(.success) with no pending export is a no-op()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "a save outcome with no pending export is ignored",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelExportTests::dismissExportSuccess clears the summary()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "dismissExportSuccess clears the summary",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelTests::Import picker cancellation does not surface an error()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupImportTest",
+   "method": "a dismissed picker is not an error",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelTests::Readable backup URLs load even when no security scope is granted()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupImportTest",
+   "method": "a picked readable document loads to a preview",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelTests::Export uses the active services store when one is available()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupExportTest",
+   "method": "export builds from the engine and the saved bytes are the engine bytes",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelTests::performImport aborts and dismisses when the radio is connected()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupImportTest",
+   "method": "performImport aborts and dismisses when the radio connected after the preview opened",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "AppBackupViewModelTests::performImport writes through the process persistence store()",
+   "source": "MC1Tests/ViewModels/AppBackupViewModelTests.swift",
+   "class": "AppBackupImportTest",
+   "method": "performImport restores through the engine and reports the result",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "ImportSuccessDroppedFooterTests::Dropped footer blames discover cap, not channel slots, when only discover nodes drop()",
+   "source": "MC1Tests/Views/Settings/ImportSuccessDroppedFooterTests.swift",
+   "class": "ImportResultPresenterTest",
+   "method": "dropped footer blames the discover cap when only discovered nodes drop",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ImportSuccessDroppedFooterTests::Dropped footer keeps channel copy when only channels drop()",
+   "source": "MC1Tests/Views/Settings/ImportSuccessDroppedFooterTests.swift",
+   "class": "ImportResultPresenterTest",
+   "method": "dropped footer keeps channel copy when only channels drop",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ImportSuccessDroppedFooterTests::Dropped footer uses mixed copy when channels and discover nodes both drop()",
+   "source": "MC1Tests/Views/Settings/ImportSuccessDroppedFooterTests.swift",
+   "class": "ImportResultPresenterTest",
+   "method": "dropped footer uses mixed copy when both drop",
+   "disposition": "source-behavior",
+   "result": "pass"
+  }
+ ]
+}
