@@ -11,7 +11,6 @@ plugins {
     id("mesh.android.robolectric")
 }
 dependencies {
-    implementation(project(":core:protocol"))
     implementation(project(":core:model"))
     implementation(project(":core:contracts"))
     implementation(project(":core:l10n"))
