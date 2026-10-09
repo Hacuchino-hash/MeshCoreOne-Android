@@ -1,0 +1,64 @@
+// PortedFrom: MC1/Views/Settings/DeviceSelectionSheet.swift@db14559b39d32322b06477c6ae676112f583db50
+// PortedFrom: MC1/Views/Settings/SystemPairingSetupSheet.swift@db14559b39d32322b06477c6ae676112f583db50
+package com.meshcoreone.android.feature.settings.device.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings
+import com.meshcoreone.android.core.model.DeviceDTO
+import com.meshcoreone.android.core.ui.UiText
+import com.meshcoreone.android.core.ui.uiString
+import com.meshcoreone.android.feature.settings.device.DeviceSelectionListBuilder
+import com.meshcoreone.android.feature.settings.device.SystemPairedAccessory
+import java.util.UUID
+
+/**
+ * Bottom sheet listing saved radios the user can reach plus accessories that still need setup. A radio another phone
+ * holds stays visible but says so, and its row does not connect.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeviceSelectionSheet(
+    list: DeviceSelectionListBuilder.Result, connectedElsewhere: Set<UUID>,
+    onSelect: (DeviceDTO) -> Unit, onSetUp: (SystemPairedAccessory) -> Unit, onScan: () -> Unit, onConnectViaWifi: () -> Unit, onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(AppSettingsStrings.deviceSelectionTitle), style = MaterialTheme.typography.titleLarge)
+            if (list.connectable.isEmpty() && list.needsSetup.isEmpty()) {
+                Text(stringResource(AppSettingsStrings.deviceSelectionNoPairedDevices), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(AppSettingsStrings.deviceSelectionNoPairedDescription))
+            }
+            for (device in list.connectable) {
+                val elsewhere = device.id in connectedElsewhere
+                val detail = if (elsewhere) res(AppSettingsStrings.deviceSelectionConnectedElsewhere) else null
+                ActionRow(UiText.Verbatim(device.nodeName), !elsewhere, { onSelect(device) }, detail = detail)
+            }
+            if (list.needsSetup.isNotEmpty()) {
+                Text(stringResource(AppSettingsStrings.deviceSelectionPreviouslyPaired), style = MaterialTheme.typography.titleSmall)
+                for (accessory in list.needsSetup) {
+                    val row = DeviceSelectionListBuilder.needsSetupPresentation(accessory.name)
+                    val label = uiString(row.accessibilityLabel)
+                    val hint = uiString(row.accessibilityHint)
+                    androidx.compose.foundation.layout.Box(Modifier.semantics { contentDescription = "$label. $hint" }) {
+                        ActionRow(UiText.Verbatim(accessory.name), true, { onSetUp(accessory) }, detail = row.trailingTitle)
+                    }
+                }
+            }
+            ActionRow(res(AppSettingsStrings.deviceSelectionScanBluetooth), true, onScan)
+            ActionRow(res(AppSettingsStrings.deviceSelectionConnectViaWifi), true, onConnectViaWifi)
+        }
+    }
+}
