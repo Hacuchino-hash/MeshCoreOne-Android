@@ -1,0 +1,124 @@
+// WP-316 parity oracle: prints Swift/Foundation behaviors the Kotlin port relies on.
+import Foundation
+
+func show(_ label: String, _ value: Any?) {
+  print("\(label)\t\(value.map { "\($0)" } ?? "nil")")
+}
+
+func decimal3(_ value: Double) -> String { trimmed(String(format: "%.3f", value)) }
+func coord6(_ value: Double) -> String { trimmed(String(format: "%.6f", value)) }
+func trimmed(_ formatted: String) -> String {
+  guard formatted.contains(".") else { return formatted }
+  var result = formatted
+  while result.hasSuffix("0") { result.removeLast() }
+  if result.hasSuffix(".") { result.removeLast() }
+  return result
+}
+
+print("== decimal3")
+for v in [869.525, 250.0, 0.125, 1.0005, 2.0005, 0.0005, -0.0004, 62.5, 7.8125, 10.4, 433.175, 1e-7, 1234567.8915, -0.0] {
+  show("\(v)", decimal3(v))
+}
+print("== coord6")
+for v in [37.774929, -122.41941, 0.0, -0.0000004, 45.0000005, 12.3456785, 1.0000015, -33.8688197, 180.0] {
+  show("\(v)", coord6(v))
+}
+
+print("== Double(String)")
+for s in ["1", " 1", "1 ", "+1", "-1", "1e3", "1E3", "0x10", "0x1p3", "inf", "Inf", "infinity", "-inf", "nan", "NaN", "1.0f", "1d", ".5", "5.", "1_000", "١", "1,5", "", "-", "e5", "1e", "0X1P-2", "+.5e-1", "nan(1)", "00012", "1.7976931348623159e308", "4.9e-325"] {
+  show("[\(s)]", Double(s).map { String(describing: $0) })
+}
+
+print("== Int(String)")
+for s in ["1", "+1", "-1", " 1", "1 ", "٣", "0x10", "99999999999999999999", "9223372036854775807", "-9223372036854775808", "1.0", "", "-", "+", "007", "-0"] {
+  show("[\(s)]", Int(s).map { String($0) })
+}
+print("== UInt8(String)")
+for s in ["0", "1", "+1", "-0", "-1", "255", "256", "01", " 1", "٣"] {
+  show("[\(s)]", UInt8(s).map { String($0) })
+}
+print("== Int8(exactly:)")
+for v in [127, 128, -128, -129] { show("\(v)", Int8(exactly: v).map { String($0) }) }
+
+print("== whitespace set (.whitespaces)")
+var ws: [String] = []
+for scalar in 0...0x3000 {
+  guard let u = Unicode.Scalar(scalar) else { continue }
+  if CharacterSet.whitespaces.contains(u) { ws.append(String(format: "%04X", scalar)) }
+}
+for scalar in [0xFEFF, 0x180E, 0x200B] { if let u = Unicode.Scalar(scalar), CharacterSet.whitespaces.contains(u) { ws.append(String(format: "%04X", scalar)) } }
+print(ws.joined(separator: " "))
+print("== whitespacesAndNewlines set")
+var wsn: [String] = []
+for scalar in 0...0x3000 {
+  guard let u = Unicode.Scalar(scalar) else { continue }
+  if CharacterSet.whitespacesAndNewlines.contains(u) { wsn.append(String(format: "%04X", scalar)) }
+}
+for scalar in [0xFEFF, 0x180E, 0x200B] { if let u = Unicode.Scalar(scalar), CharacterSet.whitespacesAndNewlines.contains(u) { wsn.append(String(format: "%04X", scalar)) } }
+print(wsn.joined(separator: " "))
+
+print("== lowercased")
+for s in ["ABC", "İ", "ΣΑΣ", "Straße", "ǅ"] { show(s, s.lowercased().unicodeScalars.map { String(format: "%04X", $0.value) }.joined(separator: " ")) }
+
+print("== localizedCaseInsensitiveCompare == orderedSame")
+let pairs: [(String, String)] = [("abc", "ABC"), ("straße", "STRASSE"), ("é", "e\u{301}"), ("é", "e"), ("ı", "I"), ("İ", "i"), ("Ａ", "A"), ("node 1", "NODE 1"), ("ǆ", "Ǆ"), ("ﬁ", "FI")]
+for (a, b) in pairs { show("\(a)|\(b)", a.localizedCaseInsensitiveCompare(b) == .orderedSame) }
+
+print("== localizedCaseInsensitiveCompare ordering (sorted)")
+let names = ["beta", "Alpha", "alpha", "_x", "a10", "a9", "Zed", "élan", "eagle", "Émile", "1node", "node", "Node", "zz", "Ångström", "apple", "a b", "ab", "a-b"]
+let sortedNames = names.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+print(sortedNames.joined(separator: "|"))
+
+print("== String sorted() (scalar order)")
+let raw = ["b", "B", "a", "\u{FF21}", "\u{1F600}", "\u{E000}", "é", "e\u{301}f", "Z", "_"]
+print(raw.sorted().map { $0.unicodeScalars.map { String(format: "%X", $0.value) }.joined(separator: "+") }.joined(separator: " "))
+
+print("== padding")
+for s in ["abc", "a😀b", "exactly-twenty-chars", "this name is longer than twenty", "é", "e\u{301}x"] {
+  let p = s.padding(toLength: 20, withPad: " ", startingAt: 0)
+  show(s, "[\(p)] utf16=\(p.utf16.count) chars=\(p.count)")
+}
+let label10 = "Repeater".padding(toLength: 10, withPad: " ", startingAt: 0)
+show("Repeater10", "[\(label10)]")
+
+print("== clock format")
+func formatClock(_ date: Date) -> String {
+  var calendar = Calendar(identifier: .gregorian)
+  calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+  let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+  return String(format: "%02d:%02d - %d/%d/%d UTC", parts.hour ?? 0, parts.minute ?? 0, parts.day ?? 0, parts.month ?? 0, parts.year ?? 0)
+}
+for t in [0.0, 1_700_000_000.0, 1_700_000_059.999, -1.0, 4_102_444_800.0, 951_782_400.0] {
+  show("\(t)", formatClock(Date(timeIntervalSince1970: t)))
+}
+
+print("== freqKHz / bandwidthHz rounding")
+for v in [869.525, 869.9, 250.0, 62.5, 7.8125, 433.0005, 0.0005, 2500.0] {
+  show("\(v)", UInt32((v * 1000).rounded()))
+}
+
+print("== utf8 pair counts")
+show("k:aé*68", "k:a\(String(repeating: "é", count: 68))".utf8.count)
+
+print("== ListFormatter en_US")
+let lf = ListFormatter()
+lf.locale = Locale(identifier: "en_US")
+for list in [["A"], ["A", "B"], ["A", "B", "C"], ["A", "B", "C", "D"]] { show(list.joined(separator: ","), lf.string(from: list)) }
+
+print("== fractionLength(1) en_US")
+for v in [-95.5, -95.45, -95.55, -95.25, 7.25, 7.35, -1234.56, 0.05, -0.04] {
+  show("\(v)", v.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "en_US"))))
+}
+
+print("== Int division")
+show("-205/2", -205 / 2)
+show("-7/2", -7 / 2)
+
+print("== String count vs hasPrefix")
+show("é hasPrefix e+301", "é".hasPrefix("e\u{301}"))
+show("😀 count", "😀".count)
+
+print("== split separator space keeps empties")
+show("split", "a  b ".split(separator: " ", omittingEmptySubsequences: false).map { "[\($0)]" }.joined())
+show("split maxSplits", "  a  b ".split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true).map { "[\($0)]" }.joined())
+show("split maxSplits2", "a   b  c".split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true).map { "[\($0)]" }.joined())
