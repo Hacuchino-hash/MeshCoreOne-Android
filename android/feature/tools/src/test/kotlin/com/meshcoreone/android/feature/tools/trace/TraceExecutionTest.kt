@@ -1,0 +1,365 @@
+// AndroidOnly: WP-314 Fixture-topology execution, timeout, save and batch flows the source covered only through UI and radio runs.
+package com.meshcoreone.android.feature.tools.trace
+
+import com.meshcoreone.android.core.model.SnapshotList
+import com.meshcoreone.android.core.protocol.bytes.Bytes
+import com.meshcoreone.android.core.protocol.event.MessageSentInfo
+import java.io.IOException
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CompletableDeferred
+
+class TraceExecutionTest {
+    private val harness = TraceHarness(configureDependencies = true)
+    private val holder = harness.holder
+    private val sender = FakeTraceSender()
+    private val store = InMemoryTracePathStore { harness.time.now() }
+    private val alpha = contact(0xA1, name = "Alpha")
+    private val bravo = contact(0xB2, name = "Bravo")
+
+    init {
+        harness.deps.device = device()
+        harness.deps.sender = sender
+        harness.deps.store = store
+        holder.setContactsForTesting(listOf(alpha, bravo))
+        holder.addNode(alpha)
+        holder.addNode(bravo)
+    }
+
+    private fun lastTag(): UInt = sender.sent.last().tag
+    private fun answer(snrs: List<Double> = listOf(6.0, 4.0, 2.0)) {
+        val hashes = listOf(0xA1, 0xB2, 0xA1)
+        harness.respond(lastTag(), snrs.mapIndexed { index, snr -> node(hashes[index], snr) } + node(null, 1.0), RADIO)
+    }
+
+    @Test
+    fun `runTrace sends the mirrored wire path and a response completes it with the clock duration`() {
+        harness.complete { holder.runTrace() }
+        val sent = sender.sent.single()
+        assertEquals(Bytes.of(0xA1, 0xB2, 0xA1), sent.path)
+        assertEquals(0u, sent.authCode)
+        assertEquals(0u.toUByte(), sent.flags)
+        assertTrue(harness.state.isRunning)
+        harness.time.advanceBy(1234.milliseconds)
+        answer()
+        val result = assertNotNull(harness.state.result)
+        assertEquals(1234L, result.durationMs)
+        assertEquals(listOf("TestDevice", "Alpha", "Bravo", "Alpha", "TestDevice"), result.hops.map { it.resolvedName })
+        assertFalse(harness.state.isRunning)
+        assertNotNull(harness.state.resultID)
+        assertEquals(0, harness.time.pendingSleepers)
+    }
+
+    @Test
+    fun `a missing firmware hint waits the 30 s flood default before reporting no response`() {
+        harness.complete { holder.runTrace() }
+        harness.time.advanceBy(29_999.milliseconds)
+        assertTrue(harness.state.isRunning)
+        harness.time.advanceBy(1.milliseconds)
+        assertFalse(harness.state.isRunning)
+        assertEquals("No response received", harness.state.errorMessage)
+        assertNull(harness.state.result)
+    }
+
+    @Test
+    fun `a firmware hint is scaled by 1_2 plus 8 s of grace and clamped`() {
+        sender.suggestedTimeoutMs = 10_000u
+        harness.complete { holder.runTrace() }
+        harness.time.advanceBy(19_999.milliseconds)
+        assertTrue(harness.state.isRunning)
+        harness.time.advanceBy(1.milliseconds)
+        assertFalse(harness.state.isRunning)
+        assertEquals(30.0, FloodTraceTimeout.sanitizedSeconds(0u))
+        assertEquals(60.0, FloodTraceTimeout.sanitizedSeconds(100_000u))
+    }
+
+    @Test
+    fun `a response after the timeout is ignored`() {
+        harness.complete { holder.runTrace() }
+        val tag = lastTag()
+        harness.time.advanceBy(30.seconds)
+        harness.respond(tag, listOf(node(0xA1, 5.0), node(null, 3.0)))
+        assertNull(harness.state.result)
+    }
+
+    @Test
+    fun `a send failure reports the error, stops running and records a failed run on the saved path`() {
+        val saved = savedPath(Bytes.of(0xA1, 0xB2, 0xA1), radioId = RADIO)
+        store.insert(saved)
+        sender.failure = IOException("link lost")
+        harness.complete { holder.runTrace() }
+        assertEquals("Failed to send trace packet", harness.state.errorMessage)
+        assertFalse(harness.state.isRunning)
+        assertEquals("sendTrace", harness.diagnostics.failures.single().first)
+        val runs = assertNotNull(store.paths[saved.id]).runs
+        assertEquals(listOf(false), runs.map { it.success })
+        assertEquals(saved.id, harness.state.activeSavedPath?.id)
+        assertEquals(1, harness.state.activeSavedPath?.runs?.size)
+    }
+
+    @Test
+    fun `runTrace adopts the most recently run matching saved path and appends the successful run`() {
+        val older = savedPath(Bytes.of(0xA1, 0xB2, 0xA1), radioId = RADIO, runs = listOf(run(T0.minusSeconds(600))))
+        val newer = savedPath(Bytes.of(0xA1, 0xB2, 0xA1), radioId = RADIO, runs = listOf(run(T0.minusSeconds(60))))
+        val other = savedPath(Bytes.of(0xA1), radioId = RADIO, runs = listOf(run(T0)))
+        listOf(older, newer, other).forEach(store::insert)
+        harness.complete { holder.runTrace() }
+        assertEquals(newer.id, harness.state.activeSavedPath?.id)
+        answer(listOf(6.0, 4.0, 2.0))
+        val runs = assertNotNull(store.paths[newer.id]).runs
+        assertEquals(2, runs.size)
+        assertEquals(SnapshotList.of(6.0, 4.0, 2.0), runs.last().hopsSNR)
+        assertEquals(2, harness.state.activeSavedPath?.runs?.size)
+    }
+
+    @Test
+    fun `savePath stores the traced bytes, width and intermediate SNRs only`() {
+        harness.complete { holder.runTrace() }
+        answer(listOf(6.0, 4.0, 2.0))
+        assertTrue(harness.complete { holder.savePath("Loop") })
+        val saved = store.paths.values.single()
+        assertEquals(Bytes.of(0xA1, 0xB2, 0xA1), saved.pathBytes)
+        assertEquals(1L, saved.hashSize)
+        assertEquals(SnapshotList.of(6.0, 4.0, 2.0), saved.runs.single().hopsSNR)
+        assertEquals(saved, harness.state.activeSavedPath)
+    }
+
+    @Test
+    fun `savePath fails without a successful result, a device or a store`() {
+        assertFalse(harness.complete { holder.savePath("Nothing yet") })
+        harness.deps.device = null
+        assertFalse(harness.complete { holder.savePath("No device") })
+        assertTrue(store.paths.isEmpty())
+    }
+
+    @Test
+    fun `batch runs every trace with a 500 ms gap, presents the first success and aggregates`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(3)
+        val job = harness.start { holder.runBatchTrace() }
+        assertEquals(1, harness.state.currentTraceIndex)
+        harness.time.advanceBy(100.milliseconds)
+        answer()
+        val firstId = assertNotNull(harness.state.resultID)
+        assertEquals(1, sender.sent.size)
+        harness.time.advanceBy(499.milliseconds)
+        assertEquals(1, sender.sent.size)
+        harness.time.advanceBy(1.milliseconds)
+        assertEquals(2, sender.sent.size)
+        assertEquals(2, harness.state.currentTraceIndex)
+        harness.time.advanceBy(200.milliseconds)
+        answer()
+        assertEquals(firstId, harness.state.resultID)
+        harness.time.advanceBy(500.milliseconds)
+        harness.time.advanceBy(300.milliseconds)
+        answer()
+        assertTrue(job.isCompleted)
+        assertEquals(listOf(100L, 200L, 300L), harness.state.completedResults.map { it.durationMs })
+        assertEquals(200L, harness.state.averageRTT)
+        assertFalse(harness.state.isRunning)
+        assertEquals(0, harness.state.currentTraceIndex)
+        assertTrue(harness.state.canSavePath)
+    }
+
+    @Test
+    fun `batch where every trace times out reports all failed`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(2)
+        val job = harness.start { holder.runBatchTrace() }
+        harness.time.advanceBy(30.seconds)
+        harness.time.advanceBy(500.milliseconds)
+        harness.time.advanceBy(30.seconds)
+        assertTrue(job.isCompleted)
+        assertEquals(listOf(false, false), harness.state.completedResults.map { it.success })
+        assertEquals("All 2 traces failed", harness.state.errorMessage)
+        assertNull(harness.state.result)
+    }
+
+    @Test
+    fun `batch send failure records a failed result and the batch continues`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(2)
+        sender.failure = IOException("busy")
+        val job = harness.start { holder.runBatchTrace() }
+        sender.failure = null
+        harness.time.advanceBy(500.milliseconds)
+        answer()
+        assertTrue(job.isCompleted)
+        assertEquals(listOf("Failed to send trace packet", null), harness.state.completedResults.map { it.errorMessage })
+        assertNull(harness.state.errorMessage)
+    }
+
+    @Test
+    fun `cancelling a batch mid-wait keeps partial results and stops sending`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(5)
+        val job = harness.start { holder.runBatchTrace() }
+        answer()
+        harness.time.advanceBy(500.milliseconds)
+        assertEquals(2, sender.sent.size)
+        holder.cancelBatchTrace()
+        harness.main.runCurrent()
+        assertTrue(job.isCompleted)
+        harness.time.advanceBy(60.seconds)
+        assertEquals(2, sender.sent.size)
+        assertEquals(1, harness.state.completedResults.size)
+        assertFalse(harness.state.isRunning)
+        assertFalse(harness.state.isBatchInProgress)
+    }
+
+    @Test
+    fun `batch save stores the first success and appends the other runs offset by their index`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(2)
+        harness.start { holder.runBatchTrace() }
+        answer()
+        harness.time.advanceBy(500.milliseconds)
+        harness.time.advanceBy(30.seconds)
+        assertTrue(harness.complete { holder.savePath("Batch") })
+        val saved = store.paths.values.single()
+        assertEquals(listOf(true, false), saved.runs.map { it.success })
+        assertEquals(saved.runs[0].date.plusSeconds(1), saved.runs[1].date)
+        assertEquals(saved.id, harness.state.activeSavedPath?.id)
+    }
+
+    @Test
+    fun `cancellation of a suspended send propagates, is not a failure and leaves nothing running`() {
+        val gate = CompletableDeferred<MessageSentInfo>()
+        harness.deps.sender = TraceSender { _, _, _, _ -> gate.await() }
+        val job = harness.start { holder.runTrace() }
+        assertTrue(harness.state.isRunning)
+        job.cancel()
+        harness.main.runCurrent()
+        assertTrue(job.isCancelled)
+        assertTrue(harness.diagnostics.failures.isEmpty())
+        assertFalse(harness.state.isRunning)
+        harness.respond(0x1000u, listOf(node(0xA1, 5.0), node(null, 3.0)))
+        assertNull(harness.state.result)
+    }
+
+    @Test
+    fun `cancelling a batch caller mid-gap clears running state and correlation`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(3)
+        val job = harness.start { holder.runBatchTrace() }
+        answer()
+        assertTrue(harness.state.isBatchInProgress)
+        job.cancel()
+        harness.main.runCurrent()
+        assertTrue(job.isCancelled)
+        assertFalse(harness.state.isRunning)
+        assertEquals(0, harness.state.currentTraceIndex)
+        assertEquals(1, harness.state.completedResults.size)
+        assertEquals(0, harness.time.pendingSleepers)
+    }
+
+    @Test
+    fun `a cancel or a response while a batch send is suspended never strands the batch`() {
+        holder.setBatchEnabled(true)
+        holder.setBatchSize(2)
+        val gate = CompletableDeferred<MessageSentInfo>()
+        val tags = mutableListOf<UInt>()
+        harness.deps.sender = TraceSender { tag, _, _, _ -> tags += tag; gate.await() }
+        val cancelled = harness.start { holder.runBatchTrace() }
+        holder.cancelBatchTrace()
+        gate.complete(MessageSentInfo(0u, Bytes.of(0, 0, 0, 0), 0u))
+        harness.main.runCurrent()
+        assertTrue(cancelled.isCompleted)
+        assertEquals(1, tags.size)
+
+        val early = CompletableDeferred<MessageSentInfo>()
+        harness.deps.sender = TraceSender { tag, _, _, _ -> tags += tag; early.await() }
+        val answered = harness.start { holder.runBatchTrace() }
+        harness.respond(tags.last(), listOf(node(0xA1, 5.0), node(null, 3.0)))
+        early.complete(MessageSentInfo(0u, Bytes.of(0, 0, 0, 0), 0u))
+        harness.main.runCurrent()
+        assertEquals(1, harness.state.completedResults.size)
+        harness.time.advanceBy(500.milliseconds)
+        assertEquals(3, tags.size)
+        assertFalse(answered.isCompleted)
+        holder.cancelBatchTrace()
+        harness.main.runCurrent()
+        assertTrue(answered.isCompleted)
+    }
+
+    @Test
+    fun `loadContacts splits repeaters and rooms, keeps discovered repeaters and drops an unsupported override`() {
+        val directory = FakeNodeDirectory(
+            contacts = listOf(alpha, contact(0xC3, name = "Room", type = com.meshcoreone.android.core.protocol.model.ContactType.ROOM),
+                contact(0xD4, name = "Chat", type = com.meshcoreone.android.core.protocol.model.ContactType.CHAT)),
+            nodes = listOf(discovered(key(0xE5), "Hill"), discovered(key(0xF6), "Sensor", type = com.meshcoreone.android.core.protocol.model.ContactType.CHAT)),
+        )
+        harness.deps.directory = directory
+        harness.deps.device = device(firmwareVersion = 7u, firmwareVersionString = "v1.9.0")
+        holder.setTraceHashMode(1u)
+        harness.complete { holder.loadContacts(RADIO) }
+        assertEquals(listOf("Alpha"), harness.state.availableRepeaters.map { it.name })
+        assertEquals(listOf("Room"), harness.state.availableRooms.map { it.name })
+        assertEquals(listOf("Hill"), harness.state.discoveredRepeaters.map { it.name })
+        assertNull(harness.state.traceHashMode)
+        directory.failure = IOException("db")
+        harness.complete { holder.loadContacts(RADIO) }
+        assertTrue(harness.state.availableNodes.isEmpty())
+        assertEquals("loadContacts", harness.diagnostics.failures.last().first)
+    }
+
+    @Test
+    fun `appended hops are recorded as per-radio recents, newest first and capped at 8`() {
+        harness.deps.directory = FakeNodeDirectory()
+        harness.complete { holder.loadContacts(RADIO) }
+        (1..9).forEach { holder.appendHop(contact(it, name = "N$it")) }
+        holder.appendHop(contact(3, name = "N3"))
+        assertEquals(listOf(3, 9, 8, 7, 6, 5, 4, 2), harness.state.recentPublicKeys.map { it[0].toInt() })
+        val stored = assertNotNull(harness.recents.values[RecentHopsStore.defaultsKey(RADIO)])
+        assertEquals("pathEdit.recentPublicKeys.00000000-0000-0000-0000-0000000000A1", RecentHopsStore.defaultsKey(RADIO))
+        assertEquals(key(3).hexString, stored.first())
+        assertEquals(stored.map { com.meshcoreone.android.core.model.applicationBytesFromHex(it) }, RecentHopsStore(harness.recents).load(RADIO))
+    }
+
+    @Test
+    fun `loadSavedPath on a radio that honors the override adopts the saved width`() {
+        harness.deps.device = device(firmwareVersion = 9u)
+        holder.loadSavedPath(savedPath(Bytes.of(0xA1, 0x00, 0x00, 0x00), hashSize = 4))
+        assertEquals(2u.toUByte(), harness.state.traceHashMode)
+        assertEquals(4, holder.hashSize)
+        val previous = harness.state.activeSavedPath
+        holder.loadSavedPath(savedPath(Bytes.EMPTY, hashSize = 1))
+        assertTrue(harness.state.outboundPath.isEmpty())
+        // An empty saved path clears the builder but, as in the source, keeps the prior reference and mode.
+        assertEquals(previous, harness.state.activeSavedPath)
+        assertEquals(2u.toUByte(), harness.state.traceHashMode)
+    }
+
+    @Test
+    fun `path names, clipboard and deleted saved path follow the source rules`() {
+        assertEquals("Alpha → Bravo", holder.generatePathName())
+        holder.addNode(contact(0xC3, name = "Charlie"))
+        assertEquals("Alpha → ... → Charlie", holder.generatePathName())
+        holder.clearPath()
+        holder.loadSavedPath(savedPath(Bytes.of(0x0E, 0x0F, 0x0E)))
+        assertEquals("Path 0E,0F,0E", holder.generatePathName())
+        val copied = mutableListOf<String>()
+        holder.copyPathToClipboard { copied += it }
+        assertEquals(listOf("0E,0F,0E"), copied)
+        val active = assertNotNull(harness.state.activeSavedPath)
+        holder.handleSavedPathDeleted(java.util.UUID.randomUUID())
+        assertNotNull(harness.state.activeSavedPath)
+        holder.handleSavedPathDeleted(active.id)
+        assertNull(harness.state.activeSavedPath)
+    }
+
+    @Test
+    fun `classifyCodes previews without mutating and the picker is never full`() {
+        val preview = holder.classifyCodes("a1, c3, zz")
+        assertEquals(listOf(HopCodeStatus.AlreadyInPath, HopCodeStatus.NotFound, HopCodeStatus.InvalidFormat), preview.map { it.status })
+        assertEquals(2, holder.currentHopCount)
+        assertNull(holder.hopLimit)
+        assertFalse(holder.isPathFull)
+    }
+}

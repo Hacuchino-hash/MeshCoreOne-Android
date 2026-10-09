@@ -1,0 +1,26 @@
+import Foundation
+func show(_ s: String) -> String { s.unicodeScalars.map { String(format: "U+%04X", $0.value) }.joined(separator: " ") }
+// trimming .whitespaces
+for s in [" 1A\t", "\u{00A0}1A\u{3000}", "\n1A", "1A\u{2028}", "\u{200B}1A", "\u{FEFF}1A"] {
+  print("trim", show(s), "->", show(s.trimmingCharacters(in: .whitespaces)))
+}
+// isHexDigit
+for s in ["A", "f", "\u{FF11}", "\u{FF21}", "\u{FF41}", "A\u{301}", "\u{FF11}\u{301}", "g", "\u{0661}"] {
+  print("hex", show(s), Character(s).isHexDigit)
+}
+// count
+for s in ["1A", "\u{FF11}\u{FF21}", "A\u{301}B", "\u{1F1FA}\u{1F1F8}"] { print("count", show(s), s.count) }
+// uppercased
+for s in ["ß", "\u{FB00}", "a3", "\u{0131}", "i"] { print("upper", show(s), "->", show(s.uppercased())) }
+// UInt8 radix with fullwidth
+print("u8", UInt8("\u{FF11}\u{FF21}", radix: 16) as Any, UInt8("1a", radix: 16) as Any, UInt8("+1", radix: 16) as Any)
+// split on comma with combining
+let t = "A3,\u{301}B7,C1"
+print("split", t.split(separator: ",").map { show(String($0)) })
+// equality canonical
+print("eq", "\u{E9}" == "e\u{301}", Set(["\u{C9}", "E\u{301}"]).count)
+// localizedStandardCompare / caseInsensitive
+let pairs = [("Node 9", "node 10"), ("alpha", "Alpha"), ("e", "\u{E9}"), ("Zed", "apple"), ("a10", "a9"), ("B", "a"), ("x", "X1")]
+for (a, b) in pairs { print("std", a, b, a.localizedStandardCompare(b).rawValue, a.localizedCaseInsensitiveCompare(b).rawValue) }
+// hex string uppercase of data
+print(String(format: "%02X", 0xab))

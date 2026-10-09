@@ -1,0 +1,31 @@
+import Foundation
+// Verbatim logic copies of HopCodeParser.classify/parseHex and TracePathViewModel.inferredTraceHashMode at db14559b.
+struct PathHop { var hashBytes: Data; var publicKey: Data?; var resolvedName: String? }
+enum HopCodeStatus { case willAdd(PathHop), alreadyInPath, notFound, invalidFormat, pathFull }
+func parseHex(_ code: String, hashSize: Int) -> Data? {
+  guard code.count == hashSize * 2, code.allSatisfy(\.isHexDigit) else { return nil }
+  var data = Data(); var idx = code.startIndex
+  while idx < code.endIndex { let next = code.index(idx, offsetBy: 2); guard let byte = UInt8(code[idx..<next], radix: 16) else { return nil }; data.append(byte); idx = next }
+  return data.count == hashSize ? data : nil
+}
+func classify(_ input: String, hashSize: Int) -> [(String, String)] {
+  let codes = input.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces).uppercased() }.filter { !$0.isEmpty }
+  var seen = Set<String>(); let unique = codes.filter { seen.insert($0).inserted }
+  return unique.map { code in
+    guard parseHex(code, hashSize: hashSize) != nil else { return (code, "InvalidFormat") }
+    return (code, "WillAdd")
+  }
+}
+func inferred(_ input: String) -> UInt8? {
+  let tokens = input.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+  guard !tokens.isEmpty else { return nil }
+  var width: Int?
+  for token in tokens { guard token.count.isMultiple(of: 2), token.allSatisfy(\.isHexDigit) else { return nil }; let bytes = token.count / 2; if let width, width != bytes { return nil }; width = bytes }
+  guard let width, [1, 2, 4].contains(width) else { return nil }
+  return UInt8(width.trailingZeroBitCount)
+}
+func show(_ s: String) -> String { s.unicodeScalars.map { String(format: "%04X", $0.value) }.joined(separator: " ") }
+for input in ["\u{FF11}\u{FF21}", "\u{FB00}", "\u{C9},E\u{301}", "\nA3", "A3,\u{301}B7", " a3 ,\u{00A0}b7\u{200B}", "ß"] {
+  print("classify", show(input), classify(input, hashSize: 1).map { "\(show($0.0))=\($0.1)" })
+}
+for input in ["\u{FF11}\u{FF21}", "1A,\u{FF12}\u{FF22}", "A\u{301}B", "1A\n,2B"] { print("inferred", show(input), inferred(input) as Any) }

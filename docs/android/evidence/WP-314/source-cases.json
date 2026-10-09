@@ -1,0 +1,1267 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 139,
+ "bound_case_count": 139,
+ "unbound": [],
+ "unknown_bindings": [],
+ "junit": {
+  "passed": 139,
+  "failed": 0,
+  "skipped": 0,
+  "not-run": 0
+ },
+ "android_only_tests": 56,
+ "cases": [
+  {
+   "id": "AdoptHashSizeFromPasteTests::Mixed-width paste leaves the active hash size unchanged()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Mixed-width paste leaves the active hash size unchanged",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "AdoptHashSizeFromPasteTests::Pasting narrower codes switches the active hash size down()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Pasting narrower codes switches the active hash size down",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "AdoptHashSizeFromPasteTests::Pasting the active width leaves a stale saved-path reference intact()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Pasting the active width leaves a stale saved-path reference intact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "AdoptHashSizeFromPasteTests::Unsupported firmware ignores the pasted width()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Unsupported firmware ignores the pasted width",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::RTT aggregates compute correctly()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "RTT aggregates compute correctly",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::RTT aggregates exclude failed traces()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "RTT aggregates exclude failed traces",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::RTT aggregates return nil when no successful traces()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "RTT aggregates return nil when no successful traces",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::hop stats compute correctly for intermediate hops()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "hop stats compute correctly for intermediate hops",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::hop stats return nil for start node()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "hop stats return nil for start node",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchAggregateTests::latestHopSNR returns SNR from most recent successful result()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "latestHopSNR returns SNR from most recent successful result",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchCancellationTests::batch state preserved on cancel for partial results access()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "batch state preserved on cancel for partial results access",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchCancellationTests::isBatchInProgress returns false after cancel()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "isBatchInProgress returns false after cancel",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchExecutionTests::cancelBatchTrace clears running state()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "cancelBatchTrace clears running state",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchExecutionTests::clearBatchState resets all batch properties()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "clearBatchState resets all batch properties",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchExecutionTests::runBatchTrace resets batch state before starting()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "runBatchTrace resets batch state before starting",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchTraceStateTests::batch properties have correct defaults()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "batch properties have correct defaults",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchTraceStateTests::batchEnabled didSet clears batch state when disabled()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "batchEnabled didSet clears batch state when disabled",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchTraceStateTests::successCount returns number of successful traces()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "successCount returns number of successful traces",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "BatchTraceStateTests::successfulResults filters to successful traces only()",
+   "class": "com.meshcoreone.android.feature.tools.trace.BatchTraceTest",
+   "method": "successfulResults filters to successful traces only",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/BatchTraceTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::clears saved path state when repeaters are added()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "clears saved path state when repeaters are added",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::deduplicates codes in input()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "deduplicates codes in input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::errorMessage formats multiple error types with separator()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "errorMessage formats multiple error types with separator",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::handles case insensitive input()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "handles case insensitive input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::handles codes without spaces after commas()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "handles codes without spaces after commas",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::handles empty input()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "handles empty input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::handles whitespace-only input()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "handles whitespace-only input",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::hasErrors returns false when all codes are valid and new()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "hasErrors returns false when all codes are valid and new",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::hasErrors returns true when errors exist()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "hasErrors returns true when errors exist",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::parses valid comma-separated codes and adds repeaters()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "parses valid comma-separated codes and adds repeaters",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::reports codes already in outbound path()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "reports codes already in outbound path",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::reports codes not found in available repeaters()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "reports codes not found in available repeaters",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "CodeInputParsingTests::reports invalid hex format()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "reports invalid hex format",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "DeviceIDValidationTests::response accepted when device IDs match()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "response accepted when device IDs match",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "DeviceIDValidationTests::response from different device is ignored()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "response from different device is ignored",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "DeviceIDValidationTests::tag-only matching works when pendingDeviceID is nil()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "tag-only matching works when pendingDeviceID is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "DeviceIDValidationTests::tag-only matching works when received deviceID is nil()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "tag-only matching works when received deviceID is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::addRepeater clears error()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "addRepeater clears error",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::clearError cancels pending auto-clear()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "clearError cancels pending auto-clear",
+   "disposition": "virtual-time-equivalent",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::clearError clears errorMessage()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "clearError clears errorMessage",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::error auto-clears after delay()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "error auto-clears after delay",
+   "disposition": "virtual-time-equivalent",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::moveRepeater clears error()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "moveRepeater clears error",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::new setError cancels previous auto-clear timer()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "new setError cancels previous auto-clear timer",
+   "disposition": "virtual-time-equivalent",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::removeRepeater clears error()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "removeRepeater clears error",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::setError replaces previous error()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "setError replaces previous error",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ErrorHandlingTests::setError sets errorMessage()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathErrorHandlingTest",
+   "method": "setError sets errorMessage",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "FailureResultTests::empty path produces empty tracedPathString()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "empty path produces empty tracedPathString",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "FailureResultTests::sendFailed result contains attempted path()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "sendFailed result contains attempted path",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "FailureResultTests::timeout result contains attempted path()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "timeout result contains attempted path",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "FailureResultTests::tracedPathString chunks by 2-byte hash size()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "tracedPathString chunks by 2-byte hash size",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "FailureResultTests::tracedPathString chunks by 3-byte hash size()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "tracedPathString chunks by 3-byte hash size",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Empty and separator-only input infer nothing()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Empty and separator-only input infer nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Mixed widths infer nothing()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Mixed widths infer nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Non-hex code infers nothing()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Non-hex code infers nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Odd-length code infers nothing()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Odd-length code infers nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Uniform 1-byte codes infer mode 0()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Uniform 1-byte codes infer mode 0",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Uniform 2-byte codes infer mode 1()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Uniform 2-byte codes infer mode 1",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Uniform 4-byte codes infer mode 2()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Uniform 4-byte codes infer mode 2",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Uniform but non-power-of-2 width (3 bytes) infers nothing()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Uniform but non-power-of-2 width (3 bytes) infers nothing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "InferredTraceHashModeTests::Whitespace around codes is tolerated()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "Whitespace around codes is tolerated",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "MultiByteHashTests::multi-byte hash produces hop with full hashBytes and nil resolvedName()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "multi-byte hash produces hop with full hashBytes and nil resolvedName",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "MultiByteHashTests::single-byte hash still resolves to contact name()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "single-byte hash still resolves to contact name",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "OutboundPathNameResolutionTests::addRepeater stores full public key in PathHop()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "addRepeater stores full public key in PathHop",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "OutboundPathNameResolutionTests::falls back to contact lookup when hop not in outboundPath()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "falls back to contact lookup when hop not in outboundPath",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "OutboundPathNameResolutionTests::handleTraceResponse resolves correct repeater when hash collision exists using stored key()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "handleTraceResponse resolves correct repeater when hash collision exists using stored key",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "OutboundPathNameResolutionTests::resolves name using best match when contact collision exists()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "resolves name using best match when contact collision exists",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathCaptureTests::canSavePath is false when path modified after trace()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "canSavePath is false when path modified after trace",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathCaptureTests::canSavePath is true when path unchanged after trace()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "canSavePath is true when path unchanged after trace",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathCaptureTests::result contains original path even if outboundPath modified()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "result contains original path even if outboundPath modified",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathEditClearsSavedPathTests::addRepeater clears activeSavedPath()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "addRepeater clears activeSavedPath",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathEditClearsSavedPathTests::moveRepeater clears activeSavedPath()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "moveRepeater clears activeSavedPath",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PathEditClearsSavedPathTests::removeRepeater clears activeSavedPath()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "removeRepeater clears activeSavedPath",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun returns nil when no runs exist()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun returns nil when no runs exist",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun returns nil when only one run exists()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun returns nil when only one run exists",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun returns nil when only one successful run exists among failures()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun returns nil when only one successful run exists among failures",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun returns second-to-last run when multiple runs exist()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun returns second-to-last run when multiple runs exist",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun returns second-to-last run when two runs exist()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun returns second-to-last run when two runs exist",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "PreviousRunComparisonTests::previousRun skips failed runs when finding comparison()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "previousRun skips failed runs when finding comparison",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::PathHop with deleted contact key falls back to hash byte match()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "PathHop with deleted contact key falls back to hash byte match",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::PathHop without public key falls back to proximity/recency()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "PathHop without public key falls back to proximity or recency",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::exact match with full public key for discovered node PathHop variant()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "exact match with full public key for discovered node PathHop variant",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::exact match with full public key ignores proximity/recency()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "exact match with full public key ignores proximity or recency",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::fallback name with byte count clamps display max and short prefixes()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "fallback name with byte count clamps display max and short prefixes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::fallback name with byte count formats two or three prefix bytes()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "fallback name with byte count formats two or three prefix bytes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::key display byte count floors at 2 and caps at 3(deviceHashSize : Int ? , expected : Int)",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "key display byte count floors at 2 and caps at 3",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "arguments-sha256:a69322c80f8c8db536fa3ad2f561160a9f0e56ba0b30e890da32c7c2fbc319b3",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver disambiguates short discovered prefixes by recency()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver disambiguates short discovered prefixes by recency",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver marks ambiguous short discovered prefix as fallback()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver marks ambiguous short discovered prefix as fallback",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver marks cross-source short prefix ambiguity as fallback()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver marks cross-source short prefix ambiguity as fallback",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver marks full prefix contact match as exact()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver marks full prefix contact match as exact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver marks unique short discovered prefix as exact()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver marks unique short discovered prefix as exact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver prefers contacts over discovered nodes()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver prefers contacts over discovered nodes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::neighbor name resolver uses discovered node when contact is absent()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "neighbor name resolver uses discovered node when contact is absent",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::prefers closest discovered node when location available()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "prefers closest discovered node when location available",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::prefers closest repeater when location available()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "prefers closest repeater when location available",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::prefers most recent discovered node without location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "prefers most recent discovered node without location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeaterResolverTests::prefers most recent when location unavailable()",
+   "class": "com.meshcoreone.android.feature.tools.trace.RepeaterResolverTest",
+   "method": "prefers most recent when location unavailable",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Utilities/RepeaterResolverTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeatersWithoutLocationTests::excludes start and end nodes()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "excludes start and end nodes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeatersWithoutLocationTests::returns empty when device location missing but no intermediate repeaters affected()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns empty when device location missing but no intermediate repeaters affected",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeatersWithoutLocationTests::returns names of hops missing locations()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns names of hops missing locations",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RepeatersWithoutLocationTests::uses hash display for unresolved names()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "uses hash display for unresolved names",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ResultIDBehaviorTests::resultID changes on each successful trace()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "resultID changes on each successful trace",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "ResultIDBehaviorTests::resultID is set on successful trace()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "resultID is set on successful trace",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RoomSupportTests::addRepeater works with a room contact()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "addRepeater works with a room contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RoomSupportTests::addRepeatersFromCodes finds rooms via availableNodes()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "addRepeatersFromCodes finds rooms via availableNodes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RoomSupportTests::availableNodes returns union of repeaters and rooms()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "availableNodes returns union of repeaters and rooms",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "RoomSupportTests::setContactsForTesting populates both availableRepeaters and availableRooms()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceCodeInputTest",
+   "method": "setContactsForTesting populates both availableRepeaters and availableRooms",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedPathHashSizeTests::fullPathString chunks by saved hash size, not device hash size()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "fullPathString chunks by saved hash size, not device hash size",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedPathHashSizeTests::loadSavedPath uses stored hashSize, not device hashSize()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "loadSavedPath uses stored hashSize, not device hashSize",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedPathHashSizeTests::loadSavedPath with hashSize 1 produces correct hops()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "loadSavedPath with hashSize 1 produces correct hops",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedPathLoadTests::loadSavedPath restores a symmetric path and turns auto-return on()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "loadSavedPath restores a symmetric path and turns auto-return on",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedPathLoadTests::loadSavedPath restores an asymmetric loop and turns auto-return off()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "loadSavedPath restores an asymmetric loop and turns auto-return off",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::calculates distance for single repeater when device has location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "calculates distance for single repeater when device has location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::calculates full path distance when device has location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "calculates full path distance when device has location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::falls back to intermediate-only distance when device lacks location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "falls back to intermediate-only distance when device lacks location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::isDistanceUsingFallback is false when device has location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "isDistanceUsingFallback is false when device has location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::isDistanceUsingFallback is false when distance is nil()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "isDistanceUsingFallback is false when distance is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::isDistanceUsingFallback is true when device lacks location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "isDistanceUsingFallback is true when device lacks location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::returns nil for failed result()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns nil for failed result",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::returns nil when hop has zero location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns nil when hop has zero location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::returns nil when hop missing location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns nil when hop missing location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TotalPathDistanceTests::returns nil with single repeater and no device location()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceResultAndSavedPathTest",
+   "method": "returns nil with single repeater and no device location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeCapabilityGateTests::VER_CODE 8 disambiguates v1.10 (off) from v1.11/v1.12 (on)()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "VER_CODE 8 disambiguates v1_10 (off) from v1_11 and v1_12 (on)",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeCapabilityGateTests::VER_CODE >= 9 enables the override even without a usable version string()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "VER_CODE at least 9 enables the override even without a usable version string",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeCapabilityGateTests::older firmware does not support the override()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "older firmware does not support the override",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::clearPath resets the per-trace hash mode override()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "clearPath resets the per-trace hash mode override",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::fullPathData width tracks the active hash mode()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "fullPathData width tracks the active hash mode",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::loadSavedPath sets no override when the radio can't honor it()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "loadSavedPath sets no override when the radio cannot honor it",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::setTraceHashMode clears a stale result and saved-path reference()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "setTraceHashMode clears a stale result and saved-path reference",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::setTraceHashMode rebuilds hop hash bytes from the public key prefix()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "setTraceHashMode rebuilds hop hash bytes from the public key prefix",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHashSizeOverrideTests::widening zero-pads key-less hops so the wire stays a uniform width()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TraceHashModeTest",
+   "method": "widening zero-pads key-less hops so the wire stays a uniform width",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHopLocationTests::hasLocation returns false with nil coordinates()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "hasLocation returns false with nil coordinates",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHopLocationTests::hasLocation returns false with zero coordinates()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "hasLocation returns false with zero coordinates",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHopLocationTests::hasLocation returns true if only latitude is non-zero()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "hasLocation returns true if only latitude is non-zero",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHopLocationTests::hasLocation returns true if only longitude is non-zero()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "hasLocation returns true if only longitude is non-zero",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceHopLocationTests::hasLocation returns true with valid non-zero coordinates()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "hasLocation returns true with valid non-zero coordinates",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TracePathListenerTests::Listener established after a late connect receives trace responses()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathListenerTest",
+   "method": "Listener established after a late connect receives trace responses",
+   "disposition": "fixture-graph-equivalent",
+   "source": "MC1Tests/ViewModels/TracePathListenerTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TracePathListenerTests::Listener re-established after a container rebuild receives trace responses()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathListenerTest",
+   "method": "Listener re-established after a container rebuild receives trace responses",
+   "disposition": "fixture-graph-equivalent",
+   "source": "MC1Tests/ViewModels/TracePathListenerTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceResponseHopParsingTests::handleTraceResponse creates correct hops for multi-hop trace with receiver SNR attribution()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "handleTraceResponse creates correct hops for multi-hop trace with receiver SNR attribution",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceResponseHopParsingTests::handleTraceResponse creates correct hops with receiver SNR attribution()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "handleTraceResponse creates correct hops with receiver SNR attribution",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  },
+  {
+   "id": "TraceResponseHopParsingTests::handleTraceResponse ignores non-matching tags()",
+   "class": "com.meshcoreone.android.feature.tools.trace.TracePathCoreTest",
+   "method": "handleTraceResponse ignores non-matching tags",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/TracePathViewModelTests.swift",
+   "parameter_family": "single",
+   "junit": "passed"
+  }
+ ]
+}
