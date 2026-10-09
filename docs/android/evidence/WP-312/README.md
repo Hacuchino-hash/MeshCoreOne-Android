@@ -75,6 +75,7 @@ build-tools 37.0.0, explicit private caches and strict dependency verification:
 | `:app:assembleDebug` through `android/scaffold/invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 1536m` | Passed |
 | `:core:datastore:verifyPreferencePackaging` | Passed against the rebuilt APK, including the established four-ABI DataStore provenance check |
 | `:core:designsystem:verifyThemePackaging` | Passed; exact permission set retained, with MapLibre precise-location and Wi-Fi-state permissions removed |
+| `:core:designsystem:verifyThemeConsumerLocks` | Passed: 8/8 verifier tests and all 10 WP-301 consumer-lock baselines retained alongside later WP additions |
 | `zipalign -c -P 16 4 app-debug.apk` | Passed |
 | Repository `apk_alignment.inspect_alignment` | Passed for every packaged ELF: MapLibre is packaged only for arm64-v8a/x86_64, while existing 32-bit non-map libraries remain packaged; every packaged `PT_LOAD` segment uses `p_align=0x4000` |
 

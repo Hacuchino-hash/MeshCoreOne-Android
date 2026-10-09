@@ -114,7 +114,7 @@ tasks.named("check") { dependsOn(verifyThemePackaging) }
 
 val verifyThemeConsumerLocks by tasks.registering(Exec::class) {
     group = "verification"
-    description = "Require exactly the admitted generated lock delta, preserving every old version and other configuration."
+    description = "Require the admitted WP-301 lock baseline while allowing later work-package additions."
     workingDir(repository)
     commandLine("python", consumerLockInspector.absolutePath, "--check", "--self-test")
     mustRunAfter("testDebugUnitTest")
