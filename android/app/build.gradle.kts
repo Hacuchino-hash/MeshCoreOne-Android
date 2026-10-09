@@ -67,7 +67,17 @@ dependencies {
 }
 
 android {
-    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    packaging {
+        // AndroidOnly: WP-312 MapLibre's 64-bit binaries are 16 KiB-page aligned. Keep the app's existing
+        // 32-bit DataStore support, but omit MapLibre's 4 KiB-only 32-bit runtime and report maps unsupported there.
+        jniLibs.excludes += setOf(
+            "lib/armeabi-v7a/libmaplibre.so",
+            "lib/x86/libmaplibre.so",
+        )
+    }
     sourceSets.getByName("test").kotlin.srcDir(
         "src/androidTest/kotlin/com/meshcoreone/android/app/navigation/cases",
     )

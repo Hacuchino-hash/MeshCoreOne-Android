@@ -25,7 +25,6 @@ import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
 import com.meshcoreone.android.app.navigation.NavigationSavedState
 import com.meshcoreone.android.app.navigation.NavigationState
-import com.meshcoreone.android.app.container.onboarding.OnboardingResolution
 import com.meshcoreone.android.app.container.onboarding.OnboardingGate
 import com.meshcoreone.android.core.connectivity.pairing.CompanionChooserHost
 import com.meshcoreone.android.core.designsystem.MeshCoreTheme
@@ -71,6 +70,8 @@ class NavigationHostViewModel : ViewModel() {
 }
 
 open class MainActivity : ComponentActivity() {
+    private data class ContainerResolution(val container: AppContainer?)
+
     private lateinit var host: NavigationHostViewModel
     private val uiScope = MainScope()
     private val chooserRequests = HashMap<Int, Long>()
@@ -104,10 +105,14 @@ open class MainActivity : ComponentActivity() {
         setContent {
             MeshCoreTheme {
                 // Nothing is drawn until the container answers, so a first run never flashes the main shell.
-                val resolved by produceOnboarding()
+                val resolved by produceContainer()
                 resolved?.let { answer ->
-                    OnboardingGate(host.navigation, answer.bindings) { bound ->
-                        NativeNavigationShell(host.navigation, onboarding = bound?.forRerun())
+                    OnboardingGate(host.navigation, answer.container?.onboarding) { bound ->
+                        NativeNavigationShell(
+                            host.navigation,
+                            onboarding = bound?.forRerun(),
+                            map = answer.container?.mapFeature,
+                        )
                     }
                 }
             }
@@ -119,17 +124,15 @@ open class MainActivity : ComponentActivity() {
      * to build); null state while the container is still building.
      */
     @Composable
-    private fun produceOnboarding(): State<OnboardingResolution?> = produceState<OnboardingResolution?>(null) {
+    private fun produceContainer(): State<ContainerResolution?> = produceState<ContainerResolution?>(null) {
         val app = application as? MeshCoreApplication
-        value = OnboardingResolution(
-            if (app == null) null else try {
-                app.container.await().onboarding
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: Exception) {
-                null
-            },
-        )
+        value = ContainerResolution(if (app == null) null else try {
+            app.container.await()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            null
+        })
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -37,6 +37,7 @@ import com.meshcoreone.android.core.contracts.domain.NotificationStringProvider
 import com.meshcoreone.android.core.contracts.domain.PersistenceStoreProtocol
 import com.meshcoreone.android.core.contracts.notifications.NotificationDeliveryPort
 import com.meshcoreone.android.core.model.RadioId
+import com.meshcoreone.android.core.maps.OfflineMapController
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.runtime.ConnectionManager
 import com.meshcoreone.android.core.runtime.ConnectionObserver
@@ -118,6 +119,7 @@ class AppContainerDependencies(
     val chooserResult: ((Long, Int, android.content.Intent?) -> Unit)? = null,
     /** Platform pieces for the onboarding flow; null leaves onboarding unbound (the shell shows no fake flow). */
     val onboardingPlatform: com.meshcoreone.android.app.container.onboarding.OnboardingPlatform? = null,
+    val offlineMaps: OfflineMapController? = null,
     val newBootstrapDebugLog: (CoroutineScope) -> DebugLogBuffer? = { null },
     /** Releases process-owned resources (database, storage) once the runtime has closed. */
     val onClose: suspend () -> Unit = {},
@@ -224,6 +226,11 @@ class AppContainer(private val dependencies: AppContainerDependencies) {
             closeChatRoute = { closeSelectedChatRoute() },
         ),
     )
+
+    /** Process-scoped map data binding; the feature owns rendering and never reaches into the service graph. */
+    val mapFeature by lazy(::createMapFeatureDependencies)
+    internal val offlineMaps: OfflineMapController
+        get() = checkNotNull(dependencies.offlineMaps) { "Production map dependencies were not installed" }
 
     /**
      * Foreground-service hosting and companion-presence routing, present only when the platform supplies a service

@@ -1,2 +1,5 @@
-// AndroidOnly: WP-002 Map entry shell; maps remain unavailable instead of a blank successful map.
+// AndroidOnly: WP-312 Map feature UI backed by shared MapLibre rendering contracts.
 plugins { id("mesh.android.feature") }
+dependencies {
+    implementation(project(":core:maps"))
+}

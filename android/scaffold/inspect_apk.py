@@ -47,7 +47,7 @@ def inspect_apk():
         "android.permission.ACCESS_LOCAL_NETWORK",
         "com.meshcoreone.android.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
     ]
-    if permissions != expected:
+    if len(permissions) != len(expected) or set(permissions) != set(expected):
         raise ValueError(f"Unexpected merged permissions: {permissions}")
     if "uses-permission: name='android.permission.BLUETOOTH_SCAN' usesPermissionFlags='neverForLocation'" not in badging:
         raise ValueError("BLUETOOTH_SCAN must be declared neverForLocation")

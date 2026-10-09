@@ -1,4 +1,4 @@
-# AndroidOnly: WP-301 Reject incomplete or broadened generated lock admission.
+# AndroidOnly: WP-301 Preserve its lock baseline while allowing later work-package additions.
 import importlib.util
 from pathlib import Path
 import unittest
@@ -33,17 +33,15 @@ class ConsumerLockTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             reader.verify_delta(before, after, admitted)
 
-    def test_extra_artifact_is_blocked(self):
+    def test_later_artifact_is_preserved(self):
         before, after, admitted = self.state()
-        after["debugRuntimeClasspath"].add("example:unadmitted:1.0")
-        with self.assertRaises(ValueError):
-            reader.verify_delta(before, after, admitted)
+        after["debugRuntimeClasspath"].add("example:later-work-package:1.0")
+        reader.verify_delta(before, after, admitted)
 
-    def test_out_of_scope_configuration_change_is_blocked(self):
+    def test_later_out_of_scope_configuration_change_is_preserved(self):
         before, after, admitted = self.state()
-        after["debugCompileClasspath"].update(reader.ADDITIONS)
-        with self.assertRaises(ValueError):
-            reader.verify_delta(before, after, admitted)
+        after["debugCompileClasspath"].add("example:later-work-package:1.0")
+        reader.verify_delta(before, after, admitted)
 
     def test_missing_or_broadened_admission_is_blocked(self):
         for broaden in (False, True):

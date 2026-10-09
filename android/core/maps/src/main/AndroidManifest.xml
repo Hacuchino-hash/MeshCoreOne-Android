@@ -1,2 +1,2 @@
-<!-- AndroidOnly: WP-002 Shared maps shell without engine/provider/location. -->
+<!-- AndroidOnly: WP-312 MapLibre engine; app manifest owns provider permission merge policy. -->
 <manifest />

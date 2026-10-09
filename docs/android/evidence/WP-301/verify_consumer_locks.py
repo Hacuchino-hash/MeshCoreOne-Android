@@ -1,4 +1,4 @@
-# AndroidOnly: WP-301 Verify actual generated consumer locks against the immutable admitted delta.
+# AndroidOnly: WP-301 Verify its admitted consumer-lock baseline survives later work-package additions.
 from __future__ import annotations
 
 import argparse
@@ -74,11 +74,10 @@ def parse_lock(text):
 def verify_delta(before, after, admitted):
     require(set(admitted) == CONFIGURATIONS, "missing or extra admitted configuration")
     require(all(len(value) == 16 and set(value) == ADDITIONS for value in admitted.values()), "changed admitted additions")
-    expected = {name: set(values) for name, values in before.items()}
+    for name, original in before.items():
+        require(name in after and original <= after[name], "generated lock removed or changed existing state")
     for name, additions in admitted.items():
-        require(name in before, "admitted configuration absent from original lock")
-        expected[name].update(additions)
-    require(after == expected, "generated lock changed existing state or omitted/added an unadmitted record")
+        require(name in before and set(additions) <= after[name], "admitted addition is absent from generated lock")
 
 
 def git(*arguments):

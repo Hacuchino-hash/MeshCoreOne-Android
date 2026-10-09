@@ -84,6 +84,7 @@ import com.meshcoreone.android.core.designsystem.MeshSymbol
 import com.meshcoreone.android.core.designsystem.themedCanvas
 import com.meshcoreone.android.feature.chats.ChatsEntry
 import com.meshcoreone.android.feature.map.MapEntry
+import com.meshcoreone.android.feature.map.MapFeatureDependencies
 import com.meshcoreone.android.feature.nodes.NodesEntry
 import com.meshcoreone.android.feature.onboarding.OnboardingEntry
 import com.meshcoreone.android.feature.onboarding.OnboardingFeatureDependencies
@@ -123,8 +124,9 @@ fun NativeNavigationShell(
     unreadCount: Long = 0,
     /** Bound onboarding dependencies for the Settings "radio setup" route; null keeps the not-yet-ported shell. */
     onboarding: OnboardingFeatureDependencies? = null,
+    map: MapFeatureDependencies? = null,
     content: @Composable (NavigationDestination, (FeatureRoute) -> Unit) -> Unit = { destination, navigate ->
-        ExistingFeatureContent(destination, navigate, onboarding, coordinator::back)
+        ExistingFeatureContent(destination, navigate, onboarding, map, coordinator)
     },
 ) {
     require(unreadCount >= 0) { "Unread count must be nonnegative" }
@@ -391,8 +393,10 @@ private fun ExistingFeatureContent(
     destination: NavigationDestination,
     navigate: (FeatureRoute) -> Unit,
     onboarding: OnboardingFeatureDependencies?,
-    back: () -> Boolean,
+    map: MapFeatureDependencies?,
+    coordinator: NavigationCoordinator,
 ) {
+    val navigationState by coordinator.state.collectAsStateWithLifecycle()
     val feature = when (destination) {
         is NavigationDestination.Root -> FeatureId.forTab(destination.tab)
         is NavigationDestination.Chat -> FeatureId.CHATS
@@ -405,13 +409,18 @@ private fun ExistingFeatureContent(
     when (feature) {
         FeatureId.CHATS -> ChatsEntry(route, navigate)
         FeatureId.NODES -> NodesEntry(route, navigate)
-        FeatureId.MAP -> MapEntry(route, navigate)
+        FeatureId.MAP -> {
+            val focus = navigationState.pendingMapFocus?.let {
+                com.meshcoreone.android.core.maps.GeoPoint(it.latitude, it.longitude)
+            }
+            MapEntry(route, navigate, map, focus, coordinator::clearPendingMapFocus)
+        }
         FeatureId.TOOLS -> ToolsEntry(route, navigate)
         FeatureId.SETTINGS -> SettingsEntry(route, navigate)
         FeatureId.ONBOARDING -> OnboardingEntry(
             route,
             // Leaving the auxiliary setup route pops it before moving on (completion targets the Chats root).
-            { target -> back(); navigate(target) },
+            { target -> coordinator.back(); navigate(target) },
             onboarding,
         )
         FeatureId.REMOTE_NODES -> RemoteNodesEntry(route, navigate)

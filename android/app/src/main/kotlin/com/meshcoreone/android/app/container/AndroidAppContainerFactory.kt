@@ -40,6 +40,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import com.meshcoreone.android.core.maps.MapLibreOfflineBackend
+import com.meshcoreone.android.core.maps.MapLibreOpenFreeMap
+import com.meshcoreone.android.core.maps.MapLibreRuntime
+import com.meshcoreone.android.core.maps.OfflineLayer
+import com.meshcoreone.android.core.maps.OfflineLayerPolicy
+import com.meshcoreone.android.core.maps.OfflineMapController
+import com.meshcoreone.android.core.maps.UnavailableOfflineMapBackend
 
 /**
  * The production composition of [AppContainer]. What exists on main is bound; what does not is bound to an explicit
@@ -56,6 +65,30 @@ object AndroidAppContainerFactory {
         val store = RoomPersistenceStore(database, storeScope)
         val diagnostics = ConnectivityDiagnostics.NONE
         val clock = SystemConnectivityClock()
+        val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
+        val offlineMaps = OfflineMapController(
+            backend = if (MapLibreRuntime.isSupported) {
+                MapLibreOfflineBackend(application, MapLibreOpenFreeMap.STYLE_URI, mainScope)
+            } else {
+                UnavailableOfflineMapBackend
+            },
+            policies = mapOf(
+                OfflineLayer.BASE to OfflineLayerPolicy(
+                    layer = OfflineLayer.BASE,
+                    maxDownloadZoom = OfflineLayer.BASE.maxZoom,
+                    attribution = MapLibreOpenFreeMap.attribution,
+                ),
+            ),
+            availableBytes = { application.filesDir.usableSpace },
+            networkAvailable = {
+                connectivityManager.activeNetwork
+                    ?.let(connectivityManager::getNetworkCapabilities)
+                    ?.let {
+                        it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                            it.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    } == true
+            },
+        )
 
         val companionGateway = AndroidCompanionDeviceGateway(application, diagnostics)
         val companionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -124,6 +157,7 @@ object AndroidAppContainerFactory {
                 draftStore = DraftStore(SharedPreferencesDraftDefaults(application)),
                 mainScope = mainScope,
                 onboardingPlatform = onboardingPlatform,
+                offlineMaps = offlineMaps,
                 foreground = foreground,
                 knownEndpoints = endpoints,
                 regionStore = DataStoreRegionSelectionStore(storage.preferences),
