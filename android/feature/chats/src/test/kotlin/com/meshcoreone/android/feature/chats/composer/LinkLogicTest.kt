@@ -211,4 +211,29 @@ class LinkLogicTest {
         assertEquals(1.5, InlineImageMetrics.reservedAspect(InlineImageState.Loading(1.5)))
         assertEquals(16.0 / 9.0, InlineImageMetrics.reservedAspect(InlineImageState.Failed))
     }
+
+    @Test
+    fun `link dispatch resolves mentions locally, routes app links and only opens web links externally`() {
+        val alice = Fixtures.contact("Alice")
+        val outcomes = ArrayList<MentionTapEvaluator.Outcome>()
+        val routed = ArrayList<String>()
+        val opened = ArrayList<String>()
+        var suppress = false
+        val dispatcher = MessageLinkDispatcher(
+            { listOf(alice) }, { Fixtures.radio }, { null }, { outcomes += it },
+            { url -> routed += url; url.startsWith("meshcore://") }, { opened += it }, { suppress },
+        )
+        assertTrue(dispatcher.dispatch("meshcoreone://mention/Alice"))
+        assertEquals(MentionTapEvaluator.Outcome.Navigate(alice), outcomes.single())
+        assertTrue(routed.isEmpty())
+        assertTrue(dispatcher.dispatch("meshcore://map?lat=1&lon=2"))
+        assertTrue(dispatcher.dispatch("https://example.com"))
+        assertEquals(listOf("https://example.com"), opened)
+        assertFalse(dispatcher.dispatch("javascript:alert(1)"))
+        assertFalse(dispatcher.dispatch("intent://x#Intent;scheme=http;end"))
+        assertEquals(listOf("https://example.com"), opened, "unsafe schemes never reach the system")
+        suppress = true
+        assertTrue(dispatcher.dispatch("https://other.example"))
+        assertEquals(1, opened.size, "a suppressed tap (actions sheet is up) opens nothing")
+    }
 }

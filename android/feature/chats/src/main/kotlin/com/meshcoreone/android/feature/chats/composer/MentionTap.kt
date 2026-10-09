@@ -34,3 +34,34 @@ object MentionTapEvaluator {
         else Outcome.Picker(MentionPickerContext(sanitized, radioId, matches, false))
     }
 }
+
+/**
+ * Body-link tap routing (iOS `MentionTapHandler` open-URL action): mention links resolve locally through
+ * [MentionTapEvaluator]; other chat URLs go to [route] (the shared `ChatLinkRouter`); anything that is
+ * still unclaimed opens externally only when it is an http(s) link, so custom schemes, intents,
+ * `javascript:` and file URLs are never handed to the system.
+ */
+class MessageLinkDispatcher(
+    private val contacts: () -> List<ContactDTO>,
+    private val radioId: () -> RadioId,
+    private val connectedDeviceName: () -> String?,
+    private val onMention: (MentionTapEvaluator.Outcome) -> Unit,
+    private val route: (String) -> Boolean,
+    private val openExternal: (String) -> Unit,
+    private val shouldSuppress: () -> Boolean = { false },
+) {
+    /** Returns true when the tap was consumed. */
+    fun dispatch(url: String): Boolean {
+        if (shouldSuppress()) return true
+        MentionDeeplink.name(url)?.let { name ->
+            onMention(MentionTapEvaluator.evaluate(name, contacts(), connectedDeviceName(), radioId()))
+            return true
+        }
+        if (route(url)) return true
+        if (LinkOpenPolicy.isOpenable(url)) {
+            openExternal(url)
+            return true
+        }
+        return false
+    }
+}

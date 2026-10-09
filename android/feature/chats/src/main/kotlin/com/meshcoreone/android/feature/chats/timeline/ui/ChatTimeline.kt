@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 fun ChatTimelineRoute(
     viewModel: ChatViewModel,
     modifier: Modifier = Modifier,
+    messageBody: @Composable (MessageDTO, Boolean) -> Unit = DefaultMessageBody,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -77,7 +78,12 @@ fun ChatTimelineRoute(
         viewModel.start()
         viewModel.open()
     }
-    ChatTimeline(state, callbacks, modifier)
+    ChatTimeline(state, callbacks, modifier, messageBody = messageBody)
+}
+
+/** Plain-text body; WP-308 supplies the linkified/mention/preview body through the `messageBody` slot. */
+val DefaultMessageBody: @Composable (MessageDTO, Boolean) -> Unit = { message, _ ->
+    Text(message.text, style = MaterialTheme.typography.bodyLarge)
 }
 
 data class ChatTimelineCallbacks(
@@ -95,6 +101,7 @@ fun ChatTimeline(
     callbacks: ChatTimelineCallbacks,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
+    messageBody: @Composable (MessageDTO, Boolean) -> Unit = DefaultMessageBody,
 ) {
     val visualRows = state.rows.asReversed()
     val scope = rememberCoroutineScope()
@@ -201,6 +208,7 @@ fun ChatTimeline(
                         row,
                         retrying = row.message.id in state.retryingMessageIds,
                         onRetry = { callbacks.onRetry(row.message) },
+                        messageBody = messageBody,
                     )
                 }
             }
@@ -255,7 +263,12 @@ private fun UnreadDivider() {
 }
 
 @Composable
-private fun MessageBubble(row: TimelineRow.Message, retrying: Boolean, onRetry: () -> Unit) {
+private fun MessageBubble(
+    row: TimelineRow.Message,
+    retrying: Boolean,
+    onRetry: () -> Unit,
+    messageBody: @Composable (MessageDTO, Boolean) -> Unit,
+) {
     val outgoing = row.message.direction == MessageDirection.OUTGOING
     val status = if (outgoing) statusText(row.message) else null
     val accessibilityLabel = buildString {
@@ -284,7 +297,7 @@ private fun MessageBubble(row: TimelineRow.Message, retrying: Boolean, onRetry: 
                 if (!outgoing && row.message.isChannelMessage && row.startsGroup && !row.message.senderNodeName.isNullOrBlank()) {
                     Text(row.message.senderNodeName.orEmpty(), style = MaterialTheme.typography.labelMedium)
                 }
-                Text(row.message.text, style = MaterialTheme.typography.bodyLarge)
+                messageBody(row.message, outgoing)
                 if (outgoing) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(status.orEmpty(), style = MaterialTheme.typography.labelSmall)
