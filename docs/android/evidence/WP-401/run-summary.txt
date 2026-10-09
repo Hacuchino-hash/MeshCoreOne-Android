@@ -1,0 +1,5 @@
+WP-401 local run (macOS, JDK 21, no device). No device verification claimed.
+android/gradlew -p android :platform:notifications:testDebugUnitTest :app:assembleDebug --dependency-verification lenient
+  -> BUILD SUCCESSFUL (module has no src/test; nothing discovered there; includes l10n conversion self-tests 22/22 passed)
+:platform:notifications:compileDebugKotlin, :compileDebugAndroidTestKotlin -> successful
+Nine dependency-free cases in androidTest MessagingNotificationTests executed once via a temporary uncommitted src/test copy: 9 passed, 0 failed.
