@@ -1,0 +1,76 @@
+== localizedStandardContains (en_US current) / range ci+di (no locale) / range ci+di tr_TR
+Alpha Repeater | alpha | std=true enloc=true noloc=true tr=true
+Relay-Alpha | al | std=true enloc=true noloc=true tr=true
+Caf\u{00E9} | cafe | std=true enloc=true noloc=true tr=true
+cafe | caf\u{00E9} | std=true enloc=true noloc=true tr=true
+Cafe\u{0301} | caf\u{00E9} | std=true enloc=true noloc=true tr=true
+Stra\u{00DF}e | strasse | std=true enloc=true noloc=true tr=true
+STRASSE | stra\u{00DF}e | std=true enloc=true noloc=true tr=true
+\u{FF21}\u{FF22}\u{FF23} | abc | std=false enloc=false noloc=false tr=false
+abc | \u{FF21}\u{FF22}\u{FF23} | std=false enloc=false noloc=false tr=false
+\u{0130}stanbul Relay | istanbul | std=true enloc=true noloc=true tr=false
+ISTANBUL | istanbul | std=true enloc=true noloc=true tr=false
+istanbul | \u{0130}STANBUL | std=true enloc=true noloc=true tr=false
+\u{0131}stanbul | istanbul | std=false enloc=false noloc=false tr=false
+\u{FB01}le | fi | std=true enloc=true noloc=true tr=true
+file | \u{FB01} | std=true enloc=true noloc=true tr=true
+\u{00C4} | A\u{0308} | std=true enloc=true noloc=true tr=true
+\u{0152}uvre | oe | std=false enloc=false noloc=false tr=false
+\u{00C6}ther | ae | std=false enloc=false noloc=false tr=false
+\u{00D8} | o | std=false enloc=false noloc=false tr=false
+\u{0110} | d | std=false enloc=false noloc=false tr=false
+\u{01C5} | d\u{017E} | std=false enloc=false noloc=false tr=false
+\u{FB00} | ff | std=true enloc=true noloc=true tr=true
+KELVIN \u{212A} | k | std=true enloc=true noloc=true tr=true
+x\u{0130}y | i | std=true enloc=true noloc=true tr=false
+\u{03AC} | \u{03B1} | std=true enloc=true noloc=true tr=true
+\u{03C2} | \u{03C3} | std=true enloc=true noloc=true tr=true
+\u{03A3} | \u{03C2} | std=true enloc=true noloc=true tr=true
+\u{D55C}\u{AE00} | \u{314E} | std=false enloc=false noloc=false tr=false
+\u{30AB}\u{30BF}\u{30AB}\u{30CA} | \u{304B}\u{305F}\u{304B}\u{306A} | std=false enloc=false noloc=false tr=false
+\u{FF11}\u{FF12} | 12 | std=true enloc=true noloc=false tr=true
+\u{FF76} | \u{30AB} | std=false enloc=false noloc=false tr=false
+a\u{200B}b | ab | std=false enloc=false noloc=false tr=false
+\u{0141} | l | std=false enloc=false noloc=false tr=false
+\u{0140} | l | std=false enloc=false noloc=false tr=false
+current locale: en_US
+== localizedCompare en_US
+ space | _under | -dash | 10 | 12 | \u{0661}\u{0662} | 9 | \u{00C4} | A\u{0308} | a10 | a9 | \u{00C4}a | alice | Alice | alpha | \u{00C5}ngstr\u{00F6}m | Az | Bob | Charlie | eclair | Eclair | \u{00C9}clair | \u{00E9}mile | \u{00C9}mile | \u{00D8}degaard | \u{0152}uvre | \u{00D8}rsted | Oscar | Relay 2 | Relay-1 | relay1 | ss | SS | \u{00DF} | \u{216B} | zebra | Zebra | Zoe | \u{03A9}mega | \u{D55C}\u{AD6D} | \u{4E2D}\u{6587} | \u{65E5}\u{672C}
+== localizedCaseInsensitiveCompare en_US
+ space | _under | -dash | 10 | 12 | \u{0661}\u{0662} | 9 | \u{00C4} | A\u{0308} | a10 | a9 | \u{00C4}a | Alice | alice | alpha | \u{00C5}ngstr\u{00F6}m | Az | Bob | Charlie | eclair | Eclair | \u{00C9}clair | \u{00C9}mile | \u{00E9}mile | \u{00D8}degaard | \u{0152}uvre | \u{00D8}rsted | Oscar | Relay 2 | Relay-1 | relay1 | \u{00DF} | ss | SS | \u{216B} | Zebra | zebra | Zoe | \u{03A9}mega | \u{D55C}\u{AD6D} | \u{4E2D}\u{6587} | \u{65E5}\u{672C}
+== pairwise same
+alice vs Alice: cmp=-1 ci=0
+\u{00C4} vs A\u{0308}: cmp=0 ci=0
+\u{00DF} vs ss: cmp=1 ci=0
+\u{00C9}clair vs eclair: cmp=1 ci=1
+a vs a\u{200B}: cmp=-1 ci=-1
+== isHexDigit
+a: true
+F: true
+g: false
+\u{FF10}: true
+\u{FF19}: true
+\u{FF21}: true
+\u{FF46}: true
+\u{FF47}: false
+\u{0663}: false
+a\u{0301}: false
+\u{FF10}\u{FF11}: true
+== Data(hexString:) MC1Services semantics simulated
+ab cd -> filtered=ABCD count=4 parse=171
+\u{FF21}\u{FF22} -> filtered=\u{FF21}\u{FF22} count=2 parse=nil
+abc -> filtered=ABC count=3 parse=171
+== trimming .whitespaces
+ a1  -> a1
+\u{0009}a1\u{0009} -> a1
+\u{000A}a1\u{000A} -> \u{000A}a1\u{000A}
+\u{00A0}a1\u{3000} -> a1
+\u{200B}a1 -> a1
+== uppercased
+\u{00DF} -> SS / lower \u{00DF}
+\u{FB01} -> FI / lower \u{FB01}
+\u{0131} -> I / lower \u{0131}
+i -> I / lower i
+\u{0149} -> \u{02BC}N / lower \u{0149}
+== split
+["a", "b", " ", "c"]

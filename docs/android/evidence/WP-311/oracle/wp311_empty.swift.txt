@@ -1,0 +1,2 @@
+import Foundation
+print("abc".localizedStandardContains(""), "abc".range(of: "", options: [.caseInsensitive, .diacriticInsensitive]) != nil, "abc".localizedStandardContains("\u{301}"), "abc".range(of: "\u{301}", options: [.caseInsensitive, .diacriticInsensitive]) != nil)

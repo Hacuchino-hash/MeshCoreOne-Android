@@ -1,0 +1,8 @@
+import Foundation
+func esc(_ s: String) -> String { s.unicodeScalars.map { $0.isASCII && $0.value >= 0x20 ? String($0) : String(format: "\\u{%04X}", $0.value) }.joined() }
+let cases: [(String, String)] = [("한글","하"),("Café","Caf"),("Cafe\u{301}","Cafe"),("e\u{301}x","e"),("👨‍👩‍👧","👨"),("ab","a\u{301}"),("née","ne"),("ﬁle","f"),("straße","stras"),("strasse","straß"),("Zoë","zoe"),("ǆ","dž"),("ǲ","dz"),("Å","A"),("Å","a"),("ƒ","f"),("ﬅ","st"),("ǰ","j"),("ẞ","ss"),("ſ","s"),("ﬆ","st"), ("Σίσυφος", "σισυφοσ"), ("ΣΊΣΥΦΟΣ","σίσυφος")]
+for (h, n) in cases {
+  let a = h.localizedStandardContains(n)
+  let b = h.range(of: n, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+  print("\(esc(h)) | \(esc(n)) | std=\(a) noloc=\(b)")
+}

@@ -1,0 +1,44 @@
+import Foundation
+
+func esc(_ s: String) -> String { s.unicodeScalars.map { $0.isASCII && $0.value >= 0x20 ? String($0) : String(format: "\\u{%04X}", $0.value) }.joined() }
+
+let en = Locale(identifier: "en_US")
+let tr = Locale(identifier: "tr_TR")
+let containsCases: [(String, String)] = [
+  ("Alpha Repeater", "alpha"), ("Relay-Alpha", "al"), ("Café", "cafe"), ("cafe", "café"),
+  ("Cafe\u{301}", "café"), ("Straße", "strasse"), ("STRASSE", "straße"), ("ＡＢＣ", "abc"), ("abc", "ＡＢＣ"),
+  ("İstanbul Relay", "istanbul"), ("ISTANBUL", "istanbul"), ("istanbul", "İSTANBUL"), ("ıstanbul", "istanbul"),
+  ("ﬁle", "fi"), ("file", "ﬁ"), ("Ä", "A\u{308}"), ("Œuvre", "oe"), ("Æther", "ae"), ("Ø", "o"), ("Đ", "d"),
+  ("ǅ", "dž"), ("ﬀ", "ff"), ("KELVIN \u{212A}", "k"), ("x\u{0130}y", "i"), ("ά", "α"), ("ς", "σ"), ("Σ", "ς"),
+  ("한글", "ㅎ"), ("カタカナ", "かたかな"), ("１２", "12"), ("ｶ", "カ"), ("a\u{200B}b", "ab"), ("Ł", "l"), ("ŀ", "l"),
+]
+print("== localizedStandardContains (en_US current) / range ci+di (no locale) / range ci+di tr_TR")
+for (h, n) in containsCases {
+  let a = h.range(of: n, options: [.caseInsensitive, .diacriticInsensitive], range: nil, locale: en) != nil
+  let b = h.range(of: n, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+  let c = h.range(of: n, options: [.caseInsensitive, .diacriticInsensitive], range: nil, locale: tr) != nil
+  let d = h.localizedStandardContains(n)
+  print("\(esc(h)) | \(esc(n)) | std=\(d) enloc=\(a) noloc=\(b) tr=\(c)")
+}
+print("current locale: \(Locale.current.identifier)")
+
+let names = ["Charlie", "Alice", "Bob", "alice", "Émile", "Zoe", "émile", "10", "9", "a10", "a9", "Ångström", "Zebra", "zebra", "Éclair", "eclair", "Eclair", "_under", "-dash", " space", "Relay 2", "Relay-1", "relay1", "Ørsted", "Oscar", "Œuvre", "Ødegaard", "ß", "ss", "SS", "Ä", "A\u{308}", "Az", "Äa", "中文", "日本", "한국", "Ωmega", "alpha", "Ⅻ", "12", "١٢"]
+func sortedBy(_ f: (String, String) -> Bool) -> [String] { names.sorted(by: f) }
+print("== localizedCompare en_US")
+print(names.sorted { $0.compare($1, options: [], range: nil, locale: en) == .orderedAscending }.map(esc).joined(separator: " | "))
+print("== localizedCaseInsensitiveCompare en_US")
+print(names.sorted { $0.compare($1, options: [.caseInsensitive], range: nil, locale: en) == .orderedAscending }.map(esc).joined(separator: " | "))
+print("== pairwise same")
+for (a, b) in [("alice","Alice"),("Ä","A\u{308}"),("ß","ss"),("Éclair","eclair"),("a","a\u{200B}")] {
+  print("\(esc(a)) vs \(esc(b)): cmp=\(a.compare(b, options: [], range: nil, locale: en).rawValue) ci=\(a.compare(b, options: [.caseInsensitive], range: nil, locale: en).rawValue)")
+}
+print("== isHexDigit")
+for s in ["a","F","g","０","９","Ａ","ｆ","ｇ","٣","a\u{301}","\u{FF10}\u{FF11}"] { print("\(esc(s)): \(s.allSatisfy(\.isHexDigit))") }
+print("== Data(hexString:) MC1Services semantics simulated")
+for s in ["ab cd", "ＡＢ", "abc"] { let hex = s.filter(\.isHexDigit).uppercased(); print("\(esc(s)) -> filtered=\(esc(hex)) count=\(hex.count) parse=\(UInt8(String(hex.prefix(2)), radix: 16).map{String($0)} ?? "nil")") }
+print("== trimming .whitespaces")
+for s in [" a1 ", "\ta1\t", "\na1\n", "\u{00A0}a1\u{3000}", "\u{200B}a1"] { print("\(esc(s)) -> \(esc(s.trimmingCharacters(in: .whitespaces)))") }
+print("== uppercased")
+for s in ["ß", "ﬁ", "ı", "i", "ŉ"] { print("\(esc(s)) -> \(esc(s.uppercased())) / lower \(esc(s.lowercased()))") }
+print("== split")
+print(Array("a,,b, ,c,".split(separator: ",")).map { esc(String($0)) })

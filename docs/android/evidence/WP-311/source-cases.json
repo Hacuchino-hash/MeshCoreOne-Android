@@ -1,0 +1,787 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 98,
+ "bound_case_count": 96,
+ "unbound": [
+  {
+   "id": "ContactShareContentTests::uri is meshcore contact/add and round-trips()",
+   "source": "MC1Tests/Views/Contacts/ContactShareContentTests.swift",
+   "reason": "needs the real meshcore://contact/add encoder (ContactService.exportContactURI, WP-209 / PR #49, internal ContactUriBuilder) and parser (MeshCoreURLParser.parseContactURL, WP-405, not ported); the feature only delegates through ContactUriCodec, so a fake codec would not exercise source behavior. See WP-311.md B-1"
+  },
+  {
+   "id": "ContactShareContentTests::uri preserves contact type()",
+   "source": "MC1Tests/Views/Contacts/ContactShareContentTests.swift",
+   "reason": "same encoder/parser dependency as the round-trip case (WP-209 export + WP-405 parse); deferred rather than faked. See WP-311.md B-1"
+  }
+ ],
+ "cases": [
+  {
+   "id": "ContactsViewModelTests::hasLoadedOnce starts false()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "hasLoadedOnce starts false",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::isLoading starts false()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "isLoading starts false",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::contacts starts empty()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "contacts starts empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::loadContacts with nil dataStore returns early without setting hasLoadedOnce()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "loadContacts with nil dataStore returns early without setting hasLoadedOnce",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::syncContacts with nil contactService returns early()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "syncContacts with nil contactService returns early",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::toggleFavorite with nil contactService returns early()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "toggleFavorite with nil contactService returns early",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::hasFavorites is false with no favorites()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "hasFavorites is false with no favorites",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::hasFavorites is false when contacts empty()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "hasFavorites is false when contacts empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::hasFavorites is true when a favorite exists()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "hasFavorites is true when a favorite exists",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts favorites segment returns only favorites()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts favorites segment returns only favorites",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts contacts segment returns only chat type()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts contacts segment returns only chat type",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts repeaters segment returns only repeater type()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts repeaters segment returns only repeater type",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts rooms segment returns only room type()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts rooms segment returns only room type",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts with search text ignores segment and filters by name()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts with search text ignores segment and filters by name",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts with no matching search returns empty()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts with no matching search returns empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by name returns alphabetical order()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by name returns alphabetical order",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by lastHeard returns most recent first()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by lastHeard returns most recent first",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by distance falls back to name without location()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by distance falls back to name without location",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by distance with user location orders by proximity()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by distance with user location orders by proximity",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by hops returns fewest first with flood-routed last()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by hops returns fewest first with flood-routed last",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by hops breaks ties by distance, including the flood group()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by hops breaks ties by distance, including the flood group",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::filteredContacts sorted by hops orders a flood node by its known inbound hop count()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "filteredContacts sorted by hops orders a flood node by its known inbound hop count",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::upsert appends a contact that is not already in the list()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "upsert appends a contact that is not already in the list",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::upsert replaces an existing contact with the same id()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "upsert replaces an existing contact with the same id",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::upsert replaces an existing contact with the same public key and radio()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "upsert replaces an existing contact with the same public key and radio",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelTests::loadContacts keeps an upserted contact until the fetch includes it()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelTest",
+   "method": "loadContacts keeps an upserted contact until the fetch includes it",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/ViewModels/ContactsViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::filteredNodes matches name case-insensitively via localizedStandardContains()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "filteredNodes matches name case-insensitively via localizedStandardContains",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::filteredNodes matches hex prefix case-insensitively()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "filteredNodes matches hex prefix case-insensitively",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::filteredNodes ignores segment while searching()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "filteredNodes ignores segment while searching",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::filteredNodes applies segment filter when not searching()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "filteredNodes applies segment filter when not searching",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::lastHeard sort uses receiver lastHeard not lastAdvertTimestamp()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "lastHeard sort uses receiver lastHeard not lastAdvertTimestamp",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::name sort is locale ascending()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "name sort is locale ascending",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::distance sort places nearer located nodes first()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "distance sort places nearer located nodes first",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::hops sort orders by hop count then distance()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "hops sort orders by hop count then distance",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::updateVisibleNodes stores result in visibleNodes()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "updateVisibleNodes stores result in visibleNodes",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DiscoveryViewModelTests::deleteDiscoveredNode reapplies visibleNodes without re-calling updateVisibleNodes()",
+   "class": "com.meshcoreone.android.feature.nodes.discovery.DiscoveryViewModelTest",
+   "method": "deleteDiscoveredNode reapplies visibleNodes without re-calling updateVisibleNodes",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/ViewModels/DiscoveryViewModelTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelDiscoveryTests::Response with hops presents a success result()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelDiscoveryTest",
+   "method": "Response with hops presents a success result",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelDiscoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelDiscoveryTests::Response without a decodable path presents no-path-found()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelDiscoveryTest",
+   "method": "Response without a decodable path presents no-path-found",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelDiscoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelDiscoveryTests::Response signals contact refresh while discovering()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelDiscoveryTest",
+   "method": "Response signals contact refresh while discovering",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelDiscoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelDiscoveryTests::Late response after timeout is ignored and does not flip the failure()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelDiscoveryTest",
+   "method": "Late response after timeout is ignored and does not flip the failure",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelDiscoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelDiscoveryTests::Late response after cancel is ignored()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelDiscoveryTest",
+   "method": "Late response after cancel is ignored",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelDiscoveryTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Contact with isFavorite=true reports favorite()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "Contact with isFavorite=true reports favorite",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Discovered node is never favorite()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "Discovered node is never favorite",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::insert with .append adds at end of editablePath()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "insert with append adds at end of editablePath",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::insert preserves insertionIntent so picker stays for multi-add()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "insert preserves insertionIntent so picker stays for multi-add",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::initializeEditablePath clears a stale insertionIntent()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "initializeEditablePath clears a stale insertionIntent",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::initializeEditablePath resolves publicKey for uniquely-matching contact()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "initializeEditablePath resolves publicKey for uniquely-matching contact",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::resolveHashToPublicKey returns nil when multiple contacts share a prefix()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "resolveHashToPublicKey returns nil when multiple contacts share a prefix",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::resolveHashToPublicKey falls through to discovered when contacts have no match()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "resolveHashToPublicKey falls through to discovered when contacts have no match",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::resolveHashToPublicKey ignores discovered when contacts are ambiguous()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "resolveHashToPublicKey ignores discovered when contacts are ambiguous",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::saveRejection flags hop missing publicKey when target hashSize grew()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "saveRejection flags hop missing publicKey when target hashSize grew",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::saveRejection allows widening when publicKey is available()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "saveRejection allows widening when publicKey is available",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::saveRejection allows same-size encode even without publicKey()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "saveRejection allows same-size encode even without publicKey",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::saveRejection flags hop-count over budget()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "saveRejection flags hop-count over budget",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::encodeEditablePath uses full publicKey when available()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "encodeEditablePath uses full publicKey when available",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::encodeEditablePath truncates publicKey to targetHashSize()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "encodeEditablePath truncates publicKey to targetHashSize",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::encodeEditablePath falls back to hashBytes when publicKey is nil()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "encodeEditablePath falls back to hashBytes when publicKey is nil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::normalizeHop widens via publicKey when target grew()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "normalizeHop widens via publicKey when target grew",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::normalizeHop narrows via publicKey when target shrank()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "normalizeHop narrows via publicKey when target shrank",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::normalizeHop narrows via hashBytes when publicKey unresolved()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "normalizeHop narrows via hashBytes when publicKey unresolved",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::normalizeHop leaves narrower unresolved hop unchanged()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "normalizeHop leaves narrower unresolved hop unchanged",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::normalizeHop widens via publicKey even when stored is already at target width()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "normalizeHop widens via publicKey even when stored is already at target width",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::initializeEditablePath narrows wider stored hops when resolution fails()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "initializeEditablePath narrows wider stored hops when resolution fails",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::initializeEditablePath resliced resolved hop to device hashSize()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "initializeEditablePath resliced resolved hop to device hashSize",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::initializeEditablePath leaves narrower unresolved hop unchanged so saveRejection blocks save()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "initializeEditablePath leaves narrower unresolved hop unchanged so saveRejection blocks save",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::isPathFull is false with no hops at hashSize=1()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "isPathFull is false with no hops at hashSize=1",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::insert is a no-op once isPathFull()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelEditingTest",
+   "method": "insert is a no-op once isPathFull",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Empty query matches everything()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "Empty query matches everything",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Name substring is case-insensitive()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "Name substring is case-insensitive",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Turkish dotless-I folds correctly()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "Turkish dotless-I folds correctly",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Hex prefix matches full pubkey()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "Hex prefix matches full pubkey",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::All-hex query matches both name and pubkey hex()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "All-hex query matches both name and pubkey hex",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::Non-hex query ignores pubkey()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "Non-hex query ignores pubkey",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::isHexQuery detects valid hex digits()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "isHexQuery detects valid hex digits",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::filtered returns all nodes for an empty query()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "filtered returns all nodes for an empty query",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::filtered keeps only name-substring matches for a non-hex query()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "filtered keeps only name-substring matches for a non-hex query",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::filtered hex query matches both name and pubkey-hex prefix branches()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "filtered hex query matches both name and pubkey-hex prefix branches",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::record recent moves to front()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "record recent moves to front",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::record recent trims to limit()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "record recent trims to limit",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::recent keys persist across instances()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "recent keys persist across instances",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::recent keys scoped per radio()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "recent keys scoped per radio",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "PathManagementViewModelEditingTests::recent keys stored lowercase()",
+   "class": "com.meshcoreone.android.feature.nodes.path.PathManagementViewModelMatchingTest",
+   "method": "recent keys stored lowercase",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/ViewModels/PathManagementViewModelEditingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactShareContentTests::compact public key hex has no whitespace()",
+   "class": "com.meshcoreone.android.feature.nodes.share.ContactShareContentTest",
+   "method": "compact public key hex has no whitespace",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactShareContentTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactURIActivityItemTests::placeholder is a String not a URL()",
+   "class": "com.meshcoreone.android.feature.nodes.share.ContactShareContentTest",
+   "method": "share payload is plain text not a URI",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/Views/Contacts/ContactURIActivityItemTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactURIActivityItemTests::copy activity returns the uri string()",
+   "class": "com.meshcoreone.android.feature.nodes.share.ContactShareContentTest",
+   "method": "copy target receives the uri string",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/Views/Contacts/ContactURIActivityItemTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::filtered contacts excludes masked row()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "filtered contacts excludes masked row",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::filtered contacts mask applies to search()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "filtered contacts mask applies to search",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::is delete pending reflects both sets()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "is delete pending reflects both sets",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::mask and deleting sets start empty()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "mask and deleting sets start empty",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::delete contact without service surfaces error and keeps row()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "delete contact without service surfaces error and keeps row",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ContactsViewModelDeleteTests::bounded command times out()",
+   "class": "com.meshcoreone.android.feature.nodes.contacts.ContactsViewModelDeleteTest",
+   "method": "bounded command times out",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/Views/Contacts/ContactsViewModelDeleteTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ScanContactQRFeedbackTests::idle add button uses add and hides the type glyph()",
+   "class": "com.meshcoreone.android.feature.nodes.add.ScanContactQRFeedbackTest",
+   "method": "idle add button uses add and hides the type glyph",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ScanContactQRFeedbackTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ScanContactQRFeedbackTests::importing add button uses importing not add()",
+   "class": "com.meshcoreone.android.feature.nodes.add.ScanContactQRFeedbackTest",
+   "method": "importing add button uses importing not add",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ScanContactQRFeedbackTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ScanContactQRFeedbackTests::scan again appears when provided()",
+   "class": "com.meshcoreone.android.feature.nodes.add.ScanContactQRFeedbackTest",
+   "method": "scan again appears when provided",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ScanContactQRFeedbackTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ScanContactQRFeedbackTests::existing contact uses view not add()",
+   "class": "com.meshcoreone.android.feature.nodes.add.ScanContactQRFeedbackTest",
+   "method": "existing contact uses view not add",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ScanContactQRFeedbackTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ScanContactQRFeedbackTests::name mismatch shows scanned as caption()",
+   "class": "com.meshcoreone.android.feature.nodes.add.ScanContactQRFeedbackTest",
+   "method": "name mismatch shows scanned as caption",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/Views/Contacts/ScanContactQRFeedbackTests.swift",
+   "junit": "passed"
+  }
+ ]
+}
