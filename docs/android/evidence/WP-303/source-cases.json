@@ -1,0 +1,1343 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 169,
+ "bound_case_count": 163,
+ "unbound": [
+  {
+   "id": "ChatPrewarmRefresherTests::direct-message refresh bakes the divider from the store's fresh unread count()",
+   "source": "MC1Tests/State/ChatPrewarmRefresherTests.swift",
+   "reason": "asserts the new-messages divider baked into MessageItem.grouping by ChatTimeline+Bake (WP-307); ChatTimeline is unmerged and the primer reaches it only through the PrimeTimeline port"
+  },
+  {
+   "id": "ChatTimelineFreshnessTests::cold-open populate bakes the divider from the store's fresh unread count, not the pushed DTO()",
+   "source": "MC1Tests/State/ChatTimelineFreshnessTests.swift",
+   "reason": "drives ChatTimelinePopulator.populate and ChatMessageBakeState (WP-307); not merged"
+  },
+  {
+   "id": "ChatTimelineFreshnessTests::populate bakeAll reads sender tables after the fetch await()",
+   "source": "MC1Tests/State/ChatTimelineFreshnessTests.swift",
+   "reason": "drives ChatTimelinePopulator.populate and incoming-avatar baking (WP-307); not merged"
+  },
+  {
+   "id": "ChatTimelinePrimerTests::a channel prime resolves sender names through the contact table()",
+   "source": "MC1Tests/State/ChatTimelinePrimerTests.swift",
+   "reason": "asserts baked sender resolution, nickname and IncomingAvatarJPEGStore (WP-307 ChatTimeline/MessageBubbleConfiguration); not merged"
+  },
+  {
+   "id": "ChatTimelinePrimerTests::a reload draining while the primer holds the writer rebuilds the row()",
+   "source": "MC1Tests/State/ChatTimelinePrimerTests.swift",
+   "reason": "asserts a rebaked footer status on a built MessageItem (WP-307 render-item bake); not merged"
+  },
+  {
+   "id": "LifecycleTransitionTests::toolbar resume probe names chrome without contact identity()",
+   "source": "MC1Tests/AppState/LifecycleTransitionTests.swift",
+   "reason": "iOS 26 toolbar-exclusivity diagnostic (temporary [DBG-toolbar-resume] probe over SwiftUI chrome state); no Android analogue exists to port"
+  }
+ ],
+ "cases": [
+  {
+   "id": "AppStateEnvironmentDefaultTests::environment default is a single shared placeholder()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "placeholderIsShared",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AppStateEnvironmentDefaultTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AppStateEnvironmentDefaultTests::placeholder init leaves the shared debug log buffer untouched()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "placeholderLeavesSharedDebugLogAlone",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AppStateEnvironmentDefaultTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AppStateEnvironmentDefaultTests::placeholder is inert with no services or live transaction listener()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "placeholderIsInert",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/AppState/AppStateEnvironmentDefaultTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AppStateRegionTests::AppState loads persisted regionSelection on init()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "regionLoadsWithoutWritingBack",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AppStateRegionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AppStateRegionTests::regionSelection clears UserDefaults on nil()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "regionClearsOnNil",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AppStateRegionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AppStateRegionTests::regionSelection persists to UserDefaults on set()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "regionPersistsOnSet",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AppStateRegionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AuthenticationFailureGatingTests::an active app presents the pairing-failure alert()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "activeAppPresentsAlert",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AuthenticationFailureGatingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AuthenticationFailureGatingTests::an inactive app suppresses the pairing-failure alert()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "inactiveAppSuppressesAlert",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AuthenticationFailureGatingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "AuthenticationFailureGatingTests::clearing pairing failure resets every alert field()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "clearingResetsEveryField",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/AuthenticationFailureGatingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::activeBatteryOCVArray returns liIon default when no device connected()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "liIonDefaultWithoutDevice",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::deviceBattery can be cleared()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "batteryCanBeCleared",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::deviceBattery can be set directly for testing()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "batteryCanBeSet",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::deviceBattery is nil by default()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "batteryNullByDefault",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::fetchDeviceBattery does not crash when called on fresh state()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "fetchOnFreshStateDoesNotThrow",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "BatteryMonitoringTests::fetchDeviceBattery is no-op when services is nil()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "fetchIsNoOpWithoutServices",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/BatteryMonitoringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChannelSlotOccupantChangedTests::bumps the generation once per change and only for the affected slots()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "generationBumpsPerChangeAndOnlyAffectedSlots",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/ChannelSlotOccupantChangedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChannelSlotOccupantChangedTests::closes the open chat for a changed slot and drops its draft()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "slotChangeClosesChatAndDropsDraft",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/ChannelSlotOccupantChangedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChannelSlotOccupantChangedTests::leaves an open chat on another slot or radio alone()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "otherSlotOrRadioIsLeftAlone",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/ChannelSlotOccupantChangedTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatCoordinatorRegistrySurvivalTests::disconnect then reconnect wiring keeps the same coordinator instance()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "registrySurvivesReconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ChatCoordinatorRegistrySurvivalTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatCoordinatorRegistrySurvivalTests::forgetting a non-last-connected device does not fire onLastConnectedDeviceCleared()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "forgettingAnotherDeviceDoesNotClear",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ChatCoordinatorRegistrySurvivalTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatCoordinatorRegistrySurvivalTests::forgetting the last-connected device empties the registry and reloads unavailable()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "forgettingLastDeviceEmptiesRegistry",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/AppState/ChatCoordinatorRegistrySurvivalTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatCoordinatorRegistrySurvivalTests::notifyDataRestored bumps servicesVersion and the next load binds a fresh coordinator()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "restoreBumpsVersionAndRebindsFresh",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/AppState/ChatCoordinatorRegistrySurvivalTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatCoordinatorRegistrySurvivalTests::notifyDataRestored drops registry entries()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "restoreDropsEntries",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ChatCoordinatorRegistrySurvivalTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatPrewarmRefresherTests::a cold conversation is ignored and no coordinator is created()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "coldConversationIsIgnored",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/ChatPrewarmRefresherTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatPrewarmRefresherTests::an open conversation is not refreshed()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "openConversationIsNotRefreshed",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/ChatPrewarmRefresherTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatPrewarmRefresherTests::channel arrival re-primes a warm coordinator with the new tail()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "channelArrivalReprimes",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatPrewarmRefresherTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatPrewarmRefresherTests::direct-message arrival re-primes a warm coordinator with the new tail()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "directArrivalReprimes",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatPrewarmRefresherTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatTimelineFreshnessTests::a still-alive interactive owner cannot starve the arrival refresh after close()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "releasedInteractiveOwnerDoesNotStarveRefresh",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatTimelineFreshnessTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatTimelineFreshnessTests::production AppState hook chain refreshes a warm closed DM on arrival()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "hookChainRefreshesWarmDirect",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatTimelineFreshnessTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatTimelineFreshnessTests::production AppState hook chain refreshes a warm closed channel on arrival()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "hookChainRefreshesWarmChannel",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatTimelineFreshnessTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatTimelinePrimerTests::a prime is denied while the conversation is open()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "primeIsDeniedWhileOpen",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatTimelinePrimerTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ChatTimelinePrimerTests::a primer resuming from a DB await after the live open has all its writes dropped()",
+   "class": "com.meshcoreone.android.app.container.ChatPrewarmTest",
+   "method": "stalePrimerWritesAreDropped",
+   "disposition": "native-equivalent",
+   "source": "MC1Tests/State/ChatTimelinePrimerTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice decline keeps the live radio connected()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "declineKeepsTheLiveRadio",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice of a sibling radio does not disconnect the live radio()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "deleteSiblingKeepsTheLiveRadio",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice of an in-flight connect tears down the attempt()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "deleteInFlightConnectTearsDownTheAttempt",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice of the live radio disconnects and clears user intent()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "deleteLiveRadioDisconnects",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice removes the ASK accessory then demotes the row()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "deleteRemovesAssociationThenDemotes",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionManagerDeleteDeviceTests::deleteDevice with no ASK accessory still demotes()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "deleteWithoutAssociationStillDemotes",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/ConnectionManagerDeleteDeviceTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Calling showReadyToastBriefly again resets the timer()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyToastRestartsItsTimer",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Connection alert state defaults()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "alertDefaults",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Failed state takes priority over syncing()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "failedOverSyncing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Multiple sync activities keep syncing state until all end()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "multipleActivitiesKeepSyncing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Ready toast takes priority over disconnected()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyOverDisconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Sync activity shows syncing pill while active()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncActivityShowsSyncing",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::Syncing takes priority over ready toast()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncingOverReadyToast",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::canRunSettingsStartupReads is false when disconnected()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "settingsReadsBlockedWhenDisconnected",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::disconnectedPillVisible is false by default()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectedPillDefaultsOff",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect clears currentSyncPhase()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectClearsPhase",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect does not show disconnected pill when suppressed()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectSuppressedPill",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect does not show disconnected pill without paired device()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectWithoutPairedDevice",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect hides ready toast()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectHidesReadyToast",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect resets all state in a single call()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectResetsEverything",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect resets syncActivityCount to zero()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectResetsActivityCount",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect sets isNodeStorageFull to false()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectClearsStorageFull",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::handleDisconnect shows disconnected pill when device was paired()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "disconnectShowsPillForPairedDevice",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::hideDisconnectedPill clears pill immediately()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "hideDisconnectedPillClears",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::hideReadyToast immediately clears toast()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyToastHides",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::hideSyncFailedPill immediately clears pill()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncFailedHides",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::presentConnectionFailure clears pairingFailureKind set by a prior pairing failure()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "connectionFailureClearsPairingKind",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::presentPairingFailure(auth) sets pairingFailureKind to .authentication()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "authFailureKind",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::presentPairingFailure(transient) sets pairingFailureKind to .transient()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "transientFailureKind",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::showReadyToastBriefly auto-hides after delay()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyToastAutoHides",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::showReadyToastBriefly sets showReadyToast to true()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyToastShows",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::showSyncFailedPill auto-hides after delay()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncFailedAutoHides",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::showSyncFailedPill sets visible flag()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncFailedVisible",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::statusPillState is hidden by default()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillHiddenByDefault",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ConnectionUIStateTests::updateDisconnectedPillState without paired device stays hidden()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "noPairedDeviceStaysHidden",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/ConnectionUIStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Bare 'Heltec' vendor name is unknown (not assumed ESP32)()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case43BareHeltecVendorNameIsUnknownNotAssumedEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ESP32 pacing is 60ms()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case46Esp32PacingIs60ms",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Empty model string returns unknown()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case44EmptyModelStringReturnsUnknown",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Generic ESP32 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case18GenericEsp32DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec CT62 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case07HeltecCt62DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec E213 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case05HeltecE213DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec E290 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case04HeltecE290DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec T190 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case06HeltecT190DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec Tracker detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case03HeltecTrackerDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec V2 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case00HeltecV2DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec V3 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case01HeltecV3DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Heltec V4 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case02HeltecV4DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Ikoka detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case37IkokaDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Keepteen detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case41KeepteenDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Mesh Pocket (with space) detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case21MeshPocketWithSpaceDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Mesh Solar detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case23MeshSolarDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::MeshPocket detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case20MeshpocketDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Meshadventurer detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case17MeshadventurerDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Meshtiny detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case40MeshtinyDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Minewsemi detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case39MinewsemiDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Nano G2 Ultra detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case42NanoG2UltraDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ProMicro detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case38PromicroDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::RAK 3112 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case15Rak3112DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::RAK 3401 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case32Rak3401DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::RAK 4631 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case31Rak4631DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::SenseCap Solar detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case29SensecapSolarDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Station G2 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case16StationG2DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T-Beam detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case08TBeamDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T-Deck detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case09TDeckDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T-Echo detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case33TEchoDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T-LoRa detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case10TLoraDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T1000-E detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case28T1000EDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::T114 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case22T114DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::TLora detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case11TloraDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ThinkNode M2 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case19ThinknodeM2DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ThinkNode M3 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case35ThinknodeM3DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ThinkNode-M1 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case34ThinknodeM1DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::ThinkNode-M6 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case36ThinknodeM6DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Unknown pacing is 60ms (conservative default)()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case48UnknownPacingIs60msConservativeDefault",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Unrecognized device returns unknown()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case45UnrecognizedDeviceReturnsUnknown",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::WM1110 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case26Wm1110DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Wio Tracker detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case27WioTrackerDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::WisMesh Tag detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case30WismeshTagDetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Xiao C3 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case13XiaoC3DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Xiao C6 detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case14XiaoC6DetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Xiao S3 WIO detected as ESP32()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case12XiaoS3WioDetectedAsEsp32",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Xiao-nrf52 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case24XiaoNrf52DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::Xiao_nrf52 detected as nRF52()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case25XiaoNrf52DetectedAsNrf52",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DevicePlatformTests::nRF52 pacing is 25ms()",
+   "class": "com.meshcoreone.android.app.container.DevicePlatformDetectionTest",
+   "method": "case47Nrf52PacingIs25ms",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/Models/DevicePlatformTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::disconnected pill delay prevents flash during brief reconnects()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillDelayPreventsFlash",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::disconnected pill hidden when connection starts()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillHiddenWhenConnectionStarts",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::disconnected pill not shown when no last connected device()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillNotShownWithoutLastDevice",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::disconnected pill not shown when user explicitly disconnected()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillNotShownAfterUserDisconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::disconnected pill shown after unexpected disconnect()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "pillShownAfterUnexpectedDisconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::shouldSuppressDisconnectedPill returns false when user did not explicitly disconnect()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "notSuppressedWithoutExplicitDisconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "DisconnectedPillTests::shouldSuppressDisconnectedPill returns true when user explicitly disconnected()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "suppressedAfterExplicitDisconnect",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/DisconnectedPillTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FreshPairingFailureRoutingTests::fresh-pair other-app failure routes to the other-app warning()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "freshPairOtherApp",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/FreshPairingFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FreshPairingFailureRoutingTests::macOS rejected PIN names System Settings Bluetooth forget()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "rejectedPinWithoutSystemRegistry",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/AppState/FreshPairingFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FreshPairingFailureRoutingTests::rejected PIN surfaces the PIN-rejected recovery()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "rejectedPin",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/FreshPairingFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FreshPairingFailureRoutingTests::saved-device authentication failure keeps the dead-bond recovery()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "savedDeviceAuthKeepsDeadBondRecovery",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/FreshPairingFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "FreshPairingFailureRoutingTests::transient fresh-pair failure keeps the non-destructive retry()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "transientFreshPairKeepsRetry",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/FreshPairingFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LifecycleTransitionTests::BLE foreground waits for queued background transition()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "foregroundWaitsForBackground",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/LifecycleTransitionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LifecycleTransitionTests::Explicit disconnect runs the per-session teardown the loss path performs()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "explicitDisconnectTearsDownSession",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/LifecycleTransitionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "LifecycleTransitionTests::rapid background-active bounces keep BLE transitions ordered()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "rapidBouncesStayOrdered",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/LifecycleTransitionTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "MessageEventStreamTests::Events sent across consumer task restarts are not dropped when the consumer is held by a long-lived task()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "longLivedConsumerKeepsEveryEvent",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/MessageEventStreamTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "MessageEventStreamTests::Multiple consumers each receive the same event()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "multipleConsumersReceiveTheSameEvent",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/MessageEventStreamTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "MessageEventStreamTests::Single consumer receives an event sent via send(_:)()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "singleConsumerReceivesEvent",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/MessageEventStreamTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "MessageEventStreamTests::subscriberCount reflects active subscriptions()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "subscriberCountReflectsActiveSubscriptions",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/MessageEventStreamTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedDeviceConnectFailureRoutingTests::authentication failure surfaces guided re-pair recovery()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "savedAuthFailureGuidedRecovery",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/SavedDeviceConnectFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedDeviceConnectFailureRoutingTests::generic failure clears a stale failed-pairing device id()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "genericFailureClearsStaleDevice",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/SavedDeviceConnectFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedDeviceConnectFailureRoutingTests::macOS authentication failure names System Settings Bluetooth forget()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "savedAuthFailureWithoutSystemRegistry",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/AppState/SavedDeviceConnectFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedDeviceConnectFailureRoutingTests::non-auth failure routes to the generic connection-failed alert()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "savedNonAuthIsGeneric",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/SavedDeviceConnectFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SavedDeviceConnectFailureRoutingTests::other-app failure routes to the other-app warning()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "savedOtherApp",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/SavedDeviceConnectFailureRoutingTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ServiceContainerWiringTests::init establishes all 6 cross-service connections()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "crossServiceConnectionsAreWired",
+   "disposition": "native-equivalent",
+   "source": "MC1Services/Tests/MC1ServicesTests/ServiceContainerWiringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ServiceContainerWiringTests::startEventMonitoring activates ACK expiry checker; stopEventMonitoring deactivates it()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "ackExpiryFollowsMonitoring",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ServiceContainerWiringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ServiceContainerWiringTests::tearDown clears the notification action forwarders that capture the handler()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "teardownClearsForwarders",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ServiceContainerWiringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "ServiceContainerWiringTests::tearDown clears the wired message and discovery handlers()",
+   "class": "com.meshcoreone.android.app.container.SessionStateTest",
+   "method": "teardownClearsHandlersAndDiscoverySubscription",
+   "disposition": "source-behavior",
+   "source": "MC1Services/Tests/MC1ServicesTests/ServiceContainerWiringTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "StatusPillStateTests::Failed state takes highest priority()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "failedHighestPriority",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/StatusPillStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "StatusPillStateTests::Hidden when no conditions met()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "hiddenWhenNothingApplies",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/StatusPillStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "StatusPillStateTests::Ready state shows when toast is active()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "readyWhenToastActive",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/StatusPillStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "StatusPillStateTests::Syncing takes priority over connecting()",
+   "class": "com.meshcoreone.android.app.container.ConnectionUiStateTest",
+   "method": "syncingOverConnecting",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/AppState/StatusPillStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::auth failure after Forget routes through presentFreshPairingFailure()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "authFailureAfterForgetRoutesAsPinRejected",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::became-active picker retry is skipped while setup is pending()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "becameActiveSkipsRetryWhilePending",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::became-active picker retry still scans when no setup prompt is pending()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "becameActiveStillScansWithoutPending",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::cancelling setup ends pairing-flow deferral()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "cancellingEndsDeferral",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::declining iOS Remove Accessory does not fail connection or open the picker()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "decliningRemovalFailsNothing",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::device-selection dismiss does not replace a live setup prompt()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "dismissDoesNotReplaceLivePrompt",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::device-selection dismiss promotes a queued setup prompt and does not open the picker()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "dismissPromotesQueuedPrompt",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::forgetting one of two unsaved accessories opens the picker and leaves the sibling()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "forgettingOneLeavesTheSibling",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::pickerRestricted after Forget does not fail connection and retries on become-active()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "pickerUnavailableRetriesOnBecomeActive",
+   "disposition": "platform-adaptation",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::queued scan while connected presents leftover Forget without dropping the live radio()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "queuedScanKeepsTheLiveRadio",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::scan with two unsaved ASK accessories sets the plural prompt and does not show the picker()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "scanWithTwoUnsavedAccessories",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::setup-sheet onDismiss during confirm does not end pairing-flow deferral()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "dismissDuringConfirmKeepsDeferral",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::setup-sheet onDismiss with a replacement prompt keeps it()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "dismissWithReplacementKeepsIt",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::setup-sheet swipe dismiss (pending already nil) ends pairing-flow deferral()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "swipeDismissEndsDeferral",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  },
+  {
+   "id": "SystemPairingSetupAppStateTests::startDeviceScan does not replace a live setup prompt()",
+   "class": "com.meshcoreone.android.app.container.AppStateBehaviorTest",
+   "method": "scanDoesNotReplaceLivePrompt",
+   "disposition": "source-behavior",
+   "source": "MC1Tests/State/SystemPairingSetupAppStateTests.swift",
+   "junit": "passed"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+referenceDateEpochSeconds=978307200
+sampleReferenceSeconds=725760000.5
+fromReference.epoch=1704326400.25
+json={"administrativeAreaCode":"US-CA","countryCode":"US","countyKey":"los angeles","source":"location"}
+json={"countryCode":"PT","source":"manual"}
+json={"countryCode":"a\/b\"c\\d","source":"manual"}
+decodedEscapedCountry=PT

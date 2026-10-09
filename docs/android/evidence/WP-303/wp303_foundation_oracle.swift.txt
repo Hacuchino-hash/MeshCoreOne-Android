@@ -1,0 +1,27 @@
+import Foundation
+
+// Oracle for WP-303: Foundation reference-date arithmetic and JSONEncoder output for RegionSelection-shaped values.
+struct RegionSelection: Codable, Equatable {
+  enum Source: String, Codable { case location, manual }
+  var countryCode: String
+  var administrativeAreaCode: String?
+  var countyKey: String?
+  var source: Source
+}
+
+let epoch = Date(timeIntervalSinceReferenceDate: 0).timeIntervalSince1970
+print("referenceDateEpochSeconds=\(Int(epoch))")
+let sample = Date(timeIntervalSince1970: 1_704_067_200.5).timeIntervalSinceReferenceDate
+print("sampleReferenceSeconds=\(sample)")
+let cutoff = Date(timeIntervalSinceReferenceDate: 726_019_200.25)
+print("fromReference.epoch=\(cutoff.timeIntervalSince1970)")
+let encoder = JSONEncoder()
+encoder.outputFormatting = [.sortedKeys]
+let full = RegionSelection(countryCode: "US", administrativeAreaCode: "US-CA", countyKey: "los angeles", source: .location)
+let minimal = RegionSelection(countryCode: "PT", administrativeAreaCode: nil, countyKey: nil, source: .manual)
+let slash = RegionSelection(countryCode: "a/b\"c\\d", administrativeAreaCode: nil, countyKey: nil, source: .manual)
+for value in [full, minimal, slash] {
+  print("json=" + String(data: try encoder.encode(value), encoding: .utf8)!)
+}
+let decoded = try JSONDecoder().decode(RegionSelection.self, from: Data("{\"source\":\"manual\",\"countryCode\":\"\\u0050T\"}".utf8))
+print("decodedEscapedCountry=\(decoded.countryCode)")
