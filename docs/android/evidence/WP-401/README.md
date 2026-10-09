@@ -33,6 +33,9 @@ Pinned session-local JDK 21.0.12.1 and Android SDK 37.2/build-tools 37.0.0 were 
 5. `python -m unittest discover -s tools\android-port\tests -p 'test_*.py'`
    - Result: passed.
    - Discovered: 242; passed: 242; failed: 0; errors: 0; skipped: 0.
+6. `.\gradlew.bat :resolveScaffoldDependencies :validateModuleGraph :platform:notifications:testDebugUnitTest --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8' --quiet`
+   - Result: passed after resolving every strict dependency-lock configuration.
+   - Notification tests: 6 discovered/passed; 0 failed/errors/skipped.
 
 No Android device/emulator, launcher badge, OEM channel UI, physical radio, signing or release
 verification is claimed.
