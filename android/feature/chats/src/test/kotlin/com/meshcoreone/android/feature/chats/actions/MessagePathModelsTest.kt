@@ -7,7 +7,6 @@ import com.meshcoreone.android.core.model.Coordinate
 import com.meshcoreone.android.core.model.MessageDirection
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.model.ContactType
-import com.meshcoreone.android.core.services.rendering.NodeNameMatchKind
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals

@@ -15,10 +15,17 @@ import com.meshcoreone.android.core.model.uppercaseHexString
 import com.meshcoreone.android.core.protocol.bytes.Bytes
 import com.meshcoreone.android.core.protocol.model.ContactType
 import com.meshcoreone.android.core.protocol.model.decodePathLen
-import com.meshcoreone.android.core.services.rendering.NodeNameMatchKind
-import com.meshcoreone.android.core.services.rendering.NodeNameResolution
 import java.time.Instant
 import java.util.UUID
+
+enum class NodeNameMatchKind { EXACT, FALLBACK, UNRESOLVED }
+
+data class NodeNameResolution(
+    val displayName: String,
+    val matchKind: NodeNameMatchKind,
+) {
+    val isFallback: Boolean get() = matchKind == NodeNameMatchKind.FALLBACK
+}
 
 data class MessagePathArrival(
     val id: UUID,

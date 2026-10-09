@@ -82,3 +82,33 @@ object MessagePathFormatter {
         return "${nodes.take(2).joinToString(",")}\u2026${nodes.takeLast(2).joinToString(",")}"
     }
 }
+
+data class ReactionSummaryEntry(val emoji: String, val count: Long)
+
+fun parseReactionSummary(summary: String?): List<ReactionSummaryEntry> {
+    if (summary.isNullOrEmpty()) return emptyList()
+    return summary.split(',').mapNotNull { entry ->
+        val separator = entry.indexOf(':')
+        if (separator <= 0 || separator != entry.lastIndexOf(':')) return@mapNotNull null
+        val count = entry.substring(separator + 1).toLongOrNull() ?: return@mapNotNull null
+        ReactionSummaryEntry(entry.substring(0, separator), count)
+    }
+}
+
+enum class MessageSignalQuality(val qualityLabel: String) {
+    EXCELLENT("Excellent"),
+    GOOD("Good"),
+    FAIR("Fair"),
+    POOR("Weak"),
+    UNKNOWN("Unknown");
+
+    companion object {
+        fun of(snr: Double?): MessageSignalQuality = when {
+            snr == null -> UNKNOWN
+            snr > 6.0 -> EXCELLENT
+            snr > 0.0 -> GOOD
+            snr > -6.0 -> FAIR
+            else -> POOR
+        }
+    }
+}

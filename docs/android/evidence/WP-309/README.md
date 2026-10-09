@@ -23,7 +23,7 @@ WP-310 room/channel, WP-312 provider, or WP-003 CI simplification was replaced.
 ## Original-case mapping
 
 The frozen inventory assigns 102 Swift cases to WP-309. `OriginalCaseInventoryTest` pins every original
-case name exactly once. The 28 WP-309 JVM assertions exercise their behavior as parameter families:
+case name exactly once. The 30 WP-309 JVM assertions exercise their behavior as parameter families:
 formatter/direct/flood modes and truncation; action/path-detail visibility; canonical/repeat arrival order;
 selection; sender/hop exact, fallback, and unresolved resolution; map ID/camera/line/distance/readiness;
 reaction selection/grouping/indexing; typed failure/cancellation; and block/mute writes. The inventory is
@@ -37,8 +37,9 @@ The final run is performed after integrating the stated base.
 
 | Command/check | Result |
 | --- | --- |
-| `:feature:chats:testDebugUnitTest` | Passed: 186 discovered/run/passed, including 28 WP-309 cases; 0 failed/errors/skipped. |
+| `:feature:chats:testDebugUnitTest` | Passed: 188 discovered/run/passed, including 30 WP-309 cases; 0 failed/errors/skipped. |
 | `:feature:chats:lintDebug :app:compileDebugKotlin` | Passed; 0 lint errors, with 3 pre-existing WP-306 `LocalContextResourcesRead` warnings. |
+| `:validateModuleGraph` | Passed; chats retains allowed feature-to-core edges and does not depend on concrete `core:services`. |
 | `python tools/android-port/controller/validate.py` | Passed trusted manifest/ownership/traceability validation. |
 
 JUnit discovery counts come from Gradle `TEST-*.xml`, not source-file counts. Hosted exact-head

@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:maps"))
-    implementation(project(":core:services"))
 }
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(":feature:chats:testDebugUnitTest") }

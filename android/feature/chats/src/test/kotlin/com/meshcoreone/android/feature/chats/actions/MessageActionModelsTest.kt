@@ -110,4 +110,24 @@ class MessageActionModelsTest {
         assertEquals(DeliveryFeedback.FAILED, DeliveryFeedback.from(message(status = MessageStatus.FAILED)))
         assertEquals(DeliveryFeedback.RETRYING, DeliveryFeedback.from(message(status = MessageStatus.RETRYING)))
     }
+
+    @Test
+    fun `reaction summary parser retains order and skips malformed entries`() {
+        assertEquals(
+            listOf(ReactionSummaryEntry("👍", 3), ReactionSummaryEntry("❤️", 1)),
+            parseReactionSummary("👍:3,bad,❤️:1,😂:nope,:2,🔥:2:1"),
+        )
+        assertTrue(parseReactionSummary(null).isEmpty())
+        assertTrue(parseReactionSummary("").isEmpty())
+    }
+
+    @Test
+    fun `signal quality preserves source thresholds`() {
+        assertEquals(MessageSignalQuality.UNKNOWN, MessageSignalQuality.of(null))
+        assertEquals(MessageSignalQuality.EXCELLENT, MessageSignalQuality.of(6.1))
+        assertEquals(MessageSignalQuality.GOOD, MessageSignalQuality.of(6.0))
+        assertEquals(MessageSignalQuality.FAIR, MessageSignalQuality.of(0.0))
+        assertEquals(MessageSignalQuality.POOR, MessageSignalQuality.of(-6.0))
+        assertEquals(MessageSignalQuality.POOR, MessageSignalQuality.of(Double.NaN))
+    }
 }

@@ -66,8 +66,6 @@ import com.meshcoreone.android.core.model.ContactDTO
 import com.meshcoreone.android.core.model.Coordinate
 import com.meshcoreone.android.core.model.MessageDTO
 import com.meshcoreone.android.core.model.MessageRepeatDTO
-import com.meshcoreone.android.core.services.reactions.ReactionParser
-import com.meshcoreone.android.core.services.rendering.SNRQuality
 import com.meshcoreone.android.core.ui.sharedTouchTarget
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -242,7 +240,7 @@ fun ReactionBadges(
     onSelect: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val reactions = remember(summary) { ReactionParser.parseSummary(summary) }
+    val reactions = remember(summary) { parseReactionSummary(summary) }
     if (reactions.isEmpty()) return
     Row(modifier.horizontalScroll(rememberScrollState())) {
         reactions.take(3).forEach { reaction ->
@@ -507,7 +505,7 @@ private fun RepeatRow(
             unknown,
         )
     }
-    val quality = SNRQuality.of(repeat.snr)
+    val quality = MessageSignalQuality.of(repeat.snr)
     val hops = if (repeat.hopCount == 1L) {
         stringResource(AppChatsStrings.chatsRepeatsHopSingular)
     } else {
@@ -544,7 +542,7 @@ private fun MessageMetadata(message: MessageDTO, arrivals: Int) {
     if (!message.isOutgoing) {
         Text("${message.hopCount} hops")
         message.snr?.let {
-            val quality = SNRQuality.of(it)
+            val quality = MessageSignalQuality.of(it)
             Text("SNR ${"%.1f".format(it)} dB (${quality.qualityLabel})${if (arrivals > 1) " · first" else ""}")
         }
     } else if (message.heardRepeats > 0) {

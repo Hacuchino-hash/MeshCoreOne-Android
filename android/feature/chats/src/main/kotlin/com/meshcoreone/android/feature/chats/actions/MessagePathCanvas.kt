@@ -14,7 +14,6 @@ import com.meshcoreone.android.core.model.Coordinate
 import com.meshcoreone.android.core.model.MessageDTO
 import com.meshcoreone.android.core.model.RepeaterResolvable
 import com.meshcoreone.android.core.protocol.bytes.Bytes
-import com.meshcoreone.android.core.services.rendering.NodeNameMatchKind
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.util.UUID
