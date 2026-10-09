@@ -138,3 +138,14 @@ object SwiftNumberFieldParser {
 /** `Double(device.frequency) / 1000.0` shown with `.precision(.fractionLength(3))` and the POSIX locale. */
 fun formatFrequencyMHz(frequencyKHz: UInt): String =
     BigDecimal.valueOf(frequencyKHz.toDouble() / 1000.0).setScale(3, RoundingMode.HALF_EVEN).toPlainString()
+
+/** `CharacterSet.whitespaces` and `.whitespacesAndNewlines` exactly as printed by oracle3 (U+200B is a member of both). */
+internal object SwiftCharacterSets {
+    val whitespaces: Set<Char> =
+        (listOf(0x0009, 0x0020, 0x00A0, 0x1680, 0x202F, 0x205F, 0x3000, 0x200B) + (0x2000..0x200A)).map { it.toChar() }.toSet()
+    val whitespacesAndNewlines: Set<Char> =
+        whitespaces + listOf(0x000A, 0x000B, 0x000C, 0x000D, 0x0085, 0x2028, 0x2029).map { it.toChar() }
+
+    fun trimWhitespaces(text: String): String = text.trim { it in whitespaces }
+    fun trimWhitespacesAndNewlines(text: String): String = text.trim { it in whitespacesAndNewlines }
+}

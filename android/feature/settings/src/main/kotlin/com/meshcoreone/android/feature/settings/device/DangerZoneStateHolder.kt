@@ -6,6 +6,7 @@ import com.meshcoreone.android.core.l10n.generated.AppSettingsStrings
 import com.meshcoreone.android.core.model.DeviceDTO
 import com.meshcoreone.android.core.ui.UiText
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -134,7 +135,7 @@ class DangerZoneStateHolder(
     fun removeUnfavoritedNodes() {
         val port = maintenance ?: return
         mutable.update { it.copy(isRemovingUnfavorited = true, showingRemoveUnfavoritedAlert = false) }
-        removeJob = env.scope.launch { runRemoval(port) }
+        removeJob = env.scope.launch(start = CoroutineStart.ATOMIC) { runRemoval(port) }
     }
 
     private suspend fun runRemoval(port: DeviceMaintenancePort) {

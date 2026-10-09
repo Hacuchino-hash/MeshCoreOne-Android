@@ -79,6 +79,9 @@ interface RadioCatalogPort {
 
     /** Frequency a repeat preset writes (kHz), for `setRadioParamsVerified`. */
     fun repeatFrequencyKHz(presetId: String): UInt?
+
+    /** `RegionalAreas.displayName(for:)`, shown in the preset footer. */
+    fun regionDisplayName(region: RegionSelection): String
 }
 
 /** `RegionalAreas.showsSubdivisionPicker(for:)` (core:services `RegionalAreas`). */
@@ -170,7 +173,9 @@ class GeneratedIdentity(val publicKey: Bytes, val expandedPrivateKey: Bytes)
 /** Stale-node cleanup settings (app storage keys `autoDeleteStaleNodesDays`, `lastStaleCleanupDate`). */
 interface StaleNodeCleanupPort {
     val thresholdDays: StateFlow<Int>
-    val lastCleanupEpochSeconds: StateFlow<Double>
+
+    /** The last run, or null when it never ran (Swift stores 0). */
+    val lastCleanup: StateFlow<java.time.Instant?>
     fun setThresholdDays(days: Int)
 
     /** `appState.performStaleNodeCleanup(force: true)`. */
@@ -182,3 +187,48 @@ interface StaleNodeCleanupPort {
  * flows treat it as success because the radio restarts before it can answer.
  */
 class SettingsOperationTimeoutException : Exception("Operation timed out")
+
+/** Whether the user already chose any new-contact discovery child toggle (Swift `defaults.object(forKey:) != nil`). */
+data class StoredDiscoveryChoices(val contact: Boolean, val repeater: Boolean, val room: Boolean)
+
+fun interface DiscoveryChoiceSource {
+    fun storedChoices(): StoredDiscoveryChoices
+}
+
+/** Region discovery (`RegionDiscoveryService.discover`), outcome mirrored from core:services. */
+sealed interface RegionDiscoveryOutcome {
+    data object SendFailed : RegionDiscoveryOutcome
+    data object NoRepeatersResponded : RegionDiscoveryOutcome
+    data object ErrorLoadingRepeaters : RegionDiscoveryOutcome
+    data class Completed(val newRegions: List<String>, val allRepeatersTableFull: Boolean) : RegionDiscoveryOutcome
+}
+
+fun interface RegionDiscoveryPort {
+    suspend fun discover(knownRegions: List<String>, supportsAdHocRequest: Boolean): RegionDiscoveryOutcome
+}
+
+/** Device battery and storage readout (`BatteryMonitor.deviceBattery`), already reduced to display values. */
+data class DeviceBatterySnapshot(
+    val voltageVolts: Double,
+    val percentage: Int,
+    val usedStorageKB: Int?,
+    val totalStorageKB: Int?,
+)
+
+interface DeviceBatteryPort {
+    val battery: StateFlow<DeviceBatterySnapshot?>
+    suspend fun fetch()
+}
+
+/** `SettingsService.setNodeNameVerified` and the verified location write, for the device-info and location pages. */
+interface NodeIdentityPort {
+    suspend fun setNodeNameVerified(name: String): SelfInfo
+}
+
+/** The `@AppStorage` booleans of the chat settings page. */
+enum class ChatPreference { REPLY_WITH_QUOTE, SHOW_INCOMING_PATH, SHOW_INCOMING_HOP_COUNT, SHOW_INCOMING_REGION, SHOW_INCOMING_HEARD_COUNT }
+
+interface ChatPreferencePort {
+    val values: StateFlow<Map<ChatPreference, Boolean>>
+    fun set(preference: ChatPreference, value: Boolean)
+}

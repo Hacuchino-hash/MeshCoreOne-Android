@@ -1,0 +1,17 @@
+// WP-317 parity oracle 3: CharacterSet.whitespaces membership (battery-curve custom array parsing) and Int(String) after trimming.
+import Foundation
+var members: [String] = []
+for v in 0...0x10FFFF {
+  guard let s = Unicode.Scalar(v) else { continue }
+  if CharacterSet.whitespaces.contains(s) { members.append(String(format: "U+%04X", v)) }
+}
+print("whitespaces:", members.joined(separator: " "))
+var wn: [String] = []
+for v in 0...0x10FFFF {
+  guard let s = Unicode.Scalar(v) else { continue }
+  if CharacterSet.whitespacesAndNewlines.contains(s) { wn.append(String(format: "U+%04X", v)) }
+}
+print("whitespacesAndNewlines:", wn.joined(separator: " "))
+for s in [" 4200", "4200\u{00A0}", "\u{200B}4200", "4200\n", "\t4200", "+4200", "-4200", "4 200", "", " "] {
+  print("[\(s.unicodeScalars.map { String(format: "%X", $0.value) }.joined(separator: ","))]", Int(s.trimmingCharacters(in: .whitespaces)).map(String.init) ?? "nil")
+}

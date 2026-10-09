@@ -111,7 +111,8 @@ internal class FakeSettingsPort(private val connection: FakeConnection? = null) 
     ): SelfInfo {
         record(
             "setOtherParamsVerified",
-            "auto=$autoAddContacts,tel=${telemetryModes?.let { "${it.base}/${it.location}/${it.environment}" }},policy=$advertLocationPolicy",
+            "auto=$autoAddContacts,tel=${telemetryModes?.let { "${it.base}/${it.location}/${it.environment}" }},policy=$advertLocationPolicy" +
+                (multiAcks?.let { ",acks=$it" } ?: ""),
         )
         return selfInfo()
     }
