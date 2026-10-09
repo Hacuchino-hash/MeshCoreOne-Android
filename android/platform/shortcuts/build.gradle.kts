@@ -5,3 +5,6 @@ dependencies {
     implementation(project(":core:contracts"))
     implementation(project(":core:l10n"))
 }
+
+rootProject.tasks.named("verifyScaffoldTests") { dependsOn(":platform:shortcuts:testDebugUnitTest") }
+tasks.named("check") { dependsOn("testDebugUnitTest") }
