@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meshcoreone.android.core.model.ContactDTO
+import com.meshcoreone.android.core.model.MessageDTO
 import com.meshcoreone.android.feature.chats.composer.ComposerStateHolder
 import com.meshcoreone.android.feature.chats.composer.EmojiPickerStateHolder
 import com.meshcoreone.android.feature.chats.composer.MentionPickerContext
@@ -52,6 +53,8 @@ fun ChatConversationScreen(
     onPickContact: () -> Unit,
     modifier: Modifier = Modifier,
     emojiPicker: EmojiPickerStateHolder? = null,
+    /** Per-message cards under the body (link preview, inline image); the app builds one holder per message. */
+    attachments: @Composable (MessageDTO, Boolean) -> Unit = { _, _ -> },
 ) {
     val composerState by composer.state.collectAsStateWithLifecycle()
     var pickerContext by remember { mutableStateOf<MentionPickerContext?>(null) }
@@ -73,7 +76,10 @@ fun ChatConversationScreen(
             ChatTimelineRoute(
                 viewModel = timeline,
                 messageBody = { message, outgoing ->
-                    MessageBody(message.text, outgoing, currentUserName, onLink = { dispatcher.dispatch(it) })
+                    Column {
+                        MessageBody(message.text, outgoing, currentUserName, onLink = { dispatcher.dispatch(it) })
+                        attachments(message, outgoing)
+                    }
                 },
             )
             MentionSuggestionList(
