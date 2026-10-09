@@ -26,6 +26,14 @@ import com.meshcoreone.android.core.ble.BluetoothAvailability
 import com.meshcoreone.android.core.data.repository.RoomPersistenceStore
 import com.meshcoreone.android.core.database.MeshCoreDatabase
 import com.meshcoreone.android.core.datastore.MeshCoreStorage
+import com.meshcoreone.android.app.content.AndroidGeocoderAdapter
+import com.meshcoreone.android.app.content.LocationManagerLocationProducing
+import com.meshcoreone.android.app.container.onboarding.AndroidOnboardingPermissionFacts
+import com.meshcoreone.android.app.container.onboarding.OnboardingPlatform
+import com.meshcoreone.android.app.container.onboarding.WriteBehindOnboardingFlags
+import com.meshcoreone.android.app.container.onboarding.appSettingsOpener
+import com.meshcoreone.android.core.services.content.LocationService
+import com.meshcoreone.android.core.services.content.RegionResolver
 import com.meshcoreone.android.core.services.rendering.DraftStore
 import com.meshcoreone.android.core.services.simulator.DemoModeManager
 import kotlinx.coroutines.CoroutineScope
@@ -60,6 +68,7 @@ object AndroidAppContainerFactory {
             BluetoothScanPairingService()
         }
         val probe = AndroidSystemLinkProbe(application, diagnostics)
+        val scanCoordinator = BleScanCoordinator(AndroidBleScanGateway(application, diagnostics), diagnostics)
         val endpoints = SharedPreferencesKnownEndpoints(application)
         val linkFactory = AndroidRuntimeLinkFactory({ handle -> AndroidGattFacade(application, handle) })
         val inspector = BleLinkInspector(probe, linkFactory::currentBleLink) { BluetoothAvailability.Ready }
@@ -78,6 +87,15 @@ object AndroidAppContainerFactory {
                     ?.let { methods -> methods.isNotEmpty() && methods.all { it is com.meshcoreone.android.core.model.ConnectionMethod.WiFi } } == true
             },
         )
+        val locationProducing = LocationManagerLocationProducing(application)
+        val onboardingPlatform = OnboardingPlatform(
+            flags = WriteBehindOnboardingFlags.load(storage.preferences, mainScope),
+            permissionFacts = AndroidOnboardingPermissionFacts(application),
+            regionResolver = RegionResolver(LocationService(locationProducing), AndroidGeocoderAdapter(application)),
+            locationReporter = locationProducing,
+            scans = scanCoordinator,
+            openAppSettings = appSettingsOpener(application),
+        )
         val container = AppContainer(
             AppContainerDependencies(
                 store = store,
@@ -85,7 +103,7 @@ object AndroidAppContainerFactory {
                 connectionPreferences = DataStoreConnectionPreferences(storage.preferences),
                 connectivity = connectivity,
                 linkProbe = probe,
-                scans = BleScanCoordinator(AndroidBleScanGateway(application, diagnostics), diagnostics),
+                scans = scanCoordinator,
                 linkFactory = linkFactory,
                 hostingStarter = AndroidForegroundServiceStarter(application),
                 hostEnvironment = environment,
@@ -105,6 +123,7 @@ object AndroidAppContainerFactory {
                 contactPreferences = SharedPreferencesContactFlags(application),
                 draftStore = DraftStore(SharedPreferencesDraftDefaults(application)),
                 mainScope = mainScope,
+                onboardingPlatform = onboardingPlatform,
                 foreground = foreground,
                 knownEndpoints = endpoints,
                 regionStore = DataStoreRegionSelectionStore(storage.preferences),
