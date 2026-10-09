@@ -2,6 +2,7 @@
 package com.meshcoreone.android.core.maps
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.Instant
 import java.util.UUID
@@ -12,6 +13,7 @@ sealed class OfflineMapError(message: String) : Exception(message) {
     data class MissingLayerPolicy(val layer: OfflineLayer) : OfflineMapError("No approved policy exists for layer: $layer")
     data object NetworkUnavailable : OfflineMapError("A network connection is required to download a region")
     data object InvalidZoomRange : OfflineMapError("The requested zoom range is invalid")
+    data object NativeRuntimeUnavailable : OfflineMapError("Maps require a 64-bit Android runtime")
 }
 
 enum class OfflinePackState { INACTIVE, DOWNLOADING, PAUSED, COMPLETE, FAILED }
@@ -61,6 +63,16 @@ interface OfflineMapBackend {
     suspend fun delete(packId: UUID)
     suspend fun pause(packId: UUID)
     suspend fun resume(packId: UUID)
+}
+
+object UnavailableOfflineMapBackend : OfflineMapBackend {
+    override val packs = MutableStateFlow<List<OfflinePack>>(emptyList())
+    override suspend fun createAndStart(request: OfflinePackRequest) = unavailable()
+    override suspend fun delete(packId: UUID) = unavailable()
+    override suspend fun pause(packId: UUID) = unavailable()
+    override suspend fun resume(packId: UUID) = unavailable()
+
+    private fun unavailable(): Nothing = throw OfflineMapError.NativeRuntimeUnavailable
 }
 
 class OfflineMapController(

@@ -69,15 +69,16 @@ build-tools 37.0.0, explicit private caches and strict dependency verification:
 | Command/check | Result |
 | --- | --- |
 | `:app:compileDebugKotlin` | Passed |
-| `:core:maps:testDebugUnitTest --rerun-tasks` | Passed: 19 discovered/run/passed in 3 suites; 0 failed/errors/skipped |
+| `:core:maps:testDebugUnitTest --rerun-tasks` | Passed: 20 discovered/run/passed in 3 suites; 0 failed/errors/skipped |
 | `:app:testDebugUnitTest --rerun-tasks` with `-TestHeap 512m -TestMetaspace 768m` | Passed: 547 discovered/run/passed in 41 suites; 0 failed/errors/skipped |
 | `:core:maps:lintDebug :feature:map:lintDebug :app:lintDebug` | Passed; no lint errors |
 | `:app:assembleDebug` through `android/scaffold/invoke-gradle.ps1 -ConstrainedMemory -BuildHeap 1536m` | Passed |
+| `:core:datastore:verifyPreferencePackaging` | Passed against the rebuilt APK, including the established four-ABI DataStore provenance check |
 | `zipalign -c -P 16 4 app-debug.apk` | Passed |
-| Repository `apk_alignment.inspect_alignment` | Passed for every packaged ELF: arm64-v8a and x86_64 MapLibre/AndroidX/DataStore `PT_LOAD` segments use `p_align=0x4000`; 32-bit ABIs are intentionally not packaged |
+| Repository `apk_alignment.inspect_alignment` | Passed for every packaged ELF: MapLibre is packaged only for arm64-v8a/x86_64, while existing 32-bit non-map libraries remain packaged; every packaged `PT_LOAD` segment uses `p_align=0x4000` |
 
 Built debug APK SHA-256:
-`7892689C3EF38A70C12328E68E407FBFF67804B38B440E2C2A1E2C8747975C56`.
+`4C5B98EC2BC5936F0541FC8ECE0D979A123714640CB49AECCAB703B741888475`.
 This is static packaging evidence, not execution on a 16 KiB device.
 
 ## Acceptance
@@ -86,6 +87,6 @@ This is static packaging evidence, not execution on a 16 KiB device.
 | --- | --- |
 | `WP-312-behavior` | Implemented: base map, overlays, filtering, clustering, camera persistence/focus, snapshots, attribution and offline base-region lifecycle. Satellite/topographic absence is explicit. |
 | `WP-312-boundaries` | Implemented/tested locally: no GPS permission dependency, cache/snapshot lifecycle, pause/resume/delete, network loss, cancellation, low disk and static 16 KiB packaging. Physical-device execution is not claimed. |
-| `WP-312-source-test-parity` | Shared map algebra and snapshot/offline parameter families are covered by 19 nonzero JVM cases; feature-specific downstream map builders remain consumers of these WP-312 seams in their owning WPs. |
+| `WP-312-source-test-parity` | Shared map algebra and snapshot/offline parameter families are covered by 20 nonzero JVM cases; feature-specific downstream map builders remain consumers of these WP-312 seams in their owning WPs. |
 
 PR #140 may leave draft only after its exact-head hosted checks pass.

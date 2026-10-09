@@ -19,11 +19,11 @@ class MapLibreSnapshotRenderer(
 
     init {
         require(widthPixels > 0 && heightPixels > 0)
-        MapLibre.getInstance(appContext)
+        if (MapLibreRuntime.isSupported) MapLibre.getInstance(appContext)
     }
 
     override suspend fun render(request: MapSnapshotRequest): Bitmap? {
-        if (request.isOffline) return null
+        if (!MapLibreRuntime.isSupported || request.isOffline) return null
         return suspendCancellableCoroutine { continuation ->
         val options = MapSnapshotter.Options(widthPixels, heightPixels)
             .withStyle(MapLibreOpenFreeMap.STYLE_URI)

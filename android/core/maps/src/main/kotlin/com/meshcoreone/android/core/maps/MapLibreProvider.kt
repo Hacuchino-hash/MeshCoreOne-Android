@@ -1,6 +1,13 @@
 // AndroidOnly: WP-312 Exact user-approved MapLibre Native and OpenFreeMap provider contract.
 package com.meshcoreone.android.core.maps
 
+import android.os.Process
+
+object MapLibreRuntime {
+    val isSupported: Boolean
+        get() = Process.is64Bit()
+}
+
 object MapLibreOpenFreeMap {
     const val ENGINE_ID = "maplibre-native-13.6.1"
     const val STYLE_URI = "https://tiles.openfreemap.org/styles/liberty"

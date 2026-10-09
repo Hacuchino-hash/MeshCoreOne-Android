@@ -61,6 +61,22 @@ class OfflineMapControllerTest {
     }
 
     @Test
+    fun unavailableNativeRuntimeFailsClosedWithTypedError() = runBlocking {
+        val controller = OfflineMapController(
+            UnavailableOfflineMapBackend,
+            policies,
+            { Long.MAX_VALUE },
+            { true },
+        )
+
+        assertTrue(
+            controller.downloadRegion("Region", bounds, setOf(OfflineLayer.BASE))
+                .exceptionOrNull() is OfflineMapError.NativeRuntimeUnavailable,
+        )
+        assertTrue(controller.packs.value.isEmpty())
+    }
+
+    @Test
     fun missingPolicyAndCancellationRemainTyped() = runBlocking {
         val missing = OfflineMapController(RecordingBackend(), emptyMap(), { Long.MAX_VALUE }, { true })
         assertTrue(

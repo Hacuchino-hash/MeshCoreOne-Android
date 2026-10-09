@@ -44,9 +44,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.meshcoreone.android.core.maps.MapLibreOfflineBackend
 import com.meshcoreone.android.core.maps.MapLibreOpenFreeMap
+import com.meshcoreone.android.core.maps.MapLibreRuntime
 import com.meshcoreone.android.core.maps.OfflineLayer
 import com.meshcoreone.android.core.maps.OfflineLayerPolicy
 import com.meshcoreone.android.core.maps.OfflineMapController
+import com.meshcoreone.android.core.maps.UnavailableOfflineMapBackend
 
 /**
  * The production composition of [AppContainer]. What exists on main is bound; what does not is bound to an explicit
@@ -65,7 +67,11 @@ object AndroidAppContainerFactory {
         val clock = SystemConnectivityClock()
         val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
         val offlineMaps = OfflineMapController(
-            backend = MapLibreOfflineBackend(application, MapLibreOpenFreeMap.STYLE_URI, mainScope),
+            backend = if (MapLibreRuntime.isSupported) {
+                MapLibreOfflineBackend(application, MapLibreOpenFreeMap.STYLE_URI, mainScope)
+            } else {
+                UnavailableOfflineMapBackend
+            },
             policies = mapOf(
                 OfflineLayer.BASE to OfflineLayerPolicy(
                     layer = OfflineLayer.BASE,

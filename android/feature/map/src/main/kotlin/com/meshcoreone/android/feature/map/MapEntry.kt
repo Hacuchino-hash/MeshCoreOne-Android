@@ -55,6 +55,7 @@ import com.meshcoreone.android.core.maps.MapFilterPreferences
 import com.meshcoreone.android.core.maps.MapFilterState
 import com.meshcoreone.android.core.maps.MapLibreMapSurface
 import com.meshcoreone.android.core.maps.MapLibreOpenFreeMap
+import com.meshcoreone.android.core.maps.MapLibreRuntime
 import com.meshcoreone.android.core.maps.MapMarker
 import com.meshcoreone.android.core.maps.MapPinStyle
 import com.meshcoreone.android.core.maps.MapPresentationState
@@ -95,11 +96,30 @@ fun MapEntry(
 }
 
 @Composable
+private fun MapRuntimeUnavailable() {
+    Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+        Card {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(stringResource(R.string.tab_map), style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(R.string.scaffold_map_description))
+            }
+        }
+    }
+}
+
+@Composable
 private fun MapContent(
     dependencies: MapFeatureDependencies,
     focus: GeoPoint?,
     onFocusConsumed: () -> Unit,
 ) {
+    if (!MapLibreRuntime.isSupported) {
+        MapRuntimeUnavailable()
+        return
+    }
     val context = LocalContext.current
     val preferences = remember(context) { context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE) }
     var filter by remember {
