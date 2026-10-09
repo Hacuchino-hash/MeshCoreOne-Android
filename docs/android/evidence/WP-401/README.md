@@ -3,7 +3,7 @@
 - Repository: `cbattlegear/MeshCoreOne-Android`
 - Work package: `WP-401`
 - Owner: `notifications-widgets-engineer`
-- Integrated base: `f34f68d0416da113c2cd0d274c44937f6c41a5d3`
+- Integrated base: `2fc6cb6f59f49be94f033fdad32100c3fc5db055`
 - Frozen Swift source: `db14559b39d32322b06477c6ae676112f583db50`
 - Issue: `#127`
 
