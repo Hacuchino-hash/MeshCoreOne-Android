@@ -1,4 +1,4 @@
-// AndroidOnly: WP-002 Registered unavailable setup entry; no pairing, permissions or onboarding completion.
+// AndroidOnly: WP-305 Onboarding entry; the real flow runs only when the app binds OnboardingFeatureDependencies.
 package com.meshcoreone.android.feature.onboarding
 
 import androidx.compose.runtime.Composable
@@ -8,9 +8,23 @@ import com.meshcoreone.android.core.contracts.FeatureRoute
 import com.meshcoreone.android.core.l10n.R
 import com.meshcoreone.android.core.ui.FeatureShellCopy
 import com.meshcoreone.android.core.ui.ScaffoldFeatureContent
+import com.meshcoreone.android.feature.onboarding.ui.OnboardingFlow
 
+/**
+ * Without [dependencies] (the WP-303 adapters are not bound yet) this keeps the honest
+ * "not yet ported" shell: no permission request, no pairing, never marks onboarding complete.
+ * Completion navigates to the chats root.
+ */
 @Composable
-fun OnboardingEntry(route: FeatureRoute, onNavigate: (FeatureRoute) -> Unit) {
+fun OnboardingEntry(
+    route: FeatureRoute,
+    onNavigate: (FeatureRoute) -> Unit,
+    dependencies: OnboardingFeatureDependencies? = null,
+) {
+    if (dependencies != null) {
+        OnboardingFlow(dependencies, onCompleted = { onNavigate(FeatureRoute(FeatureId.CHATS)) })
+        return
+    }
     ScaffoldFeatureContent(
         FeatureId.ONBOARDING, route,
         FeatureShellCopy(
