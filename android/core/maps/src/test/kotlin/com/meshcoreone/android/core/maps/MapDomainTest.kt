@@ -108,6 +108,42 @@ class MapDomainTest {
         assertTrue(error is IllegalArgumentException)
     }
 
+    @Test
+    fun approvedProviderExposesExactAttributionAndUnavailableStylesTruthfully() {
+        val catalog = MapLibreOpenFreeMap.catalog
+        assertEquals("maplibre-native-13.6.1", catalog.engineId)
+        assertEquals(
+            listOf("OpenFreeMap", "© OpenMapTiles", "© OpenStreetMap contributors"),
+            catalog.layers.getValue(MapStyle.STANDARD).attribution.map { it.label },
+        )
+        assertTrue(catalog.layers.getValue(MapStyle.STANDARD).supportsSnapshots)
+        assertTrue(catalog.layers.getValue(MapStyle.STANDARD).supportsOfflineRegions)
+        assertTrue(catalog.layers.getValue(MapStyle.SATELLITE).availability is MapLayerAvailability.Unavailable)
+        assertTrue(catalog.layers.getValue(MapStyle.TOPO).availability is MapLayerAvailability.Unavailable)
+    }
+
+    @Test
+    fun unavailableLayerCannotClaimOfflineRegions() {
+        val attribution = listOf(MapProviderAttribution("provider", "https://example.invalid/legal"))
+        val error = runCatching {
+            MapProviderCatalog(
+                "engine",
+                mapOf(
+                    MapStyle.STANDARD to MapLayerDescriptor(MapStyle.STANDARD, attribution, true, false),
+                    MapStyle.SATELLITE to MapLayerDescriptor(
+                        MapStyle.SATELLITE,
+                        attribution,
+                        false,
+                        true,
+                        MapLayerAvailability.Unavailable("not supplied"),
+                    ),
+                    MapStyle.TOPO to MapLayerDescriptor(MapStyle.TOPO, attribution, false, false),
+                ),
+            )
+        }.exceptionOrNull()
+        assertTrue(error is IllegalArgumentException)
+    }
+
     private fun marker(clusterable: Boolean) = MapMarker(
         id = UUID.randomUUID(),
         position = GeoPoint(1.0, 2.0),

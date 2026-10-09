@@ -67,7 +67,11 @@ dependencies {
 }
 
 android {
-    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // AndroidOnly: WP-312 MapLibre's 64-bit binaries are 16 KiB-page aligned; do not package its 4 KiB-only 32-bit ABIs.
+        ndk.abiFilters += setOf("arm64-v8a", "x86_64")
+    }
     sourceSets.getByName("test").kotlin.srcDir(
         "src/androidTest/kotlin/com/meshcoreone/android/app/navigation/cases",
     )

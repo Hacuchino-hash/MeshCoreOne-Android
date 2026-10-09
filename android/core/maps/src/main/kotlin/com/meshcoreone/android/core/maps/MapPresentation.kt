@@ -1,4 +1,4 @@
-// AndroidOnly: WP-312 Provider-neutral lifecycle and UI state seam; no SDK/provider is admitted here.
+// AndroidOnly: WP-312 Provider-neutral lifecycle and UI state seam shared by the approved MapLibre adapter.
 package com.meshcoreone.android.core.maps
 
 import kotlinx.coroutines.flow.StateFlow

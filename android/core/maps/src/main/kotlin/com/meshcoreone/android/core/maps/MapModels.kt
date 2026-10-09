@@ -88,7 +88,15 @@ data class MapLayerDescriptor(
     val attribution: List<MapProviderAttribution>,
     val supportsSnapshots: Boolean,
     val supportsOfflineRegions: Boolean,
+    val availability: MapLayerAvailability = MapLayerAvailability.Available,
 )
+
+sealed interface MapLayerAvailability {
+    data object Available : MapLayerAvailability
+    data class Unavailable(val reason: String) : MapLayerAvailability {
+        init { require(reason.isNotBlank()) }
+    }
+}
 
 data class MapProviderCatalog(
     val engineId: String,
@@ -101,7 +109,9 @@ data class MapProviderCatalog(
             require(layer.style == style)
             require(layer.attribution.isNotEmpty())
             require(layer.attribution.all { it.label.isNotBlank() && it.legalUri.isNotBlank() })
-            if (style.offlineLayer == null) require(!layer.supportsOfflineRegions)
+            if (style.offlineLayer == null || layer.availability is MapLayerAvailability.Unavailable) {
+                require(!layer.supportsOfflineRegions)
+            }
         }
     }
 }
