@@ -1,0 +1,979 @@
+{
+ "source_sha": "db14559b39d32322b06477c6ae676112f583db50",
+ "owned_case_count": 121,
+ "bound_case_count": 121,
+ "native_test_count": 51,
+ "unbound": [],
+ "missing": [],
+ "unknown_ids": [],
+ "cases": [
+  {
+   "id": "ChatCoordinateDetectorTests::A valid decimal pair is detected()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "a valid decimal pair is detected",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::An integer pair is not detected()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "an integer pair is not detected",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::An out-of-range pair is rejected by the clamp, not the regex()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "an out-of-range pair is rejected by the clamp",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::A three-number decimal list is treated as a list, not a coordinate()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "a three-number decimal list is a list",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::A version-like string is not detected()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "a version-like string is not detected",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::firstCoordinate returns nil when there is no coordinate()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "firstCoordinate returns null without a coordinate",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::firstCoordinate returns the first of several coordinates()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "firstCoordinate returns the first of several",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::matches returns every valid coordinate in document order()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "matches returns every coordinate in document order",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatCoordinateDetectorTests::A coordinate ending a sentence is detected, period excluded()",
+   "source": "MC1Tests/Utilities/ChatCoordinateDetectorTests.swift",
+   "class": "MessageTextTest",
+   "method": "a coordinate ending a sentence is detected",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionInsertionTests::insertMention replaces @query with mention format()",
+   "source": "MC1Tests/Utilities/MentionInsertionTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "insertMention replaces @query with mention format",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionInsertionTests::insertMention handles query at start of text()",
+   "source": "MC1Tests/Utilities/MentionInsertionTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "insertMention handles query at start of text",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionInsertionTests::insertMention preserves preceding text()",
+   "source": "MC1Tests/Utilities/MentionInsertionTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "insertMention preserves preceding text",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionInsertionTests::insertMention uses contact name not nickname()",
+   "source": "MC1Tests/Utilities/MentionInsertionTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "insertMention uses contact name not nickname",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::createMention creates correct format()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "createMention creates correct format",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::createMention handles names with spaces()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "createMention handles names with spaces",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::createMention handles special characters()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "createMention handles special characters",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::appendMention into empty draft yields just the mention()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "appendMention into empty draft yields just the mention",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::appendMention preserves draft and adds a separating space()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "appendMention preserves draft and adds a separating space",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::appendMention does not double the space when draft ends in whitespace()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "appendMention does not double the space when draft ends in whitespace",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::createMention handles empty name()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "createMention handles empty name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions parses single mention()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions parses single mention",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions parses multiple mentions()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions parses multiple mentions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions returns empty for no mentions()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions returns empty for no mentions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions handles names with spaces()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions handles names with spaces",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions handles special characters()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions handles special characters",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions handles adjacent mentions()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions handles adjacent mentions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions ignores malformed patterns()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions ignores malformed patterns",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions handles empty message()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions handles empty message",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::extractMentions handles Unicode names()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "extractMentions handles Unicode names",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil for empty text()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil for empty text",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil for text without @()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil for text without @",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns empty string for @ alone()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns empty string for @ alone",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns query after @()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns query after @",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention works at start of message()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention works at start of message",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention works after space()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention works after space",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil for @ mid-word()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil for @ mid-word",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil when space follows @()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil when space follows @",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns last active mention()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns last active mention",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil for completed mention()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil for completed mention",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention handles Unicode()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention handles Unicode",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention ignores email addresses()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention ignores email addresses",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention handles double @ symbols()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention handles double @ symbols",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::detectActiveMention returns nil for unclosed bracket()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "detectActiveMention returns nil for unclosed bracket",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts matches using localizedStandardContains()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts matches using localizedStandardContains",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts excludes repeaters()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts excludes repeaters",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts excludes rooms()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts excludes rooms",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts sorts alphabetically()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts sorts alphabetically",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts returns empty for no matches()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts returns empty for no matches",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts handles empty input()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts handles empty input",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts sorts by sender order when provided()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts sorts by sender order when provided",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::filterContacts sender order partial match: ordered first, then alphabetical()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "filterContacts sender order partial match ordered first then alphabetical",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns true for exact match()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns true for exact match",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention is case insensitive()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention is case insensitive",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns false for different name()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns false for different name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention handles multiple mentions()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention handles multiple mentions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns false for empty text()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns false for empty text",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns false for empty selfName()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns false for empty selfName",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention handles names with spaces()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention handles names with spaces",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention handles special characters()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention handles special characters",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns false for partial match()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns false for partial match",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MentionUtilitiesTests::containsSelfMention returns false for text without mentions()",
+   "source": "MC1Tests/Utilities/MentionUtilitiesTests.swift",
+   "class": "MentionUtilitiesTest",
+   "method": "containsSelfMention returns false for text without mentions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatInputBarThemedChromeTests::default theme does not paint an opaque fill on Liquid Glass()",
+   "source": "MC1Tests/Views/Chats/Components/ChatInputBarThemedChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "default theme chrome comes from the surface role",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "ChatInputBarThemedChromeTests::themed canvas does not paint an opaque fill on Liquid Glass()",
+   "source": "MC1Tests/Views/Chats/Components/ChatInputBarThemedChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "themed canvas chrome comes from the surface role",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::Location is shareable when authorized, even with no current fix or node coordinate()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "Location is shareable when authorized, even with no current fix or node coordinate",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::Location is shareable from a node coordinate without authorization()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "Location is shareable from a node coordinate without authorization",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::Location is not shareable with no coordinate and no authorization()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "Location is not shareable with no coordinate and no authorization",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::My info is shareable with a full-length key and a non-empty name()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "My info is shareable with a full-length key and a non-empty name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::My info is not shareable with a wrong-length public key()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "My info is not shareable with a wrong-length public key",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "ChatShareMenuTests::My info is not shareable with a blank name()",
+   "source": "MC1Tests/Views/Chats/Components/ChatShareMenuTests.swift",
+   "class": "ComposerShareTest",
+   "method": "My info is not shareable with a blank name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Valid contact share token renders the contact name as a tappable add-contact link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "valid token renders the name as an add-contact link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Out-of-range contact type leaves the literal token untouched with no contact link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "out-of-range type leaves the literal token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Stray opening bracket is a no-op and does not crash()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "stray opening bracket is a no-op",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Token adjacent to a URL styles both the contact link and the URL link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "token adjacent to a URL styles both links",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Hashtag after a token is still linked, proving the replacing pass runs before the snapshot()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "hashtag after a token is still linked",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Bidi control in the name is stripped from both the chip and the add-contact link URL()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "bidi control is stripped from chip and URL",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::Zero-width, format, and control scalars are stripped from the chip name and link URL()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "zero-width format and control scalars are stripped",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::A contact token whose name sanitizes to empty leaves the literal token untouched()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "a name that sanitizes to empty leaves the literal token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::A mention pattern inside a token name is not rewritten by the mention pass()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "a mention pattern inside a token name is not rewritten",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::A hashtag inside a token name keeps the chip link instead of becoming a hashtag link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "a hashtag inside a token name stays in the chip",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextContactShareTests::A meshcore URL inside a token name is not re-linked by the meshcore pass()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextContactShareTests.swift",
+   "class": "MessageTextTest",
+   "method": "a meshcore URL inside a token name is not re-linked",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::URL-like text in mention should carry the mention link, not a parsed URL()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "URL-like text in mention carries the mention link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::URL-like text in mention with IP address should carry the mention link, not a parsed URL()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "IP address inside a mention carries the mention link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::Regular URL outside mention should still be parsed as link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "regular URL outside a mention is parsed as a link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::Message with both mention containing URL-like text and real URL()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "mention containing URL-like text and a real URL",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A simple mention carries a meshcoreone://mention/<percent-encoded-name> link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a simple mention carries a percent-encoded mention link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A decimal coordinate pair is linkified as a meshcore map link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a decimal coordinate pair is a map link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::An integer pair is not linkified()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "an integer pair is not linkified",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::An out-of-range pair is not linkified()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "an out-of-range pair is not linkified",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A coordinate embedded in text linkifies only the coordinate substring()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "only the coordinate substring is linked",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::Multiple coordinates in one message each linkify()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "multiple coordinates each linkify",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A three-number decimal list is treated as a list, not a coordinate()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a three-number list is not a coordinate",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A version-like string is not linkified()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a version-like string is not linkified",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A coordinate inside an existing link range keeps the original link()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a coordinate inside a contact chip keeps the chip link",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A linkified coordinate round-trips through parseMapURL with dot-decimal values()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a linkified coordinate round-trips through parseMapURL",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A coordinate ending a sentence is linkified, with the period left as plain text()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a coordinate ending a sentence is linkified",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageTextTests::A coordinate followed by other trailing punctuation is linkified()",
+   "source": "MC1Tests/Views/Chats/Components/MessageTextTests.swift",
+   "class": "MessageTextTest",
+   "method": "a coordinate followed by trailing punctuation is linkified",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "TiledViewInputBarChromeTests::the target row rests above the input bar, not under it()",
+   "source": "MC1Tests/Views/Chats/Components/TiledViewInputBarChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "the target row rests above the input bar",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "TiledViewInputBarChromeTests::the last row rests above the input bar without a target()",
+   "source": "MC1Tests/Views/Chats/Components/TiledViewInputBarChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "the last row rests above the input bar without a target",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "TiledViewInputBarChromeTests::the target row stays above the input bar when the divider bakes in late()",
+   "source": "MC1Tests/Views/Chats/Components/TiledViewInputBarChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "the target row stays above the input bar when a divider arrives late",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "TiledViewInputBarChromeTests::a mid-list target rests at the viewport top with chrome present()",
+   "source": "MC1Tests/Views/Chats/Components/TiledViewInputBarChromeTests.swift",
+   "class": "ComposerUiSourceScanTest",
+   "method": "a mid-list target rests at the viewport top with chrome present",
+   "disposition": "platform-adaptation",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::Each body-text link kind yields a distinctly-named action in document order()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "each link kind yields a distinctly named action in document order",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::A shared contact link is named from its parsed contact name()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a shared contact link is named from its parsed name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::A shared channel link is named from its parsed channel name()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a shared channel link is named from its parsed name",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::The preview URL is surfaced before body-text links()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "the preview URL comes before body links",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::Duplicate URLs collapse to a single action()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "duplicate URLs collapse",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::The action count is capped()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "the action count is capped",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkAccessibilityTests::No links yields no actions()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkAccessibilityTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "no links yields no actions",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::URL detector emits a url token()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "URL detector emits a url token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::Hashtag detector emits a bold, non-underlined token()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "hashtag detector emits a bold non-underlined token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::MeshCore link detector emits a meshcore token and trims trailing punctuation()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "meshcore detector trims trailing punctuation",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::MeshCore link with a non-contact, non-channel host is ignored()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "meshcore link with another host is ignored",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::Coordinate detector emits a coordinate token()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "coordinate detector emits a coordinate token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::A pre-pass mention span outranks a URL detection over the same characters()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a pre-pass mention span outranks a URL over the same characters",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::The merged token stream is sorted and non-overlapping()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "merged stream is sorted and non-overlapping",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::A hashtag inside a URL is excluded via the shared URL ranges()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a hashtag inside a URL is excluded",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::A hashtag inside a meshcore link wins the overlap and the meshcore link is dropped()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a hashtag inside a meshcore channel link wins",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::A hashtag inside a meshcore contact link also wins the overlap and drops the link()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a hashtag inside a meshcore contact link wins",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::mapCoordinate is the first surviving coordinate in document order()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "mapCoordinate is the first surviving coordinate",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::mapCoordinate skips a coordinate that lost to a higher-priority token()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "mapCoordinate skips a coordinate that lost to a higher-priority token",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::No coordinate yields a nil mapCoordinate()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "no coordinate yields a null mapCoordinate",
+   "disposition": "source-behavior",
+   "result": "pass"
+  },
+  {
+   "id": "MessageLinkTokenizerTests::A coordinate token URL round-trips through MeshCoreURLParser with dot-decimals()",
+   "source": "MC1Tests/Views/Chats/Linkify/MessageLinkTokenizerTests.swift",
+   "class": "MessageLinkTokenizerTest",
+   "method": "a coordinate token URL round-trips through the link parser",
+   "disposition": "source-behavior",
+   "result": "pass"
+  }
+ ]
+}

@@ -1,0 +1,2 @@
+fullwidth nil Optional(37.5) Optional(-0.5)
+lastws zwj false

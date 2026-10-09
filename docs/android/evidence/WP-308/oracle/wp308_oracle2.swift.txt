@@ -1,0 +1,3 @@
+import Foundation
+print("fullwidth", Double("３７.５") as Any, Double("37.5") as Any, Double("-0.5") as Any)
+print("lastws zwj", "a\u{200D}".last!.isWhitespace)

@@ -1,0 +1,46 @@
+import Foundation
+
+func esc(_ s: String) -> String { s.unicodeScalars.map { $0.value < 0x80 && $0.value > 0x1f ? String($0) : "\\u{\(String($0.value, radix: 16))}" }.joined() }
+
+// 1. utf8 / grapheme / trimming
+let samples = ["", "a", "\u{e9}", "e\u{301}", "日本語", "👍🏽", "👨‍👩‍👧‍👦", "🇺🇸🇯🇵", "1️⃣", "\u{200B}", "한", "a\u{200D}b", "\u{FFFD}", "\r\n"]
+for s in samples { print("count", esc(s), s.utf8.count, s.count) }
+let trims = ["  hi  ", "\u{200B}hi\u{200B}", "\u{A0}hi\u{A0}", "\u{2028}hi\u{2029}", "\u{200B}", " \n\t ", "\u{FEFF}hi", "\u{85}hi\u{3000}", "a\u{301} "]
+for s in trims { let t = s.trimmingCharacters(in: .whitespacesAndNewlines); print("trim", esc(s), "->", esc(t), t.isEmpty) }
+// last char whitespace
+for s in ["hello", "hello ", "hello\u{A0}", "hello\u{200B}", "hello\u{301}", "hello \u{301}", "x\n"] { print("lastws", esc(s), s.last!.isWhitespace) }
+
+// 2. mention percent encoding
+var nameAllowed = CharacterSet.urlPathAllowed
+nameAllowed.subtract(CharacterSet(charactersIn: "/"))
+for n in ["Alice Smith", "A/B", "日本", "A#B?", "100%", "WCMesh.com", "a@b:c", "x+y;z=1&2", "Bob's Solar Node", "é", "[x]", "a|b", "\"q\"", "<t>", "a%20b", "~-_.!*'()$,"] {
+  print("enc", esc(n), n.addingPercentEncoding(withAllowedCharacters: nameAllowed) ?? "nil")
+}
+// decode
+for e in ["Alice%20Smith", "A%2FB", "%E6%97%A5", "bad%ZZ", "%", "a%2", "%00"] { print("dec", e, esc(e.removingPercentEncoding ?? "nil")) }
+
+// 3. coordinate regex
+let re = try! NSRegularExpression(pattern: #"(?<![\w.])(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)(?!\.\d)(?!\w)"#)
+for t in ["37.7749, -122.4194", "v1.2, 3.4 release", "1.0, 2.0, 3.0", "1.0, 2.0, x", "a 1.5,2.5.", "1.5,2.5.1", "1.5, 2.5a", "-0.5 , 12.25!", "３７.５, 1.5", "1234.5, 1.5", "1.5\u{A0}, 2.5", "x1.5, 2.5", "1.5,\n2.5", "5.5, 6.5 ,7"] {
+  let ns = NSRange(t.startIndex..., in: t)
+  let ms = re.matches(in: t, range: ns).map { m -> String in
+    let r = Range(m.range, in: t)!; return String(t[r]) }
+  print("coord", esc(t), ms)
+}
+// 4. mention regex / hashtag
+let hre = try! NSRegularExpression(pattern: "#[A-Za-z0-9][A-Za-z0-9-]*")
+for t in ["#general #ops-1 #-x ##a a#b #日本 #a_b", "x#y", "#a-", "(#hi)"] {
+  let ms = hre.matches(in: t, range: NSRange(t.startIndex..., in: t)).map { String(t[Range($0.range, in: t)!]) }
+  print("hash", esc(t), ms)
+}
+// 5. NSDataDetector links
+let det = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+for t in ["see https://example.com here", "Check https://example.com#general and #ops", "go www.example.com, ok", "visit example.com now", "mail me@x.com", "(https://a.com/b_(c))", "https://a.com/x.", "https://a.com/x?y=1&z=2!", "Node WCMesh.com hi", "http://192.168.1.1/x", "ftp://a.com", "https://a.com,https://b.com"] {
+  let ms = det.matches(in: t, range: NSRange(t.startIndex..., in: t)).map { m -> String in "\(String(t[Range(m.range, in: t)!])) => \(m.url?.absoluteString ?? "nil")" }
+  print("url", esc(t), ms)
+}
+// 6. sanitize scalar classes
+for v: UInt32 in [0x202E, 0x200B, 0x200C, 0x200D, 0x0A, 0x09, 0xAD, 0x2060, 0xFEFF, 0x061C, 0x2028, 0x2029, 0x7F, 0x85, 0xA0, 0x20, 0x180E, 0x00AD, 0xFE0F, 0x3164, 0xE0001, 0x034F, 0x115F, 0x17B4, 0x2066, 0x200E, 0x200F, 0x206A, 0xFFF0, 0xFFA0] {
+  let s = Unicode.Scalar(v)!
+  print("scalar", String(v, radix: 16), s.properties.isBidiControl, s.properties.isDefaultIgnorableCodePoint, s.properties.generalCategory)
+}

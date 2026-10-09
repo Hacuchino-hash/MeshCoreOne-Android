@@ -1,0 +1,113 @@
+count  0 0
+count a 1 1
+count \u{e9} 2 1
+count e\u{301} 3 1
+count \u{65e5}\u{672c}\u{8a9e} 9 3
+count \u{1f44d}\u{1f3fd} 8 1
+count \u{1f468}\u{200d}\u{1f469}\u{200d}\u{1f467}\u{200d}\u{1f466} 25 1
+count \u{1f1fa}\u{1f1f8}\u{1f1ef}\u{1f1f5} 16 2
+count 1\u{fe0f}\u{20e3} 7 1
+count \u{200b} 3 1
+count \u{d55c} 3 1
+count a\u{200d}b 5 2
+count \u{fffd} 3 1
+count \u{d}\u{a} 2 1
+trim   hi   -> hi false
+trim \u{200b}hi\u{200b} -> hi false
+trim \u{a0}hi\u{a0} -> hi false
+trim \u{2028}hi\u{2029} -> hi false
+trim \u{200b} ->  true
+trim  \u{a}\u{9}  ->  true
+trim \u{feff}hi -> \u{feff}hi false
+trim \u{85}hi\u{3000} -> hi false
+trim a\u{301}  -> a\u{301} false
+lastws hello false
+lastws hello  true
+lastws hello\u{a0} true
+lastws hello\u{200b} false
+lastws hello\u{301} false
+lastws hello \u{301} true
+lastws x\u{a} true
+enc Alice Smith Alice%20Smith
+enc A/B A%2FB
+enc \u{65e5}\u{672c} %E6%97%A5%E6%9C%AC
+enc A#B? A%23B%3F
+enc 100% 100%25
+enc WCMesh.com WCMesh.com
+enc a@b:c a@b:c
+enc x+y;z=1&2 x+y;z=1&2
+enc Bob's Solar Node Bob's%20Solar%20Node
+enc \u{e9} %C3%A9
+enc [x] %5Bx%5D
+enc a|b a%7Cb
+enc "q" %22q%22
+enc <t> %3Ct%3E
+enc a%20b a%2520b
+enc ~-_.!*'()$, ~-_.!*'()$,
+dec Alice%20Smith Alice Smith
+dec A%2FB A/B
+dec %E6%97%A5 \u{65e5}
+dec bad%ZZ nil
+dec % nil
+dec a%2 nil
+dec %00 \u{0}
+coord 37.7749, -122.4194 ["37.7749, -122.4194"]
+coord v1.2, 3.4 release []
+coord 1.0, 2.0, 3.0 ["1.0, 2.0"]
+coord 1.0, 2.0, x ["1.0, 2.0"]
+coord a 1.5,2.5. ["1.5,2.5"]
+coord 1.5,2.5.1 []
+coord 1.5, 2.5a []
+coord -0.5 , 12.25! ["-0.5 , 12.25"]
+coord \u{ff13}\u{ff17}.\u{ff15}, 1.5 ["３７.５, 1.5"]
+coord 1234.5, 1.5 []
+coord 1.5\u{a0}, 2.5 ["1.5 , 2.5"]
+coord x1.5, 2.5 []
+coord 1.5,\u{a}2.5 ["1.5,\n2.5"]
+coord 5.5, 6.5 ,7 ["5.5, 6.5"]
+hash #general #ops-1 #-x ##a a#b #\u{65e5}\u{672c} #a_b ["#general", "#ops-1", "#a", "#b", "#a"]
+hash x#y ["#y"]
+hash #a- ["#a-"]
+hash (#hi) ["#hi"]
+url see https://example.com here ["https://example.com => https://example.com"]
+url Check https://example.com#general and #ops ["https://example.com#general => https://example.com#general"]
+url go www.example.com, ok ["www.example.com => http://www.example.com"]
+url visit example.com now ["example.com => http://example.com"]
+url mail me@x.com ["me@x.com => mailto:me@x.com"]
+url (https://a.com/b_(c)) ["https://a.com/b_(c)) => https://a.com/b_(c))"]
+url https://a.com/x. ["https://a.com/x => https://a.com/x"]
+url https://a.com/x?y=1&z=2! ["https://a.com/x?y=1&z=2 => https://a.com/x?y=1&z=2"]
+url Node WCMesh.com hi ["WCMesh.com => http://WCMesh.com"]
+url http://192.168.1.1/x ["http://192.168.1.1/x => http://192.168.1.1/x"]
+url ftp://a.com ["ftp://a.com => ftp://a.com"]
+url https://a.com,https://b.com ["https://a.com,https://b.com => https://a.com,https://b.com"]
+scalar 202e true true format
+scalar 200b false true format
+scalar 200c false true format
+scalar 200d false true format
+scalar a false false control
+scalar 9 false false control
+scalar ad false true format
+scalar 2060 false true format
+scalar feff false true format
+scalar 61c true true format
+scalar 2028 false false lineSeparator
+scalar 2029 false false paragraphSeparator
+scalar 7f false false control
+scalar 85 false false control
+scalar a0 false false spaceSeparator
+scalar 20 false false spaceSeparator
+scalar 180e false true format
+scalar ad false true format
+scalar fe0f false true nonspacingMark
+scalar 3164 false true otherLetter
+scalar e0001 false true format
+scalar 34f false true nonspacingMark
+scalar 115f false true otherLetter
+scalar 17b4 false true nonspacingMark
+scalar 2066 true true format
+scalar 200e true true format
+scalar 200f true true format
+scalar 206a false true format
+scalar fff0 false true unassigned
+scalar ffa0 false true otherLetter
