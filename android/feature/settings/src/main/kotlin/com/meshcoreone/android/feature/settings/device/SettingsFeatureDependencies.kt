@@ -232,3 +232,31 @@ interface ChatPreferencePort {
     val values: StateFlow<Map<ChatPreference, Boolean>>
     fun set(preference: ChatPreference, value: Boolean)
 }
+
+/**
+ * Everything the settings screens bind to; WP-303 builds one from the live services. Providers that can be absent
+ * while disconnected (the settings service, node identity) are read at each use, so a null read means disconnected.
+ */
+class SettingsFeatureDependencies(
+    val connection: SettingsConnection,
+    val settingsService: () -> SettingsRadioPort?,
+    val radioCatalog: RadioCatalogPort,
+    val subdivisions: SubdivisionCatalog,
+    val regions: RegionSelectionPort,
+    val regionLookup: RegionLookupPort,
+    val devicePreferences: DevicePreferencePort,
+    val location: LocationPermissionPort,
+    val notificationPreferences: com.meshcoreone.android.core.contracts.domain.NotificationPreferencesPort,
+    val notificationPermission: NotificationPermissionPort,
+    val discoveryChoices: DiscoveryChoiceSource,
+    val maintenance: DeviceMaintenancePort?,
+    val deviceStore: DeviceSettingsStorePort,
+    val diagnostics: DiagnosticsPort,
+    val identityKeys: IdentityKeyPort,
+    val nodeIdentity: () -> NodeIdentityPort?,
+    val battery: DeviceBatteryPort,
+    val staleCleanup: StaleNodeCleanupPort,
+    val regionDiscovery: RegionDiscoveryPort,
+    val chatPreferences: ChatPreferencePort,
+    val navigator: SettingsNavigator,
+)

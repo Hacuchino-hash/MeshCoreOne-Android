@@ -41,8 +41,21 @@ sealed interface SettingsExternalDestination {
     data object DeviceSelection : SettingsExternalDestination
     data object LocationPicker : SettingsExternalDestination
     data object RegionManagement : SettingsExternalDestination
+
+    /** The shared country/state picker the preset-location row opens (onboarding and settings share it). */
+    data object RegionPicker : SettingsExternalDestination
     data object ShareContactQr : SettingsExternalDestination
     data object AppSystemSettings : SettingsExternalDestination
+
+    /** The import-private-key sheet (settings backup work, WP-318). */
+    data object ImportPrivateKey : SettingsExternalDestination
+
+    /** The trusted-contacts picker behind "manage trusted" (deferred screen, see the WP-317 deviations). */
+    data object TrustedContacts : SettingsExternalDestination
+
+    /** The blocked-contact and blocked-channel-sender lists (deferred screens, see the WP-317 deviations). */
+    data object BlockedContacts : SettingsExternalDestination
+    data object BlockedChannelSenders : SettingsExternalDestination
 }
 
 fun interface SettingsNavigator {
