@@ -1,0 +1,57 @@
+// WP-313 map-data oracle: unit symbols per app language, NeighborSNRMapBuilder.stableID, CLLocation distance,
+// LocationPathMapBuilder recency rounding and SNR fraction formatting. Compiled with `swiftc -O`.
+// Toolchain: swift-driver version: 1.148.6 Apple Swift version 6.3.2 (swiftlang-6.3.2.1.108 clang-2100.1.1.101); macOS 26.5.1.
+
+import Foundation
+import CryptoKit
+import CoreLocation
+func f(_ d: Double, _ id: String) -> String {
+  Measurement(value: d, unit: UnitLength.meters).formatted(.measurement(width: .abbreviated, usage: .road).locale(Locale(identifier: id)))
+}
+for lang in ["en","de","es","fr","it","ko","nl","pl","pt","ru","uk","zh_Hans"] {
+  print(lang, ["US","GB"].map { r in [3.0, 100.0, 5000.0].map { "[\(f($0, lang + "_" + r))]" }.joined(separator: " ") }.joined(separator: " | "))
+}
+// Stable ids
+func stableID(_ role: UInt8, _ key: Data) -> UUID {
+  var m = Data([role]); m.append(key)
+  let b = Array(SHA256.hash(data: m))
+  return UUID(uuid: (b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15]))
+}
+let key = Data([0xA1,0xA2,0xA3,0xA4,0xA5,0xA6])
+for r: UInt8 in 0...2 { print("stableID role \(r):", stableID(r, key).uuidString) }
+print("line id:", "neighbor-\(stableID(1, key).uuidString)")
+// Distance
+let pairs: [(Double,Double,Double,Double)] = [(37.0,-122.0,37.1,-122.1),(37.0,-122.0,37.2,-121.9),(0,179,0,-179),(51.5,-0.12,48.85,2.35)]
+for p in pairs {
+  let d = CLLocation(latitude: p.0, longitude: p.1).distance(from: CLLocation(latitude: p.2, longitude: p.3))
+  print("distance", p, d, f(d, "en_US"), f(d, "de_DE"), f(d, "en_GB"))
+}
+// recency rounding
+for lastDot in [7, 8] { print("buckets lastDot=\(lastDot):", (0...lastDot).map { Int((Double($0)/Double(lastDot) * 4).rounded()) }) }
+// snr fraction formatting
+print([-3.0, 2.25, -0.04, 7.75, 12.5].map { $0.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "en_US"))) })
+/* ----- output -----
+en [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+de [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+es [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+fr [10 pi] [350 pi] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+it [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+ko [10ft] [350ft] [3.1mi] | [3yd] [100yd] [3.1mi]
+nl [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+pl [10 ft] [350 ft] [3.1 mili] | [3 yd] [100 yd] [3.1 mili]
+pt [10 ft] [350 ft] [3.1 mi] | [3 yd] [100 yd] [3.1 mi]
+ru [10 фт] [350 фт] [3.1 ми] | [3 ярд.] [100 ярд.] [3.1 ми]
+uk [10 фт] [350 фт] [3.1 милі] | [3 ярди] [100 ярдів] [3.1 милі]
+zh_Hans [10英尺] [350英尺] [3.1英里] | [3码] [100码] [3.1英里]
+stableID role 0: 45D55D09-18FD-E8E9-3F7F-006D42C5D966
+stableID role 1: DEAEDBBE-3709-EB73-F557-90B3E57157C9
+stableID role 2: E710BDC7-3A34-8DDB-FC88-308164B276C5
+line id: neighbor-DEAEDBBE-3709-EB73-F557-90B3E57157C9
+distance (37.0, -122.0, 37.1, -122.1) 14222.849343857515 8.8 mi 14 km 8.8 mi
+distance (37.0, -122.0, 37.2, -121.9) 23909.85750040841 15 mi 24 km 15 mi
+distance (0.0, 179.0, 0.0, -179.0) 222638.98158654713 138 mi 223 km 138 mi
+distance (51.5, -0.12, 48.85, 2.35) 343492.8151634453 213 mi 343 km 213 mi
+buckets lastDot=7: [0, 1, 1, 2, 2, 3, 3, 4]
+buckets lastDot=8: [0, 1, 1, 2, 2, 3, 3, 4, 4]
+["-3.0", "2.2", "-0.0", "7.8", "12.5"]
+*/

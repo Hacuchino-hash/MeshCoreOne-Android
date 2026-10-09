@@ -1,0 +1,31 @@
+import Foundation
+let locales = ["en_US", "de_DE", "fr_FR"]
+let values: [Double] = [2.675, 1.005, 0.125, 0.135, 1234.5, -0.04, -0.05, 3.85, 3.8505, 1e7, 0.1+0.2, 99999.995, -122.40125, 37.78475, 0.5, 1.5, 2.5, 12345678.25]
+for id in locales {
+  let loc = Locale(identifier: id)
+  for n in [0, 1, 2, 3] {
+    for v in values {
+      print("P|\(id)|\(n)|\(v)|\(v.formatted(.number.precision(.fractionLength(n)).locale(loc)))")
+    }
+  }
+  for v in values {
+    print("D|\(id)|\(v)|\(v.formatted(.number.locale(loc)))")
+  }
+  for u in [UInt32(0), 999, 1000, 1234567, 4294967295] {
+    print("U|\(id)|\(u)|\(u.formatted(.number.locale(loc)))")
+  }
+}
+// unit conversions
+for c in [25.5, 0.0, -40.0, 22.5, 37.123] {
+  print("F|\(c)|\(Measurement(value: c, unit: UnitTemperature.celsius).converted(to: .fahrenheit).value)")
+}
+for h in [1013.25, 1000.0, 987.6] {
+  print("H|\(h)|\(Measurement(value: h, unit: UnitPressure.hectopascals).converted(to: .inchesOfMercury).value)")
+}
+for m in [42.0, 0.0, 1234.5, 0.3048] {
+  print("M|\(m)|\(Measurement(value: m, unit: UnitLength.meters).converted(to: .feet).value)")
+}
+print("SYM|\(UnitTemperature.fahrenheit.symbol)|\(UnitPressure.inchesOfMercury.symbol)|\(UnitLength.feet.symbol)|\(UnitTemperature.celsius.symbol)")
+print(String(format: "%.4f, %.4f", 37.78475, -122.40125))
+print(String(format: "%.4f, %.4f", 0.0, 0.0))
+print(String(format: "%.4f, %.4f", 37.784712, -122.401233))

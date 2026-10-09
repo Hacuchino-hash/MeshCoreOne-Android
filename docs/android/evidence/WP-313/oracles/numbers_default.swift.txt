@@ -1,0 +1,10 @@
+import Foundation
+let loc = Locale(identifier: "en_US")
+for v in [1.0/3.0, 2.0/3.0, 123456.789012345, 1e-7, 0.000001234, -0.0, 0.0, 1e20, 3.0] {
+  print("D|\(v)|\(v.formatted(.number.locale(loc)))")
+}
+for v in [-0.0, -0.004, -0.0049] {
+  print("P2|\(v)|\(v.formatted(.number.precision(.fractionLength(2)).locale(loc)))")
+}
+// Int formatting of negative numbers
+print("I|\((-1234).formatted(.number.locale(loc)))")
