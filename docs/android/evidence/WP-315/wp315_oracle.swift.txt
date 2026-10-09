@@ -1,0 +1,328 @@
+// AndroidOnly: WP-315 numeric oracle. Verbatim copies of the frozen Swift LOS math at
+// db14559b39d32322b06477c6ae676112f583db50 (FresnelZoneRenderer.swift, ChartCoordinateSpace.swift,
+// TerrainProfileCanvas.swift axis/range helpers, LOSFormatters.swift number formatting,
+// LineOfSightViewModel.swift frequency parsing/formatting and interpolation, RFCalculator.swift
+// fresnelRadius/earthBulge/wavelength). SwiftUI types are replaced by same-shaped Foundation structs.
+// Build: swiftc -O wp315_oracle.swift -o wp315_oracle && ./wp315_oracle
+import CoreLocation
+import Foundation
+
+// MARK: - RFCalculator (verbatim subset)
+
+enum RFCalculator {
+  static let speedOfLight: Double = 299_792_458
+  static let earthRadiusKm: Double = 6371
+
+  static func wavelength(frequencyMHz: Double) -> Double {
+    guard frequencyMHz > 0 else { return 0 }
+    let frequencyHz = frequencyMHz * 1_000_000
+    return speedOfLight / frequencyHz
+  }
+
+  static func fresnelRadius(frequencyMHz: Double, distanceToAMeters: Double, distanceToBMeters: Double) -> Double {
+    guard frequencyMHz > 0, distanceToAMeters > 0, distanceToBMeters > 0 else { return 0 }
+    let lambda = wavelength(frequencyMHz: frequencyMHz)
+    let totalDistance = distanceToAMeters + distanceToBMeters
+    return sqrt((lambda * distanceToAMeters * distanceToBMeters) / totalDistance)
+  }
+
+  static func earthBulge(distanceToAMeters: Double, distanceToBMeters: Double, refractionK: Double) -> Double {
+    guard distanceToAMeters > 0, distanceToBMeters > 0, refractionK > 0 else { return 0 }
+    let earthRadiusMeters = earthRadiusKm * 1000
+    let effectiveEarthRadius = refractionK * earthRadiusMeters
+    return (distanceToAMeters * distanceToBMeters) / (2 * effectiveEarthRadius)
+  }
+}
+
+struct ElevationSample {
+  let coordinate: CLLocationCoordinate2D
+  let elevation: Double
+  let distanceFromAMeters: Double
+}
+
+// MARK: - FresnelZoneRenderer (verbatim)
+
+enum FresnelZoneRenderer {
+  static func losHeight(atDistance: Double, totalDistance: Double, heightA: Double, heightB: Double) -> Double {
+    guard totalDistance > 0 else { return heightA }
+    let fraction = atDistance / totalDistance
+    return heightA + fraction * (heightB - heightA)
+  }
+
+  static func buildProfileSamples(
+    from elevationProfile: [ElevationSample],
+    pointAHeight: Double,
+    pointBHeight: Double,
+    frequencyMHz: Double,
+    refractionK: Double
+  ) -> [ProfileSample] {
+    guard let first = elevationProfile.first,
+          let last = elevationProfile.last else { return [] }
+    let segmentOffset = first.distanceFromAMeters
+    let segmentLength = last.distanceFromAMeters - segmentOffset
+    let heightA = first.elevation + pointAHeight
+    let heightB = last.elevation + pointBHeight
+    return elevationProfile.map { sample in
+      let distanceFromSegmentStart = sample.distanceFromAMeters - segmentOffset
+      let distanceToSegmentEnd = segmentLength - distanceFromSegmentStart
+      let yLOS = losHeight(atDistance: distanceFromSegmentStart, totalDistance: segmentLength, heightA: heightA, heightB: heightB)
+      let radius = RFCalculator.fresnelRadius(frequencyMHz: frequencyMHz, distanceToAMeters: distanceFromSegmentStart, distanceToBMeters: distanceToSegmentEnd)
+      let earthBulge = RFCalculator.earthBulge(distanceToAMeters: distanceFromSegmentStart, distanceToBMeters: distanceToSegmentEnd, refractionK: refractionK)
+      return ProfileSample(x: sample.distanceFromAMeters, yTerrain: sample.elevation + earthBulge, yLOS: yLOS, fresnelRadius: radius)
+    }
+  }
+}
+
+struct ProfileSample {
+  let x: Double
+  let yTerrain: Double
+  let yLOS: Double
+  let fresnelRadius: Double
+  var yTop: Double { yLOS + fresnelRadius }
+  var yBottom: Double { yLOS - fresnelRadius }
+  var yTop60: Double { yLOS + fresnelRadius * 0.6 }
+  var yBottom60: Double { yLOS - fresnelRadius * 0.6 }
+  var yVisibleBottom60: Double { min(max(yTerrain, yBottom60), yTop60) }
+  var isObstructed: Bool { yTerrain > yBottom60 }
+  var yVisibleBottom: Double { min(max(yTerrain, yBottom), yTop) }
+}
+
+// MARK: - ChartCoordinateSpace (verbatim; EdgeInsets stand-in)
+
+struct EdgeInsets { let top: CGFloat; let leading: CGFloat; let bottom: CGFloat; let trailing: CGFloat }
+
+struct ChartCoordinateSpace {
+  let canvasSize: CGSize
+  let padding: EdgeInsets
+  let xRange: ClosedRange<Double>
+  let yRange: ClosedRange<Double>
+  private var plotWidth: CGFloat { canvasSize.width - padding.leading - padding.trailing }
+  private var plotHeight: CGFloat { canvasSize.height - padding.top - padding.bottom }
+  func xPixel(_ xMeters: Double) -> CGFloat {
+    let fraction = (xMeters - xRange.lowerBound) / (xRange.upperBound - xRange.lowerBound)
+    return padding.leading + fraction * plotWidth
+  }
+  func yPixel(_ yMeters: Double) -> CGFloat {
+    let fraction = (yMeters - yRange.lowerBound) / (yRange.upperBound - yRange.lowerBound)
+    return canvasSize.height - padding.bottom - fraction * plotHeight
+  }
+  func xLabel(_ xMeters: Double) -> String {
+    (xMeters / 1000).formatted(.number.precision(.fractionLength(1)))
+  }
+  func xLabel(_ xMeters: Double, locale: Locale) -> String {
+    (xMeters / 1000).formatted(.number.precision(.fractionLength(1)).locale(locale))
+  }
+}
+
+// MARK: - TerrainProfileCanvas helpers (verbatim bodies)
+
+func niceStep(for range: Double, targetDivisions: Int) -> Double {
+  guard range > 0, targetDivisions > 0 else { return 1 }
+  let roughStep = range / Double(targetDivisions)
+  let magnitude = pow(10, floor(log10(roughStep)))
+  let normalized = roughStep / magnitude
+  let niceNormalized: Double = if normalized <= 1 { 1 } else if normalized <= 2 { 2 } else if normalized <= 2.5 { 2.5 } else if normalized <= 5 { 5 } else { 10 }
+  return niceNormalized * magnitude
+}
+
+func tickValues(for range: ClosedRange<Double>, step: Double) -> [Double] {
+  guard step > 0 else { return [] }
+  let start = ceil(range.lowerBound / step) * step
+  var ticks: [Double] = []
+  var current = start
+  while current <= range.upperBound {
+    ticks.append(current)
+    current += step
+  }
+  return ticks
+}
+
+func yRange(_ profileSamples: [ProfileSample], _ profileSamplesRB: [ProfileSample]) -> ClosedRange<Double> {
+  let allSamples = profileSamples + profileSamplesRB
+  guard !allSamples.isEmpty else { return 0...100 }
+  var minY = Double.infinity
+  var maxY = -Double.infinity
+  for sample in allSamples {
+    minY = min(minY, sample.yTerrain)
+    maxY = max(maxY, sample.yTop)
+  }
+  guard minY.isFinite, maxY.isFinite, maxY > minY else { return 0...100 }
+  let range = maxY - minY
+  return (minY - range * 0.1)...(maxY + range * 0.2)
+}
+
+func xAxisLabel(x: Double, xStep: Double, isLast: Bool, locale: Locale) -> String {
+  let kmValue = x / 1000
+  return if xStep >= 1000, kmValue.truncatingRemainder(dividingBy: 1) == 0 {
+    isLast ? "\(Int(kmValue)) km" : "\(Int(kmValue))"
+  } else {
+    isLast
+      ? "\(kmValue.formatted(.number.precision(.fractionLength(1)).locale(locale))) km"
+      : kmValue.formatted(.number.precision(.fractionLength(1)).locale(locale))
+  }
+}
+
+// MARK: - LOSFormatters (verbatim number formatting, explicit locale)
+
+func formatDiffractionLoss(_ loss: Double, _ locale: Locale) -> String? {
+  guard abs(loss) >= 0.1 else { return nil }
+  return "+ \(loss.formatted(.number.precision(.fractionLength(1)).locale(locale))) dB"
+}
+func formatPathLoss(_ loss: Double, _ locale: Locale) -> String {
+  "\(loss.formatted(.number.precision(.fractionLength(1)).locale(locale))) dB"
+}
+func formatClearancePercent(_ percent: Double) -> Int { Int(max(0, min(100, percent))) }
+func formatKFactor(_ k: Double, _ locale: Locale) -> String {
+  "k=\(k.formatted(.number.precision(.fractionLength(2)).locale(locale)))"
+}
+
+// MARK: - LineOfSightViewModel frequency helpers (verbatim)
+
+func parseFrequency(_ text: String) -> Double? {
+  let normalized = text.replacing(",", with: ".")
+  guard let value = Double(normalized), value > 0 else { return nil }
+  return value
+}
+func formatFrequencyForEditing(_ value: Double) -> String {
+  if value.truncatingRemainder(dividingBy: 1) == 0 { return String(Int(value)) }
+  return String(format: "%.1f", value)
+}
+
+// MARK: - Output helpers
+
+func bits(_ d: Double) -> String { String(format: "%016llx", d.bitPattern) }
+func emit(_ key: String, _ d: Double) { print("\(key) \(bits(d)) \(d)") }
+func emitS(_ key: String, _ s: String?) { print("\(key) |\(s ?? "<nil>")|") }
+
+let en = Locale(identifier: "en_US")
+let de = Locale(identifier: "de_DE")
+let origin = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+
+// Fresnel test profiles
+let flat3 = [0.0, 3000, 6000].map { ElevationSample(coordinate: origin, elevation: 100, distanceFromAMeters: $0) }
+for (i, s) in FresnelZoneRenderer.buildProfileSamples(from: flat3, pointAHeight: 50, pointBHeight: 50, frequencyMHz: 910, refractionK: 1.33).enumerated() {
+  emit("flat3.\(i).x", s.x); emit("flat3.\(i).yTerrain", s.yTerrain); emit("flat3.\(i).yLOS", s.yLOS); emit("flat3.\(i).fresnelRadius", s.fresnelRadius)
+}
+let full5 = [0.0, 3000, 6000, 9000, 12000].map { ElevationSample(coordinate: origin, elevation: 100, distanceFromAMeters: $0) }
+for (i, s) in FresnelZoneRenderer.buildProfileSamples(from: Array(full5[2...]), pointAHeight: 50, pointBHeight: 50, frequencyMHz: 910, refractionK: 1.33).enumerated() {
+  emit("slice.\(i).x", s.x); emit("slice.\(i).yTerrain", s.yTerrain); emit("slice.\(i).yLOS", s.yLOS); emit("slice.\(i).fresnelRadius", s.fresnelRadius)
+}
+// Preview hill profile (TerrainProfileCanvas #Preview), k = 4/3
+let hill = (0...20).map { i -> ElevationSample in
+  let distance = Double(i) * 500
+  let hillFactor = sin(Double(i) / 20.0 * .pi) * 150
+  return ElevationSample(coordinate: CLLocationCoordinate2D(latitude: 37.7749 + Double(i) * 0.001, longitude: -122.4194), elevation: 100.0 + hillFactor, distanceFromAMeters: distance)
+}
+let hillSamples = FresnelZoneRenderer.buildProfileSamples(from: hill, pointAHeight: 10, pointBHeight: 15, frequencyMHz: 906, refractionK: 4.0 / 3.0)
+for (i, s) in hillSamples.enumerated() {
+  emit("hill.\(i).elev", hill[i].elevation)
+  emit("hill.\(i).yTerrain", s.yTerrain); emit("hill.\(i).yLOS", s.yLOS); emit("hill.\(i).fresnelRadius", s.fresnelRadius)
+  emit("hill.\(i).yVisibleBottom", s.yVisibleBottom); emit("hill.\(i).yVisibleBottom60", s.yVisibleBottom60)
+  print("hill.\(i).isObstructed \(s.isObstructed)")
+}
+let hy = yRange(hillSamples, [])
+emit("hill.yRange.lower", hy.lowerBound); emit("hill.yRange.upper", hy.upperBound)
+let hyStep = niceStep(for: hy.upperBound - hy.lowerBound, targetDivisions: 4)
+emit("hill.yStep", hyStep)
+for (i, t) in tickValues(for: hy, step: hyStep).enumerated() { emit("hill.yTick.\(i)", t) }
+let hxStep = niceStep(for: 10000 - 0, targetDivisions: 5)
+emit("hill.xStep", hxStep)
+let hxTicks = tickValues(for: 0...10000, step: hxStep)
+for (i, t) in hxTicks.enumerated() {
+  emit("hill.xTick.\(i)", t)
+  emitS("hill.xLabel.en.\(i)", xAxisLabel(x: t, xStep: hxStep, isLast: i == hxTicks.count - 1, locale: en))
+}
+let hillCoords = ChartCoordinateSpace(canvasSize: CGSize(width: 361, height: 200), padding: EdgeInsets(top: 24, leading: 45, bottom: 28, trailing: 16), xRange: 0...10000, yRange: hy)
+for i in [0, 7, 13, 20] {
+  emit("hill.px.\(i)", Double(hillCoords.xPixel(hillSamples[i].x)))
+  emit("hill.py.\(i)", Double(hillCoords.yPixel(hillSamples[i].yTerrain)))
+}
+
+// Odd ranges for niceStep / tickValues
+for (r, d) in [(0.37, 4), (1.0, 5), (7.0, 5), (12.5, 4), (1234.5, 5), (19999.0, 5), (3.3e-3, 4), (0.0, 4), (-5.0, 4), (99.99, 4), (250.0, 4), (1e6, 5)] {
+  emit("nice.\(r).\(d)", niceStep(for: r, targetDivisions: d))
+}
+for (lo, hi, st) in [(-12.3, 87.6, 25.0), (93.7, 412.9, 50.0), (0.0, 1.0, 0.1), (0.0, 0.7, 0.1), (2.5, 2.5, 1.0), (10.0, 5.0, 1.0)] {
+  let ticks = tickValues(for: lo...max(lo, hi), step: st)
+  print("ticks.\(lo).\(hi).\(st) count=\(ticks.count) " + ticks.map(bits).joined(separator: ","))
+}
+for (lo, hi, isLastX, xs) in [(0.0, 1.0, true, 250.0), (0.0, 1.0, false, 2500.0), (0.0, 1.0, true, 2000.0), (0.0, 1.0, false, 500.0)] {
+  _ = lo; _ = hi
+  emitS("xaxis.\(xs).\(isLastX).en", xAxisLabel(x: xs, xStep: xs >= 1000 ? 1000 : 250, isLast: isLastX, locale: en))
+  emitS("xaxis.\(xs).\(isLastX).de", xAxisLabel(x: xs, xStep: xs >= 1000 ? 1000 : 250, isLast: isLastX, locale: de))
+}
+
+// ChartCoordinateSpace test geometry
+let space = ChartCoordinateSpace(canvasSize: CGSize(width: 400, height: 200), padding: EdgeInsets(top: 20, leading: 40, bottom: 30, trailing: 50), xRange: 0...10000, yRange: 0...500)
+emit("space.x0", Double(space.xPixel(0))); emit("space.x10000", Double(space.xPixel(10000)))
+emit("space.y0", Double(space.yPixel(0))); emit("space.y500", Double(space.yPixel(500)))
+emit("space.x5000", Double(space.xPixel(5000))); emit("space.y250", Double(space.yPixel(250)))
+emit("space.x3333.3", Double(space.xPixel(3333.3))); emit("space.y123.456", Double(space.yPixel(123.456)))
+for x in [0.0, 5000, 10000, 250, 350, 150, 1250, 2050, 999.95, 1234567, 49.999, 50, 0.04] {
+  emitS("xLabel.en.\(x)", space.xLabel(x, locale: en))
+  emitS("xLabel.de.\(x)", space.xLabel(x, locale: de))
+}
+emitS("xLabel.en.neg40", space.xLabel(-40, locale: en))
+emitS("xLabel.en.negzero", space.xLabel(-0.0, locale: en))
+
+// LOSFormatters
+for v in [0.0, 0.05, 0.1, -0.1, 0.15, 0.25, 0.35, 8.44, 8.45, 8.449999, 126.65, 126.55, 1234.56, -0.04, 22.3] {
+  emitS("diff.en.\(v)", formatDiffractionLoss(v, en)); emitS("diff.de.\(v)", formatDiffractionLoss(v, de))
+  emitS("pathloss.en.\(v)", formatPathLoss(v, en)); emitS("pathloss.de.\(v)", formatPathLoss(v, de))
+}
+for v in [-15.0, -0.5, 0.0, 47.9, 99.99, 100.0, 150.0, 59.9999] { print("clear.\(v) \(formatClearancePercent(v))") }
+for k in [1.0, 4.0 / 3.0, 4.0, 1.335, 1.325, 1.005, 2.675] {
+  emitS("k.en.\(k)", formatKFactor(k, en)); emitS("k.de.\(k)", formatKFactor(k, de))
+}
+
+// Frequency parsing / formatting
+for t in ["868.5", "868,5", "906", "", "abc", "0", "-906", " 906", "906 ", "1e3", "1E3", "0x10", "0x1p3", "inf", "Infinity", "INF", "nan", "1.", ".5", "+5", "906f", "906d", "1_000", "0.0001", "1,000.5", "868..5", "+", "-0", "1e", "0x", "0x.8", "1e400", "4.9e-324", "\u{0663}", "\t906", "00906.50", "1e-400", "infinit", "-inf", "nan(0x1)", "0X1P-2", "9007199254740993"] {
+  let value = parseFrequency(t)
+  print("parse |\(t)| " + (value.map { bits($0) + " " + String($0) } ?? "nil"))
+}
+for v in [906.0, 868.5, 869.525, 915.0, 0.15, 0.25, 0.35, 0.05, 433.175, 2400.45, 1e-7, 0.95, 868.45, 868.55, 902.125] {
+  emitS("fmtfreq.\(v)", formatFrequencyForEditing(v))
+}
+emitS("fmtfreq.inf", formatFrequencyForEditing(.infinity))
+emitS("fmtfreq.nan", formatFrequencyForEditing(.nan))
+emitS("fmtfreq.big", formatFrequencyForEditing(1e15))
+emitS("fmtfreq.kHz", formatFrequencyForEditing(Double(UInt32(869_525)) / 1000.0))
+emit("freq.kHz.869525", Double(UInt32(869_525)) / 1000.0)
+emit("freq.kHz.910525", Double(UInt32(910_525)) / 1000.0)
+
+// Interpolation (LineOfSightViewModel.interpolationIndices/elevationAt/coordinateAt)
+func clamped(_ v: Double, _ lo: Double, _ hi: Double) -> Double { min(max(v, lo), hi) }
+let p101 = (0...100).map { i in ElevationSample(coordinate: CLLocationCoordinate2D(latitude: 37.7749 + Double(i) * 0.001, longitude: -122.4194), elevation: 100 + Double(i % 7) * 3.25, distanceFromAMeters: Double(i) * 100) }
+for f in [0.0, 0.3, 0.5, 0.123456, 0.999, 1.0, -0.5, 1.5, 0.05, 0.95, 0.07] {
+  let c = clamped(f, 0, 1)
+  let index = c * Double(p101.count - 1)
+  let lower = Int(index)
+  let upper = min(lower + 1, p101.count - 1)
+  let t = index - Double(lower)
+  let e = p101[lower].elevation + t * (p101[upper].elevation - p101[lower].elevation)
+  let lat = p101[lower].coordinate.latitude + t * (p101[upper].coordinate.latitude - p101[lower].coordinate.latitude)
+  let lon = p101[lower].coordinate.longitude + t * (p101[upper].coordinate.longitude - p101[lower].coordinate.longitude)
+  emit("interp.\(f).elev", e); emit("interp.\(f).lat", lat); emit("interp.\(f).lon", lon)
+  print("interp.\(f).split \(Int(f * Double(p101.count - 1)))")
+}
+// SF/Oakland two-sample midpoint
+let sf = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+let oak = CLLocationCoordinate2D(latitude: 37.8044, longitude: -122.2712)
+emit("mid.lat", sf.latitude + 0.5 * (oak.latitude - sf.latitude))
+emit("mid.lon", sf.longitude + 0.5 * (oak.longitude - sf.longitude))
+// RepeaterPoint clamp
+for f in [0.02, 0.98, 0.5, 0.05, 0.95, 0.049999999999999996, -1.0] { emit("rpclamp.\(f)", clamped(f, 0.05, 0.95)) }
+// Off-path visualization fraction and drag mapping
+emit("drag.frac.100", max(0.05, min(0.95, (100.0 - 45) / (361.0 - 45 - 16))))
+emit("drag.frac.0", max(0.05, min(0.95, (0.0 - 45) / (361.0 - 45 - 16))))
+emit("drag.frac.400", max(0.05, min(0.95, (400.0 - 45) / (361.0 - 45 - 16))))
+// RF spot checks
+for (f, a, b) in [(906.0, 3000.0, 3000.0), (910.0, 1.0, 59999.0), (868.0, 12345.678, 98765.4321), (0.0, 1.0, 1.0), (906.0, 0.0, 1.0)] {
+  emit("fresnel.\(f).\(a).\(b)", RFCalculator.fresnelRadius(frequencyMHz: f, distanceToAMeters: a, distanceToBMeters: b))
+}
+for (a, b, k) in [(3000.0, 3000.0, 1.33), (5000.0, 5000.0, 4.0 / 3.0), (12345.678, 98765.4321, 1.0), (1.0, 1.0, 0.0), (1.0, -1.0, 1.0)] {
+  emit("bulge.\(a).\(b).\(k)", RFCalculator.earthBulge(distanceToAMeters: a, distanceToBMeters: b, refractionK: k))
+}
+emit("los.mid", FresnelZoneRenderer.losHeight(atDistance: 5000, totalDistance: 10000, heightA: 100, heightB: 200))
+emit("los.zero", FresnelZoneRenderer.losHeight(atDistance: 5000, totalDistance: 0, heightA: 100, heightB: 200))
+emit("los.third", FresnelZoneRenderer.losHeight(atDistance: 1, totalDistance: 3, heightA: 123.4, heightB: 7.89))
