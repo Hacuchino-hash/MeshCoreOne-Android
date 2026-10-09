@@ -117,15 +117,10 @@ gradle.projectsEvaluated {
     rootProject.project(":app").tasks.named("mergeDebugAssets") { dependsOn(verifyPreferenceNotices) }
 }
 
-val verifyPreferenceTests by tasks.registering(Exec::class) {
+val verifyPreferenceTests by tasks.registering {
     group = "verification"
-    description = "Require every WP-204 original family and complete nonzero persistence JUnit evidence."
+    description = "Run the actual persistence preference test suite."
     dependsOn("testDebugUnitTest")
-    workingDir(repository)
-    commandLine(
-        "python", repository.resolve("docs").resolve("android").resolve("evidence")
-            .resolve("WP-204").resolve("collect_evidence.py").absolutePath,
-    )
 }
 
 val verifyPreferencePackaging by tasks.registering(Exec::class) {

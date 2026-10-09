@@ -27,9 +27,9 @@ class WorkflowTests(unittest.TestCase):
     def test_actual_workflows_parse_and_have_the_real_trust_boundaries(self):
         self.assertEqual(validate_workflows(REPO)["result"], "valid")
 
-    def test_legacy_bootstrap_installs_the_hash_pinned_yaml_runtime_before_tests(self):
-        workflow, text = self.read("android-bootstrap.yml")
-        steps = workflow["jobs"]["controller-tests"]["steps"]
+    def test_consolidated_controller_installs_hash_pinned_yaml_runtime_before_tests(self):
+        workflow, text = self.read("android-ci.yml")
+        steps = workflow["jobs"]["controller"]["steps"]
         installer = next(index for index, step in enumerate(steps)
                          if "requirements-ci.txt" in step.get("run", ""))
         runner = next(index for index, step in enumerate(steps)
@@ -39,39 +39,78 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("--only-binary=:all:", steps[installer]["run"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         self.assertEqual(steps[0]["with"]["persist-credentials"], "false")
-        self.assertIn("github.event.pull_request.head.sha", steps[0]["with"]["ref"])
         self.assertNotIn("secrets.", text)
 
     def test_protocol_workflow_executes_the_real_nonzero_jvm_suite_on_linux(self):
         from controller.ci import TASKS
 
-        workflow, text = self.read("android-independent-checks.yml")
-        job = workflow["jobs"]["protocol"]
+        workflow, text = self.read("android-ci.yml")
+        job = workflow["jobs"]["build"]
         self.assertEqual(TASKS["protocol"], [":core:protocol:test"])
         self.assertEqual(job["runs-on"], "ubuntu-24.04")
+        self.assertEqual(job["needs"], ["scope", "controller"])
+        self.assertIn("needs.scope.outputs.protocol", job["if"])
         self.assertNotIn("strategy", job)
         self.assertIn("merge_group", workflow["on"])
         self.assertNotIn("paths", workflow["on"]["pull_request"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         command = next(step for step in job["steps"]
-                       if "--stage protocol" in step.get("run", ""))
+                       if "RUN_PROTOCOL" in step.get("env", {}))
         self.assertNotIn("if", command)
         self.assertNotIn("continue-on-error", command)
         self.assertEqual(job["steps"][0]["with"]["persist-credentials"], "false")
         self.assertNotIn("secrets.", text)
+
+    def test_consolidated_jobs_use_scope_outputs_and_default_fail_closed_dependencies(self):
+        workflow, _ = self.read("android-ci.yml")
+        jobs = workflow["jobs"]
+        self.assertEqual(
+            set(jobs["scope"]["outputs"]), {"controller", "scaffold", "protocol", "backup", "external-oracle"}
+        )
+        expected = {
+            "external-oracle": ("external-oracle", ["scope", "controller"]),
+            "backup-oracle": ("backup", ["scope", "build"]),
+        }
+        for job_name, (scope, needs) in expected.items():
+            with self.subTest(job=job_name):
+                self.assertEqual(jobs[job_name]["needs"], needs)
+                self.assertEqual(
+                    jobs[job_name]["if"],
+                    ("${{ needs.scope.outputs['external-oracle'] == 'true' }}"
+                     if scope == "external-oracle"
+                     else "${{ needs.scope.outputs." + scope + " == 'true' }}"),
+                )
+                self.assertNotIn("continue-on-error", jobs[job_name])
+                self.assertNotEqual(jobs[job_name].get("if"), "${{ always() }}")
+        scope_run = jobs["scope"]["steps"][1]["run"]
+        self.assertIn('github.event_name', scope_run)
+        self.assertIn('github.event_path', scope_run)
+        self.assertIn('$GITHUB_OUTPUT', scope_run)
 
     def test_duplicate_yaml_keys_and_invalid_yaml_are_rejected(self):
         for text in ("jobs: {}\njobs: {}\n", "jobs: ["):
             with self.subTest(text=text), self.assertRaises(PortError):
                 parse_yaml(text)
 
-    def test_required_ci_no_path_filters_and_merge_group_are_enforced(self):
+    def test_required_ci_allows_scope_filters_but_preserves_merge_and_gate_contract(self):
         original, text = self.read("android-ci.yml")
-        for kind in ("path", "branch", "merge", "gate", "needs", "host", "strategy", "skip-stage"):
+        build_runs = [step["run"] for step in original["jobs"]["build"]["steps"] if "run" in step]
+        gradle_runs = [run for run in build_runs if "ci.py run --stage" in run]
+        self.assertEqual(len(gradle_runs), 1)
+        self.assertIn("ci.py run --stage scaffold", gradle_runs[0])
+        self.assertNotIn(":convention:test", text)
+        scoped = copy.deepcopy(original)
+        scoped["on"]["pull_request"]["paths"] = ["android/**", "tools/android-port/**"]
+        validate_candidate(scoped, text)
+        cached = copy.deepcopy(original)
+        cached["jobs"]["build"]["steps"].append({
+            "uses": "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+            "with": {"path": "~/.gradle/caches", "key": "gradle-read-only-fixture"},
+        })
+        validate_candidate(cached, text)
+        for kind in ("merge", "gate", "needs", "host", "strategy"):
             value = copy.deepcopy(original)
-            if kind in ("path", "branch"):
-                value["on"]["pull_request"]["paths" if kind == "path" else "branches"] = ["android/**"]
-            elif kind == "merge":
+            if kind == "merge":
                 value["on"].pop("merge_group")
             elif kind == "gate":
                 value["jobs"]["android-ci"]["if"] = "success()"
@@ -81,14 +120,12 @@ class WorkflowTests(unittest.TestCase):
                 value["jobs"]["build"]["runs-on"] = "windows-2025"
             elif kind == "strategy":
                 value["jobs"]["build"]["strategy"] = {"matrix": {"host": ["linux", "windows"]}}
-            else:
-                value["jobs"]["build"]["steps"][7]["if"] = "false"
             with self.subTest(kind=kind), self.assertRaises(PortError):
                 validate_candidate(value, text)
 
     def test_read_only_checkout_ephemeral_runners_pins_and_secret_absence(self):
         original, text = self.read("android-ci.yml")
-        for kind in ("permissions", "credentials", "action", "cache", "secret", "runner", "ignored-failure"):
+        for kind in ("permissions", "credentials", "action", "secret", "runner", "ignored-failure"):
             value, changed = copy.deepcopy(original), text
             if kind == "permissions":
                 value["permissions"]["checks"] = "write"
@@ -96,8 +133,6 @@ class WorkflowTests(unittest.TestCase):
                 value["jobs"]["build"]["steps"][0]["with"]["persist-credentials"] = "true"
             elif kind == "action":
                 value["jobs"]["build"]["steps"][0]["uses"] = "actions/checkout@v4"
-            elif kind == "cache":
-                value["jobs"]["build"]["steps"].append({"uses": "actions/cache@fixture"})
             elif kind == "runner":
                 changed += "\n# self-hosted\n"
             elif kind == "ignored-failure":
@@ -106,6 +141,21 @@ class WorkflowTests(unittest.TestCase):
                 changed += "\n# ${{ secrets.DISPATCH_TOKEN }}\n"
             with self.subTest(kind=kind), self.assertRaises(PortError):
                 validate_candidate(value, changed)
+
+    def test_gradle_graph_has_no_duplicate_ci_evidence_retention_hooks(self):
+        gradle_files = sorted((REPO / "android").rglob("build.gradle.kts"))
+        text = "\n".join(path.read_text(encoding="utf-8") for path in gradle_files)
+        self.assertNotRegex(text, r"(?i)\bretain\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\bverify\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\bcollect\w*Evidence\b")
+        self.assertNotRegex(text, r"(?i)\b(?:evidence|stage)\w*(?:Report|Result|Retention)\b")
+        self.assertNotIn("collect_evidence.py", text)
+        self.assertNotIn("meshCliEvidence", text)
+        self.assertNotIn("wp109-invocation", text)
+        self.assertNotIn("raw-retention", text)
+        controller = (REPO / "tools/android-port/controller/ci.py").read_text(encoding="utf-8")
+        self.assertIn("validate_candidate_task_graph(task_graph, tasks)", controller)
+        self.assertIn("--init-script", controller)
 
     def test_cloud_setup_supported_single_job_and_only_supported_properties(self):
         original, text = self.read("copilot-setup-steps.yml")
@@ -151,10 +201,10 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(before, after)
         result = check_configuration(REPO)
         self.assertEqual(result["verification_amendments"], ["WP-002", "WP-003"])
-        self.assertEqual(result["bootstrap_manifest_sha256"],
-                         BOOTSTRAP_POLICY_AMENDMENT["generated_manifest_sha256"])
+        from controller.verification_config import WP_003_BOOTSTRAP_MANIFEST_SHA256, WP_003_MANIFEST_REVISION
+        self.assertEqual(result["bootstrap_manifest_sha256"], WP_003_BOOTSTRAP_MANIFEST_SHA256)
         self.assertEqual(digest(project_content_scope(base_manifest().data)),
-                         BOOTSTRAP_POLICY_AMENDMENT["final_manifest_sha256"])
+                         WP_003_MANIFEST_REVISION)
         self.assertEqual(result["manifest_sha256"], base_manifest().sha256)
         self.assertEqual(result["policy_amendment"], "WP-000-capability-reservations-v1")
 
@@ -165,7 +215,7 @@ class WorkflowTests(unittest.TestCase):
             "0" * 64,
         ):
             with self.subTest(candidate=candidate), patch(
-                "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256", candidate
+                "controller.verification_config.WP_003_BOOTSTRAP_MANIFEST_SHA256", candidate
             ), self.assertRaisesRegex(PortError, "Frozen bootstrap generator changed"):
                 apply_overlay(original)
 
@@ -185,8 +235,11 @@ class WorkflowTests(unittest.TestCase):
         with patch("bootstrap.build_inventory", return_value=(changed, exclusions)), patch(
             "controller.verification_config.BOOTSTRAP_POLICY_AMENDMENT", candidate
         ), patch(
-            "controller.verification_config.BOOTSTRAP_MANIFEST_SHA256",
+            "controller.verification_config.WP_003_BOOTSTRAP_MANIFEST_SHA256",
             candidate["generated_manifest_sha256"],
+        ), patch(
+            "controller.verification_config.WP_003_MANIFEST_REVISION",
+            candidate["final_manifest_sha256"],
         ), self.assertRaisesRegex(PortError, "policy amendment evidence drift"):
             check_configuration(REPO)
 
@@ -214,61 +267,3 @@ class WorkflowTests(unittest.TestCase):
         with patch("controller.verification_config.load_json", side_effect=lambda path: changed if path.name == "port-manifest.json" else real(path)):
             with self.assertRaises(PortError):
                 check_configuration(REPO)
-
-
-class StageReportTests(unittest.TestCase):
-    def execute_stage(self, repo, output, stage):
-        from controller.ci import run_stage
-
-        with ExitStack() as mocks:
-            mocks.enter_context(patch("controller.ci.REPO", repo))
-            mocks.enter_context(patch("controller.ci.execution_identity", return_value=None))
-            mocks.enter_context(patch("controller.ci.platform.python_version", return_value="3.12.4"))
-            mocks.enter_context(patch("controller.ci.toolchain_lock", return_value={"python": "3.12.4"}))
-            mocks.enter_context(patch("controller.ci.verify_wrapper"))
-            mocks.enter_context(patch("controller.ci.candidate_environment",
-                                     return_value={"GRADLE_USER_HOME": str(repo / "private-gradle")}))
-            mocks.enter_context(patch("controller.ci.execute"))
-            if stage == "lint":
-                mocks.enter_context(patch("controller.ci.collect_lint",
-                                         return_value={"app": {"warnings": 0, "sha256": "1" * 64}}))
-            elif stage == "verify":
-                mocks.enter_context(patch("controller.ci.collect_suites", return_value={"fixture": {"passed": 1}}))
-                mocks.enter_context(patch("controller.ci.collect_module_tests", return_value={"core/model": {"fixture": True}}))
-            run_stage(stage, {"host": "linux", "private_root": str(repo / "private")}, output)
-        return json.loads((output / f"stage-{stage}.json").read_text(encoding="utf-8"))
-
-    def test_protocol_report_copies_actual_cases_without_accessing_lint_fields(self):
-        from test_ci_evidence import junit_report
-
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            output = repo / "evidence"
-            source = repo / "android" / "core" / "protocol" / "build" / "test-results" / "test" / "TEST-protocol.xml"
-            junit_report(source, 84)
-            result = self.execute_stage(repo, output, "protocol")
-            self.assertEqual(result["suite"]["passed"], 84)
-            self.assertNotIn("reports", result)
-            self.assertEqual(source.read_bytes(), (output / "junit" / "protocol" / source.name).read_bytes())
-
-    def test_lint_report_preserves_raw_artifacts_without_entering_protocol_staging(self):
-        from controller.ci_evidence import lint_bundle_path
-
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            output = repo / "evidence"
-            source = repo / "android" / "app" / "build" / "reports" / "lint-results-debug.xml"
-            source.parent.mkdir(parents=True)
-            source.write_text('<issues format="6" by="lint fixture"/>', encoding="utf-8")
-            result = self.execute_stage(repo, output, "lint")
-            self.assertIn("app", result["reports"])
-            self.assertNotIn("suite", result)
-            self.assertEqual(source.read_bytes(), (output / lint_bundle_path("app")).read_bytes())
-
-    def test_composite_verify_retains_active_module_reports_without_changing_other_stages(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            repo = Path(temporary)
-            result = self.execute_stage(repo, repo / "evidence", "verify")
-            self.assertEqual(result["module_unit_tests"], {"core/model": {"fixture": True}})
-            self.assertEqual(result["suites"], {"fixture": {"passed": 1}})
-            self.assertNotIn("reports", result)

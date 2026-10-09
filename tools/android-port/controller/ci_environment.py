@@ -79,11 +79,14 @@ def candidate_environment(state: dict, inherited=None, *, standalone=False, loca
         }
     }
     private = Path(state["private_root"])
+    gradle_home = Path(inherited.get("GRADLE_USER_HOME", private / "gradle-root"))
+    if not gradle_home.is_absolute():
+        raise PortError("Gradle user home must be absolute")
     environment.update({
         "JAVA_HOME": state["java_home"],
         "ANDROID_HOME": state["android_home"],
         "ANDROID_SDK_ROOT": state["android_home"],
-        "GRADLE_USER_HOME": str(private / ("gradle-standalone" if standalone else "gradle-root")),
+        "GRADLE_USER_HOME": str(gradle_home),
         "ANDROID_USER_HOME": str(private / "android-user"),
         "PYTHONDONTWRITEBYTECODE": "1",
         "JAVA_OPTS": "-Xms32m -Xmx128m -Dfile.encoding=UTF-8",

@@ -268,12 +268,11 @@ class CliTests(unittest.TestCase):
                 self.assertIn("android-port-controller", content)
                 if filename != "android-gate-integrity.yml":
                     self.assertIn("--dry-run", content)
-        bootstrap = (directory / "android-bootstrap.yml").read_text(encoding="utf-8")
-        self.assertIn("pull_request:", bootstrap)
-        self.assertIn("merge_group:", bootstrap)
-        self.assertIn("test_runner.py", bootstrap)
-        self.assertNotIn("gradlew", bootstrap)
-        self.assertNotIn("secrets.", bootstrap)
+        candidate = (directory / "android-ci.yml").read_text(encoding="utf-8")
+        self.assertIn("pull_request:", candidate)
+        self.assertIn("merge_group:", candidate)
+        self.assertEqual(candidate.count("test_runner.py"), 1)
+        self.assertNotIn("secrets.", candidate)
         from controller.workflows import validate_workflows
 
         self.assertTrue((directory / "copilot-setup-steps.yml").is_file())

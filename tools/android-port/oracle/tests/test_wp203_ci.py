@@ -31,6 +31,41 @@ class BundleTests(unittest.TestCase):
         (self.root / "wp203-evidence.json").write_bytes(json_bytes(evidence))
         return evidence
 
+    def make_report_free_producer(self):
+        (self.root / "kotlin-export.meshcoreone").write_bytes(b"actual compressed Kotlin backup bytes")
+        manifest = {
+            "blockedChannelSenderCount": 1, "channelCount": 1, "contactCount": 1, "deviceCount": 1,
+            "discoveredNodeCount": 1, "messageCount": 1, "messageRepeatCount": 1,
+            "nodeStatusSnapshotCount": 1, "reactionCount": 1, "remoteNodeSessionCount": 1,
+            "roomMessageCount": 1, "savedTracePathCount": 1,
+        }
+        (self.root / "kotlin-export.json").write_bytes(json_bytes({
+            "version": 1, "manifest": manifest, "userDefaults": {"selectedThemeID": "ember"},
+        }))
+        (self.root / "kotlin-room-proof.json").write_bytes(json_bytes({
+            "compressedSha256": CI.digest_file(self.root / "kotlin-export.meshcoreone"),
+            "inserted": 12,
+            "messageId": "00000000-0000-0000-0000-000000000004",
+            "preferencesRestored": True,
+            "producer": "actual-Room-Kotlin-export",
+            "radioId": "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
+            "restoreVerified": True,
+            "skipped": 0,
+        }))
+
+    def test_report_free_producer_validates_actual_bytes_and_room_semantics(self):
+        self.make_report_free_producer()
+        result = CI.validate_bundle(self.root, "producer", self.identity)
+        self.assertEqual("producer", result["stage"])
+        self.assertEqual(3, len(result["data"]))
+        self.assertNotIn("identity", result)
+
+    def test_report_free_producer_rejects_tampered_bytes_or_room_proof(self):
+        self.make_report_free_producer()
+        (self.root / "kotlin-export.meshcoreone").write_bytes(b"tampered")
+        with self.assertRaisesRegex(OracleError, "disagrees"):
+            CI.validate_bundle(self.root, "producer", self.identity)
+
     def test_exact_data_hashes_and_identity_are_required(self):
         self.make_bundle()
         with patch.object(CI, "report_record", return_value=self.junit):

@@ -1,0 +1,49 @@
+// AndroidOnly: WP-003 Reject duplicate CI-result retention from the resolved candidate task graph.
+import groovy.json.JsonOutput
+import org.gradle.api.tasks.AbstractExecTask
+
+gradle.taskGraph.whenReady { graph ->
+    def output = System.getenv("ANDROID_CI_TASK_GRAPH")
+    if (!output) {
+        throw new GradleException("ANDROID_CI_TASK_GRAPH is required")
+    }
+    def records = graph.allTasks.collect { task ->
+        def command = []
+        if (task instanceof AbstractExecTask) {
+            command = task.commandLine.collect { it.toString() }
+        }
+        [path: task.path, type: task.class.name, command: command]
+    }.sort { left, right -> left.path <=> right.path }
+    def destination = new File(output)
+    destination.parentFile.mkdirs()
+    destination.setText(JsonOutput.prettyPrint(JsonOutput.toJson([
+        schema_version: 1,
+        tasks: records,
+    ])) + System.lineSeparator(), "UTF-8")
+
+    def evidenceTask = ~/(?i)^(retain|collect).*evidence.*$|^verify.*evidence.*$|^(evidence|stage).*(report|result|retention).*$/
+    def forbiddenTasks = records.findAll { record ->
+        def name = record.path.tokenize(":").last()
+        name ==~ evidenceTask
+    }
+    def forbiddenScripts = records.findAll { record ->
+        record.command.any { argument ->
+            def normalized = argument.replace("\\", "/").toLowerCase(Locale.ROOT)
+            def name = normalized.tokenize("/").last()
+            normalized.contains("/docs/android/evidence/") &&
+                (name == "collect_evidence.py" ||
+                 name == "collect_native_evidence.py" ||
+                 name == "retain_raw.py" ||
+                 name == "run_linux_verification.py" ||
+                 name == "verify_producers.py" ||
+                 name == "print_failures.py" ||
+                 name == "source_bindings.py")
+        }
+    }
+    if (forbiddenTasks || forbiddenScripts) {
+        throw new GradleException(
+            "Duplicate candidate evidence task graph entries: " +
+            JsonOutput.toJson([tasks: forbiddenTasks*.path, scripts: forbiddenScripts*.path])
+        )
+    }
+}

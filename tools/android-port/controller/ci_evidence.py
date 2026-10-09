@@ -9,8 +9,7 @@ from pathlib import Path
 from .ci_environment import file_sha256
 from .apk_alignment import elf_load_alignment
 from .errors import PortError
-from .gates import Binding
-from .schema import fields, load_json, positive_integer
+from .schema import fields
 
 SUITES = {
     "build-logic": ("build-logic/convention/build/test-results/test", 31),
@@ -27,8 +26,7 @@ LINT_TARGETS = (
     *("feature/" + name for name in ("onboarding", "chats", "nodes", "remotenodes", "map", "tools", "settings")),
     *("platform/" + name for name in ("notifications", "widgets", "shortcuts", "translation")),
 )
-STAGES = {"verify", "standalone", "assemble", "lint"}
-PYTHON_MINIMUMS = {"controller": 111, "scaffold": 15}
+PYTHON_MINIMUMS = {"scaffold": 15}
 APK_FIELDS = {
     "scope", "artifact", "sha256", "size_bytes", "package", "min_sdk", "target_sdk",
     "permissions", "pinned_notices", "verification_fixture_packaged", "native_libraries",
@@ -257,124 +255,3 @@ def validate_apk_inspection(value: dict, root: Path):
         raise PortError("Uploaded debug APK is not a valid ZIP archive") from error
     if value["native_libraries"] != libraries or value["elf_pt_load_alignment"] != actual:
         raise PortError("Actual APK native libraries/alignment disagree with inspection")
-
-
-def artifact_record(root: Path, path: Path):
-    if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
-        raise PortError("Evidence artifact escapes its bounded bundle")
-    return {"path": path.relative_to(root).as_posix(), "size": path.stat().st_size, "sha256": file_sha256(path)}
-
-
-def validate_result(value: dict, root: Path, binding: Binding, run_id: int, run_attempt: int, host: str):
-    fields(value, {
-        "schema_version", "binding", "run_id", "run_attempt", "host", "scope",
-        "stages", "cache_proofs", "python", "suites", "standalone", "lint", "apk", "artifacts",
-        "module_unit_tests",
-    }, label="scaffold CI result")
-    if (
-        type(value["schema_version"]) is not int or value["schema_version"] != 2
-        or Binding.parse(value["binding"]) != binding or value["host"] != host
-        or value["run_id"] != run_id or value["run_attempt"] != run_attempt
-    ):
-        raise PortError("CI evidence belongs to a different repository/base/head/source/policy/run/host")
-    if not isinstance(value["stages"], dict) or set(value["stages"]) != STAGES:
-        raise PortError("Missing required build stage")
-    if any(v != "success" for v in value["stages"].values()):
-        raise PortError("Failed/cancelled/skipped build stage is not success")
-    if not isinstance(value["cache_proofs"], dict) or set(value["cache_proofs"]) != {"composite", "standalone"}:
-        raise PortError("Missing fresh strict resolver topology evidence")
-    for proof in value["cache_proofs"].values():
-        fields(proof, {"user_cache_initially_absent", "project_cache_initially_absent"}, label="fresh-cache proof")
-        if any(flag is not True for flag in proof.values()):
-            raise PortError("Reused/warmed user/project cache cannot prove the mandatory fresh strict topology")
-    if (
-        not isinstance(value["python"], dict) or not isinstance(value["suites"], dict)
-        or set(value["python"]) != set(PYTHON_MINIMUMS) or set(value["suites"]) != set(SUITES)
-    ):
-        raise PortError("Missing required Python/Kotlin discovery")
-    for name, (_, minimum) in SUITES.items():
-        counts(value["suites"][name], minimum=minimum)
-    counts(value["standalone"], minimum=31)
-    for name, minimum in PYTHON_MINIMUMS.items():
-        counts(value["python"][name], minimum=minimum)
-    if not isinstance(value["lint"], dict) or set(value["lint"]) != set(LINT_TARGETS):
-        raise PortError("Missing mandatory Android lint target")
-    if not isinstance(value["artifacts"], list) or not value["artifacts"]:
-        raise PortError("Missing immutable evidence artifacts")
-    seen = set()
-    for record in value["artifacts"]:
-        fields(record, {"path", "size", "sha256"}, label="CI artifact")
-        path = record["path"]
-        if (
-            not isinstance(path, str) or "\\" in path or path.startswith("/")
-            or ".." in Path(path).parts or ":" in path or path in seen
-            or not isinstance(record["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", record["sha256"])
-            or type(record["size"]) is not int or record["size"] < 0
-        ):
-            raise PortError("Unsafe/duplicate/malformed CI artifact")
-        seen.add(path)
-        if artifact_record(root, root / path) != record:
-            raise PortError("Evidence artifact content/size/checksum mismatch")
-    required = {"debug.apk", "test-discovery.tsv", "module-graph.tsv", "runtime-dependencies.tsv", "apk-inspection.json"}
-    if not required.issubset(seen):
-        raise PortError("Missing mandatory debug/report artifacts")
-    actual_suites = {name: suite_counts(root / "junit" / "composite" / name, minimum)
-                     for name, (_, minimum) in SUITES.items()}
-    actual_standalone = suite_counts(root / "junit" / "standalone" / "build-logic", 31)
-    if actual_suites != value["suites"] or actual_standalone != value["standalone"]:
-        raise PortError("Claimed discovery disagrees with complete raw JUnit cases/outcomes")
-    compare_discovery_tsv(root / "test-discovery.tsv", actual_suites)
-    validate_graph_runtime(root)
-    raw_paths = {path.relative_to(root).as_posix() for path in (root / "junit").rglob("TEST-*.xml")}
-    raw_paths |= {lint_bundle_path(target) for target in LINT_TARGETS}
-    if not raw_paths.issubset(seen):
-        raise PortError("Raw mandatory JUnit/lint report is absent from the digest-bound artifact set")
-    from .ci_environment import REPO
-    from .module_junit import validate_module_tests
-
-    validate_module_tests(value["module_unit_tests"], root, REPO, binding.head_sha)
-    for target in LINT_TARGETS:
-        claimed = value["lint"][target]
-        fields(claimed, {"sha256", "warnings"}, label="typed lint evidence")
-        if (
-            type(claimed["warnings"]) is not int or claimed["warnings"] < 0
-            or not isinstance(claimed["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", claimed["sha256"])
-            or lint_evidence(root / lint_bundle_path(target)) != claimed
-        ):
-            raise PortError("Typed lint result disagrees with the actual raw XML/hash")
-    inspection = load_json(root / "apk-inspection.json", maximum_bytes=65535)
-    if inspection != value["apk"]:
-        raise PortError("Raw APK inspection is stale or disagrees with the CI result")
-    validate_apk_inspection(inspection, root)
-    return value
-
-
-def aggregate(needs: dict, directory: Path, binding: Binding, run_id: int, run_attempt: int):
-    positive_integer(run_id, "Actual workflow run")
-    positive_integer(run_attempt, "Actual workflow attempt")
-    if set(needs) != {"build"} or needs["build"].get("result") != "success":
-        raise PortError("Required build job failed, cancelled, skipped or absent")
-    paths = sorted(directory.rglob("ci-result.json"))
-    if len(paths) != 1:
-        raise PortError("Exactly one Linux immutable CI result artifact is mandatory")
-    results = {}
-    for path in paths:
-        value = load_json(path)
-        host = value.get("host")
-        if host != "linux" or host in results:
-            raise PortError("Missing/duplicate required execution host")
-        results[host] = validate_result(value, path.parent, binding, run_id, run_attempt, host)
-    if set(results) != {"linux"}:
-        raise PortError("The Linux execution host is required")
-    return {
-        "result": "success", "binding": __import__("dataclasses").asdict(binding),
-        "run_id": run_id, "run_attempt": run_attempt,
-        "hosts": {host: {
-            "kotlin_assertions": sum(c["passed"] for c in value["suites"].values()),
-            "standalone_assertions": value["standalone"]["passed"],
-            "module_unit_assertions": sum(item["counts"]["passed"] for item in value["module_unit_tests"].values()),
-            "python_assertions": sum(c["passed"] for c in value["python"].values()),
-            "apk_sha256": value["apk"]["sha256"],
-        } for host, value in results.items()},
-        "scope": "scaffold build evidence only; not parity-review, gate-integrity, human approval or WP completion",
-    }

@@ -218,8 +218,9 @@ class BackendTests(unittest.TestCase):
         approved = next(a["sha256"] for a in manifest.data["agents"] if a["name"] == owner)
         capabilities = {
             "repository": rules["repository"], "default_branch_sha": BASE, "profiles": {owner: approved},
+            "branch": "fixture-branch", "worktree": "C:\\fixture-worktree",
             **{k: True for k in (
-                "isolated_worktrees", "shared_ledger", "write_lease_enforced",
+                "isolated_worktrees", "shared_ledger", "advisory_reservations",
                 "read_only_reference", "credential_isolation", "authenticated",
             )},
         }
@@ -251,7 +252,7 @@ class BackendTests(unittest.TestCase):
         backend.preflight("WP-101", BASE)
         with self.assertRaises(PortError):
             backend.launch("WP-101", "attempt-1")
-        capabilities["write_lease_enforced"] = False
+        capabilities["advisory_reservations"] = False
         with self.assertRaises(PortError):
             backend.preflight("WP-101", BASE)
 

@@ -9,6 +9,20 @@ import sys
 import time
 
 
+def scaffold_options():
+    return [
+        "--console=plain", "--dependency-verification", "strict", "--build-cache",
+        "--no-parallel", "--max-workers=4", "-PscaffoldTestHeap=512m",
+    ]
+
+
+def local_test_command(repo):
+    return [
+        sys.executable, "-m", "unittest", "discover",
+        "-s", str(repo / "tools/android-port/local"), "-p", "*test*.py", "-v",
+    ]
+
+
 def execute(command, repo, environment, log):
     print("Executing: " + " ".join(map(str, command)), flush=True)
     with log.open("w", encoding="utf-8") as stream:
@@ -32,8 +46,8 @@ def main():
     sys.path.insert(0, str(args.repo / "tools" / "android-port"))
     from controller import ci
     from controller.ci_environment import candidate_environment, verify_wrapper, write_json
-    from controller.ci_evidence import collect_lint, collect_suites, suite_counts, SUITES
-    from controller.module_junit import collect_module_tests
+    from controller.ci_evidence import collect_lint, collect_suites, validate_graph_runtime
+    from controller.module_junit import check_module_tests
 
     stages = args.stages.split(",")
     state = json.loads((args.work / "toolchain" / "environment.json").read_text(encoding="utf-8"))
@@ -52,46 +66,24 @@ def main():
         print(f"\n===== FAST LOCAL: {stage} =====", flush=True)
         if stage == "python":
             ci.python_checks(args.output)
-            print((args.output / "python-evidence.json").read_text(encoding="utf-8"), flush=True)
-            execute([sys.executable, "-m", "unittest", "discover", "-s", str(Path(__file__).parent),
-                     "-p", "test_*.py", "-v"], args.repo, environment, args.output / "local-tool-tests.log")
+            execute(local_test_command(args.repo), args.repo, environment, args.output / "local-tool-tests.log")
         elif stage == "preflight":
             ci.preflight(state, args.output)
-        elif stage in ("verify", "standalone", "assemble", "lint"):
-            options = [
-                "--console=plain", "--dependency-verification", "strict", "--build-cache",
-                "--no-parallel", "--max-workers=4", "-PscaffoldTestHeap=512m",
-            ]
-            if stage == "verify":
-                options += [
-                    "-Pwp301EvidenceDirectory=" + str(args.output / "wp301-native"),
-                    "-Pwp207EvidenceDirectory=" + str(args.output / "wp207-native"),
-                    *ci.meshcli_evidence_options(stage, state, args.output),
-                ]
-                if (args.repo / "docs" / "android" / "evidence" / "WP-208" / "collect_evidence.py").is_file():
-                    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=args.repo, text=True).strip()
-                    options += [
-                        "-Pwp208LocalEvidenceDirectory=" + str(args.output / "wp208-native"),
-                        "-Pwp208LocalExpectedHead=" + head,
-                    ]
+        elif stage == "scaffold":
+            options = scaffold_options()
             project = args.repo / "android"
-            if stage == "standalone":
-                project /= "build-logic"
             execute([str(args.repo / "android" / "gradlew"), "-p", str(project),
                      *ci.TASKS[stage], *options], args.repo, environment, args.output / f"gradle-{stage}.log")
             report = {"stage": stage, "result": "success", "tasks": ci.TASKS[stage], "warm_cache": True}
-            if stage == "verify":
-                report["suites"] = collect_suites(args.repo / "android")
-                report["module_unit_tests"] = collect_module_tests(args.repo, args.output)
-                execute([sys.executable, str(args.repo / "tools/android-port/l10n_convert.py"), "--check",
-                         "--verify-android-tests", str(args.repo / "android/core/l10n/build/test-results/testDebugUnitTest"),
-                         "--copy-android-junit", str(args.output / "l10n/junit")],
-                        args.repo, environment, args.output / "l10n-junit.log")
-            elif stage == "standalone":
-                report["suite"] = suite_counts(args.repo / "android" / SUITES["build-logic"][0], SUITES["build-logic"][1])
-            elif stage == "lint":
-                report["reports"] = collect_lint(args.repo / "android")
-            write_json(args.output / f"stage-{stage}.json", report)
+            report["suites"] = collect_suites(args.repo / "android")
+            report["module_unit_tests"] = check_module_tests(args.repo)
+            report["reports"] = collect_lint(args.repo / "android")
+            validate_graph_runtime(args.repo / "android/build/reports/scaffold")
+            execute([sys.executable, str(args.repo / "tools/android-port/l10n_convert.py"), "--check",
+                     "--verify-android-tests", str(args.repo / "android/core/l10n/build/test-results/testDebugUnitTest"),
+                     "--copy-android-junit", str(args.output / "l10n/junit")],
+                    args.repo, environment, args.output / "l10n-junit.log")
+            print(json.dumps(report, indent=2), flush=True)
         elif stage == "inspect":
             ci.inspect(state, args.output)
         else:
@@ -103,7 +95,6 @@ def main():
         "stages": stages, "elapsed_seconds": round(time.monotonic() - started, 2),
         "scope": "Local pre-push check; not hosted/cold-cache, hardware, signing or human-gate evidence",
     }
-    write_json(args.output / "fast-local-result.json", binding)
     print(json.dumps(binding, indent=2), flush=True)
     print("FAST LOCAL CHECK PASSED. No second cold local run is required.", flush=True)
 

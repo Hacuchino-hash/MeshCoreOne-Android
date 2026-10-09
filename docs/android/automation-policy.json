@@ -25,6 +25,43 @@
     ],
     "merge_gate_approval_required": true,
     "merge_gate_scope": "main-branch merge only",
+    "publication_verification": {
+      "feature_branch_push_allowed_without_local_result": true,
+      "unsupported_host_status": "verification-pending",
+      "unsupported_host_warning": "UNVERIFIED CANDIDATE — merge verification still required",
+      "local_pre_push_is_optimization": true,
+      "merge_requires_exact_commit_and_tree": true,
+      "merge_verification_mode": "change-scoped",
+      "full_verification_triggers": [
+        "broad-or-unclassifiable-android-change",
+        "dependency-toolchain-or-build-graph-change",
+        "release-candidate",
+        "explicit-maintainer-request"
+      ],
+      "path_and_job_scoping_allowed": true,
+      "normal_task_reuse_parallel_workers_and_verified_caches_allowed": true,
+      "cache_warmth_is_correctness_evidence": false,
+      "cold_cache_dependency_audit_scope": "dependency-toolchain-changes",
+      "strict_dependency_locks_checksums_and_verification_required": true,
+      "authoritative_reproducible_evidence": "exact-commit-hosted-job-result-and-log",
+      "repository_managed_ci_result_bundles_required": false,
+      "retained_nonreproducible_evidence": [
+        "hardware-and-physical-device",
+        "signing-and-release",
+        "human-and-legal-gates"
+      ],
+      "candidate_supplied_runner_is_not_self_authorizing": true,
+      "trusted_base_validates_tools_tasks_counts_failures_skips_and_outputs": true
+    },
+    "hard_lock_resources": [
+      "installed-git-common-runtime",
+      "canonical-ledger",
+      "gradle-execution",
+      "native-execution",
+      "physical-device",
+      "credentials-signing-release",
+      "repository-settings"
+    ],
     "migration": {
       "preserve_historical_authorization_bytes": true,
       "preserve_actual_identities_bindings_state_and_repairs": true,
@@ -58,8 +95,8 @@
       },
       {
         "id": "traceability-validation",
-        "path_rules": ["tools/android-port/**", "docs/android/**/*manifest*.json", "docs/android/**/*test-cases*.json", "docs/android/**/*mapping*.json"],
-        "operations": ["add-or-update-mapping", "add-or-update-validator-rule", "add-regression-fixture-or-test", "refresh-derived-digest"],
+        "path_rules": ["tools/android-port/**", "docs/android/evidence/**", "docs/android/deviations/**", "docs/android/**/*manifest*.json", "docs/android/**/*test-cases*.json", "docs/android/**/*mapping*.json"],
+        "operations": ["add-or-update-mapping", "add-or-update-validator-rule", "add-regression-fixture-or-test", "record-validation-evidence", "refresh-derived-digest"],
         "invariants": ["fail-closed", "positive-test-discovery", "pinned-provenance", "no-fake-success"],
         "validation": ["affected validator tests", "manifest and ownership validation"]
       },
@@ -83,6 +120,13 @@
         "operations": ["update-required-check-wiring", "update-directly-required-job-or-input", "add-workflow-regression-test"],
         "invariants": ["candidate-read-only", "ephemeral-runner", "no-dispatch-merge-signing-secret", "trusted-default-branch-controller"],
         "validation": ["workflow trust-boundary tests", "required-check identity validation"]
+      },
+      {
+        "id": "merge-integration",
+        "path_rules": ["**"],
+        "operations": ["reconcile-current-base", "merge-disjoint-semantic-edits", "transfer-current-producer"],
+        "invariants": ["exact-current-base", "all-owner-attributions", "semantic-conflicts-block-merge", "protected-approval-at-main-merge"],
+        "validation": ["current-base tests", "capability-required validation", "protected merge gate"]
       }
     ]
   },

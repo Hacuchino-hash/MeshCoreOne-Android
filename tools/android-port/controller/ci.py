@@ -1,4 +1,4 @@
-"""AndroidOnly: WP-003 Credential-stripped exact-task executor and scaffold evidence."""
+"""AndroidOnly: WP-003 Credential-stripped exact-task executor."""
 
 import argparse
 import contextlib
@@ -6,6 +6,7 @@ import io
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -18,34 +19,43 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from controller.apk_alignment import inspect_alignment
-from controller.ci_environment import REPO, candidate_environment, file_sha256, host_name, toolchain_lock, verify_wrapper, write_json
-from controller.ci_evidence import PYTHON_MINIMUMS, SUITES, aggregate, artifact_record, collect_lint, collect_suites, counts, lint_bundle_path, read_xml, suite_counts
+from controller.ci_environment import REPO, candidate_environment, host_name, toolchain_lock, verify_wrapper, write_json
+from controller.ci_evidence import PYTHON_MINIMUMS, collect_lint, collect_suites, counts, read_xml, suite_counts, validate_graph_runtime
 from controller.errors import PortError
 from controller.gates import Binding, policy_revision
 from controller.model import git, load_manifest
-from controller.module_junit import collect_module_tests
+from controller.module_junit import check_module_tests
 from controller.provision import provision
 from controller.runtime_inputs import verify_committed_inputs
 from controller.schema import decode_json, fields, load_json, positive_integer
 from controller.test_runner import run_suite
 
+TASK_GRAPH_GUARD = REPO / "tools" / "android-port" / "controller" / "verify_candidate_task_graph.gradle"
+
 TASKS = {
-    "verify": [
+    "scaffold": [
         "verifyScaffoldTests", "verifyRoomSchema", "validateModuleGraph",
         "runtimeDependencyInventory", "resolveScaffoldDependencies",
+        ":app:assembleDebug", "lintScaffold",
     ],
-    "standalone": [":convention:test"],
-    "assemble": [":app:assembleDebug"],
-    "lint": ["lintScaffold"],
     "prepare": ["resolveScaffoldDependencies"],
     "protocol": [":core:protocol:test"],
+}
+SCOPED_TASKS = {
+    "scaffold": TASKS["scaffold"],
+    "protocol": TASKS["protocol"],
+    "backup": [
+        ":core:data:verifyBackupTests", ":core:data:verifyPersistenceRepositoryTests",
+        ":core:database:testDebugUnitTest",
+    ],
+    "external-oracle": [":core:testing:testDebugUnitTest", "validateModuleGraph"],
 }
 
 
 def output_directory(value=None):
-    path = value or os.environ.get("ANDROID_CI_OUTPUT")
+    path = value or os.environ.get("ANDROID_CI_WORK") or os.environ.get("ANDROID_CI_OUTPUT")
     if not path or not Path(path).is_absolute():
-        raise PortError("Explicit absolute --output/ANDROID_CI_OUTPUT evidence directory is required")
+        raise PortError("Explicit absolute --output/ANDROID_CI_WORK directory is required")
     return Path(path)
 
 
@@ -90,31 +100,6 @@ def execution_identity():
         "run_id": positive_integer(int(os.environ["GITHUB_RUN_ID"]), "Workflow run ID"),
         "run_attempt": positive_integer(int(os.environ["GITHUB_RUN_ATTEMPT"]), "Workflow run attempt"),
     }
-
-
-def meshcli_evidence_options(stage: str, state: dict, output: Path):
-    if stage not in ("verify", "protocol"):
-        return []
-    output = output_directory(str(output))
-    identity = execution_identity()
-    if identity is not None:
-        fields(identity, {"binding", "run_id", "run_attempt"}, label="meshcli invocation identity")
-        binding = Binding.parse(identity["binding"])
-        if (binding.repository != "cbattlegear/MeshCoreOne-Android" or binding.work_package != "WP-003"
-                or binding.head_sha != git(REPO, "rev-parse", "HEAD").decode().strip()):
-            raise PortError("Meshcli forwarding requires the exact actual executor binding")
-        positive_integer(identity["run_id"], "Actual meshcli workflow run")
-        positive_integer(identity["run_attempt"], "Actual meshcli workflow attempt")
-    invocation = output / "wp109-invocation.json"
-    write_json(invocation, {
-        "schema_version": 1, "stage": stage, "identity": identity, "host": state["host"],
-    })
-    return [
-        "-PmeshCliEvidenceDirectory=" + str(output / "wp109"),
-        "-PmeshCliInvocationFile=" + str(invocation),
-    ]
-
-
 def execute(command: list[str], environment: dict | None, log: Path, *, timeout=1800):
     log.parent.mkdir(parents=True, exist_ok=True)
     print("Executing " + " ".join(str(item) for item in command[:5]), flush=True)
@@ -124,6 +109,43 @@ def execute(command: list[str], environment: dict | None, log: Path, *, timeout=
         tail = log.read_text(encoding="utf-8", errors="replace")[-12000:]
         print(tail, file=sys.stderr)
         raise PortError(f"Declared command failed with exit {result.returncode}; log: {log.name}")
+
+
+def validate_candidate_task_graph(path: Path, requested_tasks: list[str]):
+    value = load_json(path)
+    fields(value, {"schema_version", "tasks"}, label="resolved Gradle task graph")
+    if value["schema_version"] != 1 or not isinstance(value["tasks"], list) or not value["tasks"]:
+        raise PortError("Malformed or empty resolved Gradle task graph")
+    forbidden_name = re.compile(
+        r"(?i)^(retain|collect).*evidence.*$|^verify.*evidence.*$|^(evidence|stage).*(report|result|retention).*$"
+    )
+    observed = set()
+    for record in value["tasks"]:
+        fields(record, {"path", "type", "command"}, label="resolved Gradle task")
+        if not isinstance(record["path"], str) or not record["path"].startswith(":"):
+            raise PortError("Malformed resolved Gradle task path")
+        if record["path"] in observed:
+            raise PortError("Duplicate resolved Gradle task path")
+        observed.add(record["path"])
+        name = record["path"].rsplit(":", 1)[-1]
+        if forbidden_name.fullmatch(name):
+            raise PortError("Duplicate candidate evidence task in resolved graph: " + record["path"])
+        if not isinstance(record["command"], list) or not all(isinstance(item, str) for item in record["command"]):
+            raise PortError("Malformed resolved Gradle command")
+        for argument in record["command"]:
+            normalized = argument.replace("\\", "/").lower()
+            name = normalized.rsplit("/", 1)[-1]
+            if "/docs/android/evidence/" in normalized and name in {
+                "collect_evidence.py", "collect_native_evidence.py", "retain_raw.py",
+                "run_linux_verification.py", "verify_producers.py", "print_failures.py",
+                "source_bindings.py",
+            }:
+                raise PortError("Gradle invokes repository evidence collector: " + record["path"])
+    for requested in requested_tasks:
+        expected = requested if requested.startswith(":") else ":" + requested
+        if expected not in observed:
+            raise PortError("Requested Gradle task missing from resolved graph: " + expected)
+    return {"tasks": len(observed), "result": "no-duplicate-ci-evidence"}
 
 
 def preflight(state: dict, output: Path, *, local=False):
@@ -161,77 +183,68 @@ def preflight(state: dict, output: Path, *, local=False):
     })
 
 
-def run_stage(stage: str, state: dict, output: Path, *, local=False):
+def run_stage(stage: str, state: dict, output: Path, *, local=False, scopes=None):
     if platform.python_version() != toolchain_lock()["python"]:
         raise PortError("Declared CI executor requires Python 3.12.4")
-    standalone = stage == "standalone"
-    environment = candidate_environment(state, standalone=standalone, local=local)
+    environment = candidate_environment(state, local=local)
+    task_graph = output / f"gradle-{stage}-task-graph.json"
     verify_wrapper()
-    evidence_options = meshcli_evidence_options(stage, state, output)
     execute([sys.executable, str(REPO / "android" / "scaffold" / "check_environment.py")],
             environment, output / f"{stage}-preflight.log", timeout=60)
-    project = REPO / "android" / ("build-logic" if standalone else "")
-    cache = Path(state["private_root"]) / ("project-standalone" if standalone else "project-root")
-    cache_proof = {
-        "user_cache_initially_absent": not Path(environment["GRADLE_USER_HOME"]).exists(),
-        "project_cache_initially_absent": not cache.exists(),
-    }
+    environment["ANDROID_CI_TASK_GRAPH"] = str(task_graph)
+    project = REPO / "android"
+    cache = Path(state["private_root"]) / "project-root"
     options = [
         "--no-daemon", "--console=plain", "--dependency-verification", "strict",
-        "--no-build-cache", "--rerun-tasks", "--max-workers=1",
         "-Pkotlin.compiler.execution.strategy=in-process",
         "-PscaffoldTestHeap=" + ("256m" if local else "512m"),
         "--project-cache-dir", str(cache), "--quiet",
     ]
     if local:
         options.append("-PscaffoldTestJvmArgs=-Xms32m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=256m")
-    options.extend(evidence_options)
-    if stage == "verify":
-        options.append("-Pwp301EvidenceDirectory=" + str(output / "wp301-native"))
-        options.append("-Pwp207EvidenceDirectory=" + str(output / "wp207-native"))
     wrapper = REPO / "android" / ("gradlew.bat" if state["host"] == "windows" else "gradlew")
-    command = [str(wrapper), "-p", str(project), *TASKS[stage], *options]
+    default_selection = ("scaffold",) if stage == "scaffold" else ("protocol",) if stage == "protocol" else ()
+    selected = list(scopes or default_selection)
+    if stage not in ("scaffold", "protocol") or not selected or any(scope not in SCOPED_TASKS for scope in selected):
+        tasks = TASKS[stage]
+    else:
+        tasks = list(dict.fromkeys(task for scope in selected for task in SCOPED_TASKS[scope]))
+    gradle_arguments = [*tasks, *options, "--init-script", str(TASK_GRAPH_GUARD)]
+    command = [str(wrapper), "-p", str(project), *gradle_arguments]
     if state["host"] == "windows":
         shell = shutil.which("pwsh", path=environment.get("PATH"))
         if shell is None:
             raise PortError("Windows batch execution requires the hosted/local PowerShell 7 input")
         invocation = output / f"gradle-{stage}-invocation.json"
-        write_json(invocation, {"wrapper": str(wrapper), "project": str(project), "arguments": [*TASKS[stage], *options]})
+        write_json(invocation, {"wrapper": str(wrapper), "project": str(project), "arguments": gradle_arguments})
         command = [
             shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-File",
             str(Path(__file__).with_name("gradle_windows.ps1")), "-InvocationFile", str(invocation),
         ]
     execute(command, environment, output / f"gradle-{stage}.log")
-    report = {"stage": stage, "result": "success", "tasks": TASKS[stage], "strict_verification": True,
-              "cache_proof": cache_proof}
-    if stage == "verify":
+    graph = validate_candidate_task_graph(task_graph, tasks)
+    report = {
+        "stage": stage, "scopes": selected, "result": "success", "tasks": tasks,
+        "strict_verification": True, "resolved_task_graph": graph,
+    }
+    if "scaffold" in selected:
         report["suites"] = collect_suites(REPO / "android")
-        for name, (path, _) in SUITES.items():
-            destination = output / "junit" / "composite" / name
-            destination.mkdir(parents=True, exist_ok=True)
-            for xml in sorted((REPO / "android" / path).glob("TEST-*.xml")):
-                shutil.copyfile(xml, destination / xml.name)
-        report["module_unit_tests"] = collect_module_tests(REPO, output)
-    elif standalone:
-        report["suite"] = suite_counts(REPO / "android" / SUITES["build-logic"][0], 31)
-        destination = output / "junit" / "standalone" / "build-logic"
-        destination.mkdir(parents=True, exist_ok=True)
-        for xml in sorted((REPO / "android" / SUITES["build-logic"][0]).glob("TEST-*.xml")):
-            shutil.copyfile(xml, destination / xml.name)
-    elif stage == "lint":
+        report["module_unit_tests"] = check_module_tests(REPO)
         report["reports"] = collect_lint(REPO / "android")
-        for target in report["reports"]:
-            destination = output / lint_bundle_path(target)
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(REPO / "android" / target / "build" / "reports" / "lint-results-debug.xml", destination)
-    elif stage == "protocol":
+        validate_graph_runtime(REPO / "android" / "build" / "reports" / "scaffold")
+    if "protocol" in selected:
         source = REPO / "android" / "core" / "protocol" / "build" / "test-results" / "test"
-        report["suite"] = suite_counts(source, 84)
-        destination = output / "junit" / "protocol"
-        destination.mkdir(parents=True, exist_ok=True)
-        for xml in sorted(source.glob("TEST-*.xml")):
-            shutil.copyfile(xml, destination / xml.name)
-    write_json(output / f"stage-{stage}.json", report)
+        report["protocol_suite"] = suite_counts(source, 84)
+    if "backup" in selected:
+        report["backup_suites"] = {
+            "data": suite_counts(REPO / "android/core/data/build/test-results/testDebugUnitTest", 1),
+            "database": suite_counts(REPO / "android/core/database/build/test-results/testDebugUnitTest", 1),
+        }
+    if "external-oracle" in selected:
+        report["foundation_suite"] = suite_counts(
+            REPO / "android/core/testing/build/test-results/testDebugUnitTest", 1
+        )
+    print(json.dumps(report, indent=2))
 
 
 def python_checks(output: Path):
@@ -249,22 +262,18 @@ def python_checks(output: Path):
             None, output / "pinned-notices.log")
     results = {}
     for name, path, minimum in (
-        ("controller", REPO / "tools" / "android-port" / "tests", PYTHON_MINIMUMS["controller"]),
         ("scaffold", REPO / "android" / "scaffold", PYTHON_MINIMUMS["scaffold"]),
     ):
         suite = unittest.TestLoader().discover(str(path), pattern="test_*.py")
         text = io.StringIO()
         with contextlib.redirect_stdout(text):
             status = run_suite(suite, verbosity=0)
-        (output / f"python-{name}.log").write_text(text.getvalue(), encoding="utf-8")
         if status:
             raise PortError(f"Required {name} Python suite failed")
         result = decode_json(text.getvalue().strip().splitlines()[-1])
         result.pop("scope")
         results[name] = counts(result, minimum=minimum)
-    write_json(output / "python-evidence.json", results)
-    write_json(output / "verification-overlay.json", configuration)
-    write_json(output / "runtime-inputs.json", delivery)
+    print(json.dumps({"python": results, "verification_overlay": configuration, "runtime_inputs": delivery}, indent=2))
 
 
 def inspect(state: dict, output: Path, *, local=False):
@@ -274,42 +283,12 @@ def inspect(state: dict, output: Path, *, local=False):
     value = decode_json(result.stdout)
     apk = REPO / Path(value["artifact"])
     value.update(inspect_alignment(apk, Path(state["android_home"]), environment, windows=state["host"] == "windows"))
-    write_json(output / "apk-inspection.json", value)
-    shutil.copyfile(apk, output / "debug.apk")
-    for name in ("test-discovery.tsv", "module-graph.tsv", "runtime-dependencies.tsv"):
-        shutil.copyfile(REPO / "android" / "build" / "reports" / "scaffold" / name, output / name)
-    identity = execution_identity()
-    if identity is None:
-        write_json(output / "local-result.json", {
-            "scope": "local scaffold assertions/artifacts; no hosted run or authoritative acceptance",
-            "host": state["host"], "suites": collect_suites(REPO / "android"), "apk": value,
-            "module_unit_tests": load_json(output / "stage-verify.json")["module_unit_tests"],
-        })
-        return
-    stages = {stage: load_json(output / f"stage-{stage}.json") for stage in ("verify", "standalone", "assemble", "lint")}
-    result = {
-        "schema_version": 2, **identity, "host": state["host"],
-        "scope": "scaffold assertions only; all feature, human, license, device and release gates remain pending",
-        "stages": {name: item["result"] for name, item in stages.items()},
-        "cache_proofs": {"composite": stages["verify"]["cache_proof"], "standalone": stages["standalone"]["cache_proof"]},
-        "python": load_json(output / "python-evidence.json"),
-        "suites": stages["verify"]["suites"], "standalone": stages["standalone"]["suite"],
-        "module_unit_tests": stages["verify"]["module_unit_tests"],
-        "lint": stages["lint"]["reports"], "apk": value,
-        "artifacts": [
-            artifact_record(output, path) for path in sorted(output.rglob("*"))
-            if path.is_file() and path.name not in ("ci-result.json", "SHA256SUMS")
-        ],
-    }
-    write_json(output / "ci-result.json", result)
-    checksums = [f"{file_sha256(path)}  {path.relative_to(output).as_posix()}" for path in sorted(output.rglob("*"))
-                 if path.is_file() and path.name != "SHA256SUMS"]
-    (output / "SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
+    print(json.dumps(value, indent=2))
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("provision", "local-inputs", "preflight", "run", "python", "inspect", "aggregate"))
+    parser.add_argument("command", choices=("provision", "local-inputs", "preflight", "run", "python", "inspect"))
     parser.add_argument("--state", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--root", type=Path)
@@ -318,7 +297,7 @@ def main(argv=None):
     parser.add_argument("--accept-sdk-license", action="store_true")
     parser.add_argument("--local", action="store_true", help="Measured shared-host build flags only")
     parser.add_argument("--stage", choices=tuple(TASKS))
-    parser.add_argument("--artifacts", type=Path)
+    parser.add_argument("--scope", action="append", choices=tuple(SCOPED_TASKS))
     args = parser.parse_args(argv)
     try:
         if args.command == "provision":
@@ -329,8 +308,6 @@ def main(argv=None):
         elif args.command == "local-inputs":
             if any(path is None or not path.is_absolute() for path in (args.root, args.jdk, args.sdk)):
                 raise PortError("Local validation requires explicit JDK/SDK/private-root paths")
-            if args.root.exists():
-                raise PortError("Local proof requires a new private cache, not a shared or warmed cache")
             write_json(args.root / "environment.json", {
                 "schema_version": 1, "host": host_name(), "java_home": str(args.jdk),
                 "android_home": str(args.sdk), "private_root": str(args.root / "private"),
@@ -338,13 +315,6 @@ def main(argv=None):
             })
         elif args.command == "python":
             python_checks(output_directory(args.output))
-        elif args.command == "aggregate":
-            identity = execution_identity()
-            if identity is None or args.artifacts is None:
-                raise PortError("Aggregation requires an actual hosted run and downloaded immutable artifacts")
-            result = aggregate(decode_json(os.environ["CI_NEEDS"]), args.artifacts, Binding.parse(identity["binding"]),
-                               identity["run_id"], identity["run_attempt"])
-            print(json.dumps(result, indent=2))
         else:
             state, output = inputs(args.state), output_directory(args.output)
             output.mkdir(parents=True, exist_ok=True)
@@ -353,7 +323,7 @@ def main(argv=None):
             elif args.command == "run":
                 if args.stage is None:
                     raise PortError("Exactly one declared --stage is required")
-                run_stage(args.stage, state, output, local=args.local)
+                run_stage(args.stage, state, output, local=args.local, scopes=args.scope)
             else:
                 inspect(state, output, local=args.local)
         return 0

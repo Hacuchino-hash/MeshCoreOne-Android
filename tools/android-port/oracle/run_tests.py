@@ -13,7 +13,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controller.test_runner import run_suite
 from oracle.reference import OracleError, json_bytes, write_or_check
 
-REQUIRED_SUITES = {"test_inventory_tools.py", "test_vectors.py", "test_codec.py", "test_ci.py"}
+REQUIRED_SUITES = {
+    "test_inventory_tools.py", "test_vectors.py", "test_codec.py", "test_ci.py",
+    "test_workflow_scope.py",
+}
 
 
 def discover(directory: Path, pattern="test_*.py"):

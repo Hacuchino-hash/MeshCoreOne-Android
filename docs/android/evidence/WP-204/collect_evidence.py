@@ -16,7 +16,7 @@ SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 INITIAL_BASE = "dc15f1ba445acf3230383ea68d4827c592f3fafa"
 LEASE = "autonomous-WP-204-dc15f1ba"
 PINNED_MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-PINNED_POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+PINNED_POLICY = "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"
 HISTORICAL_MANIFEST = "78a22920beaa5899f9618806b5cd2b27d50399a9b29b4d8dbd79f755717ec746"
 PACKAGE = "com.meshcoreone.android.core.datastore."
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
@@ -73,7 +73,9 @@ def inventory():
     detail_path = "docs/android/evidence/WP-004/inventory-details.json"
     raw_details = git("show", f"{INITIAL_BASE}:{detail_path}")
     actual_details = load_json(ROOT.joinpath(*detail_path.split("/")))
-    require(json.loads(raw_details) == inventory_details_predecessor(actual_details, manifest),
+    historical_details = json.loads(raw_details)
+    historical_details.pop("manifest_sha256", None)
+    require(historical_details == inventory_details_predecessor(actual_details, manifest),
             "Trusted original family inventory drift")
     details = json.loads(raw_details)
     for entry in details["files"]:

@@ -18,13 +18,10 @@ tasks.withType<Test>().configureEach {
 }
 
 val repository = rootProject.projectDir.parentFile
-val verifyDomainRoomTests by tasks.registering(Exec::class) {
+val verifyDomainRoomTests by tasks.registering {
     group = "verification"
-    description = "Require every WP-201 source disposition, nonzero native JUnit and actual Room v1 schema."
+    description = "Run the actual Room v1 schema and domain test suites."
     dependsOn("testDebugUnitTest", ":core:model:test", ":core:contracts:test")
-    workingDir(repository)
-    commandLine("python", repository.resolve("docs").resolve("android").resolve("evidence")
-        .resolve("WP-201").resolve("collect_evidence.py").absolutePath)
 }
 
 rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyDomainRoomTests) }

@@ -128,7 +128,7 @@ class StateTests(unittest.TestCase):
         with self.assertRaisesRegex(PortError, "different"):
             self.ledger.claim(self.manifest.wp("WP-101"), binding, "local", "new", NOW, 1800, 5, 0, 100, 5)
 
-    def test_concurrent_all_write_path_claims_have_exactly_one_winner(self):
+    def test_concurrent_overlapping_claims_are_advisory_and_both_acquire(self):
         shared = ["docs/android/port-manifest.json", "android/gradle/"]
 
         def acquire(wp_id):
@@ -141,7 +141,8 @@ class StateTests(unittest.TestCase):
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(acquire, ("WP-101", "WP-102")))
-        self.assertCountEqual(results, ["acquired", "conflict"])
+        self.assertCountEqual(results, ["acquired", "acquired"])
+        self.assertEqual(len(self.ledger.overlap_report()), 1)
 
     def test_expiry_retains_locks_and_marks_uncertainty(self):
         self.claim(lease_seconds=10)

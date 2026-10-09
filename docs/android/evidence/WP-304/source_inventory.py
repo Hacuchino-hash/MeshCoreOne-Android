@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "tools" / "android-port"))
 from controller.errors import PortError
 from controller.model import load_manifest
-from controller.verification_config import content_scope_revisions
+from controller.verification_config import project_content_scope
 PIN = "db14559b39d32322b06477c6ae676112f583db50"
-MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
+MANIFEST = "1dd7bc4f74f10e566b66fc8bc3822bb2bd66068053e1aa866e520326aab4dde6"
 PRIMARY = "e76f2a7a42fc8a27173133750f071cc03ecde35083bab59ff4fdf8e0ac396802"
 ROOT_LOCK_SHA = "95055e812451d9906683f36ee3e46373dc5fe5424fa833f02163bb13f78f1c96"
 FROZEN_FAULT_PATH = "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt"
@@ -169,10 +169,17 @@ def digest(value):
 
 def current_revisions():
     try:
-        return content_scope_revisions(load_manifest(ROOT),
-            unique_json(ROOT / "docs" / "android" / "automation-policy.json"))
+        manifest = load_manifest(ROOT)
+        canonical = json.dumps(
+            project_content_scope(manifest.data),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+        ).encode()
+        require(hashlib.sha256(canonical).hexdigest() == MANIFEST, "Canonical ownership changed")
+        return {"manifest_sha256": manifest.sha256}
     except PortError as failure:
-        raise EvidenceError("Manifest/policy lineage drift: " + str(failure)) from failure
+        raise EvidenceError("Manifest lineage drift: " + str(failure)) from failure
 
 
 def git(*arguments, data=None):
@@ -270,7 +277,7 @@ def native_inputs():
         raw = path.read_bytes()
         blob = git("hash-object", "--path", relative, "--stdin", data=raw).decode().strip()
         result[relative] = {"working_blob": blob, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
-    for relative in ("docs/android/port-manifest.json", "docs/android/automation-policy.json",
+    for relative in ("docs/android/port-manifest.json",
             "tools/android-port/controller/verification_config.py",
             FROZEN_FAULT_PATH, FROZEN_MESSAGING_PATH, *COMMITTED_PRODUCER_INPUTS,
             *FROZEN_SERVICE_CARRIES, *PROJECTION_INPUTS):

@@ -1,5 +1,10 @@
 # WP-211 device and radio settings
 
+> Historical implementation record only. Normal candidate verification now runs
+> the owning Services and Data test tasks directly. The frozen JUnit collector,
+> retained-report hashes, and executor-binding reader were retired because they
+> duplicated exact-commit automated results.
+
 This is implementation evidence for one manually coordinated WP, not a fleet
 activation, completed app graph, hardware result, license approval or merge gate.
 

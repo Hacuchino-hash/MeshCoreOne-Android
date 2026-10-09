@@ -4,12 +4,22 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - android/gradle/toolchain-lock.json
+      - android/gradle/wrapper/**
+      - tools/android-port/controller/ci.py
+      - tools/android-port/controller/ci_environment.py
+      - tools/android-port/controller/provision.py
   push:
     branches: [main]
     paths:
       - .github/workflows/copilot-setup-steps.yml
-      - tools/android-port/controller/**
-      - android/**
+      - tools/android-port/controller/ci.py
+      - tools/android-port/controller/ci_environment.py
+      - tools/android-port/controller/provision.py
+      - android/gradle/toolchain-lock.json
+      - android/gradle/wrapper/**
 
 permissions:
   contents: read

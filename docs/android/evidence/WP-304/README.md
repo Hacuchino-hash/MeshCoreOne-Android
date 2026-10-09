@@ -1,5 +1,10 @@
 # WP-304 candidate evidence
 
+> Historical implementation record only. Normal candidate verification runs
+> the UI and dependent JVM test tasks directly. Raw-JUnit retention and
+> checked-in-style executor/manifest reader validation were retired; generated
+> UI artifacts and source inventory remain actual test inputs/outputs.
+
 **Status: final Companion/Sync amendment is issued and implemented locally.
 All130 original families/158 scenarios now declare actual producer bindings;
 static completeness is not executed parity. The final committed-head full

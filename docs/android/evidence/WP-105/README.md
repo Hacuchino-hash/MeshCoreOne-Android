@@ -182,12 +182,10 @@ identifiers. The raw local reports are preserved in the private session bundle
 `android/build/reports/scaffold/module-graph.tsv` and
 `android/build/reports/scaffold/runtime-dependencies.tsv`.
 
-The existing `android-independent-checks.yml`'s `protocol` job executes the
-complete protocol suite on Linux and retains `protocol-{run_id}-{run_attempt}`
-artifacts. Normal `android-ci.yml` separately binds the app debug build, scaffold suites,
-lint and runtime/graph evidence to the final head/base. Actual hosted results
-belong to those bound run artifacts and the PR, not an invented local Linux/app
-claim.
+The consolidated `android-ci.yml` selects the complete protocol suite in its
+single Linux Gradle invocation. The exact-commit job result and log are the
+authoritative reproducible proof; no duplicate protocol-result artifact is
+retained.
 
 | Acceptance ID | Implemented/tested evidence |
 | --- | --- |

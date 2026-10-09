@@ -33,7 +33,7 @@ BRANCH = "cbattlegear-refactored-spoon"
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 SOURCE_TREE = "8918fdc604341e6996a68c88f6bb1c02b9c2f87e"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+POLICY = "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"
 OWNER_LOCK = "android/core/ui/gradle.lockfile"
 ROOT_LOCK = "android/gradle/dependency-locks/core-ui.lockfile"
 ROOT_LOCK_BLOB = "566089f945f40442b8c0980aabee409c1de2c6da"
@@ -65,9 +65,7 @@ REQUIRED_INPUTS = {
     "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/DeviceSettingsFaults.kt",
     "android/core/contracts/src/main/kotlin/com/meshcoreone/android/core/contracts/domain/errors/MessagingFaults.kt",
     "docs/android/evidence/WP-304/collect_evidence.py",
-    "docs/android/evidence/WP-304/retain_raw.py",
     "docs/android/evidence/WP-304/source_inventory.py",
-    "docs/android/evidence/WP-304/test_reader.py",
     "android/gradlew", "android/gradle/wrapper/gradle-wrapper.jar",
     "android/gradle/wrapper/gradle-wrapper.properties",
     "android/gradle/libs.versions.toml", "android/gradle/verification-metadata.xml",

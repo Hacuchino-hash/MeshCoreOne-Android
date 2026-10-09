@@ -25,7 +25,7 @@ from portmap import port_map
 
 SOURCE = "db14559b39d32322b06477c6ae676112f583db50"
 MANIFEST = "ceb84b5e26fcc9ece5c0b3fb6c68b4d2965f9f24114fa81b7434ff73d1ed7904"
-POLICY = "0a56002d4ba794901880a65a85e68518d36acdfe0ff50b4db42e938522800981"
+POLICY = "f52513bf818fffb013758e9abe48023816976a39b9bce9331b1f317cd828bb7f"
 HISTORY = "docs/android/evidence/WP-201/local-evidence.json"
 HISTORY_SHA256 = "c53017a93cc37fecdd442057423113e72146a18a023bd865909781c1db2fdca8"
 SCHEMA = "android/core/database/schemas/com.meshcoreone.android.core.database.MeshCoreDatabase/1.json"
@@ -258,7 +258,7 @@ def report(repo=ROOT, *, audit_base=None):
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     manifest = load_manifest(repo)
     policy = load_json(repo / "docs/android/automation-policy.json")
-    current_policy = content_scope_revisions(manifest, policy)["policy_revision"]
+    current_revisions = content_scope_revisions(manifest, policy)
     owned = [item for item in manifest.data["inventory"] if item["primary_owner"] == "WP-201"]
     inputs, raw_inputs = immutable_inputs(repo, head, owned)
     baseline = historical_baseline(raw_inputs[HISTORY])
@@ -284,7 +284,7 @@ def report(repo=ROOT, *, audit_base=None):
     historical_identities = {case_identity(case) for case in baseline["native_cases"]}
     return {
         "schema_version": 2, "repository": "cbattlegear/MeshCoreOne-Android", "work_package": "WP-201",
-        "execution": execution, "source_sha": SOURCE, "manifest_sha256": manifest.sha256, "policy_revision": current_policy,
+        "execution": execution, "source_sha": SOURCE, **current_revisions,
         "historical_baseline": {
             "path": HISTORY, "canonical_lf_sha256": HISTORY_SHA256,
             "session": baseline["session"], "branch": baseline["branch"], "base_sha": baseline["base_sha"],

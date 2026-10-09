@@ -13,7 +13,7 @@ from controller.errors import PortError
 from controller.model import SHA, git, tree
 
 CONTROLLER_MODULES = (
-    "__init__", "apk_alignment", "authority", "backends", "ci", "ci_environment", "ci_evidence",
+    "__init__", "apk_alignment", "authority", "backends", "capabilities", "ci", "ci_environment", "ci_evidence",
     "dispatch", "engine", "errors", "gate_runtime", "gates", "historical", "ledger", "model", "module_junit",
     "paths", "publication", "provision", "render", "runtime_inputs", "schema", "settings",
     "staging", "test_runner", "validate", "verification_config", "workflows",
@@ -23,6 +23,11 @@ FIXED_INPUTS = (
     "tools/android-port/controller/toolchain-pins.json",
     "tools/android-port/controller/requirements-ci.txt",
     "tools/android-port/controller/gradle_windows.ps1",
+    "tools/android-port/controller/verify_candidate_task_graph.gradle",
+    "tools/android-port/local/reserve.py",
+    "tools/android-port/local/hook_test.py",
+    "tools/android-port/local/run.sh",
+    "tools/android-port/oracle/workflow_scope.py",
     "tools/android-port/bootstrap.py", "tools/android-port/inventory_rules.py",
     "tools/android-port/wp_metadata.py", "tools/android-port/portmap.py",
     "docs/android/PORTING_PLAN.md", "docs/android/port-manifest.json",

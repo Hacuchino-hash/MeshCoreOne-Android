@@ -304,7 +304,7 @@ def inventory_counts(files):
 
 def validate_outputs(catalog, details, originals):
     exact_fields(catalog, {"schema_version", "source_sha", "entries"}, "controller case catalog")
-    exact_fields(details, {"schema_version", "source_sha", "manifest_sha256", "generator", "counts", "files"}, "inventory details")
+    exact_fields(details, {"schema_version", "source_sha", "generator", "counts", "files"}, "inventory details")
     if catalog["schema_version"] != 1 or details["schema_version"] != 1 or catalog["source_sha"] != SOURCE_SHA or details["source_sha"] != SOURCE_SHA:
         raise OracleError("Stale/unsupported case inventory schema or source")
     if not isinstance(catalog["entries"], list) or not isinstance(details["files"], list):
@@ -428,7 +428,7 @@ def generate(reference: FrozenReference):
             "line": syntax.tokens[types[0].keyword].line, "cases": enum_cases(syntax, types[0]),
         }
     catalog = {"schema_version": 1, "source_sha": SOURCE_SHA, "entries": []}
-    details = {"schema_version": 1, "source_sha": SOURCE_SHA, "manifest_sha256": reference.manifest_sha256,
+    details = {"schema_version": 1, "source_sha": SOURCE_SHA,
                "generator": "tools/android-port/test_inventory.py", "counts": {}, "files": []}
     for original in originals:
         path, text = original["path"], sources[original["path"]]

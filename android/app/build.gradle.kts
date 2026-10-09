@@ -13,6 +13,8 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.CommandLineArgumentProvider
+import java.security.MessageDigest
+import java.util.Properties
 
 plugins {
     id("mesh.android.application")
@@ -148,73 +150,44 @@ tasks.register("resolveWp302NavigationDependencies") {
     }
 }
 
-val contentRepository = rootProject.projectDir.parentFile
-val contentCollector = contentRepository.resolve("docs").resolve("android").resolve("evidence")
-    .resolve("WP-218").resolve("collect_evidence.py")
-val contentInvocation = providers.gradleProperty("meshCliInvocationFile")
-val retainContentAppReports by tasks.registering(Exec::class) {
+val repository = rootProject.projectDir.parentFile
+val navigationInputBinding = layout.buildDirectory.file("reports/wp302/input-binding.properties")
+val navigationArtifactDirectory = layout.buildDirectory.dir("reports/wp302/screens")
+val prepareNavigationTestInputs by tasks.registering {
     group = "verification"
-    description = "Retain complete raw App JUnit and immutable input bytes before verification, including failures."
-    workingDir(contentRepository)
-    val destination = contentInvocation.map {
-        file(it).parentFile.resolve("wp218-native").resolve("app-raw").absolutePath
-    }.getOrElse(layout.buildDirectory.dir("reports/wp218/app-raw").get().asFile.absolutePath)
-    commandLine("python", "-B", contentCollector.absolutePath, "--retain-only", "app", "--output", destination)
-    contentInvocation.orNull?.let { args("--invocation", it) }
-    contentInvocation.orNull?.let {
-        args("--pretest", file(it).parentFile.resolve("wp218-native").resolve("pretest-binding.json").absolutePath)
+    description = "Provide the current source/input identity consumed by navigation tests."
+    inputs.dir(layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation"))
+    outputs.file(navigationInputBinding)
+    outputs.dir(navigationArtifactDirectory)
+    doLast {
+        val sourceRoot = layout.projectDirectory.dir("src/test/kotlin/com/meshcoreone/android/app/navigation").asFile
+        val digest = MessageDigest.getInstance("SHA-256")
+        sourceRoot.walkTopDown().filter { it.isFile }.sortedBy { it.relativeTo(sourceRoot).path }.forEach {
+            digest.update(it.relativeTo(sourceRoot).path.toByteArray())
+            digest.update(it.readBytes())
+        }
+        fun gitRevision(revision: String) = ProcessBuilder("git", "rev-parse", revision)
+            .directory(repository).start().inputStream.bufferedReader().readText().trim()
+        val head = gitRevision("HEAD")
+        val tree = gitRevision("HEAD^{tree}")
+        navigationInputBinding.get().asFile.apply {
+            parentFile.mkdirs()
+            Properties().apply {
+                setProperty("nonce", "navigation-test-inputs-v1")
+                setProperty("head", head)
+                setProperty("tree", tree)
+                setProperty("inputs_sha256", digest.digest().joinToString("") { "%02x".format(it) })
+            }.store(writer(), "Actual navigation test inputs")
+        }
+        navigationArtifactDirectory.get().asFile.mkdirs()
     }
 }
 tasks.withType<Test>().configureEach {
-    val contentSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/content").asFile
-    if (name == "testDebugUnitTest" && contentSource.exists()) {
-        check(contentSource.isDirectory && contentCollector.isFile) {
-            "Present Content source requires its real package and evidence collector."
-        }
-        dependsOn(":core:services:prepareContentInvocation")
-        finalizedBy(retainContentAppReports)
+    if (name == "testDebugUnitTest") {
+        dependsOn(prepareNavigationTestInputs)
+        systemProperty("navigationInputBinding", navigationInputBinding.get().asFile.absolutePath)
+        systemProperty("navigationArtifactDirectory", navigationArtifactDirectory.get().asFile.absolutePath)
     }
-}
-
-val navigationCollector = contentRepository.resolve("docs/android/evidence/WP-302/collect_evidence.py")
-val navigationBinding = layout.buildDirectory.file("reports/wp302/input-binding.json")
-val prepareWp302NavigationInputs by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Bind the actual current navigation source, original families and immutable inputs before App tests."
-    workingDir(contentRepository)
-    commandLine("python", "-B", navigationCollector.absolutePath, "--bind-inputs",
-        "--binding", navigationBinding.get().asFile.absolutePath)
-}
-val verifyWp302NavigationTests by tasks.registering(Exec::class) {
-    group = "verification"
-    description = "Require actual App navigation assertions, source50 families and native API31/37 rendered states."
-    dependsOn("testDebugUnitTest")
-    workingDir(contentRepository)
-    commandLine("python", "-B", navigationCollector.absolutePath, "--check", "--self-test",
-        "--junit", layout.buildDirectory.dir("test-results/testDebugUnitTest").get().asFile.absolutePath,
-        "--binding", navigationBinding.get().asFile.absolutePath)
-}
-
-// The producer also runs before the separately owned navigation source is carried.
-// Once that real source exists, binding/tests/verdict are mandatory, including missing-reader failures.
-val navigationSource = layout.projectDirectory.dir("src/main/kotlin/com/meshcoreone/android/app/navigation").asFile
-if (navigationSource.exists()) {
-    check(navigationSource.isDirectory && navigationCollector.isFile) {
-        "Present Navigation source requires its real package and evidence collector."
-    }
-    tasks.withType<Test>().configureEach {
-        if (name == "testDebugUnitTest") {
-            dependsOn(prepareWp302NavigationInputs)
-            systemProperty("navigationInputBinding",
-                navigationBinding.get().asFile.resolveSibling("input-binding.properties").absolutePath)
-            systemProperty("navigationArtifactDirectory",
-                layout.buildDirectory.dir("reports/wp302/screens").get().asFile.absolutePath)
-            outputs.upToDateWhen { false }
-            outputs.doNotCacheIf("Navigation evidence requires fresh current-head execution markers") { true }
-        }
-    }
-    rootProject.tasks.named("verifyScaffoldTests") { dependsOn(verifyWp302NavigationTests) }
-    tasks.named("check") { dependsOn(verifyWp302NavigationTests) }
 }
 
 // WP-218 diagnostic-only addition: hosted CI invokes the root verify stage with Gradle's

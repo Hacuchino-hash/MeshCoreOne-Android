@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from .backends import Backend, Observation
+from .capabilities import CapabilityEngine
 from .errors import PortError, ReceiptError
 from .gates import Binding, merge_decision, policy_revision, verify_completion
 from .ledger import Identity, Ledger
@@ -43,6 +44,7 @@ class Controller:
                  attempt_factory=lambda: str(uuid.uuid4())):
         self.manifest, self.policy, self.settings = manifest, policy, settings
         self.ledger, self.backend, self.authority = ledger, backend, authority
+        self.capabilities = CapabilityEngine(policy)
         self.attempt_factory = attempt_factory
 
     def binding(self, wp_id: str, base_sha: str):
@@ -103,11 +105,38 @@ class Controller:
         }
         if set(usage.active_ids) - tracked - adopted_ids:
             raise PortError("Unleased/unknown active worker paths must be reconciled before live claims")
+        admissions = self.capabilities.admit_scope(
+            wp_id, wp["write_paths"], wp["write_paths"], ["modify"]
+        )
+        capabilities = {}
+        for admission in admissions:
+            capabilities.setdefault(admission.capability_id, set()).add(admission.path)
         return self.ledger.claim(
             wp, self.binding(wp_id, base), self.backend.name, self.attempt_factory(), now,
             self.settings.lease_seconds, self.settings.max_inflight,
             usage.used, self.settings.budget.limit, self.settings.budget.reserve_per_launch,
             tuple(i for i in usage.active_ids if i not in adopted_ids),
+            capabilities={key: sorted(value) for key, value in capabilities.items()},
+            operations=["modify"],
+            branch=getattr(self.backend, "branch", ""),
+            worktree=getattr(self.backend, "worktree", ""),
+            initial_identity=adopting,
+        )
+
+    def evolve_reservation(self, wp_id: str, paths: list[str], operations: list[str],
+                           expected_revision: int, overlap_intents=()):
+        """Admit and evolve the same owner; authorization prose remains unchanged."""
+        record = self.ledger.get(wp_id)
+        if record is None:
+            raise PortError("Capability evolution requires an existing reservation")
+        wp = self.manifest.wp(wp_id)
+        admissions = self.capabilities.admit_scope(wp_id, wp["write_paths"], paths, operations)
+        capabilities = {}
+        for admission in admissions:
+            capabilities.setdefault(admission.capability_id, []).append(admission.path)
+        return self.ledger.evolve_scope(
+            wp_id, record["attempt"], expected_revision, capabilities, operations, paths,
+            overlap_intents, record["authorization_context"],
         )
 
     def launch(self, wp_id: str, now: float):

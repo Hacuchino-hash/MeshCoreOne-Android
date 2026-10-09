@@ -27,7 +27,7 @@ def specimen(text='@Suite("S") struct S { @Test func works() { #expect(true) } }
         "has_assertions": any(case["direct_assertions"] or case["helper_assertions"] for case in parsed["cases"]),
         "cases": [{"id": case["id"], "parameter_family": case["parameter_family"]} for case in parsed["cases"]],
     }]}
-    details = {"schema_version": 1, "source_sha": SOURCE_SHA, "manifest_sha256": "b" * 64,
+    details = {"schema_version": 1, "source_sha": SOURCE_SHA,
                "generator": "tools/android-port/test_inventory.py", "files": [file],
                "counts": inventory_counts([file])}
     return catalog, details, [original]
@@ -228,6 +228,7 @@ class InventorySchemaTests(unittest.TestCase):
         catalog, details, originals = specimen()
         validate_outputs(catalog, details, originals)
         self.assertEqual(set(catalog), {"schema_version", "source_sha", "entries"})
+        self.assertEqual(set(details), {"schema_version", "source_sha", "generator", "counts", "files"})
         self.assertEqual(set(catalog["entries"][0]["cases"][0]), {"id", "parameter_family"})
 
     def test_duplicate_case_and_path_fail(self):
