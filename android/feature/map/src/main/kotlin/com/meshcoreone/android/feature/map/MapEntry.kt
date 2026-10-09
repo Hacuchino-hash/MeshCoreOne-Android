@@ -1,4 +1,4 @@
-// AndroidOnly: WP-002 Registered explicitly unavailable map; no fabricated map/provider/location.
+// AndroidOnly: WP-312 Provider-neutral map entry remains explicitly unavailable until provider approval.
 package com.meshcoreone.android.feature.map
 
 import androidx.compose.runtime.Composable
@@ -12,7 +12,8 @@ import com.meshcoreone.android.core.ui.ScaffoldFeatureContent
 @Composable
 fun MapEntry(route: FeatureRoute, onNavigate: (FeatureRoute) -> Unit) {
     ScaffoldFeatureContent(
-        FeatureId.MAP, route,
+        FeatureId.MAP,
+        route,
         FeatureShellCopy(
             stringResource(R.string.tab_map),
             stringResource(R.string.scaffold_map_description),
