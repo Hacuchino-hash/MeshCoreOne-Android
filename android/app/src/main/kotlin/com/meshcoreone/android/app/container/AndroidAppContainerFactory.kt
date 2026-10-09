@@ -34,6 +34,7 @@ import com.meshcoreone.android.app.container.onboarding.WriteBehindOnboardingFla
 import com.meshcoreone.android.app.container.onboarding.appSettingsOpener
 import com.meshcoreone.android.core.services.content.LocationService
 import com.meshcoreone.android.core.services.content.RegionResolver
+import com.meshcoreone.android.core.services.notifications.didReceive
 import com.meshcoreone.android.core.services.rendering.DraftStore
 import com.meshcoreone.android.core.services.simulator.DemoModeManager
 import com.meshcoreone.android.platform.notifications.messaging.AndroidMessagingNotificationDelivery
@@ -53,9 +54,8 @@ import com.meshcoreone.android.core.maps.OfflineMapController
 import com.meshcoreone.android.core.maps.UnavailableOfflineMapBackend
 
 /**
- * The production composition of [AppContainer]. What exists on main is bound; what does not is bound to an explicit
- * unavailable role and listed in WP-303.md: the BLE `RuntimeLink`, the WP-401 notification adapter, the DataStore-backed
- * endpoint/association stores, the Wi-Fi LAN network binding and TalkBack announcements.
+ * The production composition of [AppContainer]. Implemented platform services are bound here; remaining unavailable
+ * roles and their owners are listed in WP-303.md.
  */
 object AndroidAppContainerFactory {
     suspend fun create(application: Application, mainScope: CoroutineScope, foreground: ProcessForegroundState): AppContainer {
