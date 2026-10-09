@@ -14,6 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.meshcoreone.android.app.container.AppContainer
+import com.meshcoreone.android.app.deeplinks.AppDeepLinkRouter
+import com.meshcoreone.android.app.deeplinks.ContainerDeepLinkEnvironment
+import com.meshcoreone.android.app.deeplinks.DeepLinkRouteOutcome
+import com.meshcoreone.android.app.deeplinks.PendingExternalRoute
 import com.meshcoreone.android.app.navigation.NativeNavigationShell
 import com.meshcoreone.android.app.navigation.NavigationCoordinator
 import com.meshcoreone.android.app.navigation.NavigationFailure
@@ -31,6 +37,37 @@ import kotlinx.coroutines.launch
 class NavigationHostViewModel : ViewModel() {
     val navigation = NavigationCoordinator()
     var initialized = false
+    private var deepLinksBound = false
+    private var initialViewIntentSubmitted = false
+    private var deliverySequence = 0L
+    private var router: AppDeepLinkRouter? = null
+    val pendingExternalRoute = PendingExternalRoute { uri ->
+        router?.routeExternal(uri) ?: DeepLinkRouteOutcome.Rejected
+    }
+
+    fun bindDeepLinks(container: AppContainer) {
+        if (deepLinksBound) return
+        router = AppDeepLinkRouter(ContainerDeepLinkEnvironment(container, navigation))
+        deepLinksBound = true
+        viewModelScope.launch { pendingExternalRoute.markReady() }
+    }
+
+    fun submitInitialViewIntent(intent: Intent) {
+        if (initialViewIntentSubmitted || intent.action != Intent.ACTION_VIEW) return
+        initialViewIntentSubmitted = true
+        submitViewIntent("initial", intent)
+    }
+
+    fun submitNewViewIntent(intent: Intent) {
+        if (intent.action != Intent.ACTION_VIEW) return
+        deliverySequence = Math.incrementExact(deliverySequence)
+        submitViewIntent("new-$deliverySequence", intent)
+    }
+
+    private fun submitViewIntent(id: String, intent: Intent) {
+        val uri = intent.dataString ?: return
+        viewModelScope.launch { pendingExternalRoute.submit(PendingExternalRoute.Delivery(id, uri)) }
+    }
 }
 
 open class MainActivity : ComponentActivity() {
@@ -52,6 +89,17 @@ open class MainActivity : ComponentActivity() {
                 )
             }
             host.initialized = true
+        }
+        host.submitInitialViewIntent(intent)
+        uiScope.launch {
+            val application = application as? MeshCoreApplication ?: return@launch
+            try {
+                host.bindDeepLinks(application.container.await())
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // The process container reports its construction failure; the staged URI remains inert.
+            }
         }
         setContent {
             MeshCoreTheme {
@@ -82,6 +130,12 @@ open class MainActivity : ComponentActivity() {
                 null
             },
         )
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        host.submitNewViewIntent(intent)
     }
 
     /** While resumed, this activity is the host that can launch the system companion-device chooser. */
