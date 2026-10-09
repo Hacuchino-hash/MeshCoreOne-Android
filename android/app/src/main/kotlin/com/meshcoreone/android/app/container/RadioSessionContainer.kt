@@ -255,6 +255,7 @@ class RadioSessionContainer private constructor(
         syncCoordinator.setCleanChannelSyncCallback { inputs.callbacks.cleanChannelSync() }
         syncCoordinator.setChannelSyncAttemptedCallback { inputs.callbacks.channelSyncAttempted() }
         env.notificationStrings?.let(notificationService::setStringProvider)
+        scope.launch { notificationService.setup() }
         // The cycle-forced upward call into the connection manager: an identity import re-resolves the radio id.
         nodeConfigService.setOnPostIdentityImport { inputs.callbacks.reconcileIdentity() }
     }

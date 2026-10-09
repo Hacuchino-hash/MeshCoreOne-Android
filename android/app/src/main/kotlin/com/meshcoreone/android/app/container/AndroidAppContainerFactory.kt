@@ -36,6 +36,8 @@ import com.meshcoreone.android.core.services.content.LocationService
 import com.meshcoreone.android.core.services.content.RegionResolver
 import com.meshcoreone.android.core.services.rendering.DraftStore
 import com.meshcoreone.android.core.services.simulator.DemoModeManager
+import com.meshcoreone.android.platform.notifications.messaging.AndroidMessagingNotificationDelivery
+import com.meshcoreone.android.platform.notifications.messaging.AndroidNotificationStringProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -111,6 +113,15 @@ object AndroidAppContainerFactory {
         val bonding = BondingCoordinator(bondGateway, clock)
         val addresses = java.util.concurrent.ConcurrentHashMap<java.util.UUID, String>()
         val holder = java.util.concurrent.atomic.AtomicReference<AppContainer>()
+        val notificationDelivery = AndroidMessagingNotificationDelivery(application, mainScope) { response ->
+            val current = holder.get() ?: return@AndroidMessagingNotificationDelivery false
+            val session = current.sessions.current ?: return@AndroidMessagingNotificationDelivery false
+            if (current.appState.connectionState != com.meshcoreone.android.core.contracts.domain.DeviceConnectionState.READY) {
+                return@AndroidMessagingNotificationDelivery false
+            }
+            session.notificationService.didReceive(response)
+            true
+        }
         val environment = AndroidHostEnvironment(
             application,
             reconnecting = { holder.get()?.connectionManager?.reconnectionCoordinator?.reconnectingDeviceId != null },
@@ -151,8 +162,9 @@ object AndroidAppContainerFactory {
                 companionSetup = companionService.takeIf { companionGateway.isSupported },
                 chooserResult = companionGateway::onChooserResult,
                 refreshAssociations = { (pairing as? CompanionPairingService)?.let { companionService.refreshAssociations() } },
-                notificationDelivery = UnavailableNotificationDelivery,
+                notificationDelivery = notificationDelivery,
                 notificationPreferences = storage.notificationPreferences(),
+                notificationStrings = AndroidNotificationStringProvider(application),
                 contactPreferences = SharedPreferencesContactFlags(application),
                 draftStore = DraftStore(SharedPreferencesDraftDefaults(application)),
                 mainScope = mainScope,
@@ -163,6 +175,11 @@ object AndroidAppContainerFactory {
                 regionStore = DataStoreRegionSelectionStore(storage.preferences),
                 stalePreferences = DataStoreStaleCleanupPreferences(storage.preferences),
                 newBootstrapDebugLog = { scope -> com.meshcoreone.android.core.services.diagnostics.DebugLogBuffer(store, scope) },
+                sessionLifecycle = object : SessionLifecycleListener {
+                    override fun created(container: RadioSessionContainer) {
+                        notificationDelivery.retryPendingActions()
+                    }
+                },
                 onClose = {
                     // The Room database is process-owned (`RoomPersistenceStore.close` flushes and seals the store only);
                     // it closes with the process, and this module cannot reference `RoomDatabase.close`.
@@ -173,6 +190,7 @@ object AndroidAppContainerFactory {
             ),
         )
         holder.set(container)
+        notificationDelivery.retryPendingActions()
         return container
     }
 }
