@@ -1,0 +1,180 @@
+== frequency field: FloatingPointFormatStyle<Double>.number.precision(.fractionLength(3)).locale(.posix) parse (TextField)
+[915]	915.0
+[915.0]	915.0
+[915.125]	915.125
+[915.1254]	915.1254
+[ 915]	915.0
+[915 ]	915.0
+[915,5]	915.0
+[1,915.5]	1.0
+[1e3]	1000.0
+[-1]	-1.0
+[+915]	915.0
+[.5]	0.5
+[5.]	5.0
+[]	nil
+[-]	nil
+[abc]	nil
+[915abc]	915.0
+[abc915]	nil
+[0x10]	0.0
+[nan]	nan
+[inf]	nil
+[٩١٥]	915.0
+[915.5.5]	915.5
+[1_000]	1.0
+[９１５]	915.0
+== frequency display
+915000	915.000
+869525	869.525
+433175	433.175
+150000	150.000
+2500000	2500.000
+7800	7.800
+0	0.000
+== tx power field: IntegerFormatStyle<Int>.number parse (en_US)
+[20]	20
+[-9]	-9
+[+5]	5
+[ 7]	7
+[7 ]	7
+[1,5]	1
+[1,000]	1000
+[7.9]	7
+[7.0]	7
+[]	nil
+[-]	nil
+[abc]	nil
+[7abc]	7
+[٧]	7
+[99999999999999999999]	nil
+[1e1]	10
+[−5]	-5
+== scaled frequency rounding / exact conversions
+915.0	scaled=915000.0 inRange=true exactU32=915000
+915.0005	scaled=915001.0 inRange=true exactU32=915001
+915.0004	scaled=915000.0 inRange=true exactU32=915000
+869.5255	scaled=869526.0 inRange=true exactU32=869526
+150.0	scaled=150000.0 inRange=true exactU32=150000
+149.9996	scaled=150000.0 inRange=true exactU32=150000
+2500.0	scaled=2500000.0 inRange=true exactU32=2500000
+2500.0004	scaled=2500000.0 inRange=true exactU32=2500000
+2500.0005	scaled=2500001.0 inRange=false exactU32=2500001
+-1.0	scaled=-1000.0 inRange=false exactU32=nil
+nan	scaled=nan inRange=false exactU32=nil
+inf	scaled=inf inRange=false exactU32=nil
+4294967.295	scaled=4294967295.0 inRange=false exactU32=4294967295
+0.0005	scaled=1.0 inRange=false exactU32=1
+== Int8(exactly:) txPower range -9...maxTx(20)
+-10	-10
+-9	-9
+0	0
+20	20
+21	21
+127	127
+128	nil
+-128	-128
+-129	nil
+== UInt8(exactly:) sf/cr
+4	4
+5	5
+12	12
+255	255
+256	nil
+-1	nil
+== BLE PIN UInt32(String)
+[123456]	123456
+[000000]	0
+[099999]	99999
+[100000]	100000
+[999999]	999999
+[1000000]	1000000
+[+123456]	123456
+[-123456]	nil
+[ 123456]	nil
+[123456 ]	nil
+[12345]	12345
+[１２３４５６]	nil
+[123456
+]	nil
+[]	nil
+[4294967295]	4294967295
+[4294967296]	nil
+[0x1E240]	nil
+[1e5]	nil
+== formatBandwidth fallback (NumberFormatter en_US_POSIX, 0...2 fraction digits)
+7799	7.8
+7801	7.8
+7800	7.8
+31249	31.25
+31251	31.25
+1	0
+999	1
+1005	1
+1015	1.02
+1025	1.02
+1035	1.04
+62499	62.5
+125001	125
+124999	125
+0	0
+500000	500
+62505	62.5
+4294967295	4294967.3
+== nearestBandwidth
+7799	7800
+9100	7800
+9101	10400
+13000	10400
+18200	15600
+26000	20800
+36475	31250
+52100	41700
+93750	62500
+187500	125000
+375000	250000
+0	7800
+900000	500000
+4294967295	500000
+== hex sanitize: uppercased().filter { isASCII && isHexDigit }.prefix(n)
+[ab12]	AB12
+[AB 12]	AB12
+[ﬀ]	FF
+[ß]	
+[ǆ0]	0
+[ａｂ]	
+[12345]	12345
+[0xff]	0FF
+[g1h2]	12
+[ıa]	A
+[ﬁ]	F
+[ẞ]	
+[ǰ]	
+== reserved prefix check upper.count >= 2 hasPrefix 00/FF
+[0]	0 reserved=false
+[00]	00 reserved=true
+[000]	000 reserved=true
+[F]	F reserved=false
+[FF]	FF reserved=true
+[F0]	F0 reserved=false
+[ff]	FF reserved=true
+[ﬀ]	FF reserved=true
+== localizedStandardCompare sort of region names
+sorted	["alpha", "Alpha", "beta", "Beta2", "Beta10", "e", "é", "f", "Ile", "Île", "zone 1", "Zone 2", "Zone 10"]
+== custom OCV parse: split(',').compactMap { Int(trimmed whitespaces) }
+[1,2,3]	[1, 2, 3]
+[ 4200 , 4100,x,3900]	[4200, 4100, 3900]
+[1,,2]	[1, 2]
+[]	[]
+[5000,4900,4800,4700,4600,4500,4400,4300,4200,4100,4000]	[5000, 4900, 4800, 4700, 4600, 4500, 4400, 4300, 4200, 4100, 4000]
+[1.5,2]	[2]
+[+5,-5]	[5, -5]
+== OCV field Int parse (TextField value: Int, format: .number, en_US)
+[4200]	4200
+[4,200]	4200
+[ 4200]	4200
+[4200.5]	4200
+[]	nil
+[-]	nil
+[abc]	nil
+[4200mV]	4200
